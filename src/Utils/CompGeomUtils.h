@@ -65,8 +65,6 @@ void	InsetPolygon2(
 				void *						ref = NULL);
 				
 				
-#if 0
-Does anyone use this?
 void	InsetPolygon3(
 				const Polygon3&				inChain,
 				const double *				inRatios,
@@ -74,7 +72,6 @@ void	InsetPolygon3(
 				bool						inIsRing,
 				const Vector3&				inUp,
 				Polygon3&					outChain);
-#endif
 
 /*
  * CalcMaxInset
