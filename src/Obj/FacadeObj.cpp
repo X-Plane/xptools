@@ -189,26 +189,26 @@ bool	ReadFacadeObjFile(const char * inPath, FacadeObj_t& outObj)
 	
 	vector<string>	header;
 	while (!TextScanner_IsDone(s) && header.empty())
-		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", TokenizeVector, &header); TextScanner_Next(s); }
+		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &header); TextScanner_Next(s); }
 	if (TextScanner_IsDone(s)) return false;
 	if (header.size() != 1) return false;
 	if (header[0] != "I" && header[0] != "A") return false;
 	header.clear();
 	while (!TextScanner_IsDone(s) && header.empty())
-		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", TokenizeVector, &header); TextScanner_Next(s); }
+		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &header); TextScanner_Next(s); }
 	if (TextScanner_IsDone(s)) return false;
 	if (header.empty()) return false;
 	if (header[0] != "800") return false;
 	header.clear();
 	while (!TextScanner_IsDone(s) && header.empty())
-		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", TokenizeVector, &header); TextScanner_Next(s); }
+		{ TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &header); TextScanner_Next(s); }
 	if (header.empty()) return false;
 	if (header[0] != "FACADE") return false;
 	
 	while (!TextScanner_IsDone(s))
 	{
 		vector<string>	tokens;
-		TextScanner_TokenizeLine(s, " \t", "\r\n#", TokenizeVector, &tokens);
+		TextScanner_TokenizeLine(s, " \t", "\r\n#", -1, TokenizeVector, &tokens);
 		
 		if (!tokens.empty())
 		{
@@ -632,7 +632,7 @@ void	BuildFacadeObjLOD(
 			const FacadeWall_t& me = inObj.lods[L].walls[facade_types[n]];
 			insets.push_back(tan(me.roof_slope * 3.14159265358979323846 / 180.0) * ((me.t_floors.back().second - me.t_floors.back().first) * me.y_scale));			
 		}
-		InsetPolygon(inPolygon, &*insets.begin(), 1.0, inObj.is_ring, inUp, inset);		
+		InsetPolygon3(inPolygon, &*insets.begin(), 1.0, inObj.is_ring, inUp, inset);		
 	} else
 		inset = inPolygon;
 	
