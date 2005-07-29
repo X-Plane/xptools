@@ -82,14 +82,14 @@ void		AccumTexture(const string& inFileName)
 	{
 		if (i->second.fileName == inFileName)
 		{
-			LoadTextureFromFile(inFileName.c_str(), i->second.id, !lit, NULL, NULL);
+			LoadTextureFromFile(inFileName.c_str(), i->second.id, (!lit ? tex_MagentaAlpha : 0) + tex_Linear + tex_Mipmap, NULL, NULL, NULL, NULL);
 			OE_Notifiable::Notify(catagory_Texture, msg_TexLoaded, NULL);
 			return;
 		}
 	}
 	
 	GLenum	texID = gCounter++;
-	if (LoadTextureFromFile(inFileName.c_str(), texID, !lit, &w, &h))
+	if (LoadTextureFromFile(inFileName.c_str(), texID, (!lit ? tex_MagentaAlpha : 0) + tex_Linear + tex_Mipmap, &w, &h, NULL, NULL))
 	{
 		TexInfo_t	ti;
 		ti.width = w;
@@ -109,11 +109,11 @@ void		ReloadTexture(const string& inName)
 	map<string, TexInfo_t >::iterator i;
 	i = gDayTextures.find(name);
 	if (i != gDayTextures.end())
-		LoadTextureFromFile(i->second.fileName.c_str(), i->second.id, true, &i->second.width, &i->second.height);
+		LoadTextureFromFile(i->second.fileName.c_str(), i->second.id, tex_MagentaAlpha + tex_Linear + tex_Mipmap, &i->second.width, &i->second.height, NULL, NULL);
 
 	i = gNightTextures.find(name);
 	if (i != gNightTextures.end())
-		LoadTextureFromFile(i->second.fileName.c_str(), i->second.id, false, &i->second.width, &i->second.height);
+		LoadTextureFromFile(i->second.fileName.c_str(), i->second.id, tex_Linear + tex_Mipmap, &i->second.width, &i->second.height, NULL, NULL);
 
 	OE_Notifiable::Notify(catagory_Texture, msg_TexLoaded, NULL);
 }
