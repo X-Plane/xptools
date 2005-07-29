@@ -146,9 +146,9 @@ struct	mesh_match_t {
 	vector<mesh_match_edge_t>	edges;
 };
 
-inline bool MATCH(const char * big, const char * small)
+inline bool MATCH(const char * big, const char * msmall)
 {
-	return strncmp(big, small, strlen(small)) == 0;
+	return strncmp(big, msmall, strlen(msmall)) == 0;
 }
 
 static mesh_match_t gMatchBottom, gMatchLeft;
@@ -419,12 +419,12 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 		slaves.erase(best_match.first);
 	}
 	
-	CDT::Face_handle	near = NULL;
+	CDT::Face_handle	nearf = NULL;
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
 	{
-		pts->buddy = ioMesh.insert(CDT::Point(pts->loc.x, pts->loc.y), near);
-		near = pts->buddy->face();
+		pts->buddy = ioMesh.insert(CDT::Point(pts->loc.x, pts->loc.y), nearf);
+		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
 	}
 }
