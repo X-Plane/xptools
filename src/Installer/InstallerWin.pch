@@ -1,0 +1,4 @@
+#pragma precompile_target "InstallerWinPCH"
+
+#define IBM 1
+#include <Windows.h>

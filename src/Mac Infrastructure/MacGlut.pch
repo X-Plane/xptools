@@ -1,0 +1,10 @@
+#pragma precompile_target "MacGLUTPCH"
+
+#define USE_GLUT 1
+
+#include <carbon.h>
+#include "XDefs.h"
+#include <gl.h>
+#include <glu.h>
+#define GL_EXT_texture_env_combine 1
+#include <glext.h>

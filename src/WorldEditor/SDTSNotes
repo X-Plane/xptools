@@ -1,0 +1,223 @@
+SDTS NOTES
+
+ - By "transfer" they really mean "export of a part of a GIS database", because
+   SDTS is meant as an import/export format, where a transfer is more or less 
+   a big pile of files dumped on an FTP server or something.
+   
+ - The primary SDTS spec is file system independent, so the terminology works
+   in terms of a virtual storage system, with a spec describing how those bits
+   get to disk.  ISO files are the main way SDTS gets thrown around, but you could
+   define a way to encode SDTS strictly in an SQL database, for example.
+   
+ - A module is approximately a single table, with a module record being a row
+   in the table, and a module field being a set of cells and a subfield being
+   a single cell.  But for many tables, the population varies per record, often
+   due to optionality of fields.
+   
+ - Fields and subfields have mnemonic labels for random access, as well as linear
+   order for repetition (with or without meaning to the order).
+   
+ - Every table starts with a unique ID as the first field, with the module name
+   first and a row number second.  Thus every table entity has a unique Id, and
+   there is no need for module headers since the first column servers (wastefully)
+   as that.
+   
+ - Some tables may contain only one record, in that case it's a two-level tagged
+   metadata system.   
+
+ - Spatial objects are fundamentlaly identified by module name and record number
+   (almost like a table and row#) which provide a local ID within the transfer.
+              
+ - Spatial objects are interlinked both by containment/aggragation and relation...
+   therefore topological objects may be made up of purely geometric objects.
+   
+ - "Primary" attributes is basically a table of all data tagged to spatial objects.
+   The spatial object table contains a record ID for a table row in the primary
+   attribute table; the primary attribute table probably contains a back link and
+   also contains a bunch of fields with useful information.  This isn't necessaraly
+   1:1 so we need to do a real join.
+
+ - "Secondary" attributes are expansions of info on primary attributes, which we
+   may care about (e.g. expands a route number to its name) or maybe we don't care.
+   Depends on the schema.
+
+ - An SDTS transfer in 8211 in practice consists of a series of tables, one per file.
+   The CATD can be identified by a file naming convention or by checking cell 1 field 1
+   row 1 for 'CATD'.  
+   
+ - To use SDTS we need container, builder and io classes.
+    o Container classes hold the fundamental data.  
+    o IO classes read it from streams.
+    o A builder class sucks in data from a record and holds it in a type-safe manner.
+
+   There is a modest dictionary system in the sb layer.  The record access system is
+   what's most important.  Finally there is code in the utils to add converters based
+   on a cat-d file path...that code reads attribute dictionaries and spatial references
+   BUT...it is limited in that it is awlays disk based.:-(
+
+
+
+
+TODO ON IMPORT
+1. Implement tar and gz mem files!!
+2. isolate tiger import code to its own translation unit.
+3. write some SDTS utils to find the catalog in a file set, etc. etc.
+3a. add a file set option so that reads are cached (e.g. once a file is read, it's kept around.)
+4. write an SDTS vector importer (with no metadata) that forms lines, etc.
+	- require TVP
+	- import all chains, nodes, and polygons, etc.
+
+
+DATA SOURCES:
+
+http://www.dwd.de/en/FundE/Klima/KLIS/daten/online/global/index.htm
+
+This site has a lot:
+
+http://edcftp.cr.usgs.gov/pub/data/
+
+ÃCENSUS TIGER LINE FILES
+	http://www2.census.gov/geo/tiger/tiger2002/
+	Vector maps of the U.S. by county in text file format.  Okay
+	accuracy, very good topological consistency.
+	Large number of files, needs indexing.
+
+Ã24K SDTS DLG FILES FROM USGS
+	ftp://edcftp.cr.usgs.gov/pub/data/DLG/LARGE_SCALE/
+	SDTS vector profile transfers of the original 7.5 minute orthoquads (24k)
+	Data in a massive dir structure by town, needs indexing!!
+
+ÃSRTM DEMs
+	http://edcftp.cr.usgs.gov/pub/data/srtm/
+	Fast bulk FTP download of 30m US and 90m world SRTM DEMs.
+	DEMs are in HGT file format, which are 1x1 degree geo-projected
+	16-bit BE (meters I think) raw DEMs, 3601 x 3601 or 1201x1201.
+	
+	http://www2.jpl.nasa.gov/srtm/
+	ftp://e0mss21u.ecs.nasa.gov/srtm/
+
+ÃNLCD Landcover
+	http://edcftp.cr.usgs.gov/pub/data/landcover/states/
+	Fast bulk FTP download of NLCD files in GeoTiff or a raw format.
+	(Raw format does not have geospatial registration info on it!)
+	as well as README metadata files.  Data is 8-bit indexed color
+	encoding land use.  Resolution is 30 meters, but the files are
+	(oddly enough) per state, some very huge.
+	
+	http://edcftp.cr.usgs.gov/pub/data/landcover/states/NLCD_legend.jpg
+	
+ÃGTOPO30 DEMs
+	http://edcftp.cr.usgs.gov/pub/data/gtopo30/
+	Bulk download 900 meter DEMs (gross!) that we used last time.
+	Format is raw 16-bit binary shorts.
+	This is the data PM used last time he did the render.
+	
+XUSGS NED DEMs Converted <- this server blows.
+	http://www.webgis.com/terr_pages/$1/dem75/countylist.html
+	(Per state, then county, etc.  This is the USGS DEMs converted into
+	some kidn of format.
+
+ÃGLOBAL LAND USE DATA: (this is what PM used internationally)
+	http://edcdaac.usgs.gov/glcc/glcc.asp	
+	http://edcftp.cr.usgs.gov/pub/data/glcc/
+	We downloaded the global lat/lon projection database sets, easiest to use.
+
+GLOBAL FOREST DATA:
+	http://edcdaac.usgs.gov/glcc/fao/downloads.asp
+	http://edcdaac.usgs.gov/glcc/fao/index.asp
+		
+LULC - Land use cover for US in vector form:
+	http://www.vterrain.org/Culture/LULC/Data_Users_Guide_4.html
+	http://edcftp.cr.usgs.gov/pub/data/LULC/100K/
+	http://edcwww.cr.usgs.gov/glis/hyper/guide/1_250_lulc
+
+GLOBAL HYDRO DATA
+	http://edcdaac.usgs.gov/gtopo30/hydro/index.asp
+	http://edcftp.cr.usgs.gov/pub/data/gtopo30hydro/
+	1k hydro data, might be useful for cleaning up water issues
+
+CLIMATE DATA
+	Low res-very derived, normalized, global, awesome!
+	http://www.fao.org/waicent/faoinfo/sustdev/EIdirect/climate/EIsp0002.htm
+
+SWMA - 250:
+	http://edcftp.cr.usgs.gov/pub/data/DEM/250/
+
+Corrected SRTM Data:
+	http://srtm.csi.cgiar.org/
+
+Global Coastlines:
+	http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
+
+LIDAR of grand canyon
+	http://www.gcmrc.gov/products/lidar/lidar.htm
+	
+
+WHAT WE'RE MISSING:
+HYDRO VECTOR DATA FOR OUTSIDE THE US
+ROAD DATA FOR OUTSIDE THE US
+
+
+TREE CONCEPTS:
+
+1. Automatic shell slicing - render the object from above with near-far clip planes and
+   ortho perspective to make shell textures.
+2. Use aperiodic texturing with no shadows to create the pattern.  Implication is that
+   the objects tile in some wy.  We need 'edge' tiles to deal with transitions.
+   textures can be triangles or quads.
+3. Shells with LOD cut down the number of levels.  
+   WARNING: LOD-MIPMAP SYNC ISSUES!
+4. This algorithm automatically switches to a dynamic 3-d billboard approach.  It would
+   be nice if we could use only one billboard angle.  Thought: the need for silouettes
+   might be a function of terrain position?!?  hrm...
+-  Can we cheat an d (1) precompute the 2-d texture slices for sillouettes and (2)
+   precompute the slicing geometry volumes?  Even if we precompute several angles, this
+   will still be a lot cheaper than generating the slices in real time and volumetrically
+   texturing them.
+
+TOPOLOGY:
+
+A file format is:
+
+Topologically consistent if:
+ - No line, chain, or string crosses any other line, chain or string except at their ends.
+ 
+Topologically annotated if:
+ - It is topologically consistent AND
+ - There is at least a one way link between every node and the chains that have it
+   as an end-point AND
+ - There is at least a one-way link between every chain half-edge and the polygon
+   that it bounds.  Polygons need only exist via some kind of unique identifier, even
+   if no other entity or object information is provided.
+
+Topologically fully linked if:
+ - It is topologically annotated and
+ - Each half-edge and its twin are linked.  (This is always true for a format that 
+   stores full edges with two sets of half-edge data.)
+ - There is at least a one-way link between each half-edge and the half-edge that
+   comes after it in a counter-clockwise traversal of the boundary of that area's
+   half-edge.
+   
+A topologically annotated data structure with full edges can be made fully linked by:
+1. Building a list of half-edges per polygon (if it doesn't exist).
+2. Sorting those half-edges to form CCW outer boundaries and CW holes.
+   (This is done geometrically by making left-most turns at every vertex from the
+    set of relevant half-edges.  Once the first CCW boundary is created, all other
+    boundaries are holes and go CW.)
+
+
+
+TODO ON SDTS NOTES:
+1. Attribute import. <-
+2. Correctly handle NAS vs. NAX in GISUtils and TVP
+3. Check header for SDTS and TVP
+4. record area and point features
+
+
+THIS IS OUR STRATEGY ON MAP IMPORT:
+1. We can import any level 3 topological map for use as terrain.
+2. We can merge any non-topological vector map on top of an existing map
+	in the form of a transportation network.
+3. We can import one XES into another...the submap will obliterate the 
+	area the super-map took up.
+

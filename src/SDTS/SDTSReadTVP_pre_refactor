@@ -1,0 +1,1115 @@
+#include "SDTSReadTVP.h"
+#include "CompGeomUtils.h"
+#include "MemFileUtils.h"
+#include "SDTSRead.h"
+#include "MapDefs.h"
+#include "GISUtils.h"
+
+#include <sdts++/container/sc_Record.h>
+#include <sdts++/builder/sb_Iref.h>
+#include <sdts++/builder/sb_Xref.h>
+#include <sdts++/builder/sb_Iden.h>
+#include <sdts++/builder/sb_Poly.h>
+#include <sdts++/builder/sb_Pnts.h>
+#include <sdts++/builder/sb_Line.h>
+
+const char *		kSDTSErrMsgs[] = {
+	"Success.",
+	"A foreign key cannot be found in the transfer.",
+	"Inconsistent topological linkage.",
+	"Unreadable file.",
+	"Wrong record type in module.",
+	"Info missing from record.",
+	"Unreadable spatial address.",
+	"Logic check failed."
+};
+	
+struct	CoordTransform {
+	bool	UTM;			// Are we in UTM?  If so we need to go to geo.
+	int		zone;			// UTM zone number
+	double	xscale;
+	double	yscale;
+	double	xoffset;
+	double 	yoffset;
+};
+
+struct	StMemFile {
+	StMemFile(MFMemFile * mf) : mf_(mf) { }
+	~StMemFile() { if (mf_) MemFile_Close(mf_); }
+	operator MFMemFile* () const { return mf_; }
+	
+	MFMemFile * mf_;
+};
+
+typedef vector<ForeignKey>			ForeignKeyVector;
+typedef	pair<ForeignKey, bool>		DirectedForeignKey;	// True for pointing at us
+typedef	vector<DirectedForeignKey>	DirectedForeignKeyVector;
+
+struct PointRecord {
+	char						objType[2];
+	Point2						sadr;
+	DirectedForeignKeyVector	lines;
+};
+typedef	map<int, PointRecord>		PointMap;
+typedef	map<string, PointMap>		PointTable;
+
+struct	LineRecord {
+	char					objType[2];
+
+	ForeignKey				leftPoly;
+	ForeignKey				rightPoly;
+	ForeignKey				startNode;
+	ForeignKey				endNode;
+	vector<Point2>			shape;	// From start node to end node!
+	
+	DirectedForeignKey		nextLeft;	// Our next halfedge for the halfedge on our 'left'
+	DirectedForeignKey		nextRight;	// and 'right', for forming the CCW of our polygons.
+	
+	DirectedForeignKey		prevLeft;
+	DirectedForeignKey		prevRight;
+};
+typedef map<int, LineRecord>		LineMap;
+typedef	map<string, LineMap>		LineTable;
+
+struct	PolygonRecord {
+	char					objType[2];
+	
+	ForeignKey				outerRing;
+	ForeignKeyVector		innerRings;
+	
+	ForeignKeyVector		edgesSame;
+	ForeignKeyVector		edgesOpposite;
+};
+typedef	map<int, PolygonRecord>		PolygonMap;
+typedef	map<string, PolygonMap>	PolygonTable;
+
+struct Topology {
+	PointTable		points;
+	LineTable		lines;
+	PolygonTable	polygons;
+	
+	PointRecord *			FetchForeignKeyPoint(const ForeignKey& inKey);
+	LineRecord *			FetchForeignKeyLine(const ForeignKey& inKey);
+	PolygonRecord *			FetchForeignKeyPolygon(const ForeignKey& inKey);
+
+	Vector2					GetSpurVector(const ForeignKey& inNode, const DirectedForeignKey& inLine);
+
+	DirectedForeignKey		FindLeftMostEdgeInSet(const set<DirectedForeignKey>& inEdges);
+	void					RemoveRingFromSet(const DirectedForeignKey& anEdge, set<DirectedForeignKey>& inEdgeSet, const ForeignKey& thePolygon);	
+	DirectedForeignKey		FindNextLine(const DirectedForeignKey& inLine, const ForeignKey& inPolygon);
+};
+
+SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary);
+SDTSErrorType	ReadPointModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary);
+SDTSErrorType	ReadPolygonModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary);
+void	ReadTransfer(Topology& ioTopology, SDTSDirectory * inDirectory, sio_8211_converter_dictionary * dictionary, bool& isUTM, int& zone);
+void	BuildRawLinks(Topology& ioTopology);
+void	SortLinesAroundPoints(Topology& ioTopology);
+void	FindLineConnections(Topology& ioTopology);
+void	FindPolygonRings(Topology& ioTopology);
+void	ConvertCoordinates(Topology& ioTopology, const CoordTransform& inCoords);
+void	ValidateImport(Topology& sdts);
+void	ExportToMap(Topology& inTopology, Pmwx& outPmwx);
+
+
+
+
+
+// This routine reads one line module from the file
+SDTSErrorType	ReadLineModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary)
+{
+		sc_Record	rawRec;
+		sb_Line		line;
+		
+	SDTSModuleIterator	modIter(file, dictionary);
+	
+	LineMap * vec = NULL;
+	
+	while (!modIter.Done())
+	{
+		modIter.Get(rawRec);
+		
+		if (!line.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected line-type");
+		
+		if (vec == NULL)
+		{
+			if (ioTopology.lines.find(line.getModuleName()) == ioTopology.lines.end())
+			{
+				ioTopology.lines.insert(LineTable::value_type(line.getModuleName(), LineMap()));
+			}
+			vec = &(ioTopology.lines[line.getModuleName()]);
+		}
+		
+		LineRecord	newLine;
+		string	objRep;
+		sb_ForeignID	lpoly, rpoly, snode, enode;
+		if (!line.getObjectRepresentation(objRep))	throw SDTSException(sdts_MissingInfo, rawRec, "need objtype");
+		if (objRep.size() != 2) 	throw SDTSException(sdts_LogicError, rawRec, "objrep isn't 2 chars");
+		newLine.objType[0] = objRep[0];
+		newLine.objType[1] = objRep[1];
+
+		if (line.getPolygonIDLeft(lpoly))	newLine.leftPoly = ForeignKey(lpoly);	else throw SDTSException(sdts_MissingInfo, rawRec, "need lpoly");
+		if (line.getPolygonIDRight(rpoly))	newLine.rightPoly = ForeignKey(rpoly);	else throw SDTSException(sdts_MissingInfo, rawRec, "need rpoly");
+		if (line.getStartNodeID(snode))		newLine.startNode = ForeignKey(snode);	else throw SDTSException(sdts_MissingInfo, rawRec, "need snode");
+		if (line.getEndNodeID(enode))		newLine.endNode = ForeignKey(enode);	else throw SDTSException(sdts_MissingInfo, rawRec, "need enode");
+		sb_Spatials		spatial;
+		if (line.getSpatialAddress(spatial))
+		{
+			for (sb_Spatials::iterator i = spatial.begin(); i != spatial.end(); ++i)
+			{
+				Point2	p;
+				if (i->x().getDouble(p.x) && i->y().getDouble(p.y))				
+					newLine.shape.push_back(p);
+				else
+					throw SDTSException(sdts_BadSpatialID, *i);
+			}
+		}
+		if (newLine.shape.size() < 2)
+			throw SDTSException(sdts_MissingInfo, rawRec, "need at least two spatial addresses on a line");
+		
+		if (newLine.startNode == newLine.endNode && newLine.shape.size() < 3)
+			throw SDTSException(sdts_MissingInfo, rawRec, "need at least three spatial addresses for a line with same start and end points");
+		
+		for (int n = 1; n < newLine.shape.size(); ++n)
+		{
+			if (newLine.shape[n-1] == newLine.shape[n])
+				throw SDTSException(sdts_MissingInfo, rawRec, "zero length segment defined in line record");
+		}
+		
+		if (vec->find(line.getRecordID()) != vec->end())
+			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
+		vec->insert(LineMap::value_type(line.getRecordID(), newLine));
+
+		modIter.Increment();		
+	}	
+	
+	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
+}
+
+// This routine reads one point module from the file
+SDTSErrorType	ReadPointModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary)
+{
+		sc_Record	rawRec;
+		sb_Pnts		pnts;
+		
+	SDTSModuleIterator	modIter(file, dictionary);
+	
+	PointMap * vec = NULL;
+	
+	while (!modIter.Done())
+	{
+		modIter.Get(rawRec);
+		
+		if (!pnts.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected pnts-type");
+		
+		if (vec == NULL)
+		{
+			if (ioTopology.points.find(pnts.getModuleName()) == ioTopology.points.end())
+			{
+				ioTopology.points.insert(PointTable::value_type(pnts.getModuleName(), PointMap()));
+			}
+			vec = &(ioTopology.points[pnts.getModuleName()]);
+		}
+		
+		PointRecord	newPt;
+		string	objRep;
+
+		if (!pnts.getObjectRepresentation(objRep))	throw SDTSException(sdts_MissingInfo, rawRec, "need objtype");
+		if (objRep.size() != 2) 	throw SDTSException(sdts_LogicError, rawRec, "objrep isn't 2 chars");
+		newPt.objType[0] = objRep[0];
+		newPt.objType[1] = objRep[1];
+
+		sb_Spatial		spatial;
+		if (!pnts.getSpatialAddress(spatial))	throw SDTSException(sdts_MissingInfo, rawRec, "need one spatial address");
+		if (!(spatial.x().getDouble(newPt.sadr.x) && spatial.y().getDouble(newPt.sadr.y)))
+			throw SDTSException(sdts_BadSpatialID, spatial);
+		
+		if (vec->find(pnts.getRecordID()) != vec->end())
+			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
+		
+		vec->insert(PointMap::value_type(pnts.getRecordID(), newPt));					
+
+		modIter.Increment();		
+	}	
+	
+	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
+}
+
+// This routine reads one polygon module from the file
+SDTSErrorType	ReadPolygonModule(Topology& ioTopology, MFMemFile * file, sio_8211_converter_dictionary * dictionary)
+{
+		sc_Record	rawRec;
+		sb_Poly		poly;
+		
+	SDTSModuleIterator	modIter(file, dictionary);
+	
+	PolygonMap * vec = NULL;
+	
+	while (!modIter.Done())
+	{
+		modIter.Get(rawRec);
+		
+		if (!poly.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected poly-type");
+		
+		if (vec == NULL)
+		{
+			if (ioTopology.polygons.find(poly.getModuleName()) == ioTopology.polygons.end())
+			{
+				ioTopology.polygons.insert(PolygonTable::value_type(poly.getModuleName(), PolygonMap()));
+			}
+			vec = &(ioTopology.polygons[poly.getModuleName()]);
+		}
+		
+		PolygonRecord	newPoly;
+		string	objRep;
+
+		if (!poly.getObjectRepresentation(objRep))	throw SDTSException(sdts_MissingInfo, rawRec, "need objtype");
+		if (objRep.size() != 2) 	throw SDTSException(sdts_LogicError, rawRec, "objrep isn't 2 chars");
+		newPoly.objType[0] = objRep[0];
+		newPoly.objType[1] = objRep[1];
+
+		if (vec->find(poly.getRecordID()) != vec->end())
+			throw SDTSException(sdts_LogicError, rawRec, "duplicate record id");
+		vec->insert(PolygonMap::value_type(poly.getRecordID(), newPoly));		
+
+		modIter.Increment();		
+	}	
+	
+	return modIter.Error() ? sdts_BadRecordFile : sdts_Ok;
+}
+
+// This routine reads all modules from the file that we need.  Read the metadata first - if it's bad, don't waste time reading 10,000 geometry
+// records fo rnothing!
+void	ReadTransfer(Topology& ioTopology, SDTSDirectory * inDirectory, sio_8211_converter_dictionary * inDictionary, CoordTransform&	transform)
+{
+		vector<string>	mods;
+		sc_Record		rawRec;
+		sb_Xref			xref;
+		sb_Iref			iref;
+		string			sys, zoneStr;
+
+	{
+		StMemFile	xrefMem(inDirectory->OpenModule("XREF"));
+		if (xrefMem == NULL) throw SDTSException(sdts_BadRecordFile, "unable to open module", "xref");
+
+		SDTSModuleIterator	modIter(xrefMem, inDictionary);
+		modIter.Get(rawRec);
+		if (modIter.Error()) throw SDTSException(sdts_BadRecordFile, "unable to read module record", "xref");
+		if (!xref.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected xref");
+		
+		if (!xref.getReferenceSystemName(sys))	throw SDTSException(sdts_MissingInfo, rawRec, "reference system");
+		transform.UTM = (sys == "UTM");
+		if (transform.UTM)
+		{
+			if (!xref.getZoneReferenceNumber(zoneStr))	throw SDTSException(sdts_MissingInfo, rawRec, "zone number");
+			transform.zone = atoi(zoneStr.c_str());
+		}
+	}
+	
+	{
+		StMemFile	irefMem(inDirectory->OpenModule("IREF"));
+		if (irefMem == NULL) throw SDTSException(sdts_BadRecordFile, "unable to open module", "iref");
+		
+		SDTSModuleIterator modIter(irefMem, inDictionary);
+		modIter.Get(rawRec);
+		if (modIter.Error()) throw SDTSException(sdts_BadRecordFile, "unable to rea dmodule record", "iref");
+		if (!iref.setRecord(rawRec)) throw SDTSException(sdts_WrongRecordType, rawRec, "expected iref");
+		
+		if (!iref.getScaleFactorX(transform.xscale)) transform.xscale = 1.0;
+		if (!iref.getScaleFactorY(transform.yscale)) transform.yscale = 1.0;
+		if (!iref.getXOrigin(transform.xoffset)) transform.xoffset = 0.0;
+		if (!iref.getYOrigin(transform.yoffset)) transform.yoffset = 0.0;
+	}
+	
+	inDirectory->GetAllModuleNames(mods);
+	for (vector<string>::iterator modName = mods.begin(); modName != mods.end(); ++modName)
+	{
+		if (modName->size() == 4)
+		{
+			string	modType = modName->substr(0,2);
+			int	modNum = atoi(modName->substr(2,4).c_str());
+			if (modType == "LE" && modNum > 0)
+			{
+				StMemFile mf(inDirectory->OpenModule(*modName));
+				if (!mf) throw SDTSException(sdts_BadRecordFile, "cannot open module", modType.c_str());
+				SDTSErrorType err = ReadLineModule(ioTopology, mf, inDictionary);
+				if (err != sdts_Ok) throw SDTSException(err, "error reading records from module", modType.c_str());
+			}
+			if ((modType == "NA" || modType == "NO" || modType == "NP") && modNum > 0)
+			{
+				StMemFile mf(inDirectory->OpenModule(*modName));
+				if (!mf) throw SDTSException(sdts_BadRecordFile, "cannot open module", modType.c_str());
+				SDTSErrorType err = ReadPointModule(ioTopology, mf, inDictionary);
+				if (err != sdts_Ok) throw SDTSException(err, "error reading records from module", modType.c_str());
+			}
+			if (modType == "PC" && modNum > 0)
+			{
+				StMemFile mf(inDirectory->OpenModule(*modName));
+				if (!mf) throw SDTSException(sdts_BadRecordFile, "cannot open module", modType.c_str());
+				SDTSErrorType err = ReadPolygonModule(ioTopology, mf, inDictionary);
+				if (err != sdts_Ok) throw SDTSException(err, "error reading records from module", modType.c_str());
+			}
+		}
+	}
+}
+
+// This routine simply makes sure that every polygon links to its lines and
+// every node links to its line...the only topology we are guaranteed in SDTS
+// is lines knowing polygons and nodes.
+void	BuildRawLinks(Topology& ioTopology)
+{
+		ForeignKey				us;
+		PointRecord *			pointPtr;
+		PolygonRecord *			polyPtr;
+	
+	for (LineTable::iterator table = ioTopology.lines.begin(); table != ioTopology.lines.end(); ++table)
+	{
+		for (LineMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
+		{
+			us = ForeignKey(table->first, row->first);
+			pointPtr = ioTopology.FetchForeignKeyPoint(row->second.startNode);
+			if (!pointPtr)	throw SDTSException(sdts_BadForeignKey, row->second.startNode, us);
+			pointPtr->lines.push_back(DirectedForeignKey(us, true));
+
+			pointPtr = ioTopology.FetchForeignKeyPoint(row->second.endNode);
+			if (!pointPtr)	throw SDTSException(sdts_BadForeignKey, row->second.endNode, us);
+			pointPtr->lines.push_back(DirectedForeignKey(us, false));
+			
+			// For now just stash lines in the polygon's inner rings...once they're all
+			// linked up it'll be a lot easier to figure out who's inside and who's outside.
+			
+			polyPtr = ioTopology.FetchForeignKeyPolygon(row->second.leftPoly);
+			if (!polyPtr) throw SDTSException(sdts_BadForeignKey, row->second.leftPoly, us);
+			polyPtr->edgesSame.push_back(us);
+			
+			polyPtr = ioTopology.FetchForeignKeyPolygon(row->second.rightPoly);
+			if (!polyPtr) throw SDTSException(sdts_BadForeignKey, row->second.rightPoly, us);
+			polyPtr->edgesOpposite.push_back(us);
+		}
+	}
+}
+
+// This routine goes through each node that is referenced by lines and sorts
+// the lines in a clockwise manner.
+void	SortLinesAroundPoints(Topology& ioTopology)
+{
+	int			spur, pos, i;
+	ForeignKey	us;
+	
+	for (PointTable::iterator table = ioTopology.points.begin(); table != ioTopology.points.end(); ++table)
+	{
+		for (PointMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
+		{
+			PointRecord&	prec = row->second;
+			us = ForeignKey(table->first, row->first);
+			
+			// IF we don't have at least 3 lines, they are by definition in order.
+			if (prec.lines.size() > 2)
+			{
+				// Build a table...the first item is a vector pointing away from our node, the second
+				// is the foreign key of that line.
+				vector<pair<Vector2, DirectedForeignKey> >		workingVecs, putVecs;
+				for (spur = 0; spur < prec.lines.size(); ++spur)
+					workingVecs.push_back(pair<Vector2, DirectedForeignKey>(ioTopology.GetSpurVector(us, prec.lines[spur]), prec.lines[spur]));
+					
+				// For each spur we are goigg to try to find out where it belongs...
+				for (spur = 0; spur < workingVecs.size(); ++spur)
+				{
+					bool	found = false;
+					for (pos = 1; pos < putVecs.size(); ++pos)
+					{
+						if (Is_CCW_Between(putVecs[pos].first, workingVecs[spur].first, putVecs[pos-1].first))
+						{
+							found = true;
+							putVecs.insert(putVecs.begin()+pos, workingVecs[spur]);
+							break;
+						}
+					}
+					if (!found)
+						putVecs.push_back(workingVecs[spur]);
+				}
+				
+				// Finally copy the whole mess back into the node.
+				prec.lines.clear();
+				for (i = 0; i < putVecs.size(); ++i)
+				{
+					prec.lines.push_back(putVecs[i].second);
+				}
+			}
+		}		
+	}
+}
+
+// This routine finds the next node in a CCB for a half-edge based on sorted nodes.
+void	FindLineConnections(Topology& ioTopology)
+{
+	ForeignKey	us;
+	DirectedForeignKeyVector::iterator meSpur;
+	
+	for (LineTable::iterator table = ioTopology.lines.begin(); table != ioTopology.lines.end(); ++table)
+	{
+		for (LineMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
+		{
+			us = ForeignKey(table->first, row->first);
+			DirectedForeignKey	usRight(us, false);
+			DirectedForeignKey	usLeft(us, true);
+		
+			// Find the node we start from
+			PointRecord * start = ioTopology.FetchForeignKeyPoint(row->second.startNode);
+			if (!start) throw SDTSException(sdts_BadForeignKey, row->second.startNode, us);
+
+			// Find us in its rotation list.  Go forward one clockwise, that's who we should point to backward.
+			meSpur = find(start->lines.begin(), start->lines.end(), usLeft);
+			if (meSpur == start->lines.end()) throw SDTSException(sdts_BadLink, row->second.startNode, usLeft.first);
+			++meSpur;
+			if (meSpur == start->lines.end()) 
+				meSpur = start->lines.begin();						
+			row->second.nextRight = *meSpur;
+			
+			LineRecord * prevRec = ioTopology.FetchForeignKeyLine(row->second.nextRight.first);
+			if (!prevRec) throw SDTSException(sdts_BadForeignKey, row->second.nextRight.first, us);
+			if (meSpur->second)
+			{
+				if (prevRec->prevLeft != DirectedForeignKey()) throw SDTSException(sdts_LogicError, us, "Our right side next was already linked");
+				prevRec->prevLeft = usRight;
+			} else {
+				if (prevRec->prevRight != DirectedForeignKey()) throw SDTSException(sdts_LogicError, us, "Our right side next was already linked");
+				prevRec->prevRight = usRight;
+			}	
+			
+			if (meSpur->second)
+			{
+				// Our previous segment on the right side goes into us.  His right should match ours.
+				if (prevRec->leftPoly != row->second.rightPoly)
+					throw SDTSException(sdts_LogicError, us, "Previous sector goes away from our start, but our right is not its poly.");
+			} else {
+				if (prevRec->rightPoly != row->second.rightPoly)
+					throw SDTSException(sdts_LogicError, us, "Previous sector goes into our start, but we don't share a right poly.");
+			}
+			
+			// Find the node we point to.
+			PointRecord * end = ioTopology.FetchForeignKeyPoint(row->second.endNode);
+			if (!end) throw SDTSException(sdts_BadForeignKey, row->second.endNode, us);
+
+			// Find us in the rotation list.  Go forward one clcokwise, that's who we should point to forward.
+			meSpur = find(end->lines.begin(), end->lines.end(), usRight);
+			if (meSpur == end->lines.end()) throw SDTSException(sdts_BadLink, row->second.endNode, usRight.first);
+			++meSpur;
+			if (meSpur == end->lines.end()) 
+				meSpur = end->lines.begin();
+			row->second.nextLeft = *meSpur;
+			
+			LineRecord * nextRec = ioTopology.FetchForeignKeyLine(row->second.nextLeft.first);
+			if (!nextRec) throw SDTSException(sdts_BadForeignKey, row->second.nextLeft.first, us);
+			if (meSpur->second)
+			{
+				if (nextRec->prevLeft != DirectedForeignKey()) throw SDTSException(sdts_LogicError, us, "Our left side next was already linked");			
+				nextRec->prevLeft = usLeft;
+			} else {
+				if (nextRec->prevRight != DirectedForeignKey()) throw SDTSException(sdts_LogicError, us, "Our left side next was already linked");			
+				nextRec->prevRight = usLeft;			
+			}
+			
+			if (meSpur->second)
+			{
+				// Our next segment goes from our lead vertex.  Its right shoudl be our left
+				if (nextRec->leftPoly != row->second.leftPoly)
+					throw SDTSException(sdts_LogicError, us, "Next sector goes from our end but we dn'don't share a left poly");
+			} else {
+				if (nextRec->rightPoly != row->second.leftPoly)
+					throw SDTSException(sdts_LogicError, us, "Next sector goes away from our end but doesn't have our left side as its right.");
+			}
+		}
+	}
+	
+}
+
+// Given the lines all connected, this routine figures out which lines represent
+// rings.
+void	FindPolygonRings(Topology& ioTopology)
+{
+	ForeignKey			us;
+	DirectedForeignKey	leftMost;
+	for (PolygonTable::iterator table = ioTopology.polygons.begin(); table != ioTopology.polygons.end(); ++table)
+	{
+		for (PolygonMap::iterator row = table->second.begin(); row != table->second.end(); ++row)
+		{
+			us = ForeignKey(table->first, row->first);
+			PolygonRecord& poly = row->second;
+			
+			// We need to reconstitute our edges...first copy them all out of the way.
+			set<DirectedForeignKey>		unusedEdges;
+			for (ForeignKeyVector::iterator i = poly.edgesSame.begin(); i != poly.edgesSame.end(); ++i)
+				unusedEdges.insert(DirectedForeignKey(*i, true));
+			for (ForeignKeyVector::iterator i = poly.edgesOpposite.begin(); i != poly.edgesOpposite.end(); ++i)
+				unusedEdges.insert(DirectedForeignKey(*i, false));
+
+			
+			leftMost = ioTopology.FindLeftMostEdgeInSet(unusedEdges);
+			poly.outerRing = leftMost.first;
+			ioTopology.RemoveRingFromSet(leftMost, unusedEdges, us);
+			while (!unusedEdges.empty())
+			{
+				leftMost = ioTopology.FindLeftMostEdgeInSet(unusedEdges);
+				poly.innerRings.push_back(leftMost.first);
+				ioTopology.RemoveRingFromSet(leftMost, unusedEdges, us);
+			}
+		}
+	}
+}
+
+void	ConvertCoordinates(Topology& sdts, const CoordTransform& coords)
+{
+	for (PointTable::iterator ptable = sdts.points.begin(); ptable != sdts.points.end(); ++ptable)
+	for (PointMap::iterator pt = ptable->second.begin(); pt != ptable->second.end(); ++pt)
+	{
+		pt->second.sadr.x *= coords.xscale;
+		pt->second.sadr.y *= coords.yscale;
+		pt->second.sadr.x += coords.xoffset;
+		pt->second.sadr.y += coords.yoffset;
+		if (coords.UTM)
+			UTMToLatLon(pt->second.sadr.x, pt->second.sadr.y, coords.zone, &pt->second.sadr.x, &pt->second.sadr.y);
+	}
+	
+	for (LineTable::iterator ltable = sdts.lines.begin(); ltable != sdts.lines.end(); ++ltable)
+	for (LineMap::iterator line = ltable->second.begin(); line != ltable->second.end(); ++line)
+	for (vector<Point2>::iterator pt = line->second.shape.begin(); pt != line->second.shape.end(); ++pt)
+	{
+		pt->x *= coords.xscale;
+		pt->y *= coords.yscale;
+		pt->x += coords.xoffset;
+		pt->y += coords.yoffset;
+		if (coords.UTM)	
+			UTMToLatLon(pt->x, pt->y, coords.zone, &pt->x, &pt->y);
+	}
+}
+		
+PointRecord *			Topology::FetchForeignKeyPoint(const ForeignKey& inKey)
+{
+	PointTable::iterator table = points.find(inKey.first);
+	if (table == points.end()) return NULL;
+	PointMap::iterator row = table->second.find(inKey.second);
+	if (row == table->second.end()) return NULL;
+		return &row->second;
+}
+
+LineRecord *			Topology::FetchForeignKeyLine(const ForeignKey& inKey)
+{
+	LineTable::iterator table = lines.find(inKey.first);
+	if (table == lines.end()) return NULL;
+	LineMap::iterator row = table->second.find(inKey.second);
+	if (row == table->second.end()) return NULL;
+		return &row->second;
+}
+
+PolygonRecord *			Topology::FetchForeignKeyPolygon(const ForeignKey& inKey)
+{
+	PolygonTable::iterator table = polygons.find(inKey.first);
+	if (table == polygons.end()) return NULL;
+	PolygonMap::iterator row = table->second.find(inKey.second);
+	if (row == table->second.end()) return NULL;
+		return &row->second;
+}
+
+
+// Create a vector that points away from inNode along the passed in line's first straight segment.
+Vector2					Topology::GetSpurVector(const ForeignKey& inNode, const DirectedForeignKey& inLine)
+{
+	LineRecord * theLine = FetchForeignKeyLine(inLine.first);
+	if (theLine == NULL) throw SDTSException(sdts_BadForeignKey, inLine.first, "while getting a spur vector.");
+	
+	if (inLine.second)
+	{
+		if (theLine->startNode != inNode)		throw SDTSException(sdts_BadLink, inNode, inLine.first);		
+	} else {
+		if (theLine->endNode != inNode)	throw SDTSException(sdts_BadLink, inNode, inLine.first);		
+	}	
+	
+	if (inLine.second)
+	{
+		return Vector2(theLine->shape[0], theLine->shape[1]);
+	} else {
+		return Vector2(theLine->shape[theLine->shape.size() - 1], theLine->shape[theLine->shape.size() - 2]);
+	}
+}
+
+// Find the left-most edge in a set.  We do this by simply comparing X coordinates of all shape points
+// in each edge in the set.  We know that this edge is on the outer CCB of at least one polygon.
+DirectedForeignKey			Topology::FindLeftMostEdgeInSet(const set<DirectedForeignKey>& inEdges)
+{
+	DirectedForeignKey bestKey;
+	bool	has = false;
+	double	bestX;
+	for (set<DirectedForeignKey>::const_iterator iter = inEdges.begin(); iter != inEdges.end(); ++iter)
+	{
+		LineRecord * theLine = FetchForeignKeyLine(iter->first);
+		if (!theLine) throw SDTSException(sdts_BadForeignKey, iter->first, "bogus line in edge set.");
+		for (int i = 0; i < theLine->shape.size(); ++i)
+		{
+			if (!has || theLine->shape[i].x < bestX)
+			{	
+				has = true;
+				bestKey = *iter;
+				bestX = theLine->shape[i].x;
+			}
+		}
+	}
+	return bestKey;
+}
+
+// Remove anEdge and every other edge in its ring from inEdgeSet.  thePolygon defines
+// which side of the edge we want.  This effectively moves one ring from the polygon from the set.
+void					Topology::RemoveRingFromSet(const DirectedForeignKey& anEdge, set<DirectedForeignKey>& inEdgeSet, const ForeignKey& thePolygon)
+{
+	DirectedForeignKey	iter = anEdge, stop = anEdge;
+	do {
+		if (inEdgeSet.find(iter) == inEdgeSet.end())
+			throw SDTSException(sdts_LogicError, anEdge.first, thePolygon);
+		inEdgeSet.erase(iter);
+		iter = FindNextLine(iter, thePolygon);
+	} while (iter != stop);
+}
+
+// Find the next edge alogn the polygon.  We need the polygon because an edge has two sides...which one are we on?
+DirectedForeignKey			Topology::FindNextLine(const DirectedForeignKey& inLine, const ForeignKey& inPolygon)
+{
+	LineRecord * theLine = FetchForeignKeyLine(inLine.first);
+	if (theLine == NULL) throw SDTSException(sdts_BadForeignKey, inLine.first, "while getting next edge.");
+
+	if (inLine.second)
+	{
+		if (theLine->leftPoly != inPolygon) throw SDTSException(sdts_BadLink, inPolygon, inLine.first);		
+	} else {
+		if (theLine->rightPoly != inPolygon) throw SDTSException(sdts_BadLink, inPolygon, inLine.first);		
+	}
+
+	if (inLine.second)
+		return theLine->nextLeft;
+	else
+		return theLine->nextRight;
+}
+
+ForeignKey::ForeignKey() : pair<string,int>() 
+{
+}
+
+ForeignKey::ForeignKey(const sb_ForeignID& id) : pair<string, int>(id.moduleName(), id.recordID())
+{
+}
+
+ForeignKey::ForeignKey(const string& s, int d) : pair<string, int>(s, d)
+{
+}
+
+ForeignKey::ForeignKey(const ForeignKey& x) : pair<string, int>(x)
+{
+}
+
+
+void	ImportSDTSTransferTVP(const char * path, const char * ext, Pmwx& pmwx)
+{
+	SDTSDirectory	dir(path, ext);
+	if (dir.DidLoad())
+	{
+
+		CoordTransform	transform;
+		Topology	topology;
+		sio_8211_converter_dictionary	dict;
+		AddConverters(dir, dict);
+		
+		ReadTransfer(topology, &dir, &dict, transform);
+
+		BuildRawLinks(topology);
+		SortLinesAroundPoints(topology);
+		FindLineConnections(topology);
+		FindPolygonRings(topology);		
+		ConvertCoordinates(topology, transform);
+		
+		ValidateImport(topology);		
+		ExportToMap(topology, pmwx);
+	}
+}
+
+
+
+SDTSException::SDTSException(SDTSErrorType errType, const ForeignKey& theKey, const ForeignKey& us)
+{
+	sprintf(mBuf, "%s %s/%d %s/%d", kSDTSErrMsgs[errType], theKey.first.c_str(), theKey.second, us.first.c_str(), us.second);
+}
+
+SDTSException::SDTSException(SDTSErrorType errType, const ForeignKey& theKey, const char * info)
+{
+	sprintf(mBuf, "%s %s/%d %s", kSDTSErrMsgs[errType], theKey.first.c_str(), theKey.second, info);
+}
+
+SDTSException::SDTSException(SDTSErrorType errType, const sc_Record& theRecord, const char * info)
+{
+	sprintf(mBuf, "%s %s", kSDTSErrMsgs[errType], info);
+}
+
+SDTSException::SDTSException(SDTSErrorType errType, const sb_Spatial& addr)
+{
+	sprintf(mBuf, "%s", kSDTSErrMsgs[errType]);
+}
+
+SDTSException::SDTSException(SDTSErrorType errType, const char * s1 , const char * s2)
+{
+	sprintf(mBuf, "%s %s %s", kSDTSErrMsgs[errType], s1, s2);
+}
+
+void	ExportToMap(Topology& sdts, Pmwx& pmwx)
+{
+	typedef	map<ForeignKey, Dcel::Face *>			FaceMap;
+	typedef map<ForeignKey, Dcel::Vertex *>			NodeMap;
+	typedef vector<Dcel::Halfedge *>				HalfedgeVector;
+	typedef	pair<HalfedgeVector, HalfedgeVector>	EdgePair;
+	typedef map<ForeignKey, EdgePair	>			EdgeMap;
+	
+	NodeMap											nodeMap;
+	EdgeMap											edgeMap;
+	FaceMap											faceMap;	
+
+	pmwx.clear();
+	Dcel&		dcel(pmwx.GetDcel());
+	
+	Dcel::Vertex * 		new_v;
+	NodeMap::iterator 	new_vi;
+	int					n, hole_counter = 0;
+	
+	// IMPORT PART 1 - IMPORT ALL LINES, CREATING VERTICES AT THE SAME TIME
+	// At the end of this step, we'll have every line in the pmwx.  All
+	// internal line and line->vertex linkages will be complete.  Lines will
+	// not be connected to the next complete chain, nor to polygons.	
+	
+	for (LineTable::iterator lineTable = sdts.lines.begin(); lineTable != sdts.lines.end(); ++lineTable)
+	{	
+		for (LineMap::iterator line = lineTable->second.begin(); line != lineTable->second.end(); ++line)
+		{
+			// First for each chain, we are going to create vertices for
+			// every shape point.  The vector vertices will have these vertices.
+			// The start and end node must be checked against the node map by
+			// foreign key ID so we share them with other lines.  Shape points
+			// are never shared, so we just blast through them.
+
+				vector<Dcel::Vertex*>	vertices;
+		
+			new_vi = nodeMap.find(line->second.startNode);
+			if (new_vi == nodeMap.end())
+			{
+				new_v = dcel.new_vertex();
+				new_v->set_point(Point_2(
+									line->second.shape.front().x,
+									line->second.shape.front().y));
+				nodeMap.insert(NodeMap::value_type(line->second.startNode, new_v));
+				vertices.push_back(new_v);				
+			} else
+				vertices.push_back(new_vi->second);
+			
+			for (n = 1; n < (line->second.shape.size() - 1); ++n)
+			{
+				new_v = dcel.new_vertex();
+				new_v->set_point(Point_2(
+									line->second.shape[n].x,
+									line->second.shape[n].y));
+				vertices.push_back(new_v);
+			}
+
+			new_vi = nodeMap.find(line->second.endNode);
+			if (new_vi == nodeMap.end())
+			{
+				new_v = dcel.new_vertex();
+				new_v->set_point(Point_2(
+									line->second.shape.back().x,
+									line->second.shape.back().y));
+				nodeMap.insert(NodeMap::value_type(line->second.endNode, new_v));
+				vertices.push_back(new_v);				
+			} else
+				vertices.push_back(new_vi->second);			
+	
+			// Now we build half-edges for each segment in the chain.
+			// The first side goes in the oreintation of the line, the
+			// second side goes against.  Both vectors are ordered from
+			// start to stop though!!!
+		
+				EdgePair	edges;
+		
+			for (n = 1; n < line->second.shape.size(); ++n)
+			{
+				PM_Curve_2	seg1(vertices[n-1]->point(), vertices[n]->point());
+				PM_Curve_2	seg2(vertices[n]->point(), vertices[n-1]->point());
+				Dcel::Halfedge *e1, *e2;
+				e1 = dcel.new_halfedge();
+				e2 = dcel.new_halfedge();
+				e1->mDominant = true;
+				e2->mDominant = false;
+				e1->set_opposite(e2);
+				e2->set_opposite(e1);
+				e1->set_vertex(vertices[n]);
+				e2->set_vertex(vertices[n-1]);
+				vertices[n]->set_halfedge(e1);
+				vertices[n-1]->set_halfedge(e2);
+				e1->set_curve(seg1);
+				e2->set_curve(seg2);
+				edges.first.push_back(e1);
+				edges.second.push_back(e2);				
+			}
+			
+			// Now link the edges to each other in a row.  
+			
+			for (int n = 1; n < edges.first.size(); ++n)
+			{
+				edges.first[n-1]->set_next(edges.first[n]);
+				edges.second[n]->set_next(edges.second[n-1]);
+			}
+			
+			edgeMap.insert(EdgeMap::value_type(ForeignKey(lineTable->first, line->first), edges));			
+		}
+	}
+	
+	// IMPORT PART 1a - INTERLINK LINES
+	// Previously our lines were not linked to each other...we couldn't
+	// follow foreign keys before because not all keys were built, but this
+	// is no longer an issue.
+	for (LineTable::iterator lineTable = sdts.lines.begin(); lineTable != sdts.lines.end(); ++lineTable)
+	{	
+		for (LineMap::iterator line = lineTable->second.begin(); line != lineTable->second.end(); ++line)
+		{
+			// First we dig up all of the info about our previous and 
+			// next lines.
+			ForeignKey	me(lineTable->first, line->first);
+
+			EdgePair&	myParts = edgeMap[me];
+			EdgePair&	nextLeftParts = edgeMap[line->second.nextLeft.first];
+			EdgePair&	nextRightParts = edgeMap[line->second.nextRight.first];
+			
+			LineRecord *	nextLeftRec = sdts.FetchForeignKeyLine(line->second.nextLeft.first);
+			LineRecord *	nextRightRec = sdts.FetchForeignKeyLine(line->second.nextRight.first);
+			if (!nextLeftRec)	throw SDTSException(sdts_BadForeignKey, line->second.nextLeft.first, me);
+			if (!nextRightRec)	throw SDTSException(sdts_BadForeignKey, line->second.nextRight.first, me);
+
+			if (line->second.nextLeft.second)
+				myParts.first.back()->set_next(nextLeftParts.first.front());
+			else
+				myParts.first.back()->set_next(nextLeftParts.second.back());
+
+			if (line->second.nextRight.second)
+				myParts.second.front()->set_next(nextRightParts.first.front());
+			else
+				myParts.second.front()->set_next(nextRightParts.second.back());
+		}
+	}	
+	
+	// IMPORT PART 2 - IMPORT POLYGONS
+	// Simply set up an indexed polygon table...we'll pour in the metadata
+	// later.
+	for (PolygonTable::iterator polyTable = sdts.polygons.begin(); polyTable != sdts.polygons.end(); ++polyTable)
+	{
+		for (PolygonMap::iterator poly = polyTable->second.begin(); poly != polyTable->second.end(); ++poly)
+		{
+			// First create the face (or use the world face) and index it.
+			ForeignKey	me(polyTable->first, poly->first);
+			Dcel::Face* new_face = &*pmwx.unbounded_face();
+			if (poly->second.objType[1] != 'W')
+				new_face = dcel.new_face();			
+			faceMap.insert(FaceMap::value_type(me, new_face));			
+
+			// For non-world polygons we need to set our outer CCB.
+			// This requires checking the edge orientation; if we are
+			// on the left side of the Ždge then the halfedge with the
+			// edge is on our CCB, otherwise it's the other one.
+
+			// For the world polygon, due to the weirdness of our 
+			// code, we should have our outer ring actually be a hole.
+			LineRecord *		myEdge = sdts.FetchForeignKeyLine(poly->second.outerRing);
+			Dcel::Halfedge *	myHalfedge = NULL;
+			if (!myEdge)	throw SDTSException(sdts_BadForeignKey, poly->second.outerRing, me);
+			if (myEdge->leftPoly == me)
+			{
+				myHalfedge = edgeMap[poly->second.outerRing].first.front();
+			} else if (myEdge->rightPoly == me)
+			{
+				myHalfedge = edgeMap[poly->second.outerRing].second.front();
+			} else {
+				throw SDTSException(sdts_LogicError, myEdge->leftPoly, me);
+			}							
+			if (poly->second.objType[1] != 'W')
+			{	
+				new_face->set_halfedge(myHalfedge);
+			} else {
+				new_face->add_hole(myHalfedge);
+			}
+
+			// Now go through each hole and do the same test.
+			for (ForeignKeyVector::iterator hole = poly->second.innerRings.begin(); 
+				hole != poly->second.innerRings.end(); ++hole)
+			{
+				myEdge = sdts.FetchForeignKeyLine(*hole);
+				if (!myEdge)	throw SDTSException(sdts_BadForeignKey, *hole, me);
+				if (myEdge->leftPoly == me)
+				{
+					myHalfedge = edgeMap[*hole].first.front();
+				} else if (myEdge->rightPoly == me)
+				{
+					myHalfedge = edgeMap[*hole].second.front();
+				} else {
+					throw SDTSException(sdts_LogicError, *hole, me);
+				}							
+				new_face->add_hole(myHalfedge);
+				
+				if (poly->second.objType[1] != 'W')
+					++hole_counter;
+			}
+		}
+	}	
+	
+	// PART 2a - SET FACE MAP LINKS
+	for (LineTable::iterator lineTable = sdts.lines.begin(); lineTable != sdts.lines.end(); ++lineTable)
+	{	
+		for (LineMap::iterator line = lineTable->second.begin(); line != lineTable->second.end(); ++line)
+		{
+			ForeignKey me(lineTable->first, line->first);
+			EdgePair& edges = edgeMap[me];
+			
+			Dcel::Face* face = faceMap[line->second.leftPoly];
+			if (face == NULL)	throw SDTSException(sdts_BadLink, line->second.leftPoly, "Not found as a built poly");
+			
+			for (HalfedgeVector::iterator e = edges.first.begin(); e != edges.first.end(); ++e)
+				(*e)->set_face(face);
+
+			face = faceMap[line->second.rightPoly];
+			if (face == NULL)	throw SDTSException(sdts_BadLink, line->second.rightPoly, "Not found as a built poly");
+			
+			for (HalfedgeVector::iterator e = edges.second.begin(); e != edges.second.end(); ++e)
+				(*e)->set_face(face);
+		}
+	}
+	printf("Created %d nodes, %d edges, %d faces, %d holes.\n", nodeMap.size(), edgeMap.size(), faceMap.size(), hole_counter);
+}
+
+void	ValidateImport(Topology& sdts)
+{
+	for (LineTable::iterator table = sdts.lines.begin(); table != sdts.lines.end(); ++table)
+	{
+		for (LineMap::iterator line = table->second.begin(); line != table->second.end(); ++line)
+		{
+			// We require the following validations per line:
+		
+			ForeignKey			us(table->first, line->first);
+			DirectedForeignKey	usLeft(us, true);
+			DirectedForeignKey	usRight(us, false);
+			
+			PolygonRecord *	leftPolyRec = sdts.FetchForeignKeyPolygon(line->second.leftPoly);
+			PolygonRecord *	rightPolyRec = sdts.FetchForeignKeyPolygon(line->second.rightPoly);
+			PointRecord *	startPointRec = sdts.FetchForeignKeyPoint(line->second.startNode);
+			PointRecord *	endPointRec = sdts.FetchForeignKeyPoint(line->second.endNode);
+			LineRecord *	nextLeftRec = sdts.FetchForeignKeyLine(line->second.nextLeft.first);
+			LineRecord *	prevLeftRec = sdts.FetchForeignKeyLine(line->second.prevLeft.first);
+			LineRecord *	nextRightRec = sdts.FetchForeignKeyLine(line->second.nextRight.first);
+			LineRecord *	prevRightRec = sdts.FetchForeignKeyLine(line->second.prevRight.first);
+			
+			// 1. We must have a next and prev link on both sides, and those links must point back to us.
+			
+			if (line->second.nextLeft.second)
+			{
+				if (nextLeftRec->prevLeft != usLeft)	throw SDTSException(sdts_LogicError, us, "our next left edge doesn't point back to us");
+			} else {
+				if (nextLeftRec->prevRight != usLeft)	throw SDTSException(sdts_LogicError, us, "our next left edge doesn't point back to us");
+			}
+			
+			if (line->second.nextRight.second)
+			{
+				if (nextRightRec->prevLeft != usRight)	throw SDTSException(sdts_LogicError, us, "our next right edge doesn't point back to us");
+			} else {
+				if (nextRightRec->prevRight != usRight)	throw SDTSException(sdts_LogicError, us, "our next right edge doesn't point back to us");
+			}
+			
+			if (line->second.prevLeft.second)
+			{
+				if (prevLeftRec->nextLeft != usLeft)	throw SDTSException(sdts_LogicError, us, "our prev left edge doesn't point back to us");
+			} else {
+				if (prevLeftRec->nextRight != usLeft)	throw SDTSException(sdts_LogicError, us, "our prev left edge doesn't point back to us");
+			}
+			
+			if (line->second.prevRight.second)
+			{
+				if (prevRightRec->nextLeft != usRight)	throw SDTSException(sdts_LogicError, us, "our prev right edge doesn't point back to us");
+			} else {
+				if (prevRightRec->nextRight != usRight)	throw SDTSException(sdts_LogicError, us, "our prev right edge doesn't point back to us");
+			}
+			
+			// 2. We must share our common vertex with our previous and next vectors.
+			
+			if (line->second.nextLeft.second)
+			{
+				if (nextLeftRec->startNode != line->second.endNode)	throw SDTSException(sdts_LogicError, us, "our next left doesn't share out end node");
+			} else {
+				if (nextLeftRec->endNode != line->second.endNode)	throw SDTSException(sdts_LogicError, us, "our next left doesn't share out end node");	
+			}
+
+			if (line->second.nextRight.second)
+			{
+				if (nextRightRec->startNode != line->second.startNode)	throw SDTSException(sdts_LogicError, us, "our next right doesn't share our start node");
+			} else {
+				if (nextRightRec->endNode != line->second.startNode)	throw SDTSException(sdts_LogicError, us, "our next right doesn't share our start node");
+			}
+			
+			if (line->second.prevLeft.second)
+			{
+				if (prevLeftRec->endNode != line->second.startNode)		throw SDTSException(sdts_LogicError, us, "our prev left doesn't share our start node");
+			} else {
+				if (prevLeftRec->startNode != line->second.startNode)	throw SDTSException(sdts_LogicError, us, "our prev left doesn't share our start node");
+			}
+			
+			if (line->second.prevRight.second)
+			{
+				if (prevRightRec->endNode != line->second.endNode)		throw SDTSException(sdts_LogicError, us, "our prev right doesn't share out end node");
+			} else {
+				if (prevRightRec->startNode != line->second.endNode)	throw SDTSException(sdts_LogicError, us, "our prev right doesn't share out end node");
+			}
+						
+			// 3. We must have the same polygons in common with our next and previous sides as expected.
+			
+			if (line->second.nextLeft.second)
+			{
+				if (nextLeftRec->leftPoly != line->second.leftPoly)		throw SDTSException(sdts_LogicError, us, "Our left polygon isn't our left next left's polygon");
+			} else {
+				if (nextLeftRec->rightPoly != line->second.leftPoly)	throw SDTSException(sdts_LogicError, us, "Our left polygon isn't our left next left's polygon");
+			}
+
+			if (line->second.nextRight.second)
+			{
+				if (nextRightRec->leftPoly != line->second.rightPoly)		throw SDTSException(sdts_LogicError, us, "Our right polygon isn't our right next right's polygon");
+			} else {
+				if (nextRightRec->rightPoly != line->second.rightPoly)		throw SDTSException(sdts_LogicError, us, "Our right polygon isn't our right next right's polygon");
+			}
+			
+			if (line->second.prevLeft.second)
+			{
+				if (prevLeftRec->leftPoly != line->second.leftPoly)		throw SDTSException(sdts_LogicError, us, "Our left polygon isn't our left prev left's polygon");
+			} else {
+				if (prevLeftRec->rightPoly != line->second.leftPoly)	throw SDTSException(sdts_LogicError, us, "Our left polygon isn't our left prev left's polygon");
+			}
+
+			if (line->second.prevRight.second)
+			{
+				if (prevRightRec->leftPoly != line->second.rightPoly)	throw SDTSException(sdts_LogicError, us, "Our right polygon isn't our right prev right's polygon");
+			} else {
+				if (prevRightRec->rightPoly != line->second.rightPoly)	throw SDTSException(sdts_LogicError, us, "Our right polygon isn't our right prev right's polygon");
+			}
+			
+			// 4. Our polygons must have us.
+			
+			// 5. Our polygons must have us between our prevous and next sides.
+			
+			// 6. Our vertices must have us.
+			
+			if (find(startPointRec->lines.begin(), startPointRec->lines.end(), usLeft) == startPointRec->lines.end())
+				throw SDTSException(sdts_LogicError, us, "Our start point doesn't seem to know about our left side");			
+			if (find(endPointRec->lines.begin(), endPointRec->lines.end(), usRight) == endPointRec->lines.end())
+				throw SDTSException(sdts_LogicError, us, "Our end point doesn't seem to know about our right side");			
+
+			// 7. Our vertices must have our next after us and our prev before us in the traversal.
+			
+		}
+	}
+}

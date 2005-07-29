@@ -1,0 +1,6 @@
+#pragma precompile_target "NGSReleasePCH"
+
+#define APL 1
+#define IBM 0
+#define DEV 0
+#include "NGSPrefix.h"

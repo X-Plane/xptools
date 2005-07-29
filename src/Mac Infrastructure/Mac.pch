@@ -1,0 +1,4 @@
+#pragma precompile_target "MacPCH"
+
+#include <carbon.h>
+#include "XDefs.h"

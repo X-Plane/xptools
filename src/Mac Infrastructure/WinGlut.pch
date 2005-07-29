@@ -1,0 +1,11 @@
+#pragma precompile_target "WinGLUTPCH"
+
+#define USE_GLUT 1
+
+#include <Windows.h>
+#define DIME_NOT_DLL
+#include <Windows.h>
+#include "XDefs.h"
+#include <gl.h>
+#include <glu.h>
+#include <glext.h>

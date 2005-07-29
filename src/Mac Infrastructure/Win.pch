@@ -1,0 +1,7 @@
+#pragma precompile_target "WinPCH"
+
+#include <Winsock2.h>
+#include <Windows.h>
+#define DIME_NOT_DLL
+#include "XDefs.h"
+#include "jconfig.vc"

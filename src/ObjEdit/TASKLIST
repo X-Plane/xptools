@@ -1,0 +1,204 @@
+
+REMAINING TASKS:
+
+		ARCHITECTURAL ISSUES
+?			* How do we assure patch alignment between the big and small mesh?
+					This is fundamentally hard because we don't want cracks in the mesh!
+Ã			* How are we going to do normals?
+					Use some kind of map type to guarantee one normal per point, and 
+					use a first-triangle approximation?
+					(Reasonably fast, as good as X-Plane 7)
+					(Use best-fit, not first-fit, find most vertical normal)
+					Do them inside DSF I think.
+Ã			* How are we going to assign terrain textures to the tri mesh and plant trees?
+					Sergio's system
+Ã			* Define tool file formats!
+Ã			* Do we want S&T projection in these files?!?
+					Answer: NO!  S&T proj should be defined by the terrain file.
+					Then how do we keep the repetition grid changing per triangle?!
+Ã			* Do we require a .ter file for every custom terrain texture?
+					Not necessarily - allow a straight .bmp to be used.
+Ã			* How do we reconciliate edges?	- border patch generation and normal conformance
+///		SCENERY CREATION
+			Artwork
+				Tool Creation
+B					Roads
+B					Facades
+B					Forests
+B					V-8 Objects
+				Master Lists
+					Importers										These are simple helper files for specific formats
+Ã						tiger_import.txt
+Ã						GLCC Import
+					Land Use
+						GLCC -> Phenomena & Climate					Tells how to convert raw land use to phenomena and climate hints
+						Phenomena -> Terrain + Vegetation			Tells what terrain and veg to do for a given phenomenon and climate
+					Roads
+Ã						road -> network								Conversion table from roads to networks
+Ã						road properties								Tells things about slope and other road properties
+*						network properties							Tells how big a vector road is and whether it can have buildings
+					Objects
+						master object + lego brick list				Tells what objects we have, how big they are, where they are used.
+						special features -> objects table			Tells what object to use for a landmark
+				Content
+					Bitmaps
+						Trees
+						Terrain
+						Buildings
+						Roads
+					Objects
+						Trees
+						Buildings
+						Road components
+					Road Defs						
+					Forest Defs
+					Lego brick objects
+			Data Acquisition
+				DEMs
+?					Write code to fill in SRTM
+?					Examine SRTM vs. NED90
+?					check SRTM coverage
+				Land use
+?					Write 30m GLCC importer
+?					Find climate data sources
+S					Master rock color type
+S					Master climate map
+?					Get Filters for GLCC-> conversion	??
+				Vector
+?					Write VPF importer
+				Obstacle
+1					Import old ENVs and
+					Import US obstacle data
+			Data Processing
+				Param Calcing
+Ã				1. Urban Density Calc
+1				2. LU->phenom								Might overwrite urban density calcs
+1				3. Climate import							Might correct LU data
+1				4. Vegtation density calcs
+				Feature rep and mesh
+?				5. Bridge-tunnel creation/network feature->rep assignment			
+?				6. Mesh Creation							Depends on LU and vectors?!?
+?				7. GT-polygon population					requires assigned tri mesh for effective elevation
+
+?				Airport Integration
+			DSF Writing
+?				DSF Encoding					
+Ã				DSF Lib
+		SIM
+			Renderer
+Ã				Primitive -> Patch Encoding
+Ã					Roads
+Ã					Legos
+A					Forests
+				New Patch Features
+D					Animation
+A					Night Lighting in ground
+A					Projective Texturing		***
+A				Top-down tex view
+D				Shadows
+A			Wide-Earth View
+D			Robin's Nav Data Proposal
+2			Installer
+
+2			
+
+NEW OPCODES:
+OBJ
+	TEXTURE <filename>
+	<existing codes, minus coord counts sometimes>
+	VTEX <x> y> <z> <s> <t>
+	VTEXNORM <x> <y> <z> <s> <t> <xn> <yn> <zn> 
+	VC <x> <y> <z> <r> <g> <b>
+TER
+	TEXTURE <filename>
+	ANIMATE_TEXTURE <filename>...
+	MASK <filename>
+	TEXTURE2 <filename> (!)
+	USE_ALPHA <true/false>
+	PROJECT <x_scale_m> <y_scale_m> <min_angle> <max_angle> <min_x_off> <max_x_off> <min_y_off> <max_y_off>
+	SCROLL <x_per_second> <y_per_second>
+	- animation
+NET
+	TEXTURE <filename>
+	ROAD_TYPE <index> <name>
+	SEGMENT <name> <dx> <dz>
+	ENDCAP <name> <name> <count> [<types>...]
+	LOD <near> <far>
+	QUAD <s1> <s2> <dx> <dz>
+	OBJ <name> <s> <t> <rotation> <elevated>
+	
+	- cleanup
+	- multiple textures
+FOR
+	TEXTURE <filename>
+	OBJ <name> <scale min> <scale max> <percentage>
+	PERLIN <power curve> <cut off>
+	SPACING <x-meters> <max-meters>
+	- implement
+POL
+	TEXTURE <filename>
+	Requires identification of:
+	FACADE <min width m> <max width m>
+	SCALE <x mpp> <y mpp>
+	BOTTOM <t coord>
+	MIDDLE <t coord>
+	TOP <t coord>
+	ROOF_SLOPE <slope>
+	LEFT <s coord>
+	CENTER <s coord>
+	RIGHT <s coord>
+	# NOTE: a segment's type is based on its _right side_ type; we always expect an extra left and bottom!
+	ROOF <s> <t>
+	
+	
+	
+
+For Robin:
+	keep all codes separate?
+	use extensions to parse file at all?
+	cookie at file head?
+	
+	DATA FORMAT INITIATIVE
+So, I would like to add a couple of features to your suggestions:
+A - Allow comments in the files - a "token" of "//" (or whatever) would work
+well in a row's first position.
+B - Eliminate the need for the "99" that marks the end of the file.  The end
+of the file should identify itself!
+Ba - trailing newline required?  not required
+
+C - Eliminate need for "I" or "A" on first row.
+D - Put the "version" in a special line (must be the first real data line in
+the file) with a token of, say, "00"
+
+So a "complete" fix.dat file might look like:
+1. A standard header (Austin already does this.)
+> 2. Be line-feed independent by allowing blank lines and accepting CR and
+> or LF as line terminators.
+> 3. Have one record per line.
+> 4. Have the first white-space separated token define the format of the
+> record.
+> 5. Define items via white-space separated tokens and not indents, where
+> tabs and spaces are valid white space.
+
+- white space allowed
+- tabs allowed
+
+HELIPADS:
+1. catagorize by floating pontoon, land-based, and oil rig.
+2a. use objs for floating
+2b. for other stuff build a tall building obstacle, merge with FAA, unless on ground or under ground
+
+how are runways draped over really lumpy terrain?  Bridges?!??
+how to link on-building helipads with the data in the apt.dat file?!?
+
+
+CRUCIAL TASKS to drive to a US render:
+1. Road -> Network Conversion. 
+	assign entity types to all feature types, considering grade from raw DEMs
+	place tunnel objects and in other ways chop out impossible segments
+	etc.
+	convert to complete chains
+	thin out shape points
+5. 3-d vegetation placement
+	not yet solved - requre
+

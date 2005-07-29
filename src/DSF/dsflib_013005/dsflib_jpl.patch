@@ -1,0 +1,135 @@
+diff -rNu dsflib_orig/DSFLib.cpp dsflib/DSFLib.cpp
+--- dsflib_orig/DSFLib.cpp	2005-01-31 02:48:44.028484216 +0000
++++ dsflib/DSFLib.cpp	2005-01-31 03:05:58.917157224 +0000
+@@ -36,6 +36,9 @@
+ #include "DSFLib.h"
+ #include "XChunkyFileUtils.h"
+ #include <stdio.h>
++#if LIN
++#include "md5global.h"
++#endif
+ #include "md5.h"
+ #include "DSFDefs.h"
+ #include "DSFPointPool.h"
+diff -rNu dsflib_orig/DSFLib_TestGen.cpp dsflib/DSFLib_TestGen.cpp
+--- dsflib_orig/DSFLib_TestGen.cpp	2005-01-31 02:48:44.043481936 +0000
++++ dsflib/DSFLib_TestGen.cpp	2005-01-31 03:06:37.520288656 +0000
+@@ -22,6 +22,9 @@
+  */
+ #include "DSFLib.h"
+ #include "DSFDefs.h"
++#if LIN
++#include <stdlib.h> /* for rand() */
++#endif
+ 
+ // +34-118
+ 
+@@ -574,4 +577,4 @@
+ 	
+ 	DSFWriteToFile(path, f);
+ 	DSFDestroyWriter(f);
+-}
+\ No newline at end of file
++}
+diff -rNu dsflib_orig/DSFLibWrite.cpp dsflib/DSFLibWrite.cpp
+--- dsflib_orig/DSFLibWrite.cpp	2005-01-31 02:48:44.055480112 +0000
++++ dsflib/DSFLibWrite.cpp	2005-01-31 04:00:09.495994128 +0000
+@@ -23,10 +23,20 @@
+ #include "DSFLib.h"
+ #include "XChunkyFileUtils.h"
+ #include <stdio.h>
++#if LIN
++#define PROTOTYPES 1
++#include <sys/types.h> /* to get caddr_t for md5 */
++#include "md5global.h"
++#endif
+ #include "md5.h"
+ #include "DSFDefs.h"
+ #include "DSFPointPool.h"
+ 
++#if LIN
++#include <set>
++#include <algo.h>
++#endif
++
+ // Define this to 1 to see statistics about the encoded DSF file.
+ #define ENCODING_STATS 1
+ 
+@@ -42,6 +52,9 @@
+ static	void	DSFSignMD5(const char * inPath)
+ {
+ 	unsigned char buf[1024];
++#if LIN
++	unsigned char digest[16];
++#endif
+ 	FILE * fi = fopen(inPath, "rb");
+ 	if (fi == NULL) return;	
+ 	MD5_CTX ctx;
+@@ -53,11 +66,18 @@
+ 		if (c == 0) break;
+ 		MD5Update(&ctx, buf, c);
+ 	}
+-
++#if LIN	
++	MD5Final(digest,&ctx);
++#else
+ 	MD5Final(&ctx);
++#endif
+ 	fclose(fi);
+ 	fi = fopen(inPath, "ab");
++#if LIN	
++	fwrite(digest, 1, 16, fi);
++#else
+ 	fwrite(ctx.digest, 1, 16, fi);
++#endif
+ 	fclose(fi);
+ }
+ 
+diff -rNu dsflib_orig/DSFPointPool.h dsflib/DSFPointPool.h
+--- dsflib_orig/DSFPointPool.h	2005-01-31 02:48:44.064478744 +0000
++++ dsflib/DSFPointPool.h	2005-01-31 03:11:02.790961384 +0000
+@@ -24,6 +24,10 @@
+ #define DSFPOINTPOOL_H
+ 
+ #include <vector>
++#if LIN
++#include <map>
++using namespace std;
++#endif
+ 
+ /* A tuple - an N dimensional coordinate.  Real
+  * handy because it can be used for any kind of DSF coordinate. */
+diff -rNu dsflib_orig/Makefile dsflib/Makefile
+--- dsflib_orig/Makefile	1970-01-01 00:00:00.000000000 +0000
++++ dsflib/Makefile	2005-01-31 03:41:34.863444032 +0000
+@@ -0,0 +1,30 @@
++#
++#
++
++CXX = g++
++INCLUDEDIR = -IUtils
++CFLAGS = -DLIN=1 -DUSE_MEM_FILE=0
++
++all:DSFLib.o DSFLib_Print.o DSFLib_TestGen.o DSFPointPool.o DSFLibWrite.o
++	echo "Done"
++
++DSFLib.o:DSFLib.cpp
++	$(CXX) -c $(INCLUDEDIR) $(CFLAGS) DSFLib.cpp
++
++DSFLib_Print.o:DSFLib_Print.cpp
++	$(CXX) -c $(INCLUDEDIR) $(CFLAGS) DSFLib_Print.cpp
++
++DSFLib_TestGen.o:DSFLib_TestGen.cpp
++	$(CXX) -c $(INCLUDEDIR) $(CFLAGS) DSFLib_TestGen.cpp
++
++DSFLibWrite.o:DSFLibWrite.cpp
++	$(CXX) -c $(INCLUDEDIR) $(CFLAGS) DSFLibWrite.cpp
++
++DSFPointPool.o:DSFPointPool.cpp
++	$(CXX) -c $(INCLUDEDIR) $(CFLAGS) DSFPointPool.cpp
++
++clean:
++	rm -rf *.o
++	rm -rf *~
++	rm -rf *.rpo
++

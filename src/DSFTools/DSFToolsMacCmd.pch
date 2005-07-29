@@ -1,0 +1,5 @@
+#pragma precompile_target "DSFToolsMacCmd"
+
+#define APL 1
+#define DEV 1
+#include "DSFToolsPrefix.h"

@@ -1,0 +1,13 @@
+#pragma precompile_target "ObjEditWinPCH"
+
+#define USE_GLUT 1
+
+#define	WINVER		   0x0410
+#define _WIN32_WINDOWS 0x0410
+
+#include <Windows.h>
+#define DIME_NOT_DLL
+#include <Windows.h>
+#include "XDefs.h"
+#include <gl/gl.h>
+#include <gl/glu.h>

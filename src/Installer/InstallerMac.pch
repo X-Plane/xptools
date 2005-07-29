@@ -1,0 +1,4 @@
+#pragma precompile_target "InstallerMacPCH"
+
+#define APL 1
+#include <Carbon.h>

@@ -1,0 +1,9 @@
+#pragma precompile_target "ObjEditMacPCH"
+
+#define USE_GLUT 1
+
+#include <carbon.h>
+#include "XDefs.h"
+#include <gl.h>
+#include <glu.h>
+#include <glext.h>

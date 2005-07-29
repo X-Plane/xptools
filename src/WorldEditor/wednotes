@@ -1,0 +1,165 @@
+TO DO FOR TOOLS
+
+2. Crop tool
+3. Image tool
+4. Object tool
+
+COMMANDS:
+Fill in objects
+Remove generated objects
+
+
+VIEW OPTIONS:
+Which parameters to show
+
+DRAWING:
+->Objects
+selections
+
+
+IMPORTS:
+DEM
+Parameter
+.env file as height
+.env file as objects
+show apt file as reference <- WAIT ON ROBIN'S NEW STUFF!!!
+
+
+
+OVERALL ORDER OF WORK:
+1. Get selection working with crop and image tools
+				some way to get a geocoded image?
+
+	- draw transparent polygons over the backing bitmap?
+	- progress bars, error msgs, etc.
+	- export of images?  geocoding of images?
+	- non-square bitmaps!
+
+2. do obstacle-related drawing, editing, importers
+	Make obstacles selectable (somehow)
+	draw obstacles in view
+	tool to drag & drop them, select them, etc.
+	tool to reshape polygon objects
+3. do parameter drawing, editing, importers
+4. do elevation/mesh drawing, editing, importers
+
+Thence do inspectors,
+selection commands
+
+FIX FOR LATER:
+ Selection tool - drag vertex doesn't prevent psycho polygonal layouts!
+
+
+
+VIEW MENU:
+Show objects as...not at all, points, outlines
+Select - all, none, changing of sel types, etc.
+Object select mode - how do we handle this?
+
+Perhaps we should start off with a land-class approach...
+Define the fundamental algorithms for fitting buildings (is there more than one?!?)
+Define the fundamental terrain type list
+
+Packing fixed-shape buildings by plot size with padding.
+Packing variable shaped buildings with parameterized density.
+Packing trees into the empty space.
+
+Parameters:
+ - Density.  What percent of available space do we fill?
+ - Mixture of premade vs. custom buildings.
+ - Abnormality - how funny shaped should the buildings be?
+ - Building length - how far along the roads are buildings?
+ - Building depth - how far in do buildings go?
+ 
+For a given land class, every eligible building needs a percent frequency
+For every building, we need a frequency modulator by network type
+For every building type that's not a prototype, we need a rectangular footprint.
+When we build zoning quads out of a block, we should go in order of road type, e.g.
+build off the main drags and commercial streets first!
+
+1. Inset the polygon by the surrounding transportation thickness.
+2. build quads off each side that can sustain buildings going back a certain depth
+	For any given side we want to build (one at a time), we...
+	figure out its max inset distance...this is basically the distance of the closest vertex
+	in the polygon to the side (projected).  
+	Pick a depth for this zoning side, based on params and the max.  Cut the polygon in half, forming
+	a polygon for the actual plots and a polygon for the remainder.  If the polygon that 
+	we turned into a zoning block is more than a 4-gon, simplify the sides!
+	Repeat this until we simply reach a point where we can't use any more land.
+
+3. break that quad into plots
+4. for any plot not dominated by another building, plant a building
+
+
+TABLES WE NEED:
+Size of roads, restrictions on building types for roads, mixtures of roads...
+Sets of types of buildings and prototypes per land class
+
+THE FUNDAMENTAL PROBLEM WITH OUR BUILDING LAYOUT ALGORITHM IS:
+1. If the change in angle of a side is convex but shallow, then either
+1a. The next side is so close that it looks like a restraint and the inset distnace is 
+	too small - no buildings are placed.
+1b. The next side is not so close and a fillet happens that is...ridiculous.
+2. If the change in the angle of a side is concave but shallow then we get insane
+   filleting and even computational thrash!
+THE SOLUTION: when the joint angle between two sides is less than N degrees (what is N?!?)
+	OR when the side length of zoning block is longer than the main length, then we need to
+	cut at the angle bisector between the two sides.
+	One note: even on a CONVEX angle (where we normally would preserve the topology) under this
+	setup we introduce a side because we are essentially cutting into a side to make the 
+	geometry happen.
+	
+IMPORTING NOTES:
+We need some kind of foreign ID so we can merge incoming topological maps!
+
+
+---------------------------------LAND CLASSES ETC-------------------------------
+Land class consists of:
+	Terrain type
+	Placement algorithm
+	per road type...
+		can objects be put down?
+		object set with params
+
+
+--------------------------------- MESH ISSUES: ---------------------------------
+
+
+One big triangle mesh vs. many triangle meshes by area:
+ - Might be computational benefit to many small triangulations
+ - But then have to insert DEM points into the right triangulation
+ - With small patches, have to remove convex hull triangles
+ - With one triangulation, have to sort by patch
+CONCLUSIONS:
+	1. First build a sub-map by nuking any edge that we don't need.  We don't need an edge if
+		- It doesn't represent a terrain type change and
+		- It doesn't have a road network element OR
+		  	 The slope around the line is shallow.
+	2. Build a triangulation for every face.  These will be our patches.
+
+ONE ISSUE: We will have to measure error across multiple maps!
+	
+Why:
+  - We don't want to eat the pain of one giant triangulation - it'll be SLOW.
+    We can locate the right patch much faster via spatial indexing!
+  - We will then be able to emit patches much more quickly by working within the triangulation.
+  - One warning: we will have to trim out the non-convex-hull patches.
+  - A second warning: we may have to in some cases split patches based on some max size.
+  	(This could be done after the patch is emitted as geometry?!?)
+
+One big DEM vs. overlapping DEMs, and should DEMs be reprojectable
+ - Easier to implement non-geo-square DEMs if we don't have overlapping.
+ - Easier to implement overlapping if they're all geo-square.
+ - We certainly can get away with one geosquare DEM per file for now.
+CONCLUSION:
+	For now support one geographic DEM witih a bounding box (separate from the actual PMWX's
+	bounding box) and fixed res.  The importer can do the merge once.  We can do a reasonable
+	job of antialiasing, etc. as we bring the DEM in, rather than massively complicate our
+	mesh-building code.  And frankly SRTM DEMs are going to be 'the thing' for a while and they
+	make this a slam-dunk.
+
+
+DEM ISSUES:
+1. Change file format for XES to be little endian
+2. Make sure we endian swap DEMs
+3. Compress DEMs

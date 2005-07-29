@@ -1,0 +1,203 @@
+DSF2Text Instructions and Release Notes
+
+Version History
+
+	12/13/04 - Alpha 1		Initial release.
+	12/20/04 - Alpha 2		Fixed file-close bug.
+	 1/12/05 - Alpha 3		Fixed crash bug!
+	 1/23/05 - Alpha 4		Added pipe support.
+	
+-------------------------------------------------------------------------------
+OVERVIEW
+-------------------------------------------------------------------------------
+
+DSF2Text is a utility that converts X-plane Distribution Scenery Format (DSF)
+files to a text format and back again.  This has two purposes:
+
+(1) Authors can transfer objects and other simple data into and out of DSF
+    files using a text editor or word processor.
+(2) Programmers who do not want to have to deal with the complications of DSF
+    can create simple text files and then run them through DSF2Text to create
+    finished scenery.
+    
+-------------------------------------------------------------------------------
+SYSTEM REQUIREMENTS AND INSTALLATION
+-------------------------------------------------------------------------------
+
+DSF2Text is provided for Windows and Mac OS X.  To install DSF2Text, simply
+unzip/unstuff the compressed archive.  The applications can be used anywhere.
+
+-------------------------------------------------------------------------------
+USING DSF2TEXT
+-------------------------------------------------------------------------------
+
+DSF2Text comes in two forms: a command line tool and a drag-and-drop
+application.  (Both are provided for both platforms.)  The drag-and-drop
+version has the name DSF2Text, while the command line version has the name
+DSFTool.
+
+WARNING: On the Macintosh text output cannot be interchanged between the GUI
+and command line versions of DSF2Text because they use different line endings.
+
+WARNING: If DSF crashes, check your line endings!  I have had reports that
+TextEdit on the Mac ruines line endings.
+
+To use the drag-and-drop version of DSF2Text, simply double click it, then drag
+a text (.txt) or DSF (.dsf) file into the window.  DSF2Text will convert the
+file based on its line endings and create a new file with the opposite
+extension appended, in the same directory as the source file.
+
+WARNING: DSF2Text is slow, especially when converting text back to a DSF file.
+Conversion can take ten minutes or more.  DSF2Text will be unresponsive while
+it is working, but you should see elevated CPU usage.
+
+The syntax for the command line version is:
+
+DSFTool -dsf2text <dsf file> <text file> 
+
+to convert from DSF to text and
+
+DSFTool -text2dsf <text file> <dsf file>
+
+to convert the other way.  For <text file> you can specify a single dash (-)
+to read from stdin/stdout instead of a text file.
+
+-------------------------------------------------------------------------------
+DSF2TEXT FILE FORMAT
+-------------------------------------------------------------------------------
+
+The DSF2Text file format starts out with a typical X-Plane header:
+
+A
+800
+DSF2TEXT
+
+It then consists of a series of commands, each one taking up one line.  In this
+reference, properties in <inequality signs> are to be filled in with real 
+values in the file.
+
+The DSF2Text file format is not an exact replication of DSF - some of the 
+complexities of point pools and other compression schemes are omitted.  However
+the basic notion of indexed building block definitions, patches, etc. are all
+preserved, so it may help to read the DSF spec before trying to understand
+this format.
+
+WARNING: certain properties must come first - see the PROPERTY command below.
+
+(Hint: the easiest way to get a feel for the file format is to take a DSF file, 
+convert it to text and look through it.)  The file format is:
+
+DIVISIONS <number>
+
+	This is a meta-command that instructs DSF2Text to use a certain number of 
+	point pools to allocate points.  More pools generally means more accuracy
+	in storage, but may also increase file size if improperly used.  The 
+	default is four divisons if this command is omitted, resulting in sixteen
+	point pools.
+
+PROPERTY <name> <value>
+
+	This adds a "property" to the DSF file.  Properties are key-value pairs 
+	that specify various header information.  See the DSF file format spec for
+	useful property values.
+	
+
+-------------------------------------------------------------------------
+IMPORTANT: the DIVISIONS and PROPERTY commands MUST come before all other
+commands!  The north/south/east/west properties must come last among
+all properties!!
+-------------------------------------------------------------------------
+	
+TERRAIN_DEF <file name>
+OBJECT_DEF <file name>
+POLYGON_DEF <filename>
+NETWORK_DEF <filename>
+
+	These commands define a new type of building block.  Order is significant:
+	the first building block of each type has index zero and they then count
+	upward sequentially.  File extensions must be included.
+
+BEGIN_PATCH <primitive type> <near LOD> <far LOD> <flags> <# point coords>
+
+	This command begins a new terrain patch.  The LOD range is the distance it
+	is visible - use 0..-1 to make it be always visible.  The flag values
+	are:
+	
+		1 - This patch should be used in the physics/collision engine.
+		2 - This patch is an overlay and should be Z-buffer-offset.
+		
+	These flags correspond to the patch flags in the DSF spec.  You also
+	specify the number of coordinates for the patch.  At least 5 coordinates
+	are required for X-Plane: longitude, latitude, elevation, and two normal
+	coordinates.
+
+BEGIN_PRIMITIVE <type>
+
+	This begins a single primitive.  Types correspond to the DSF/spec and the
+	usual OpenGL definitions, and are:
+	
+		0 - Triangles
+		1 - Triangle Strip
+		2 - Triangle Fan
+
+PATCH_VERTEX [<coordinates>...]
+
+	This specifies one vertex within a primitive within a patch.  See the DSF
+	spec and terrain file format spec for information on how this information
+	is interpretted.  Generally the first five values are longitude and 
+	latitude in degrees, elevation in meters, and the X and Z coordinates of
+	the point's normal vector as a fraction (where +X = east, and +Z = south).
+	
+END_PRIMITIVE
+END_PATCH
+
+	These end the primitive and patch in progress, respectively.
+
+OBJECT <type> <longitude> <latitude> <rotation>
+
+	This adds an object to the file of a given type.  The position is 
+	specified in degrees and the angle is in degrees as well.
+
+BEGIN_SEGMENT <type> <subtype> <node id> <longitude> <latitude> <elevation>
+BEGIN_SEGMENT_CURVED <type> <subtype> <node id> 
+	<longitude> <latitude> <elevation> <longitude> <latitude> <elevation>
+	
+	These start a new vector segment.  Type should be 0 for X-Plane and 
+	subtype specifies the road type.  See the DSF spec for a discussion of
+	node IDs - these unique numbers identify each vertex.  The position is
+	specified in latitude and longitude degrees and meters MSL.  For the
+	curved variant, a second point specifies a "control handle" for bezier-
+	curve-type curving of the road.
+	
+SHAPE_POINT <longitude> <latitude> <elevation>
+SHAPE_POINT_CURVED <longitude> <latitude> <elevation> <longitude> 
+	<latitude> <elevation>
+
+	A shape point defines a turn in the vector road without an intersection.
+
+END_SEGMENT <node id> <longitude> <latitude> <elevation>
+END_SEGMENT_CURVED <node id> <longitude> <latitude> <elevation> <longitude> 
+	<latitude> <elevation>
+	
+	These end a vector segment, with similar parameters to the above commands.
+
+BEGIN_POLYGON <type> <param>
+
+	This begins a polygon primitive, which is usually a facade in X-Plane.
+	The parameter's meaning depends on the primitive - for facades it is the
+	height in meters.
+
+BEGIN_WINDING
+
+	This indicates the beginning of a winding, or single polygon within
+	a nested polygon.  This command is mandatory even if the polygon is
+	not nested.
+	
+POLYGON_POINT <longitude> <latitude>
+
+	This adds a point to the polygon.
+	
+END_WINDING
+END_POLYGON
+
+	This ends the winding and polygon respectively.

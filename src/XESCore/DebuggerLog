@@ -1,0 +1,223 @@
+------------------------------
+Debugging started for GISTool_d at 1:59:09 AM
+Starting Mach-o App: /BensCrap/Hobbies/XPTools/SceneryTools/GISTool_d 
+=shlibs-updated
+Reading /GIS/tiger/RI/TGR44001.RT1...
+Reading /GIS/tiger/RI/TGR44001.RT2...
+Reading /GIS/tiger/RI/TGR44001.RTP...
+Reading /GIS/tiger/RI/TGR44001.RTI...
+Reading /GIS/tiger/RI/TGR44001.RT7...
+Reading /GIS/tiger/RI/TGR44001.RT8...
+Sorting...
+ERROR: changed border segment count, old = 30, new = 20, antennas = 10.
+ERROR: changed border segment count, old = 20, new = 15, antennas = 3.
+ERROR: changed border segment count, old = 22, new = 16, antennas = 6.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 5, new = 4, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 16, new = 13, antennas = 2.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 21, new = 18, antennas = 3.
+ERROR: changed border segment count, old = 5, new = 4, antennas = 1.
+ERROR: changed border segment count, old = 25, new = 24, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 13, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 16, new = 15, antennas = 1.
+ERROR: changed border segment count, old = 18, new = 15, antennas = 3.
+ERROR: changed border segment count, old = 15, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 0.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 36, new = 31, antennas = 4.
+ERROR: changed border segment count, old = 19, new = 15, antennas = 4.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 0.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 13, new = 12, antennas = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 15, new = 13, antennas = 2.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 15, new = 13, antennas = 2.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 50, new = 39, antennas = 10.
+ERROR: changed border segment count, old = 22, new = 19, antennas = 3.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 13, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 17, new = 15, antennas = 2.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 5, new = 4, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 26, new = 19, antennas = 5.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 29, new = 15, antennas = 11.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 13, new = 12, antennas = 1.
+ERROR: changed border segment count, old = 15, new = 14, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 17, new = 16, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 14, new = 13, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 7, antennas = 3.
+ERROR: changed border segment count, old = 12, new = 11, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 25, new = 22, antennas = 3.
+ERROR: changed border segment count, old = 5, new = 4, antennas = 1.
+ERROR: changed border segment count, old = 37, new = 23, antennas = 10.
+ERROR: changed border segment count, old = 18, new = 13, antennas = 5.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 15, new = 10, antennas = 4.
+ERROR: changed border segment count, old = 12, new = 10, antennas = 2.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 12, new = 11, antennas = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 14, new = 13, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 15, new = 12, antennas = 3.
+ERROR: changed border segment count, old = 28, new = 14, antennas = 11.
+ERROR: changed border segment count, old = 14, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 3, antennas = 0.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 13, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 33, new = 24, antennas = 9.
+ERROR: changed border segment count, old = 16, new = 12, antennas = 3.
+ERROR: changed border segment count, old = 11, new = 9, antennas = 2.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 7, antennas = 3.
+ERROR: changed border segment count, old = 11, new = 9, antennas = 2.
+ERROR: changed border segment count, old = 11, new = 8, antennas = 3.
+ERROR: changed border segment count, old = 16, new = 13, antennas = 3.
+ERROR: changed border segment count, old = 12, new = 10, antennas = 2.
+ERROR: changed border segment count, old = 17, new = 14, antennas = 3.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 13, new = 9, antennas = 4.
+ERROR: changed border segment count, old = 14, new = 11, antennas = 3.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 59, new = 32, antennas = 13.
+ERROR: changed border segment count, old = 45, new = 33, antennas = 12.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 22, new = 15, antennas = 7.
+ERROR: changed border segment count, old = 42, new = 32, antennas = 10.
+ERROR: changed border segment count, old = 12, new = 9, antennas = 3.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 17, new = 16, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 19, new = 16, antennas = 3.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 22, new = 15, antennas = 3.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 11, new = 9, antennas = 2.
+ERROR: changed border segment count, old = 13, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 8, new = 5, antennas = 3.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 19, new = 17, antennas = 2.
+ERROR: changed border segment count, old = 15, new = 12, antennas = 3.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 12, new = 10, antennas = 2.
+ERROR: changed border segment count, old = 23, new = 19, antennas = 4.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 0.
+ERROR: changed border segment count, old = 21, new = 17, antennas = 4.
+ERROR: changed border segment count, old = 40, new = 33, antennas = 7.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 9, new = 7, antennas = 2.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 0.
+ERROR: changed border segment count, old = 39, new = 29, antennas = 8.
+ERROR: changed border segment count, old = 7, new = 6, antennas = 1.
+ERROR: changed border segment count, old = 25, new = 18, antennas = 7.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 14, new = 9, antennas = 5.
+ERROR: changed border segment count, old = 16, new = 13, antennas = 3.
+ERROR: Border check failed, border count = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 6, new = 5, antennas = 1.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 16, new = 10, antennas = 6.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 13, new = 12, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 25, new = 17, antennas = 8.
+ERROR: changed border segment count, old = 30, new = 14, antennas = 2.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 12, new = 10, antennas = 2.
+ERROR: changed border segment count, old = 16, new = 15, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 11, new = 9, antennas = 2.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 1.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 0.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 25, new = 20, antennas = 5.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 32, new = 25, antennas = 7.
+ERROR: changed border segment count, old = 35, new = 23, antennas = 12.
+ERROR: changed border segment count, old = 16, new = 12, antennas = 3.
+ERROR: changed border segment count, old = 24, new = 20, antennas = 4.
+ERROR: changed border segment count, old = 19, new = 16, antennas = 3.
+ERROR: changed border segment count, old = 25, new = 20, antennas = 5.
+ERROR: changed border segment count, old = 14, new = 11, antennas = 3.
+ERROR: changed border segment count, old = 16, new = 14, antennas = 2.
+ERROR: changed border segment count, old = 12, new = 10, antennas = 2.
+ERROR: changed border segment count, old = 9, new = 8, antennas = 1.
+ERROR: changed border segment count, old = 16, new = 13, antennas = 3.
+ERROR: changed border segment count, old = 14, new = 12, antennas = 2.
+ERROR: changed border segment count, old = 63, new = 40, antennas = 15.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 39, new = 36, antennas = 3.
+ERROR: changed border segment count, old = 11, new = 10, antennas = 1.
+ERROR: changed border segment count, old = 23, new = 17, antennas = 4.
+ERROR: changed border segment count, old = 27, new = 22, antennas = 5.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 8, new = 7, antennas = 0.
+ERROR: changed border segment count, old = 21, new = 20, antennas = 1.
+ERROR: changed border segment count, old = 12, new = 11, antennas = 1.
+ERROR: changed border segment count, old = 12, new = 8, antennas = 4.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 44, new = 36, antennas = 7.
+ERROR: changed border segment count, old = 13, new = 7, antennas = 6.
+ERROR: changed border segment count, old = 10, new = 9, antennas = 1.
+ERROR: changed border segment count, old = 22, new = 15, antennas = 4.
+ERROR: changed border segment count, old = 19, new = 13, antennas = 6.
+ERROR: changed border segment count, old = 36, new = 14, antennas = 22.
+ERROR: Border check failed, border count = 1.
+ERROR: changed border segment count, old = 16, new = 11, antennas = 5.
+ERROR: changed border segment count, old = 13, new = 11, antennas = 2.
+ERROR: changed border segment count, old = 11, new = 9, antennas = 2.
+ERROR: changed border segment count, old = 16, new = 14, antennas = 2.
+ERROR: changed border segment count, old = 18, new = 16, antennas = 2.
+ERROR: changed border segment count, old = 16, new = 15, antennas = 1.
+ERROR: changed border segment count, old = 28, new = 20, antennas = 8.
+ERROR: changed border segment count, old = 16, new = 14, antennas = 0.
+ERROR: changed border segment count, old = 14, new = 11, antennas = 3.
+Read: 4018 chains, 2 landmarks, 1123 polygons, 5953 edges.
+Debugging stopped for GISTool_d at 2:02:30 AM

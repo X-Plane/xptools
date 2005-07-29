@@ -1,0 +1,108 @@
+/*******************************************************************************************
+ *	ITERATIVE ERROR REDUCTION METHOD (NOT USED)
+ *******************************************************************************************
+ *
+ * This code is based on some stuff Curt Olsen said about FlightGear.  It is so slow
+ * in this implementation that I have never let it to run with a production-level polygon
+ * count and I can only guess that I misunderstood the algorithm.
+ *
+ */
+
+#if 0
+void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc prog)
+{
+	float	e1, e2, e3, e4;
+
+	outMesh.clear();
+	DEMGeo elev = inDEMs[kParamElevation];
+	DEMGeo& elev_real = inDEMs[kParamElevation];
+
+	for (Pmwx::Face_const_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	{
+//		Pmwx::Face_const_handle f = *fi;
+		if (!f->is_unbounded())
+		{
+			Pmwx::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+			Pmwx::Ccb_halfedge_const_circulator i = circ;
+			do {
+				int	terrainChange = i->face()->mIsWater != i->twin()->face()->mIsWater;
+				int	border = i->face()->is_unbounded() || i->twin()->face()->is_unbounded();
+				int roads = !i->mSegments.empty() || !i->twin()->mSegments.empty();
+				if (terrainChange || border/* || roads*/)
+				{
+					e1 = elev_real.value_linear(CGAL::to_double(i->source()->point().x()), CGAL::to_double(i->source()->point().y()));
+					e2 = elev_real.value_linear(CGAL::to_double(i->target()->point().x()), CGAL::to_double(i->target()->point().y()));
+					CDT::Vertex_handle  v1, v2;
+					if (e1 != NO_DATA)
+					{
+						v1 = outMesh.insert(i->source()->point());
+						v1->info() = e1;
+						elev.zap_linear(CGAL::to_double(v1->point().x()), CGAL::to_double(v1->point().y()));
+					}
+					if (e2 != NO_DATA)
+					{
+						v2 = outMesh.insert(i->target()->point());
+						v2->info() = e2;
+						elev.zap_linear(CGAL::to_double(v2->point().x()), CGAL::to_double(v2->point().y()));
+					}
+					if (e1 != NO_DATA && e2 != NO_DATA)
+						outMesh.insert_constraint(v1, v2);
+				}
+				++i;
+			} while (i != circ);
+		}
+	}
+
+	outMesh.insert(Point_2(elev.mWest, elev.mSouth))->info() = e1 = elev_real(0, 0);
+	outMesh.insert(Point_2(elev.mWest, elev.mNorth))->info() = e2 = elev_real(0, elev.mHeight-1);
+	outMesh.insert(Point_2(elev.mEast, elev.mSouth))->info() = e3 = elev_real(elev.mWidth - 1, 0);
+	outMesh.insert(Point_2(elev.mEast, elev.mNorth))->info() = e4 = elev_real(elev.mWidth - 1, elev.mHeight-1);
+	
+	if (prog && prog(0, 1, "Triangulating", 0.0)) return;		
+	
+	int tcount;
+	double	derr = 0.0;
+	for (tcount = 0; tcount < 100; ++tcount)
+	{
+		char	buf[150];
+		sprintf(buf, "Triangulating, err=%f", derr);
+		if (prog && prog(0, 1, buf, (double) tcount / (double) 100.0)) return;		
+
+		derr = 0.0;
+		double	dlat, dlon, dheight;
+		int		dx, dy;
+		for (int y = 0; y < elev.mHeight; y += 10)
+		for (int x = 0; x < elev.mWidth ; x += 10)
+		{
+			double	llon = elev.x_to_lon(x);
+			double	llat = elev.y_to_lat(y);
+			double	desired_height = elev(x,y);
+			if (desired_height != NO_DATA)
+			{
+				double	cur_height = MeshHeightAtPoint(outMesh, llon, llat);
+				if (cur_height != NO_DATA)
+				{
+					double	err = fabs(desired_height - cur_height);
+					if (err > derr)
+					{
+						derr = err;
+						dlat = llat;
+						dlon = llon;
+						dx = x;
+						dy = y;
+						dheight = desired_height;
+					}
+				}
+			}
+		}
+		
+		if (derr > 0.0)
+		{
+			outMesh.insert(Point_2(dlon, dlat))->info() = dheight;
+			elev(dx, dy) = NO_DATA;
+		}
+	}
+	if (prog && prog(0, 1, "Triangulating", 1.0)) return;		
+}
+#endif
+

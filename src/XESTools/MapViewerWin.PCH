@@ -1,0 +1,9 @@
+#pragma precompile_target "MapViewerWinPCH"
+
+#define APL 0
+#define IBM 1
+#define DEV 1
+#define _WIN32_WINNT 0x400
+#define OPENGL_MAP 1
+#include <Windows.h>
+#include "NGSPrefix.h"
