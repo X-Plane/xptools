@@ -55,6 +55,12 @@
 #include "BitmapUtils.h"
 #include "TexUtils.h"
 
+#if IBM
+#include "XWinGL.h"
+#endif
+
+#define GL_EXT_texture_env_combine 1
+#define GL_GLEXT_FUNCTION_POINTERS 1
 #include <glext.h>
 
 #define DRAW_MESH_BORDERS 0
@@ -210,13 +216,13 @@ void	SetupNormalShading(void)
 
 	GLfloat	color[4] = { nrm_x * 0.5 + 0.5, nrm_y * 0.5 + 0.5, nrm_z * 0.5 + 0.5, 1.0 };
 	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
 
-	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, 	GL_DOT3_RGB_ARB);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB, 	GL_TEXTURE);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, 	GL_SRC_COLOR);
-	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB, 	GL_CONSTANT);
-	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, 	GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, 	GL_DOT3_RGB_ARB);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, 	GL_TEXTURE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, 	GL_SRC_COLOR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, 	GL_CONSTANT_EXT);
+	glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, 	GL_SRC_COLOR);
 }
 
 inline	int GetBucketForFace(Bbox2 * buckets, int bucket_count, CDT::Face_handle f)
@@ -598,6 +604,12 @@ void	WED_MapView::DrawSelf(void)
 		glBegin(GL_QUADS);
 		if (do_relief)
 		{
+#if IBM
+#if !DEV
+fix this
+#endif
+#define glMultiTexCoord2f  glMultiTexCoord2fARB
+#endif
 			glMultiTexCoord2f(GL_TEXTURE1_ARB, 0.0  , 0.0  );glTexCoord2f(0.0     , 0.0     );		glVertex2f((mBitsWest), (mBitsSouth));
 			glMultiTexCoord2f(GL_TEXTURE1_ARB, 0.0  , mTexT);glTexCoord2f(0.0     , mReliefT);		glVertex2f((mBitsWest), (mBitsNorth));
 			glMultiTexCoord2f(GL_TEXTURE1_ARB, mTexS, mTexT);glTexCoord2f(mReliefS, mReliefT);		glVertex2f((mBitsEast), (mBitsNorth));
