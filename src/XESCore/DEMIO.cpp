@@ -35,7 +35,7 @@
 #endif
 
 #include <tiffio.h>
-#include <xtiffio.h>
+#include <libxtiff/xtiffio.h>
 const double one_256 = 1.0 / 256.0;
 
 static	double	ReadReal48(const unsigned char * p)
