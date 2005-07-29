@@ -425,6 +425,8 @@ void		xcam_class::GetFrustumBounds(GLdouble	outMin[3], GLdouble outMax[3])
 	}
 }
 
+#if SIM
+
 void xcam_class::mtr_to_pix(GLdouble inXYZ[3],GLdouble outPixel[2])
 {
 	GLdouble vec[4]={inXYZ[0],inXYZ[1],inXYZ[2],1.0};
@@ -443,3 +445,5 @@ void xcam_class::mtr_to_pix(GLdouble inXYZ[3],GLdouble outPixel[2])
 	outPixel[0]	 =(vec[0]*viewport[2]+viewport[0]-mnw.x_off	)/mnw.xy_scale;	// xoff is on the left, we need to offset by it
 	outPixel[1]	 =(vec[1]*viewport[3]+viewport[1]			)/mnw.xy_scale;	// yoff is on the top, we don't need to offset by it
 }
+
+#endif
