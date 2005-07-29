@@ -23,7 +23,7 @@
 #include "GISUtils.h"
 #include <geotiffio.h>
 #include <geo_normalize.h>
-#include <xtiffio.h>
+#include <libxtiff/xtiffio.h>
 #include <projects.h>
 #include <cpl_serv.h>
 #include "XESConstants.h"
