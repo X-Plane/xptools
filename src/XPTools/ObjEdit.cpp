@@ -209,6 +209,10 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 	}
 }
 
+void XGrindDone(void)
+{
+}
+
 void	XGrindInit(string& outName)
 {
 	gFileName.clear();

@@ -148,7 +148,7 @@ int		MyCreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImage
 	string	pngPath = string(inFilePath) + ".png";
 	string	bmpPath = string(inFilePath) + ".bmp";
 	string	tifPath = string(inFilePath) + ".tif";
-	if (CreateBitmapFromPNG(pngPath.c_str(), outImageInfo))
+	if (CreateBitmapFromPNG(pngPath.c_str(), outImageInfo, false))
 		if (CreateBitmapFromFile(bmpPath.c_str(), outImageInfo))
 			return (CreateBitmapFromTIF(tifPath.c_str(), outImageInfo));
 	return 0;
@@ -161,7 +161,7 @@ int	MyWriteBitmapToFile	(const struct ImageInfo * inImage, const char * inFilePa
 	if (gSaveMode == save_BMP)
 		return WriteBitmapToFile(inImage, bmpPath.c_str());
 	else
-		return WriteBitmapToPNG(inImage, pngPath.c_str());
+		return WriteBitmapToPNG(inImage, pngPath.c_str(), NULL, 0);
 }
 
 #if 0
