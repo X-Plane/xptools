@@ -1,0 +1,358 @@
+ChangeLog
+=========
+
+This is the ChangeLog file for the . module.  This file is automatically
+generated every night.  Entries are in reversed chronological order.  
+
+See http://www.red-bean.com/~kfogel/cvs2cl.shtml for information about the
+cvs2cl script used to generate this file.
+
+============================================================================
+
+2000-09-25 19:26  pederb
+
+	* src/entities/Entity.cpp:
+	
+	Added documentation on how to create new entities.
+
+2000-09-25 18:46  pederb
+
+	* src/: Model.cpp, util/MemHandler.cpp:
+	
+	Added some documentation about the memory handler.
+
+2000-09-25 18:29  pederb
+
+	* include/dime/entities/Entity.h:
+	
+	Typofix.
+
+2000-09-25 18:17  pederb
+
+	* include/dime/Base.h, include/dime/Model.h,
+	include/dime/entities/Entity.h, src/Base.cpp, src/Model.cpp:
+	
+	Added (empty) constructor and destructor for the base class.
+	Suggested by Thomas Krebs.
+
+2000-08-29 11:42  pederb
+
+	* TODO, autogen.sh, configure.in, src/Makefile.am:
+	
+	Removed TODO item that won't be done.  Removed version number from
+	library name.  Misc. cosmetic changes.
+	
+	Patch by larsa.
+
+2000-08-18 11:00  pederb
+
+	* FAQ:
+	
+	New faq items. By larsa.
+
+2000-08-15 16:18  pederb
+
+	* build-tmake/: makefile, mt.pro:
+	
+	Added tmake mt project. By kintel.
+
+2000-08-04 12:00  pederb
+
+	* dxf2vrml/dxf2vrml.cpp, include/dime/Basic.h,
+	include/dime/Layer.h, include/dime/entities/Arc.h,
+	include/dime/entities/Circle.h, include/dime/entities/Entity.h,
+	include/dime/entities/FaceEntity.h,
+	include/dime/entities/LWPolyline.h, include/dime/entities/Line.h,
+	include/dime/entities/Point.h, include/dime/entities/Polyline.h,
+	src/Input.cpp, src/Layer.cpp, src/entities/Arc.cpp,
+	src/entities/Circle.cpp, src/entities/Entity.cpp,
+	src/entities/FaceEntity.cpp, src/entities/LWPolyline.cpp,
+	src/entities/Line.cpp, src/entities/Point.cpp,
+	src/entities/Polyline.cpp, src/entities/Solid.cpp,
+	src/entities/Trace.cpp:
+	
+	Miscellaneous fixes by Thomas Krebs <Thomas_Krebs@gmx.de>. Several
+	float to dxfdouble fixes. Some casting fixes to avoid compiler
+	warnings. Fixed two ugly range checking bugs in Input.cpp.
+
+2000-08-04 11:41  pederb
+
+	* ChangeLog.sh:
+	
+	changelog script
+
+2000-07-06 11:51  pederb
+
+	* include/dime/RecordHolder.h, src/RecordHolder.cpp:
+	
+	Added methods to access records stored in record holder. Missing
+	functionality reported by Rick Lowe <rlowe@osii.com>
+
+2000-06-19 20:50  pederb
+
+	* include/dime/Basic.h:
+	
+	Fixed ugly macro bug in ARRAY_NEW. Bug reported by Rick Lowe
+	<rlowe@osii.com>
+
+2000-05-31 17:58  pederb
+
+	* include/dime/tables/LayerTable.h, include/dime/util/Linear.h,
+	src/tables/LayerTable.cpp:
+	
+	Fixed problems reported by Rick Lowe  (rlowe@osii.com). Eliminated
+	a warning in SbLinear.h, and rewrote dimeLayerTable to make it
+	possible to create and write layers correctly.
+
+2000-05-05 13:39  pederb
+
+	* ChangeLog.sh:
+	
+	Added ChangeLog.sh script
+
+2000-05-05 13:38  pederb
+
+	* src/entities/Insert.cpp:
+	
+	Added callback for INSERT entity when traversing without exploding
+	inserts.  Patch by Rick Lowe <rlowe@osii.com>
+
+2000-05-03 18:00  pederb
+
+	* include/dime/Basic.h, include/dime/RecordHolder.h,
+	src/RecordHolder.cpp:
+	
+	Added function to set indexed records (needed when several records
+	with the same group code exists)
+
+2000-04-18 16:57  pederb
+
+	* src/entities/Arc.cpp:
+	
+	bugfix in extractGeometry. Patch by Andreas <info@scaps.de>
+
+2000-03-03 15:56  pederb
+
+	* AUTHORS, NEWS, depcomp:
+	
+	Added files needed for libtool 1.3.4. By larsa
+
+2000-03-03 15:23  pederb
+
+	* autogen.sh, configure.in:
+	
+	Upgrade to libtool 1.3.4 and automake 1.4 (with depcomp). By larsa
+
+2000-02-22 15:27  pederb
+
+	* include/dime/entities/Vertex.h, include/dime/util/Array.h,
+	src/util/Linear.cpp:
+	
+	misc. changes to compile under HPUX. By kintel.
+
+2000-02-04 11:06  pederb
+
+	* build-tmake/makefile:
+	
+	makefile patch by kintel
+
+2000-02-03 14:09  pederb
+
+	* src/: entities/Block.cpp, entities/Entity.cpp,
+	entities/Insert.cpp, entities/LWPolyline.cpp,
+	entities/Polyline.cpp, sections/BlocksSection.cpp,
+	sections/EntitiesSection.cpp, sections/UnknownSection.cpp:
+	
+	Misc. cleanup
+
+2000-02-03 14:08  pederb
+
+	* include/dime/Input.h, src/Input.cpp:
+	
+	Fix to support (illegal?) binary files with 16bit groupcodes
+
+2000-01-31 12:05  pederb
+
+	* include/dime/RecordHolder.h, include/dime/entities/Entity.h,
+	src/Output.cpp, src/RecordHolder.cpp, src/entities/Entity.cpp,
+	src/entities/Polyline.cpp, src/entities/Vertex.cpp,
+	src/sections/Section.cpp:
+	
+	Various export fixed to humour AutoCad import routines
+
+1999-12-10 17:04  pederb
+
+	* FAQ, TODO, include/dime/Input.h, src/Input.cpp:
+	
+	added beta-support for binary DXF
+
+1999-12-10 17:02  pederb
+
+	* INSTALL:
+	
+	updated INSTALL file
+
+1999-10-07 16:37  pederb
+
+	* autogen.sh:
+	
+	automake --include-deps fix
+
+1999-10-07 15:00  pederb
+
+	* Makefile.am, TODO, autogen.sh, configure.in,
+	dxf2vrml/Makefile.am, dxf2vrml/makefile, dxf2vrml/makefile.generic,
+	src/Makefile.am, src/classes/Makefile.am, src/entities/Makefile.am,
+	src/objects/Makefile.am, src/records/Makefile.am,
+	src/sections/Makefile.am, src/tables/Makefile.am,
+	src/util/Makefile.am:
+	
+	Initial development of autoconf-based build process. mortene
+
+1999-09-01 18:53  root
+
+	* ANNOUNCEMENT.news, COPYING, FAQ, INSTALL, README, TODO, info.cvs,
+	build-tmake/common.pro, build-tmake/dime.pro, build-tmake/makefile,
+	build-tmake/release.pro, contrib/README, contrib/dime.dsw,
+	contrib/dime.mcp, contrib/dxf2vrml.dsw, contrib/dxf2vrml.mcp,
+	docs/dime.dox, docs/doxyfooter.html, docs/doxyheader.html,
+	dxf2vrml/dxf2vrml.cpp, dxf2vrml/makefile, include/dime/Base.h,
+	include/dime/Basic.h, include/dime/Input.h, include/dime/Layer.h,
+	include/dime/Model.h, include/dime/Output.h,
+	include/dime/RecordHolder.h, include/dime/State.h,
+	include/dime/classes/Class.h, include/dime/classes/UnknownClass.h,
+	include/dime/entities/3DFace.h, include/dime/entities/Arc.h,
+	include/dime/entities/Block.h, include/dime/entities/Circle.h,
+	include/dime/entities/Ellipse.h, include/dime/entities/Entity.h,
+	include/dime/entities/ExtrusionEntity.h,
+	include/dime/entities/FaceEntity.h, include/dime/entities/Insert.h,
+	include/dime/entities/LWPolyline.h, include/dime/entities/Line.h,
+	include/dime/entities/Point.h, include/dime/entities/Polyline.h,
+	include/dime/entities/Solid.h, include/dime/entities/Spline.h,
+	include/dime/entities/Trace.h,
+	include/dime/entities/UnknownEntity.h,
+	include/dime/entities/Vertex.h, include/dime/objects/Object.h,
+	include/dime/objects/UnknownObject.h,
+	include/dime/records/DoubleRecord.h,
+	include/dime/records/FloatRecord.h,
+	include/dime/records/HexRecord.h,
+	include/dime/records/Int16Record.h,
+	include/dime/records/Int32Record.h,
+	include/dime/records/Int8Record.h, include/dime/records/Record.h,
+	include/dime/records/StringRecord.h,
+	include/dime/sections/BlocksSection.h,
+	include/dime/sections/ClassesSection.h,
+	include/dime/sections/EntitiesSection.h,
+	include/dime/sections/HeaderSection.h,
+	include/dime/sections/ObjectsSection.h,
+	include/dime/sections/Section.h,
+	include/dime/sections/TablesSection.h,
+	include/dime/sections/UnknownSection.h,
+	include/dime/tables/LayerTable.h, include/dime/tables/Table.h,
+	include/dime/tables/TableEntry.h, include/dime/tables/UCSTable.h,
+	include/dime/tables/UnknownTable.h, include/dime/util/Array.h,
+	include/dime/util/BSPTree.h, include/dime/util/Box.h,
+	include/dime/util/Dict.h, include/dime/util/Linear.h,
+	include/dime/util/MemHandler.h, src/Base.cpp, src/Basic.cpp,
+	src/Input.cpp, src/Layer.cpp, src/Model.cpp, src/Output.cpp,
+	src/RecordHolder.cpp, src/State.cpp, src/classes/Class.cpp,
+	src/classes/UnknownClass.cpp, src/entities/3DFace.cpp,
+	src/entities/Arc.cpp, src/entities/Block.cpp,
+	src/entities/Circle.cpp, src/entities/Ellipse.cpp,
+	src/entities/Entity.cpp, src/entities/ExtrusionEntity.cpp,
+	src/entities/FaceEntity.cpp, src/entities/Insert.cpp,
+	src/entities/LWPolyline.cpp, src/entities/Line.cpp,
+	src/entities/Point.cpp, src/entities/Polyline.cpp,
+	src/entities/Solid.cpp, src/entities/Spline.cpp,
+	src/entities/Trace.cpp, src/entities/UnknownEntity.cpp,
+	src/entities/Vertex.cpp, src/objects/Object.cpp,
+	src/objects/UnknownObject.cpp, src/records/DoubleRecord.cpp,
+	src/records/FloatRecord.cpp, src/records/HexRecord.cpp,
+	src/records/Int16Record.cpp, src/records/Int32Record.cpp,
+	src/records/Int8Record.cpp, src/records/Record.cpp,
+	src/records/StringRecord.cpp, src/sections/BlocksSection.cpp,
+	src/sections/ClassesSection.cpp, src/sections/EntitiesSection.cpp,
+	src/sections/HeaderSection.cpp, src/sections/ObjectsSection.cpp,
+	src/sections/Section.cpp, src/sections/TablesSection.cpp,
+	src/sections/UnknownSection.cpp, src/tables/LayerTable.cpp,
+	src/tables/Table.cpp, src/tables/TableEntry.cpp,
+	src/tables/UCSTable.cpp, src/tables/UnknownTable.cpp,
+	src/util/Array.cpp, src/util/BSPTree.cpp, src/util/Box.cpp,
+	src/util/Dict.cpp, src/util/Linear.cpp, src/util/MemHandler.cpp:
+	
+	Initial revision
+
+1999-09-01 18:53  root
+
+	* ANNOUNCEMENT.news, COPYING, FAQ, INSTALL, README, TODO, info.cvs,
+	build-tmake/common.pro, build-tmake/dime.pro, build-tmake/makefile,
+	build-tmake/release.pro, contrib/README, contrib/dime.dsw,
+	contrib/dime.mcp, contrib/dxf2vrml.dsw, contrib/dxf2vrml.mcp,
+	docs/dime.dox, docs/doxyfooter.html, docs/doxyheader.html,
+	dxf2vrml/dxf2vrml.cpp, dxf2vrml/makefile, include/dime/Base.h,
+	include/dime/Basic.h, include/dime/Input.h, include/dime/Layer.h,
+	include/dime/Model.h, include/dime/Output.h,
+	include/dime/RecordHolder.h, include/dime/State.h,
+	include/dime/classes/Class.h, include/dime/classes/UnknownClass.h,
+	include/dime/entities/3DFace.h, include/dime/entities/Arc.h,
+	include/dime/entities/Block.h, include/dime/entities/Circle.h,
+	include/dime/entities/Ellipse.h, include/dime/entities/Entity.h,
+	include/dime/entities/ExtrusionEntity.h,
+	include/dime/entities/FaceEntity.h, include/dime/entities/Insert.h,
+	include/dime/entities/LWPolyline.h, include/dime/entities/Line.h,
+	include/dime/entities/Point.h, include/dime/entities/Polyline.h,
+	include/dime/entities/Solid.h, include/dime/entities/Spline.h,
+	include/dime/entities/Trace.h,
+	include/dime/entities/UnknownEntity.h,
+	include/dime/entities/Vertex.h, include/dime/objects/Object.h,
+	include/dime/objects/UnknownObject.h,
+	include/dime/records/DoubleRecord.h,
+	include/dime/records/FloatRecord.h,
+	include/dime/records/HexRecord.h,
+	include/dime/records/Int16Record.h,
+	include/dime/records/Int32Record.h,
+	include/dime/records/Int8Record.h, include/dime/records/Record.h,
+	include/dime/records/StringRecord.h,
+	include/dime/sections/BlocksSection.h,
+	include/dime/sections/ClassesSection.h,
+	include/dime/sections/EntitiesSection.h,
+	include/dime/sections/HeaderSection.h,
+	include/dime/sections/ObjectsSection.h,
+	include/dime/sections/Section.h,
+	include/dime/sections/TablesSection.h,
+	include/dime/sections/UnknownSection.h,
+	include/dime/tables/LayerTable.h, include/dime/tables/Table.h,
+	include/dime/tables/TableEntry.h, include/dime/tables/UCSTable.h,
+	include/dime/tables/UnknownTable.h, include/dime/util/Array.h,
+	include/dime/util/BSPTree.h, include/dime/util/Box.h,
+	include/dime/util/Dict.h, include/dime/util/Linear.h,
+	include/dime/util/MemHandler.h, src/Base.cpp, src/Basic.cpp,
+	src/Input.cpp, src/Layer.cpp, src/Model.cpp, src/Output.cpp,
+	src/RecordHolder.cpp, src/State.cpp, src/classes/Class.cpp,
+	src/classes/UnknownClass.cpp, src/entities/3DFace.cpp,
+	src/entities/Arc.cpp, src/entities/Block.cpp,
+	src/entities/Circle.cpp, src/entities/Ellipse.cpp,
+	src/entities/Entity.cpp, src/entities/ExtrusionEntity.cpp,
+	src/entities/FaceEntity.cpp, src/entities/Insert.cpp,
+	src/entities/LWPolyline.cpp, src/entities/Line.cpp,
+	src/entities/Point.cpp, src/entities/Polyline.cpp,
+	src/entities/Solid.cpp, src/entities/Spline.cpp,
+	src/entities/Trace.cpp, src/entities/UnknownEntity.cpp,
+	src/entities/Vertex.cpp, src/objects/Object.cpp,
+	src/objects/UnknownObject.cpp, src/records/DoubleRecord.cpp,
+	src/records/FloatRecord.cpp, src/records/HexRecord.cpp,
+	src/records/Int16Record.cpp, src/records/Int32Record.cpp,
+	src/records/Int8Record.cpp, src/records/Record.cpp,
+	src/records/StringRecord.cpp, src/sections/BlocksSection.cpp,
+	src/sections/ClassesSection.cpp, src/sections/EntitiesSection.cpp,
+	src/sections/HeaderSection.cpp, src/sections/ObjectsSection.cpp,
+	src/sections/Section.cpp, src/sections/TablesSection.cpp,
+	src/sections/UnknownSection.cpp, src/tables/LayerTable.cpp,
+	src/tables/Table.cpp, src/tables/TableEntry.cpp,
+	src/tables/UCSTable.cpp, src/tables/UnknownTable.cpp,
+	src/util/Array.cpp, src/util/BSPTree.cpp, src/util/Box.cpp,
+	src/util/Dict.cpp, src/util/Linear.cpp, src/util/MemHandler.cpp:
+	
+	Initial import of publicly available CVS.
+        
+

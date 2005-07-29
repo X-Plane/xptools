@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# wrapper for sb_Directory_t
+#
+
+test_file=abcdcatd.ddf
+
+if [ -x ./sb_Directory_t ] ; then
+    ./sb_Directory_t $test_file;
+    exit $?;
+else
+    echo sb_Directory_t executable not found ..;
+    exit 1;
+fi
+
+exit 0
+

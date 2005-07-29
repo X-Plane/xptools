@@ -1,0 +1,45 @@
+dnl
+dnl $Id: configure.in,v 1.5 1999/02/04 13:29:23 mcoletti Exp $
+dnl
+
+AC_INIT(lexer.ll)
+
+AM_INIT_AUTOMAKE(mksdts, 1.0)
+
+
+dnl C++ checks (mostly borrowed from GNU groff)
+
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+
+
+dnl program checks
+
+AM_PROG_LEX
+AC_PROG_YACC
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+
+
+dnl we rely on sdts++, so insure that it's around by looking for one of its
+dnl header files
+
+AC_MSG_CHECKING([for sdts++])
+AC_TRY_CPP( ${includedir}/sdts++/container/sc_Subfield.h,
+AC_MSG_RESULT([found]),
+AC_MSG_WARN([not found; get sdts++ from http://mcmcweb.er.usgs.gov/sdts/sdtsxx/])
+)
+
+
+AC_SUBST(CXXFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(CFLAGS)
+AC_SUBST(DEFS)
+
+AC_SUBST(CXX)
+AC_SUBST(CC)
+AC_SUBST(LIBS)
+AC_SUBST(LEXLIB)
+
+
+AC_OUTPUT(Makefile)

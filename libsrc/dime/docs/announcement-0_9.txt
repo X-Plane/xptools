@@ -1,0 +1,119 @@
+Subject: [ANN] Dime v0.9: DXF Import, Manipulation, and Export library
+Newsgroups: comp.cad.autocad,comp.sys.sgi.graphics,comp.graphics.misc,alt.cad.autocad,alt.3d
+Followup-To: poster
+Cc: dime-announce@sim.no
+
+
+        ==================================================
+
+                             Dime 0.9
+           DXF Import, Manipulation, and Export library 
+
+                      from Systems In Motion
+                       <http://www.sim.no/>
+
+        ==================================================
+
+   CONTENTS
+
+   1. Introduction
+   2. Features
+   3. Compatibility
+   4. Availability
+   5. Technical Support
+
+
+1) INTRODUCTION
+
+   Dime is a C++ class library for reading, constructing, manipulating,
+   and writing AutoCAD DXF files.  As should be obvious from the header,
+   the name is an acronym for "DXF Import, Manipulation, and Export
+   library".  The dime class hierarchy structure is heavily based on
+   the structure of the AutoCAD DXF file format.
+
+   Dime is released publicly, open source, under the GNU General Public
+   License, version 2 (not the GNU LGPL, mind you).  An alternative
+   commercial license can be acquired if so is desired.  Only source code
+   is distributed for now, but binary distributions will be available
+   for selected platforms from dime v1.0 and onwards.
+
+
+2) FEATURES
+
+   You can at the moment use dime for doing the following:
+
+    - load DXF files into a dime object hierarchy containing the DXF data
+    - build dime object hierarchies from scratch
+    - extract geometry data from dime object hierarchies
+    - manipulate dime object hierarchies
+    - traverse the dime object hierarchies while performing various tasks
+    - save dime object hierarchies as files conforming to the DXF file format
+
+   Some dime statistics (not to be mistaken for useful information):
+
+    - 110 source files (50% header files)
+    - 15000 lines of code (without the preamble comments)
+
+   A small example program that converts DXF files to VRML files is
+   included.  Only polygon data is extracted from the DXF files, so
+   it is not a full-blown converter, in case you are looking for one.
+
+
+3) COMPATIBILITY
+
+   The following platforms are known to be able to compile dime without
+   any problems:
+
+    - IRIX 6.2 (MIPS / DCC)  [inhouse development platform]
+    - Linux 2.0.* (Intel / gcc)  [inhouse development platform]
+    - BeOS (PowerPC / mwcc, Intel / gcc)
+    - HPUX
+    - MS Windows 9x/NT (MS Visual C++ 6.0)
+
+   Compiling dime for other platforms / with other compilers should be
+   fairly straight-forward.
+
+
+4) AVAILABILITY
+
+   You can download the dime source archive from the dime web page.
+   The URL is http://www.sim.no/dime.html.
+
+   You can also download the dime source archive from Systems In
+   Motion's ftp server (ftp.sim.no) under /pub/dime/.
+   
+   The source code is available both as a gzip compressed tape archive
+   (dime-0.9-src.tar.gz) and as a zip file (dime-0.9-src.zip).
+   
+
+5) TECHNICAL SUPPORT
+
+   Systems In Motion (SIM) has no obligation to provide technical support
+   for the GPL licensed version of dime.  If resources permit, however,
+   SIM will of course try to be as helpful as possible.
+
+   Two mailing lists has been set up for dime support.
+
+   dime-announce
+      This mailing list is for announcements related to dime.
+      The list is read-only.
+
+   dime-discuss
+      This mailing list is for discussions related to dime.
+      The list is open for posting for everyone subscribed.
+
+   To subscribe to either of the two mailing lists, send an email to
+   <listserv@sim.no> with a subject line conforming to the format
+   "subscribe <listname>".  To unsubscribe, use the complementary
+   unsubscribe command.  For general help with SIM's mailing list
+   server, use "help" as the subject line.
+
+   We encourage everyone to use the dime-discuss mailing list for
+   technical support problems, but if you absolutely do not care to
+   join the mailing list, send your emails to <dime-support@sim.no>.
+
+
+        ==================================================
+
+Lars J. Aas <larsa@sim.no>,
+Software developer at Systems In Motion

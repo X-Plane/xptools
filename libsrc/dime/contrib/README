@@ -1,0 +1,12 @@
+This directory contains various contributions to dime. These files
+will not be maintained by us. Please contact the contributor if
+you have questins regarding these files.
+
+Dr. Thomas Krebs (old defunct email-address: Thomas_Krebs@redac.de):
+  dime.dsw     - VC++ 6.0 SP3 project file for dime
+  dxf2vrml.dsw - VC++ 6.0 SP3 project file for dxf2vrml
+
+Michael Louka <Michael.Louka@hrp.no>:
+  dime.mcp     - Metrowerks CodeWarrior project file for dime:
+  dxf2vrml.mcp - Metrowerks CodeWarrior project file for dxf2vrml
+

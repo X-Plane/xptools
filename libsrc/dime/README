@@ -1,0 +1,80 @@
+README for DIME
+===============
+
+DIME is a DXF (Data eXchange Format) file format support library.  This
+file contains general information about the library.  For compilation and
+installation information, refer to the file named INSTALL.  For copyright
+information, refer to the file named COPYING.  Changes in the library
+since the first public release (v0.9) are described in the file named
+ChangeLog.
+
+
+0. CONTENTS
+===========
+
+1. FUNCTIONALITY
+2. TECHNICAL SUPPORT
+3. LICENSE INFORMATION
+
+
+1. FUNCTIONALITY
+================
+
+DIME is a C++ class library for reading, constructing, manipulating, and
+writing DXF file data.  The name is an acronym for DXF Import, Manipulation,
+and Export library.
+
+The focus of the library is primarily on loading DXF files and building
+a data structure containing the DXF data, and on saving such data structures
+as a file conforming to the DXF file format.  The intended purpose for
+DIME was on importing and exporting DXF files.  For this kind of usage,
+special memory management techniques can be used to boost the performance
+significantly.
+
+Aside from loading and saving the data structure, functionality is also
+provided for traversing the data structure while performing various tasks,
+and also some special functionality for extracting geometry from the DXF
+data structure.
+
+A sample program is included in the directory dxf2vrml/ which will convert
+a DXF file (only the polygon data) to a VRML file.
+
+
+2. TECHNICAL SUPPORT
+====================
+
+Systems In Motion (SIM) has no obligation to provide technical support
+for the GPL licensed version of DIME.  If resources permit, however,
+SIM will of course try to be as helpful as possible.
+
+SIM has set up two mailing lists for DIME support.
+
+dime-announce
+  This mailing list is for announcements regarding DIME.  New releases,
+  new functionality, license information, this kind of stuff.
+  This list is moderated (read-only).
+
+dime-discuss
+  This mailing list is for discussing DIME.  Technical support can be
+  provided through this discussion forum.  Followups to announcements
+  in dime-announce should also be directed to this list.
+  This list is open for posting for all subscribers.
+
+To subscribe to either of the two lists, send an email to SIM's mailing
+list manager at <listserv@sim.no> with a subject line with the format
+"subscribe <listname>".  To unsubscribe, use a subject line with the
+format "unsubscribe <listname>".  Do not include brackets around the
+mailing list name.  For general information about SIM's mailing list 
+manager, use "help" as the subject line.
+
+
+3. LICENSE INFORMATION
+======================
+
+DIME is released publicly under the GNU General Public License, version 2
+(see the file named COPYING).  If you need DIME for commercial use, you
+can read about acquiring a commercial licensed version of DIME at SIM's
+DIME web page at http://www.sim.no/dime/, or you can contact SIM's sales
+department directly at <sales@sim.no>.
+
+

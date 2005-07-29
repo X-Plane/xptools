@@ -1,0 +1,55 @@
+TODO for DIME
+
+Just to clarify something; the order of the items in the list and the
+priority we have given the items do not guarantee when (or even if) the
+items will be implemented.
+
+ *) Upgrade configure setup and and DLLify library - make Mac OS X framework
+    [top priority]
+
+ *) Audit API and fix parts that are not safe in a Win32 environment
+    where the client code uses a different C run-time than the Dime
+    library
+    [high priority]
+
+    This is _extremely_ important to get done before 1.0 release, or
+    we will fight support requests over this for the remaining life
+    time of the library..
+
+    A few examples of stuff that needs to be fixed:
+
+        - methods getting or returning FILE*, see for instance
+          dimeInput / dimeOutput classes (setFileHandle() methods)
+
+        - methods allocating memory that are made the client's
+          responsibility to deallocate, see for instance the copy()
+          methods of the entity classes
+
+        - functions appending or removing items from dimeArray
+          template objects passed in as arguments, or passing them out
+          as return values
+
+          (this causes alternate memory allocation / deallocation in
+          client or library code, due to dimeArray being fully
+          inlined)
+
+          see for instance dimeCircle::extractGeometry()
+
+ *) Write more and better doxygen documentation comments.
+    [high priority]
+
+ *) Make a more robust run-time type checking system.
+    [high priority]
+    - shouldn't require client apps to be recompiled if new types are added
+    - maybe make it possible to override the "built-in" types
+    - must be in place before v1.0
+
+ *) Implement a (better) debug/warning/error system with callbacks
+    [high priority]
+
+ *) Implement more of the entities, tables, etc. used by AutoCAD
+    [medium priority]
+
+ *) implement some means of "seamless" integration with Coin
+    [medium-low priority?]
+

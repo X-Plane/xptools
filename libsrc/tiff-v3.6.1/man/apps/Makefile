@@ -1,0 +1,24 @@
+install:
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/fax2ps.1 -O fax2ps.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/fax2tiff.1 -O fax2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/gif2tiff.1 -O gif2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/pal2rgb.1 -O pal2rgb.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/ppm2tiff.1 -O ppm2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/ras2tiff.1 -O ras2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/raw2tiff.1 -O raw2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/rgb2ycbcr.1 -O rgb2ycbcr.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/sgi2tiff.1 -O sgi2tiff.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/thumbnail.1 -O thumbnail.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiff2bw.1 -O tiff2bw.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiff2pdf.1 -O tiff2pdf.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiff2ps.1 -O tiff2ps.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiff2rgba.1 -O tiff2rgba.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffcmp.1 -O tiffcmp.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffcp.1 -O tiffcp.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffdither.1 -O tiffdither.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffdump.1 -O tiffdump.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffgt.1 -O tiffgt.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffinfo.1 -O tiffinfo.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffmedian.1 -O tiffmedian.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffsplit.1 -O tiffsplit.1
+	cd ..; /bin/sh ../port/install.sh -m 444 			 -F ${DESTDIR}/usr/share/man/man1				 -idb tiff.man.tools -src apps/tiffsv.1 -O tiffsv.1

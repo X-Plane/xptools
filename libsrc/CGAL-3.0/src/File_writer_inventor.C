@@ -1,0 +1,61 @@
+// Copyright (c) 1997  ETH Zurich (Switzerland).
+// All rights reserved.
+//
+// This file is part of CGAL (www.cgal.org); you may redistribute it under
+// the terms of the Q Public License version 1.0.
+// See the file LICENSE.QPL distributed with CGAL.
+//
+// Licensees holding a valid commercial license may use this file in
+// accordance with the commercial license agreement provided with the software.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+//
+// $Source: /CVSROOT/CGAL/Packages/Polyhedron_IO/src/File_writer_inventor.C,v $
+// $Revision: 1.3 $ $Date: 2003/09/18 10:25:09 $
+// $Name: current_submission $
+//
+// Author(s)     : Lutz Kettner  <kettner@mpi-sb.mpg.de>
+
+#ifndef CGAL_IO_FILE_WRITER_INVENTOR_H
+#include <CGAL/IO/File_writer_inventor.h>
+#endif // CGAL_IO_FILE_WRITER_INVENTOR_H
+
+CGAL_BEGIN_NAMESPACE
+
+void
+File_writer_inventor::
+write_header( std::ostream& o,
+              std::size_t   vertices,
+              std::size_t   halfedges,
+              std::size_t   facets){
+    m_out    = &o;
+    m_facets = facets;
+    out() << "# " << vertices  << " vertices\n";
+    out() << "# " << halfedges << " halfedges\n";
+    out() << "# " << facets    << " facets\n\n";
+    out() << "Separator {\n"
+             "    Coordinate3 {\n"
+             "        point   [" << std::endl;
+}
+
+void
+File_writer_inventor::
+write_facet_header() const {
+    out() << "        ] #point\n"
+             "    } #Coordinate3\n"
+             "    # " << m_facets << " facets\n"
+             "    IndexedFaceSet {\n"
+             "        coordIndex [\n";
+}
+
+void
+File_writer_inventor::
+write_footer() const {
+    out() << "        ] #coordIndex\n"
+             "    } #IndexedFaceSet\n"
+             "} #Separator" << std::endl;
+}
+
+CGAL_END_NAMESPACE
+// EOF //

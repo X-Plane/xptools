@@ -1,0 +1,10 @@
+* Request from Rob Campbell <rob.campbell@att.net> on dime-discuss:
+
+        I know that ACIS SAT is a proprietary, unpublished format.
+        But shouldn't it be possible to extract the SAT data from a
+        DXF file created by AutoCAD and create a standalone SAT file
+        from it?  And, conversely, to split a SAT file into parts that
+        can be put in a DXF file in the proper format?
+
+  The specification of 7.0 is available at:
+  http://www.spatial.com/services_support/support/Technical/docs.html?LV3=Y

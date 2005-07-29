@@ -1,0 +1,27 @@
+#!/bin/sh
+#
+# wrapper for 8211 sio_8211Writer test
+#
+
+sample_ddf=abcdiden.ddf;        # IDEN module included for test purposes
+test_file=foo.ddf;
+
+
+if [ -r ./sio_ReadWrite_t ]; then
+    ./sio_ReadWrite_t $sample_ddf $test_file > /dev/null;
+    if [ $? -ne 0 ]; then exit 1; fi
+
+                                # if the target file exists and has stuff in
+                                # it, then things must've gone ok
+                                # XXX need to do content comparison between
+                                # XXX original and newly generated file
+
+    if test -r $test_file -a `wc $test_file | awk '{print $3}'` -gt 0; then
+        exit 0;
+    fi
+else
+    echo sio_ReadWrite_t missing ..;
+    exit 1;
+fi
+
+exit 1

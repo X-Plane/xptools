@@ -1,0 +1,18 @@
+# You need bjam to build the library
+#
+# You can get bjam from http://www.boost.org/tools/build/index.html#Jam
+#
+# $Id: Jamfile,v 1.1 2003/06/10 16:24:48 mcoletti Exp $
+#
+subproject sysutils ;
+
+BOOST_HEADERS = c:/cygwin/usr/local/include/boost_1_30_0 ;
+
+lib sysutils     : fileutils.cpp stringutils.cpp
+                 : <include>$(BOOST_HEADERS)
+		   <include>$(TOP)
+		   <include>.
+		   <rtti>on
+		   <exception-handling>on
+		 : debug
+                 ;

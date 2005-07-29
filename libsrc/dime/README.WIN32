@@ -1,0 +1,96 @@
+Section 01 -- Basic build instructions.
+=======================================
+
+  You should be able to build the library if you have these 
+  components installed on your system:
+
+        * Cygwin[1], latest release
+        * Microsoft Visual C++ v6.x
+
+  First, make sure Microsoft Visual C++ is accessible from the Cygwin
+  shell.  If you can run ``cl.exe'' from the bash command line,
+  everything is probably set up for you already. If not, you need to
+  add something like this to .bashrc and .bash_profile:
+
+    # the Cygwin path to the Microsoft Visual Studio directory...
+    MSVS_HOME="/cygdrive/c/Program Files/Microsoft Visual Studio"
+    win_MSVS_HOME=`cygpath -w "$MSVS_HOME"`
+
+    PATH="$PATH:$MSVS_HOME/VC98/Bin:$MSVS_HOME/VC98/Lib"
+    PATH="$PATH:$MSVS_HOME/Common/MSDev98/Bin"
+    LIB="$win_MSVS_HOME\\VC98\\Lib"
+    INCLUDE="$win_MSVS_HOME\\VC98\\Include"
+
+    export PATH LIB INCLUDE
+
+
+  Configure and build the same way as you would on UNIX-based systems,
+  i.e.
+
+        $ [srcdir]/configure
+        $ make install
+
+  To specify which C library dime should be linked against, you should
+  use the --with-msvcrt=<crt> option.  You have the following choices
+  (short aliases on the right):
+
+    singlethread-static        [ /ml  | ml  | libc    ]   (default)
+    singlethread-static-debug  [ /mld | mld | libcd   ]
+    multithread-static         [ /mt  | mt  | libcmt  ]
+    multithread-static-debug   [ /mtd | mtd | libcmtd ]
+    multithread-dynamic        [ /md  | md  | msvcrt  ]
+    multithread-dynamic-debug  [ /mdd | mdd | msvcrtd ]
+
+
+  Note that if you encounter any problems when trying to build on
+  MSWindows, it is expected that you are able to do a minimum of
+  troubleshooting yourself before contacting us.  (If this is not an
+  option, please consider using the pre-built binary installation
+  packages we provide. Follow the download link from
+  <URL:http://www.coin3d.org>.)
+
+  If you are confident that configure and/or build fails due to a
+  mistake on our part, or you otherwise feel completely stuck, we will
+  be happy to assist.
+
+---
+[1] <URL:http://www.cygwin.com>
+
+
+Section 02 -- What is this ``configure'' thing?
+===============================================
+
+  The configure script is a script that first determines what kind of
+  system it's being run on, then tries to locate a compiler, and then
+  uses the compiler to probe the system for its capabilities.  For
+  instance, which optional utility libraries are available?  The
+  configure script tries to link with all the potential libraries that
+  we might want to use.  If the linking works, the library is there.
+  If the link-test fails, then it's not.  Another thing that is often
+  probed is whether a library is new enough so that it contains some
+  function foo()?  Depending on these tests, the configure script sets
+  up a header-file called "config.h" that contains #define settings
+  for what the configure script managed to find.  This header is
+  included from all the sources that needs system-dependent code
+  blocks.  In this way you tune the library on individual features
+  instead of basing the compilation on which platform it is that is
+  being used.
+
+  The configure script also has the purpose of figuring out how the
+  compiler should be used when you build the library.  The result of
+  these tests are put into all the Makefile files that are generated
+  at the end of the configure run.  The Makefile files are created
+  through keyword substitution in the Makefile.in templates you will
+  see in the source hierarchy.  After having run configure, all system
+  characteristics should be figured out and the Makefiles should be
+  set up so you only need to type "make" to get everything built.
+
+  Another feature of this setup is to run the configure script from an
+  empty directory.  This will create an an empty directory structure
+  with makefiles that will compile the sources out of the source
+  directory while putting the object files in the newly created
+  directory structure.  This means you can keep your sources in one
+  place (even on a read-only medium like a CDROM), and build the
+  library in some temporary location that can be scrapped after you
+  have built and installed the library.
+

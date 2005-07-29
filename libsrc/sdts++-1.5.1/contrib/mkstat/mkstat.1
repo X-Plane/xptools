@@ -1,0 +1,37 @@
+.TH MKSTAT 1
+.SH NAME
+mkstat \-   Make SDTS STAT module files
+
+.SH SYNOPSIS
+
+.B mkstat
+[-v] CATD module STAT module
+
+.B mkstat
+-h
+
+.SH OPTIONS
+.TP
+.B \-v
+Toggle on noisy output
+
+
+.SH DESCRIPTION
+.I  Mkstat
+creates a \fBSTAT module\fP from modules found in the given \fBCATD
+module\fP.  \fIMkstat\fP will attempt to count the records in each of
+the modules listed in the \fBCATD module\fP.  It will create a
+corresponding \fBSTAT module\fP with record counts for those modules;
+it will also include an entry for itself with a number of records
+reflecting the total number found in the \fBCATD module.\fP
+
+.SH BUGS
+
+This hasn't been extensively tested.  Caveat emptor!
+
+.nh
+
+.SH WHO TO BLAME
+.I Mkstat
+was written by Mark Coletti on contract to the United States Geological
+Survey from SAIC.  He can be reached at mcoletti@clark.net .

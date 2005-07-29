@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# wrapper for 8211 test
+#
+
+for f in *.ddf; do
+    if test -r ./sio_8211_t; then
+        ./sio_8211_t $f 2>&1 > /dev/null;
+
+        if [ $? -ne 0 ]; then
+            echo unable to dump $f;
+            exit 1;
+        fi
+    else
+        echo sio_8211_t missing ...;
+        exit 1;
+    fi
+done
+

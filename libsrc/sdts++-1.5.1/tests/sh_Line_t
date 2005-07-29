@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# wrapper for sb_Line test
+#
+
+sample_line=abcdline.ddf;       # LINE module included for test purposes
+
+if [ -r ./${sample_line} ]; then
+    ./sb_line_t $sample_line $test_file > /dev/null;
+
+                                # bail on failure
+    if [ $? -ne 0 ]; then exit 1; fi
+
+else                            # XXX obviously temporary
+    echo ${sample_line} missing ... skipping LINE module test;
+    exit 0;
+fi
+
+exit 1

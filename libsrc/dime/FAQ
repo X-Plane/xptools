@@ -1,0 +1,36 @@
+
+Question 1: Where are the rendering methods?
+============================================
+
+Short answer:
+
+    Nowhere.
+
+Long answer:
+
+    The dime library is mostly focused on supporting the DXF file format
+    so you can exchange data with other 3D systems (e.g. AutoCAD) through
+    it, and does not contain code for rendering the data.  The intention
+    of the library is that you should have some other retain-mode rendering
+    library for 3D models, like Open Inventor, Optimizer, or Performer,
+    and use dime to load DXF files and then move the geometry data into
+    the library designed for rendering.  If you want to save models using
+    the DXF file format, you move the geometry data the other way.
+
+
+Question 2: What about support for other file formats?
+======================================================
+
+Short answer:
+
+    Beta support for dxb has recently been added.  For AutoCAD dwg support,
+    see www.opendwg.org.
+
+Long answer:
+
+    To support other file formats, the format must be structurally very
+    similar to the AutoCAD .dxf file format.  AutoCAD .dxb is one such
+    format, but it is hardly used by anyone.  The AutoCAD .dwg format
+    could potensially be a candidate, but the file format seems too complex.
+    Check out opendwg.org if you need support for .dwg files.
+

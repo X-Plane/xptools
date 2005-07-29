@@ -1,0 +1,1 @@
+#define _MSL_USING_MW_C_HEADERS 1

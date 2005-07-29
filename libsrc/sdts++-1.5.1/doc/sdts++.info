@@ -1,0 +1,1747 @@
+This is sdts++.info, produced by makeinfo version 4.3 from sdts++.texi.
+
+   This document describes what the SDTS++ toolkit is and how to use it.
+
+   Copyright (C) 2001 United States Geological Survey.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+File: sdts++.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
+
+   Programmers can use sdts++ classes to read and write Spatial Data
+Transfer Standard (SDTS) files.
+
+* Menu:
+
+* Introduction::                About SDTS++
+* Installing::                  How to build and install sdts++
+* Using::                       How to use sdts++
+* Credits::                     The guilty parties
+* Legalese::                    Text for those with JDs
+* Support::                     Where to go to get sdts++ related help
+* Bibliography::                Some recommended reading
+
+* Concept Index::
+
+
+File: sdts++.info,  Node: Introduction,  Next: Installing,  Prev: Top,  Up: Top
+
+Introduction
+************
+
+   SDTS++ is a C++ toolkit for reading and writing SDTS datasets.
+Application developers can use SDTS++ library classes to work with the
+logical structure of these datasets without having to worry about the
+physical details of each dataset.
+
+   Please note that this document assumes that you are not only familiar
+with C++, but with the Standard C++ Library; and, more importantly, you
+are knowledgeable with using the Standard Template Library (STL).
+
+
+File: sdts++.info,  Node: Installing,  Next: Using,  Prev: Introduction,  Up: Top
+
+Installing
+**********
+
+   Here we describe how to build and install sdts++ for both UNIX and
+Windows.
+
+* Menu:
+
+* Windows::                     Installing for Windows using Visual C++
+* UNIX::                        Installing for UNIX and UNIX-like systems
+
+
+File: sdts++.info,  Node: Windows,  Next: UNIX,  Prev: Installing,  Up: Installing
+
+Installing for Windows
+======================
+
+   So far, the only Windows compilers that have been exercised on
+`sdts++' have been Visual C++ 6.0 and cygwin's gcc.  Building for the
+latter compiler is easy; just follow the UNIX build section
+instructions.
+
+  1. Create or open a workspace
+
+  2. Add the VC++ project file "Windows/sdtsxx/sdtsxx.dsp" to the
+     workspace
+
+  3. Build the project
+
+  4. You're done!
+
+
+   Alternatively, you can use the Boost bjam build utility.
+
+  1. edit `Jamrules' and `boost-build.jam' to reflect location of
+     Boost.  The Boost C++ library can be fetched from
+     <http://www.boost.org/>
+
+  2. install the bjam executable somewhere in your $PATH.  It can be
+     gotten from <http://www.boost.org/tools/build/index.html#Jam>.
+
+  3. `cd sdts++; bjam -sTOOLS=msvc'
+
+  4. `cd ../sysutils; bjam -sTOOLS=msvc'
+
+
+   Debug and release binaries for the sdts++ and dependant sysutils
+libraries will be in the `sdts++/bin' and `sysutils/bin' directory
+hierarchies, respectively.  Build behavior can be modified by editing
+the `Jamfile's located in `sdts++' and `sysutil'.  There also exists a
+`Jamfile' for the test harnasses found in `tests'.
+
+   Note that compilers are specified via TOOLS and support not just
+Microsoft Visual C++ and GNU g++.  Please see the Boost web site for a
+canonical list of supported compilers.
+
+
+File: sdts++.info,  Node: UNIX,  Prev: Windows,  Up: Installing
+
+Installing for UNIX
+===================
+
+  1. Run the configure script.
+
+     Please note that the configure script will try and use the GNU
+     C/C++ compiler if it finds it.  You can over-ride the configure
+     script by specifying the C and/or C++ compilers by setting the CC
+     and CXX environment variables, respectively.  For example, to
+     prefer to use `/usr/bin/CC' as the C++ compiler, invoke the script
+     like this:
+
+     `% env CXX=/usr/bin/CC ./configure'
+
+  2. Run make to build the library
+
+     Note that you will need to use GNU make.  It can be fetched via
+     anonymous ftp from <http://www.gnu.org/software/make>.
+
+  3. Optionally, run `make check' to build and run test programs
+
+  4. `make install' to copy the header and library files to the target
+     directories.
+
+
+   By default, these directories will be `/usr/local/include/sdts++'
+for the header files and `/usr/local/lib/' for the library.  You can
+change these target directories by using the parameter
+`--prefix=/my/target/dir' when invoking the configure script.  If you
+just want the _binaries_ to go to a different place (and thus have the
+headers go to a default location), then you can specify
+`--exec-prefix=/my/target/binary/dir' instead.
+
+   Note that you can also use bjam to build the library on most UNIX
+platforms.  Simply follow the instructions found in the previous
+section using, say, "-sTOOLS=gcc" to specify the GNU g++ compiler.
+Again, please consult the Boost bjam documentation for more information.
+
+
+File: sdts++.info,  Node: Using,  Next: Credits,  Prev: Installing,  Up: Top
+
+Using
+*****
+
+   The SDTS++ library is comprised of four major components, or
+"sub-systems".  These are the Container, I/O, Builder, and Logical
+sub-systems.  The Container subsystem is used to hold SDTS data.  The
+I/O sub-system, naturally, is responsible for reading and writing SDTS
+data - it relies on Container objects to hold data that is either read
+in or to be written out.  The Builder contains convenience classes for
+translating SDTS data at a higher level than provided by raw Container
+classes.  Similarly, the Logical classes contain convenience classes
+for some SDTS spatial types.  The next sections will discuss each
+sub-system in turn.
+
+* Menu:
+
+* Container Classes::           About modules, records, fields, and subfields
+* I/O Classes::                 How to read and write sdts++ containers
+* Builder Classes::             Convenience classes to read and write modules
+* Logical Classes::             Experimental classes for holding spatial data
+
+
+File: sdts++.info,  Node: Container Classes,  Next: I/O Classes,  Prev: Using,  Up: Using
+
+Container Classes
+=================
+
+   The SDTS transfer model contains several logical constructs for
+holding data.  They are: modules, which contain records, which contain
+fields, which contain subfields.  SDTS++ provides classes that
+correspond to these logical constructs.  The table below depicts these
+classes and their respective relationships to the SDTS transfer model.
+
+             SDTS            SDTS++
+     
+             Module          sc_Module
+             Record          sc_Record
+             Field           sc_Field
+             Subfield        sc_Subfield
+
+* Menu:
+
+* Container interface::         Detailed descriptions for all the containers
+
+
+File: sdts++.info,  Node: Container interface,  Prev: Container Classes,  Up: Container Classes
+
+Container interface
+-------------------
+
+   All SDTS++ containers (i.e., sc_Module, sc_Record, and sc_Field) have
+the following member functions, which are provided by STL (since they
+are implemented as STL containers) `Musser & Saini 1996':
+
+`X()'
+     default constructor
+
+`X(a)'
+     constructor
+
+`X u(a)'
+     copy constructor
+
+`~X()'
+     destructor
+
+`a.begin()'
+     returns an iterator, or const iterator if a is constant
+
+`a.end()'
+     returns an iterator that points just one element beyond the last
+     element
+
+`a.rbegin()'
+     returns a reverse iterator
+
+`a.rend()'
+     returns a reverse iterator that points to just one element before
+     the first
+
+`a.size()'
+     returns number of elements
+
+`a.max_size()'
+     largest possible size()
+
+`a.empty()'
+     returns true if there are no elements
+
+`r = a'
+     assigns contents of a to r
+
+`a.swap(b)'
+     swap the two container contents
+
+   There are other member functions provided by the STL list
+implementation that we used for the SDTS++ containers.  Please consult
+an STL resource for more information on how to use STL containers.
+
+* Menu:
+
+* sc_Module::                   SDTS module container
+* sc_Record::                   SDTS record container
+* sc_Field::                    SDTS field container
+* sc_Subfield::                 SDTS subfield container
+
+
+File: sdts++.info,  Node: sc_Module,  Next: sc_Record,  Prev: Container interface,  Up: Container interface
+
+sc_Module
+.........
+
+   This class is analagous to an SDTS module.  Like an SDTS module, it
+contains zero or more records.
+
+
+File: sdts++.info,  Node: sc_Record,  Next: sc_Field,  Prev: sc_Module,  Up: Container interface
+
+sc_Record
+.........
+
+   This class is equivalent to an SDTS record and is composed of
+sc_Field objects.
+
+
+File: sdts++.info,  Node: sc_Field,  Next: sc_Subfield,  Prev: sc_Record,  Up: Container interface
+
+sc_Field
+........
+
+   This class corresponds to a SDTS field and is composed of sc_Subfield
+objects.  In addition to the inherited STL member functions, some
+additional functions have been added to allow an application to read or
+change the field name and field mnemonic.  The following describes
+these additional functions:
+
+`string const& getName() const'
+     Returns the SDTS name of the field.  (if one has been set)
+
+`string const& getMnemonic() const'
+     Returns the SDTS mnemonic of the field.  (if one has been set)
+
+`string const& setName() const'
+     Returns the string parameter passed to the function and sets the
+     sc_field name to that value.  string const& setName() const
+
+`string const& setMnemonic() const'
+     Returns the string parameter passed to the function and sets the
+     sc_field mnemonic to that value.
+
+
+File: sdts++.info,  Node: sc_Subfield,  Prev: sc_Field,  Up: Container interface
+
+sc_Subfield
+...........
+
+   This is the atomic class within the container sub-systems - it is the
+only non-container and is itself not comprised of any other classes.
+An sc_Subfield contains the value of a SDTS subfield.
+
+   sc_Subfields defines the enumerator SubfieldType.  The following
+table delineates these values and their corresponding meanings:
+
+`is_A'
+     graphic, alphanumeric, or alphabetic characters.
+
+`is_I'
+     implicit-point (integer)
+
+`is_R'
+     explicit-point unscaled (fixed point, real)
+
+`is_S'
+     explicit-point scaled (floating point, real)
+
+`is_C'
+     character mode bitfield (binary in zero and one characters)
+
+`is_B'
+     bitfield data
+
+`is_BI8'
+     8 bit signed integer
+
+`is_BI16'
+     16 bit signed integer
+
+`is_BI24'
+     24 bit signed integer
+
+`is_BI32'
+     32 bit signed integer
+
+`is_BUI'
+     unsigned integer, length specified by implementation
+
+`is_BUI8'
+     8 bit unsigned integer
+
+`is_BUI16'
+     16 bit unsigned integer
+
+`is_BUI24'
+     24 bit unsigned integer
+
+`is_BUI32'
+     32 bit unsigned integer
+
+`is_BFP32'
+     32 bit floating point real
+
+`is_BFP64'
+     64 bit floating point real
+
+   The mapping from SDTS types to C++ is as follows:
+
+`A'
+     string
+
+`I'
+     long
+
+`R,S'
+     double
+
+`C'
+     not implemented
+
+`BUI'
+     unsigned long
+
+`BI8, BI16, BI24, BI32'
+     long
+
+`BUI8, BUI16, BUI24, BUI32'
+     unsigned long
+
+`BFP32, BFP64'
+     double
+
+   The sc_Subfield class has the following members:
+
+`sc_Subfield( )'
+
+`sc_Subfield( sc_Subfield const& right)'
+
+`~sc_Subfield()'
+
+`sc_Subfield& operator=(sc_Subfield const& right)'
+
+`bool operator==(sc_Subfield const& right) const'
+     This returns true if both subfields have the same name,
+     mnemonic, type, and value.
+
+`bool operator!=(sc_Subfield const& right) const'
+     inverse of operator==()
+
+`SubfieldType getSubfieldType() const'
+     Returns the subfield data type of the data in the sc_Subfield
+       object.  The return value of SubfieldType is an enumerated
+       data type that describes the type as one of the types listed
+         above.
+
+`string const& getName() const'
+     Returns the SDTS name of the subfield.
+
+`string const& getMnemonic() const'
+     Returns the SDTS mnemonic of the subfield.
+
+`string const& setName(string const& name)'
+     sets the sc_subfield name to the given string and returns it
+
+`string const& setMnemonic(string const& mnem)'
+     sets the sc_subfield mnemnonic to the given string and returns it
+
+   These functions are used to fetch a subfield's value; there is one
+function for each of the canonical subfield types.  Each will return
+'false' if the subfield contains an incompatible value.  For example, if
+the subfield is a string (i.e., `is_A') and its `getBI32()' function is
+invoked, then that call will fail.
+
+`bool getA(string& val) const'
+
+`bool getI(long& val) const'
+
+`bool getR(double& val) const'
+
+`bool getS(double& val) const'
+
+`bool getC(string& val) const'
+
+`bool getBI8(long& val) const'
+
+`bool getBI16(long& val) const'
+
+`bool getBI24(long& val) const'
+
+`bool getBI32(long& val) const'
+
+`bool getBUI8(unsigned long& val) const'
+
+`bool getBUI16(unsigned long& val) const'
+
+`bool getBUI24(unsigned long& val) const'
+
+`bool getBUI32(unsigned long& val) const'
+
+`bool getFP32(double& val) const'
+
+`bool getFP64(double& val) const'
+   Naturally each of the previous functions has a corresponding inverse
+to set a value for a given type.  Note that after a particular set
+function is used, the subfield's type is set to that.  E.g., invoking
+`setI()' will set that subfield's type to `is_I'.
+
+`void setA(string const& val)'
+
+`void setI(long val)'
+
+`void setR(double val)'
+
+`void setS(double val)'
+
+`void setC(string const& val)'
+
+`void setBI8(long val)'
+
+`void setBI16(long val)'
+
+`void setBI24(long val)'
+
+`void setBI32(long val)'
+
+`void setBUI8(unsigned long val)'
+
+`void setBUI16(unsigned long val)'
+
+`void setBUI24(unsigned long val)'
+
+`void setBUI32(unsigned long val)'
+
+`void setFP32(double val)'
+
+`void setFP64(double val)'
+
+File: sdts++.info,  Node: I/O Classes,  Next: Builder Classes,  Prev: Container Classes,  Up: Using
+
+I/O Classes
+===========
+
+   The I/O subsystem is responsible for reading and writing SDTS
+transfers.  The I/O subsystem has two major parts: readers and writers.
+Readers are used to read in SDTS data and store them into SDTS++
+container objects.  Writers are the inverse of readers; they take data
+found in SDTS++ container objects and write them out to SDTS transfers.
+We'll discuss readers and writers in the following sections.
+
+* Menu:
+
+* Readers::                     Used to read SDTS data into containers
+* Writers::                     Used to write SDTS modules from containers
+
+
+File: sdts++.info,  Node: Readers,  Next: Writers,  Prev: I/O Classes,  Up: I/O Classes
+
+Readers
+-------
+
+   There are two vital components to reading SDTS data in SDTS++:
+readers and reader iterators.  Readers are attached to a input file
+stream that is open onto a valid SDTS 8211 module file.  Then one or
+more reader iterators are then, in turn, attached to that reader.  The
+user then uses these iterators to fetch records in a given sc_Record
+object, move to the next record, and to determine when there are no
+more records to be read.
+
+   Readers are passive entites from a user's perspective; all the real
+work is done via iterators.  The user interacts with a reader through
+one of its iterators and never directly through a reader.  The iterator
+works with its reader behind the scene to fetch records, move forward
+to the next record, and to report that there are no more records.
+
+* Menu:
+
+* Reader and Reader Iterator Base Classes::
+* sio_Reader::
+* sio_ForwardIterator::
+* sio_8211Reader::
+* 8211 Forward Iterator::
+* Reader Example::
+
+
+File: sdts++.info,  Node: Reader and Reader Iterator Base Classes,  Next: sio_Reader,  Prev: Readers,  Up: Readers
+
+Reader and Reader Iterator Base Classes
+.......................................
+
+   We recognized early on in SDTS++'s design process that there might
+conceivably exist alternative physical forms for an SDTS dataset.  To
+this end, we designed abstract base classes for a "generalized" reader
+and reader iterator.  These are, respectively, sc_Reader and
+sc_ForwardIterator.
+
+
+File: sdts++.info,  Node: sio_Reader,  Next: sio_ForwardIterator,  Prev: Reader and Reader Iterator Base Classes,  Up: Readers
+
+sio_Reader
+..........
+
+   sio_Reader declares the following interface:
+
+`sio_Reader( istream & is )'
+     Initializes the reader for the given stream.  (Note that
+      the current implementation differs from this.  It has a
+       second parameter that takes a pointer to a converter
+     container.  This is wrong and will be changed in a
+     subsequent implementation.)
+
+`virtual ~sio_Reader() = 0;'
+
+File: sdts++.info,  Node: sio_ForwardIterator,  Next: sio_8211Reader,  Prev: sio_Reader,  Up: Readers
+
+sio_ForwardIterator
+...................
+
+   Again, the sio_ForwardIterator provides the means of navigating
+through SDTS records, to retrieve record contents, and to report that
+there are no more records in the corresponding reader's associated SDTS
+module.  As its name suggests, it is only possible to move forward from
+record to record.  Iterating "backwards" or random record access are
+not supported by this class.
+
+   sio_ForwardIterator declares the following interface:
+
+`virtual ~sio_ForwardIterator( )'
+
+`virtual bool get( sc_Record& record )  = 0;'
+     Returns true if get successful, else false.  If successful,
+     the given record will be filled with the corresponding
+     contents of the current SDTS module record.
+
+`virtual void operator++() = 0;'
+     Moves the iterator forward to the next SDTS record.
+
+`virtual bool done() const = 0;'
+     Returns non-zero if no more data or reader is in error state.
+
+`virtual operator void*() const = 0;'
+     Returns a non-null void * if there's still more data to read.
+
+
+File: sdts++.info,  Node: sio_8211Reader,  Next: 8211 Forward Iterator,  Prev: sio_ForwardIterator,  Up: Readers
+
+sio_8211Reader
+..............
+
+   `sio_8211Reader', as dictated by its parent `sio_Reader', manages
+the reading of SDTS records from an input stream.  However, there is
+one issue that it has to address that is peculiar to ISO 8211 and to
+SDTS.  That is, `sio_8211Reader' needs some help to properly translate
+binary SDTS data.
+
+   The problem is that ISO 8211 can only describe a binary subfield by
+its width in bits.  For example a valid ISO 8211 binary description
+would be `B(32)', which means a subfield that is binary and has 32
+bits.  Fair enough, but what exactly do those bits represent?  A 32 bit
+signed integer?  Unsigned?  Is it a 32 bit floating point field?
+
+   SDTS should have descriptions for exactly how to translate these
+binary values.  Where these descriptions are depend on the binary value
+in question.  For example, spatial data binary types are described in
+the IREF module.  Here's a sample dump from an IREF module:
+
+     IREF : INTERNAL SPATIAL REFERENCE
+             MODN : IREF
+             RCID : 1
+             SATP : 2-TUPLE
+             XLBL : EASTING
+             YLBL : NORTHING
+             HFMT : BI32
+             SFAX : 0.01
+             SFAY : 0.01
+             XORG : 0
+             YORG : 0
+             XHRS : 2.54
+             YHRS : 2.54
+
+   The `HFMT' subfield describes the spatial data format for SDTS
+modules.  Here you can see that spatial data are represented as `BI32'.
+
+   There exist a set of classes that we call "converters" that are
+responsible for translating data between raw 8211 and SDTS subfields.
+Normally they'd be a hidden implementation detail.  Unfortunately we've
+had to expose this detail a bit to work around this problem of properly
+translating binary data.
+
+   The second `sio_8211Reader' constructor argument is optional.  You
+may provide it a map of SDTS subfield mnemonics to converters as a
+"hint" to the reader for any binary data it might encounter.  If the
+reader runs across a binary field, it will search the converter map you
+gave it for the mnemonic for that binary field; it will use the
+converter you specify if it finds a match.  If it can't find a match,
+then the read will fail.
+
+   So, to continue from the preceding example, we'd set up a reader for
+spatial data given that we want to use a BI32 converter this way:
+
+     `
+             // see "sdts++/io/sio_ConverterFactory.h" for convenient converter builder
+             converter_dictionary converters;
+     
+     
+             // ask the canonical instance of the converter factor to return
+             // a pointer to an sio_8211Converter_BI32 object
+     
+             converters["X"] = sio_ConverterFactory::instance()->get( "BI32" );
+             converters["Y"] = sio_ConverterFactory::instance()->get( "BI32" );
+     
+             sio_8211Reader  reader( my_ddf_stream, &converters );
+     '
+
+   So if "reader" happens across a binary subfield with either the
+subfield mnemonics of "X" or "Y", it will use our `BI32' converter,
+`bi32_converter'.
+
+   sio_8211Reader declares the following public members:
+
+`sio_8211Reader( istream & is,  const map<string, sio_8211Converter*> * converters = 0)'
+     Constructor taking arguments for input stream containing a
+     valid SDTS module, and optionally a pointer to binary
+     converter hints.
+
+`~sio_8211Reader()'
+
+`sio_8211Schema & getSchema()'
+     Returns the schema that the reader built from the module's
+     DDR.  (This is a test member function that allowed us to read
+       existing SDTS modules and write them again using SDTS++.
+      Please see the section on sio_Writer for more information on
+        schemas.)
+
+
+File: sdts++.info,  Node: 8211 Forward Iterator,  Next: Reader Example,  Prev: sio_8211Reader,  Up: Readers
+
+8211 Forward Iterator
+.....................
+
+   sio_8211ForwardIterator declares the following public members:
+
+`sio_8211ForwardIterator( sio_8211Reader& reader )'
+     Constructor that attaches the iterator to the given reader.
+
+`bool get( sc_Record& record )'
+     Fills the given record with the contents of the current SDTS
+      record.  Returns false if there were problems reading that
+      record.
+
+`void operator++()'
+     Move on to the next SDTS record.
+
+`bool done() const'
+     Returns true if there are no more records.
+
+`virtual operator void*() const'
+     Is non-zero if there are still records to read and if there
+     aren't any problems with the reader.
+
+
+File: sdts++.info,  Node: Reader Example,  Prev: 8211 Forward Iterator,  Up: Readers
+
+Example
+.......
+
+   Please see `contrib/prsdts/prsdts.cpp' for sample code used to read
+an SDTS module.
+
+
+File: sdts++.info,  Node: Writers,  Prev: Readers,  Up: I/O Classes
+
+Writers
+-------
+
+   Writers are the mechanisms for creating SDTS modules.  They operate
+by writing the contents of a given container of SDTS data in a specific
+physical format.  Different writers will support different formats.
+Currently the only available writer emits proper ISO 8211 based SDTS
+modules.
+
+* Menu:
+
+* sio_Writer::
+* sio_8211Writer::
+* Schemas::
+* sio_8211FieldFormat::
+* sio_8211SubfieldFormat::
+* Repeating fields::
+* A note about repeating binary fields::
+* Support for permuted tags::
+* Dropped leaders and directories::
+* Writer Example::
+
+
+File: sdts++.info,  Node: sio_Writer,  Next: sio_8211Writer,  Prev: Writers,  Up: Writers
+
+sio_Writer
+..........
+
+   Like the reader, `sio_Writer' is an abstract base class.  It is
+intended to be a parent for any writers that emit SDTS modules in the
+physical format of choice - whether that be ISO 8211 or some other
+physical representation.
+
+   (Please note that ISO 8211 is the only official physical format.
+However, one could develop a writer that writes in some sort of plain
+ASCII format, Hierarchical Data Format (HDF), etc.  In other words, use
+the sio_Writer interface to provide some form of translator from SDTS
+to another format.)
+
+   `sio_Writer', unlike `sio_Reader', does not have a corresponding
+iterator.  Since a reader doesn't itself modify a module's data, it's
+safe to have multiple iterators attached to it.  However, we felt that
+the complexity inherent in keeping track of different iterators for a
+given writer didn't buy us much.  Not only would we have to implement
+some form of record locking, but we also recognized that the majority
+of the time the writer would be used in a straightforward sequential
+fashion.  That is, by the time a writer is brought into play, the user
+typically would want to write out all the data in a single straight
+shot.
+
+   Instead of using an iterator, the user will interact directly with a
+writer.  The user will hand a writer an `sc_Record', which it will emit
+in the proper physical format to a corresponding output stream.
+Subsequent records given to the writer will simply be concatenated to
+any previous records.
+
+   sio_Writer declares the following interface:
+
+`virtual ~sio_Writer() = 0'
+
+`virtual bool put( sc_Record& ) = 0'
+     Will write the given record out to the stream.
+
+`virtual bool good( ) const = 0'
+     Returns true if the writer is in a usable state.
+
+
+File: sdts++.info,  Node: sio_8211Writer,  Next: Schemas,  Prev: sio_Writer,  Up: Writers
+
+sio_8211Writer
+..............
+
+   `sio_8211Writer' is, as you might guess, a writer for emitting
+proper 8211 encodings of SDTS data.  And, as with `sio_8211Reader',
+there are issues peculiar to 8211 that this class has to cope with.
+
+   That is, we want to write out a complete DDR before writing any DR's.
+At one time we thought of a design that would modify the DDR as each DR
+was written out - any new fields that weren't already in the DDR would
+be added on the fly.  We felt that not only would this exact a terrible
+toll on performance, but it would add greatly to this class'
+complexity.  So we decided to pay the price up front and write out a
+complete DDR before writing any DRs.
+
+   The problem here is that the user has to give enough information to
+the `sio_8211Writer' ahead of time for it to write out a proper DDR.
+The mechanism for this is called a 'schema'.  This is a data structure
+that contains all the field and subfield information that an
+`sio_8211Writer' will need to not only write out that DDR, but to also
+properly write out data for each DR.  We discuss schemas in more detail
+later.
+
+   sio_8211Writer has the following public interface:
+
+`sio_8211Writer( ofstream & ofs, const char* title, sio_8211Schema const & schema )'
+
+`sio_8211Writer( ofstream & ofs, const char* title )'
+     Constructors that take arguments to an open file stream where
+       the 8211 data will be written, a title to be used in the 8211
+     file         identifier field, and a schema describing the field
+     and subfield         structures and the appropriate subfield
+     converters.
+
+`~sio_8211Writer()'
+
+`void setFileTitle( const char* fn )'
+     Used to set the ISO 8211 file title field.
+
+`void setSchema( sio_8211Schema const & schema )'
+     Used to set the schema for the writer.
+
+`bool emitDDR()'
+     Writes the DDR to the "ofs" given in the constructor.
+     Returns false if something went wrong.
+
+`bool put( sc_Record& record )'
+     Writes the contents of the given record to the "ofs" given
+     to the constructor.  Returns false if something went wrong.
+
+`bool good( ) const;'
+     Returns true if the writer can write a record and if the last
+       operation worked ok.
+
+`void reuseLeaderAndDirectory()'
+     The next `put()' will emit a special leader and a directory.  All
+     subsequent `put()' invocations will emit only field data areas -
+     the last leader and directory will be 're-used' to save space.
+     (C.f., ISO/IEC 8211:1994(E), page 44, C.1.5.2, "repeating leaders
+     and directories").
+
+     _PLEASE NOTE THAT THIS ASSUMES THAT ALL SUBSEQUENT RECORDS HAVE
+     IDENTICAL RECORD LENGTHS AND FORMATS._  The behavior of `put()' is
+     undefined for records that do not match the format found in the
+     last leader and directory.
+
+
+File: sdts++.info,  Node: Schemas,  Next: sio_8211FieldFormat,  Prev: sio_8211Writer,  Up: Writers
+
+Schemas
+.......
+
+   A schema, which is formally known in SDTS++ as sio_8211Schema, is an
+STL container of `sio_8211FieldFormats'.  An `sio_8211FieldFormat'
+contains information about an 8211 field.  It is also a container of
+`sio_8211SubfieldFormats' - `sio_8211Subfield's describe, naturally,
+8211 subfields.  We will describe each of these in turn.
+
+
+File: sdts++.info,  Node: sio_8211FieldFormat,  Next: sio_8211SubfieldFormat,  Prev: Schemas,  Up: Writers
+
+sio_8211FieldFormat
+...................
+
+   This class corresponds to an ISO 8211 DDR field format description.
+
+   `sio_8211FieldFormat' defines the following enumerators:
+
+     `
+             typedef enum { elementary,
+                            vector,
+                            array,
+                            concatenated } data_struct_code;
+     
+             typedef enum { char_string,
+                            implicit_point,
+                            explicit_point,
+                            explicit_point_scaled,
+                            char_bit_string,
+                            bit_string,
+                            mixed_data_type } data_type_code;
+     '
+
+   sio_8211FieldFormat declares the following public members:
+
+`sio_8211FieldFormat()'
+
+`sio_8211FieldFormat( sio_8211FieldFormat const & )'
+
+`~sio_8211FieldFormat()'
+
+`sio_8211FieldFormat& operator=( sio_8211FieldFormat const & )'
+
+`data_struct_code getDataStructCode( ) const'
+     Returns the data structure code; that is, whether it's an
+     elementary, vector, array, or concatenated field.
+
+`data_type_code getDataTypeCode( ) const'
+     Returns the data type code; that is, whether it's a character
+       string, integer, real, character bit string, a raw binary
+      type, or it's a complex field comprised of subfields of mixed
+         types.
+
+`string const& getTag( ) const'
+     Returns the field tag.
+
+`string const&     getName( ) const'
+     Returns the field name.
+
+`char getFieldTerm( ) const'
+     Returns the visible field terminator character.
+
+`char getUnitTerm( ) const'
+     Returns the visible unit terminator character.
+
+`bool isRepeating() const'
+     This indicates that this field has multiple instances in
+     single record.  Although this is usually automatically handled
+        by the writer, we need to tell the writer this explicitly in
+          the case of binary repeating fields so that the proper set of
+            extra parenthesis are placed around the field format
+     string.          The isRepeating state need not be set for
+     non-binary fields.
+
+`void setDataStructCode( data_struct_code )'
+     Set the data structure code.
+
+`void setDataTypeCode( data_type_code )'
+     Set the data type code.
+
+`void setTag( string const & )'
+     Set the field tag.
+
+`void setName( string const& )'
+     Set the field name.
+
+`void setFieldTerm( char )'
+     Set the printable field terminator character.
+
+`void setUnitTerm( char )'
+     Set the printable unit terminator character
+
+`void setIsRepeating( bool repeating )'
+     Indicate that the field is repeating.  Again note that this is
+        only necessary for binary repeating fields.
+
+
+File: sdts++.info,  Node: sio_8211SubfieldFormat,  Next: Repeating fields,  Prev: sio_8211FieldFormat,  Up: Writers
+
+sio_8211SubfieldFormat
+......................
+
+   This class contains specific subfield formatting information.
+
+   This class defines the following enumerators:
+
+   `      typedef enum { A, I, R, S, C, B, X } type;
+
+   typedef enum { fixed, variable } format; '
+
+   This class declares the following members:
+
+`sio_8211SubfieldFormat()'
+
+`sio_8211SubfieldFormat( sio_8211SubfieldFormat const & )'
+
+`~sio_8211SubfieldFormat()'
+
+`sio_8211SubfieldFormat& operator=( sio_8211SubfieldFormat const & )'
+
+`string const& getLabel() const'
+
+`type getType() const'
+
+`format getFormat() const'
+
+`int getLength() const'
+
+`char getDelimiter() const'
+
+`sio_8211Converter const * getConverter() const'
+
+`void setLabel( string const & )'
+
+`void setType( type )'
+
+`void setFormat( format )'
+
+`void setLength( int )'
+     sets format to fixed as a side-effect
+
+`void setDelimiter( char )'
+     sets format to variable as a side-effect
+
+`void setConverter( sio_8211Converter const * )'
+
+File: sdts++.info,  Node: Repeating fields,  Next: A note about repeating binary fields,  Prev: sio_8211SubfieldFormat,  Up: Writers
+
+Repeating fields
+................
+
+   SDTS Part 3 section 6.4.1 describes using repeating fields as a way
+of saving space in module files.  It works by having multiple field
+instances stored in the same record.  This saves the space that would
+be required by having a DR for each of these fields; the space savings
+is derived from not writing out a leader and directory for each of
+those records.
+
+   SDTS++ supports repeating fields.  To use repeating fields, just do
+the following:
+
+  1. Set the `sio_8211FieldFormat' data structure code to an array
+
+  2.  Place multiple instances of the field that corresponds to the
+     `sio_8211FieldFormat' into the sc_Record to be passed to
+     `sio_8211Writer::put()'.  The writer will automatically detect the
+     multiple fields and put them in the same record, updating the DR's
+     directory entries appropriately.
+
+
+   Here's an example of setting up a schema for a repeating spatial
+address field:
+
+     `
+            // you can also use sio_ConverterFactory to return one for you instead
+            sio_8211Converter_I converter_I; // integer converter
+     
+            sio_8211Schema schema;
+     
+            schema.push_back( sio_8211FieldFormat() );
+     
+            sio_8211FieldFormat&  field_format = schema.back();
+     
+            field_format.setDataStructCode( sio_8211FieldFormat::array );
+            field_format.setDataTypeCode( sio_8211FieldFormat::implict_point );
+            field_format.setName( "SPATIAL ADDRESS" );
+            field_format.setTag( "SADR" );
+     
+            field_format.push_back( sio_8211SubfieldFormat() );
+     
+            field_format.back().setLabel( "X" );
+            field_format.back().setType( sio_8211SubfieldFormat::I );
+            field_format.back().setConverter( &converter_I );
+     
+            field_format.push_back( sio_8211SubfieldFormat() );
+     
+            field_format.back().setLabel( "Y" );
+            field_format.back().setType( sio_8211SubfieldFormat::I );
+            field_format.back().setConverter( &converter_I );
+     '
+
+
+File: sdts++.info,  Node: A note about repeating binary fields,  Next: Support for permuted tags,  Prev: Repeating fields,  Up: Writers
+
+A note about repeating binary fields
+....................................
+
+   Unfortunately the above mechanism breaks down in the case of binary
+repeating fields thanks to an inherent ISO 8211 limitation.  The nature
+of this problem and its workaround are detailed in this section.
+
+   The left-most parenthesis of an ISO 8211 subfield format string
+cannot be next to a repeating binary format.  So this is illegal:
+
+             (B(32))
+
+   (But, this is legal in the non-repeating case.)
+
+   The kludge as specified by the standard is to add another set of
+outer parenthesis, like this:
+
+             ((B(32)))
+
+   What's even worse, the Topological Vector Profile (TVP) allows for
+variants of the above:
+
+             ((2B(32)))
+   [This specifies a variable field that comes in two 32-bit chunks.]
+
+             (10(2B(32)))
+
+   [This specifies ten subfields of two 32-bit chunks.]
+
+   The DDR creation mechanism is pretty intelligent about generating the
+field format strings.  It will count up like subfields (i.e., those
+with identical types) and emit appropriate format text.  So, four
+string subfields will generate "4A", which will be spliced
+appropriately in the final format string.  Sadly, this general format
+string making mechanism has difficulty generating proper repeating
+binary format strings.
+
+   For example, consider a binary chunk (type '5' in 8211-speak) that
+has two subfields 32 bits each.  With the default format string creating
+mechanism, the format string would be "(2B(32))".  This doesn't have
+the necessary extra outer parenthesis.  It _should_ be "((2B(32)))".
+
+   The fix for this was to check a few things after creating a complete
+format string.  If the field format type was "binary string" and a
+special "isRepeating" flag set, then the writer would know it had a
+repeating binary field.  It'd then add the required extra set of
+parenthesis.
+
+   That resolves repeating binary fields of the type "((nB(s)))".  's'
+is the size, and that's given in the subfield type.  'n' are the number
+of binary subfields, and we can easily count those.
+
+   Unfortunately, this only handles _variable_ length repeating binary
+fields.  This mechanism does not handle the case of "(m(nB(s)))" where
+'m' is the number of times the whole shebang is repeated.
+
+   So we had to _assume_ that most uses of binary repeating fields will
+be variable.  SDTS++ does not accomodate binary fields of the type
+"(m(nB(s)))".
+
+   The following source takes the above SADR example and changes it to
+use binary repeating fields:
+
+            // you can also use sio_ConverterFactory to return one for you
+            // instead as shown in the section on sio_Reader
+     
+            sio_8211Converter_BI32 converter_BI32; // 32 bit integer converter
+     
+            sio_8211Schema schema;
+     
+            schema.push_back( sio_8211FieldFormat() );
+     
+            sio_8211FieldFormat&  field_format = schema.back();
+     
+            field_format.setDataStructCode( sio_8211FieldFormat::array );
+            field_format.setDataTypeCode( sio_8211FieldFormat::bit_string );
+            field_format.setName( "SPATIAL ADDRESS" );
+            field_format.setTag( "SADR" );
+            field_format.setIsRepeating( true ); // hint to writer to add
+                                                 // extra parenthesis for
+                                                 // binary repeating field --
+                                                 // note that this isn't
+                                                 // necessary for any other type
+                                                 // of repeating field
+     
+            field_format.push_back( sio_8211SubfieldFormat() );
+     
+            field_format.back().setLabel( "X" );
+            field_format.back().setType( sio_8211SubfieldFormat::B );
+            field_format.back().setLength( 32 );
+            field_format.back().setConverter( &converter_BI32 );
+     
+            field_format.push_back( sio_8211SubfieldFormat() );
+     
+            field_format.back().setLabel( "Y" );
+            field_format.back().setType( sio_8211SubfieldFormat::B );
+            field_format.back().setLength( 32 );
+            field_format.back().setConverter( &converter_BI32 );
+
+   See also "sio_Writer_t"/main.cpp"`s build_binary_schema() for an
+example.
+
+
+File: sdts++.info,  Node: Support for permuted tags,  Next: Dropped leaders and directories,  Prev: A note about repeating binary fields,  Up: Writers
+
+Support for permuted tags
+.........................
+
+   All ISO 8211 field tags correspond to SDTS field mnemonics with one
+notable exception.  It is possible for there to be multiple instances
+of an SDTS field that have different structures.  In that case, there
+will be a DDR field entry for each of these fields.  The problem is
+that they will have the _same_ tag.  Which means that finding the
+correct tag to properly decode a field becomes difficult because there
+is more than one tag to choose from.
+
+   The work-around the standard provides is to "permute" the field tags
+by adding a single character.  Unfortunately this means that _all_
+field tags have to have extra chracters so appended since ISO 8211
+requires that all field tags be the same size.
+
+   [see section 6.1.2 in SDTS part 3]
+
+   SDTS++ does not have an automatic mechanism for dealing with tag
+permutation.  That is, a writer will not scan a given schema and
+permute tags when it notices that there is more than one field with the
+same mnemonic, but with different structures.  This means that the onus
+is entirely on the programmer to watch for and handle tag permutation.
+
+   How to handle this?  It's easy but tedious.  First, each
+sio_8211FieldFormat in the schema needs to have an extra, arbitrary
+character added before handing that schema to the writer.  Second, use
+field mnemonics with this extra character for each sc_Field you add to
+the `sc_Record' given to the writer's `put()' call.  The permuted tags
+will get written to the file like normal tags.
+
+
+File: sdts++.info,  Node: Dropped leaders and directories,  Next: Writer Example,  Prev: Support for permuted tags,  Up: Writers
+
+Dropped leaders and directories
+...............................
+
+   ISO 8211 has another space saving feature.  DR leaders and
+directories can be dropped if they don't change from DR to DR - the
+last leader and directory will be used for all DR's.  [c.f., section
+5.2.1.2 in the 1993 ISO 8211 spec.]
+
+   The `sio_8211Writer' has a member function,
+`reuseLeaderAndDirectory()', that's used to tell it that the next
+record will be the last one to have a leader and directory.  (And the
+leader identifier field will have 'R' instead of 'D' to indicate that
+dropped leaders and directories are in effect.)  All subsequent records
+given to its put() function will be emitted without leaders and
+directories.
+
+   Please note that this obviously assumes that the record structures
+_DO NOT CHANGE_.  If they do, then the generated SDTS module file will
+almost certainly be wrong.
+
+
+File: sdts++.info,  Node: Writer Example,  Prev: Dropped leaders and directories,  Up: Writers
+
+Example
+.......
+
+   See `tests/sio_Writer.cpp'" for example code.
+
+
+File: sdts++.info,  Node: Builder Classes,  Next: Logical Classes,  Prev: I/O Classes,  Up: Using
+
+Builder Classes
+===============
+
+   Manually grinding through SDTS records for both reading and reading
+can be tedious.  The onus is on the programmer to iterate module
+records, pulling out field and subfield values.  Moreover, the
+programmer has to know in which modules to look for binary converter
+information, and when.  The builder classes offer some convenience in
+record translation both to and from SDTS modules, and in providing
+utilities for easily getting binary converter information.
+
+* Menu:
+
+* Builder SDTS Module Classes::  SDTS module specific classes
+* Binary Converter Builder::     Determine dataset binary converters
+* sb_Directory::                 Finding modules easily through CATD
+* sb_Accessor::                  Quickly finding and reading modules
+
+
+File: sdts++.info,  Node: Builder SDTS Module Classes,  Next: Binary Converter Builder,  Prev: Builder Classes,  Up: Builder Classes
+
+Builder SDTS Module Classes
+---------------------------
+
+   For each SDTS module, with few exceptions, there exists a
+corresponding class found in `sdts++/builder/' .  Each of these builder
+module classes inherits from `sb_Module', and so provide these methods:
+
+`void getMnemonic( string & mnemonic )'
+     Return the module's mnemonic
+
+`int getID() const'
+     Return the record ID for the current record
+
+`void setID( int )'
+     Set the record ID for the current record
+
+`bool getSchema( sio_8211Schema & schema )'
+     Returns the schema for the current module; this is useful for
+     providing a `sio_8211Schema' to a `sio_Writer'.
+
+`bool getRecord( sc_Record & record )'
+     Set RECORD from the current builder module object.
+
+`bool setRecord( sc_Record const & record )'
+     Populate the builder module object based on the fields and subfield
+     values in RECORD.  Return false if the record fields don't contain
+     proper data associated with that specific builder module; e.g.,
+     trying to set an IDEN builder module from an sc_Record with CATD
+     field and subfield values.
+
+`emitRecIdenField( bool )'
+     Indicate whether the builder module should create ISO 8211 records
+     with the optional ISO 8211 record identifier field.  Note, setting
+     this field is optional, and actually contains redundant
+     information.  Therefore it's not recommended to emit ISO 8211
+     record identifier fields when creating SDTS modules.
+
+   Additionally, each builder class has three sets of methods, one for
+setting module specific field/subfield values, one for getting same,
+and the third for "unsetting" values.  Moreover, each of those methods,
+in turn, have long name and mnemonic versions.
+
+   For example, the following two functions are equivalent members of
+`sb_Ldef':
+
+`bool sb_Ldef::getLayerLabel( string & ) const;'
+
+`bool sb_Ldef::getLLBL( string & ) const;'
+
+
+   They have semantic inverses of:
+
+`bool setLayerLabel( std::string const& val );'
+
+`bool setLLBL( std::string const& val );'
+
+
+   There is also a third set:
+
+`void unDefineLayerLabel( );'
+
+`void unDefineLLBL( );'
+
+
+   These last set of functions set the corresponding sc_Subfield to
+"undefined".  (That is, a NULL, or empty, value.)
+
+   Examples of use can be found in `tests/sb*t.cpp'.
+
+
+File: sdts++.info,  Node: Binary Converter Builder,  Next: sb_Directory,  Prev: Builder SDTS Module Classes,  Up: Builder Classes
+
+Binary Converter Builder
+------------------------
+
+   There exists in `sdts++/builder/sb_Utils.h':
+
+ - Method on sb_Utils: addConverters catd-fn converters
+     Takes a string CATD-FN that contains an SDTS CATD module filename,
+     and CONVERTERS which is a binary converter table, and does all the
+     necessary module look-ups to populate the binary converters.  This
+     includes looking up coordinate binary types in the IREF and DDSH
+     modules found via the given CATD module.  Returns true if
+     successfully populated the binary converts, false otherwise.
+
+
+   An example of use can be found in `tests/sb_Directory_t.cpp'.
+
+
+File: sdts++.info,  Node: sb_Directory,  Next: sb_Accessor,  Prev: Binary Converter Builder,  Up: Builder Classes
+
+sb_Directory
+------------
+
+   `sb_Directory', found in `sdts++/builder/sb_Catd.h', provides a
+mechanism for looking up SDTS CATD module information.
+
+`sb_Directory::sb_Directory()'
+
+`sb_Directory::sb_Directory( string const & catd_filename )'
+     Creates `sb_Directory' class; optional CATD_FILENAME specifies
+     location of SDTS catalog module.
+
+`bool sb_Directory::find( string const & module_name, sb_Catd & module info )'
+     Looks for MODULE_NAME in currently loaded CATD.  If found, sets
+     the given `sb_Catd' record to values for that module, and returns
+     true; otherwise, it returns false.  The `sb_Catd' object can be
+     used to query the file name of the given module.
+
+`bool sb_Directory::catdFilename( string const & filename )'
+     Tells the `sb_Directory' object to load up the CATD module found
+     at FILENAME in preparation for `find()' calls.
+
+
+File: sdts++.info,  Node: sb_Accessor,  Prev: sb_Directory,  Up: Builder Classes
+
+sb_Accessor
+-----------
+
+   `sb_Accessor', which is found in `sdts++/builder/sb_Accessor.h', is
+a convenience class for accessing arbitrary SDTS modules and records
+without having to open up each module by hand.  The CATD module is used
+to find a dataset's modules.
+
+`sb_Accessor()'
+
+`sb_Accessor( string const & catd_fn )'
+     Create an `sb_Accessor', optionally with CATD_FN that specifies
+     the file name of a CATD module.
+
+`bool sb_Accessor::readCatd( string const & catd_fn )'
+     Open and read the given CATD module specified in the CATD_FN;
+     return true if successfully read, otherwise false.
+
+`string & sb_Accessor::fileName() const;'
+     Return the current CATD module file name.
+
+`bool sb_Accesssor::get( sb_Module & module, sio_8211_converter_dictionary* cv = 0x0 );'
+     Use the CATD information to find the corresponding MODULE file,
+     open it, read in the first record, and then use that record to
+     populate the given module.  This will return false if there are no
+     more records, the SDTS module file didn't exist, or there were some
+     I/O or resource problems.  (E.g., out of memory or a corrupted
+     module.)  Will return true if the module was successfully
+     populated.  This can be invoked multiple times for modules with
+     more than one record; again get() will return false if all the
+     module records have been read. The optional converter parameter is
+     used to provide appropriate hints for reading binary data.
+
+   Note that this currently only handles single instances of a given
+module type since the internal `sb_Accessor' state tracks uniquely by
+module type.  (E.g., there are generally more than one instance of
+spatial modules, such as line, node, and polygon modules.)  So, this
+would be chiefly used as a convenience for trivially accessing
+non-spatial and attribute modules.
+
+   An example of use can be found in `tests/sb_accessor_t.cpp'.
+
+
+File: sdts++.info,  Node: Logical Classes,  Prev: Builder Classes,  Up: Using
+
+Logical Classes
+===============
+
+   These provide basic spatial primitive classes corresponding to the
+SDTS logical spatial model specification, and are found in
+`sdts++/logical'.
+
+`sl_Object.h'
+     SDTS logical abstract base class
+
+`sl_Point.h'
+     SDTS points
+
+`sl_Node.h'
+     SDTS nodes
+
+`sl_Chain.h'
+     SDTS chains
+
+`sl_String.h'
+     SDTS strings
+
+`sl_Ring.h'
+     SDTS rings
+
+`sl_Polygon.h'
+     SDTS polygons
+
+
+File: sdts++.info,  Node: Credits,  Next: Legalese,  Prev: Using,  Up: Top
+
+Credits
+*******
+
+   SDTS++ was developed at the United States Geological Survey's
+Mid-Continent Mapping Center's Software Engineering Section in Rolla,
+Missouri.
+
+Principal Architects:
+     Jamie Moyers (USGS) and Mark Coletti (SAIC)
+
+Lead Programmers:
+     Jamie Moyers (USGS) and Mark Coletti (SAIC)
+
+Programming:
+     Dave Edwards (SAIC), Justin Ferguson (USGS), Chad Slaughter (USGS),
+     James Morgan (SAIC), Shonie Maxwell (USGS)
+
+Documentation:
+     Mark Coletti (SAIC), James Morgan (SAIC), Shonie Maxwell (USGS)
+
+Special Thanks To:
+     Dr. Rong Li (Keane Federal Systems), Greg Martin (USGS), Mike
+     Childs (USGS), Paul Gray (USGS), Andrew Arensburger (UMD), David
+     Hensinger (Sandia National Labs), Steven Zhou, Bob Weber, Tim
+     Fitzgerald, Frank Warmerdam, David Weller, Alexander Gavrilov
+     <angavrilov@home.com>, Vandam <vandam@ispc1.auto.inha.ac.kr>,
+     Michal Kracik <kracik@mbox.dkm.cz>, Daniel S Custer
+     <dscuster@usgs.gov>, Todd Sprague <todd@pcavionics.com>
+
+Running Interference:
+     Phyllis Altheide (USGS), Larry Moore (USGS)
+
+
+File: sdts++.info,  Node: Legalese,  Next: Support,  Prev: Credits,  Up: Top
+
+Legalese
+********
+
+   The SDTS++ toolkit was written by employees and contractors of the
+U.S. Geological Survey.  The USGS writes software to support government
+research and data production operations, not to provide free
+alternatives to commercial software.  The SDTS++ toolkit is placed in
+the public domain in the spirit of sharing the results of scientific
+research. The library is not an official USGS product, is not
+commercial-grade software, is not guaranteed to be appropriate for all
+SDTS applications, and is not supported.  We invite user comments and
+suggestions, and will act on them as resources and as other priorities
+permit.  However, the availability of this software does not imply any
+USGS committment to fix reported bugs, provide documentation, or assist
+other organizations in learning to use the toolkit.
+
+   Neither the U.S. Government nor any agency thereof nor any of their
+employees make any warranty, expressed or implied, or assume any legal
+responsibility for the accuracy, completeness, or usefulness of any
+information, apparatus, product, or process disclosed herein or
+represent that its use would not infringe privately owned rights.
+Reference to any specific commercial product, process, or service by
+trade name, trademark, manufacturer, or otherwise does not necessarily
+constitute or imply its endorsement, recommendation, or favoring by the
+U.S. Government or any agency thereof.
+
+
+File: sdts++.info,  Node: Support,  Next: Bibliography,  Prev: Legalese,  Up: Top
+
+Support
+*******
+
+   There is no technical support for SDTS++.  However, there is a
+mailing list for SDTS related software.  One purpose of this list is to
+provide peer support for SDTS software development efforts.  Some of
+the SDTS++ development team subscribe to this list and _may_ address
+problems related to the toolkit.  After all, if you're having problems
+with the library, chances are they are having the same problems, too.
+
+   You can subscribe to this list by sending e-mail to
+<majordomo@mailrmon1.er.usgs.gov> with this line in the body of the
+message:
+
+   subscribe sdts_software <myname@my.host>
+
+   Substitute your e-mail address for <myname@my.host>.  So I'd put in:
+
+   subscribe sdts_software <mcoletti@lychnobite.org>
+
+   ... if I wanted to subscribe to the mailing list.  DO NOT USE
+<myhname@my.host>.
+
+   "sdts_software" is a technical discussion list.  There is no
+guarantee that questions posted to this list will be answered.  General
+information about SDTS should be requested by sending mail to
+<sdts@usgs.gov>.  <sdts@usgs.gov> is also a public mailing list, but it
+is monitored by USGS personnel.  Questions sent to it will receive a
+response.
+
+
+File: sdts++.info,  Node: Bibliography,  Next: Concept Index,  Prev: Support,  Up: Top
+
+Bibliography
+************
+
+   FIPS-173, Spatial Data Transfer Standard, ANSI.
+
+   ISO 8211:1994(E), ISO/IEC, Geneva, Switzerland.
+
+   STL Tutorial and Reference Guide, Musser & Saini, Addison-Wesley,
+1996.
+
+
+File: sdts++.info,  Node: Concept Index,  Prev: Bibliography,  Up: Top
+
+Concept Index
+*************
+
+* Menu:
+
+* a.begin():                             Container interface.
+* a.empty():                             Container interface.
+* a.end():                               Container interface.
+* a.max_size():                          Container interface.
+* a.rbegin():                            Container interface.
+* a.rend():                              Container interface.
+* a.size():                              Container interface.
+* a.swap(b):                             Container interface.
+* addConverters on sb_Utils:             Binary Converter Builder.
+* bool done() const:                     8211 Forward Iterator.
+* bool emitDDR():                        sio_8211Writer.
+* bool get( sc_Record& record ):         8211 Forward Iterator.
+* bool getA(string& val) const:          sc_Subfield.
+* bool getBI16(long& val) const:         sc_Subfield.
+* bool getBI24(long& val) const:         sc_Subfield.
+* bool getBI32(long& val) const:         sc_Subfield.
+* bool getBI8(long& val) const:          sc_Subfield.
+* bool getBUI16(unsigned long& val) const: sc_Subfield.
+* bool getBUI24(unsigned long& val) const: sc_Subfield.
+* bool getBUI32(unsigned long& val) const: sc_Subfield.
+* bool getBUI8(unsigned long& val) const: sc_Subfield.
+* bool getC(string& val) const:          sc_Subfield.
+* bool getFP32(double& val) const:       sc_Subfield.
+* bool getFP64(double& val) const:       sc_Subfield.
+* bool getI(long& val) const:            sc_Subfield.
+* bool getR(double& val) const:          sc_Subfield.
+* bool getS(double& val) const:          sc_Subfield.
+* bool good( ) const;:                   sio_8211Writer.
+* bool isRepeating() const:              sio_8211FieldFormat.
+* bool operator!=(sc_Subfield const& right) const: sc_Subfield.
+* bool operator==(sc_Subfield const& right) const: sc_Subfield.
+* bool put( sc_Record& record ):         sio_8211Writer.
+* Building:                              Installing.
+* char getDelimiter() const:             sio_8211SubfieldFormat.
+* char getFieldTerm( ) const:            sio_8211FieldFormat.
+* char getUnitTerm( ) const:             sio_8211FieldFormat.
+* Creating Modules:                      Writers.
+* data_struct_code getDataStructCode( ) const: sio_8211FieldFormat.
+* data_type_code getDataTypeCode( ) const: sio_8211FieldFormat.
+* format getFormat() const:              sio_8211SubfieldFormat.
+* Installing:                            Installing.
+* int getLength() const:                 sio_8211SubfieldFormat.
+* Introduction:                          Introduction.
+* Library Organization:                  Using.
+* mailing list:                          Support.
+* r = a:                                 Container interface.
+* sc_Subfield& operator=(sc_Subfield const& right): sc_Subfield.
+* sc_Subfield( ):                        sc_Subfield.
+* sc_Subfield( sc_Subfield const& right): sc_Subfield.
+* SDTS:                                  Top.
+* sio_8211Converter const * getConverter() const: sio_8211SubfieldFormat.
+* sio_8211FieldFormat& operator=( sio_8211FieldFormat const & ): sio_8211FieldFormat.
+* sio_8211FieldFormat( sio_8211FieldFormat const & ): sio_8211FieldFormat.
+* sio_8211FieldFormat():                 sio_8211FieldFormat.
+* sio_8211ForwardIterator( sio_8211Reader& reader ): 8211 Forward Iterator.
+* sio_8211Reader( istream & is,  const map<string, sio_8211Converter*> * converters = 0): sio_8211Reader.
+* sio_8211Schema & getSchema():          sio_8211Reader.
+* sio_8211SubfieldFormat& operator=( sio_8211SubfieldFormat const & ): sio_8211SubfieldFormat.
+* sio_8211SubfieldFormat( sio_8211SubfieldFormat const & ): sio_8211SubfieldFormat.
+* sio_8211SubfieldFormat():              sio_8211SubfieldFormat.
+* sio_8211Writer( ofstream & ofs, const char* title ): sio_8211Writer.
+* sio_8211Writer( ofstream & ofs, const char* title, sio_8211Schema const & schema ): sio_8211Writer.
+* sio_Reader( istream & is ):            sio_Reader.
+* Standard Template Library:             Introduction.
+* STL:                                   Introduction.
+* string const&     getName( ) const:    sio_8211FieldFormat.
+* string const& getLabel() const:        sio_8211SubfieldFormat.
+* string const& getMnemonic() const <1>: sc_Subfield.
+* string const& getMnemonic() const:     sc_Field.
+* string const& getName() const <1>:     sc_Subfield.
+* string const& getName() const:         sc_Field.
+* string const& getTag( ) const:         sio_8211FieldFormat.
+* string const& setMnemonic() const:     sc_Field.
+* string const& setMnemonic(string const& mnem): sc_Subfield.
+* string const& setName() const:         sc_Field.
+* string const& setName(string const& name): sc_Subfield.
+* SubfieldType getSubfieldType() const:  sc_Subfield.
+* support:                               Support.
+* type getType() const:                  sio_8211SubfieldFormat.
+* UNIX:                                  Installing.
+* virtual bool done() const = 0;:        sio_ForwardIterator.
+* virtual bool get( sc_Record& record )  = 0;: sio_ForwardIterator.
+* virtual bool good( ) const = 0:        sio_Writer.
+* virtual bool put( sc_Record& ) = 0:    sio_Writer.
+* virtual operator void*() const:        8211 Forward Iterator.
+* virtual operator void*() const = 0;:   sio_ForwardIterator.
+* virtual void operator++() = 0;:        sio_ForwardIterator.
+* virtual ~sio_ForwardIterator( ):       sio_ForwardIterator.
+* virtual ~sio_Reader() = 0;:            sio_Reader.
+* virtual ~sio_Writer() = 0:             sio_Writer.
+* Visual C++:                            Installing.
+* void operator++():                     8211 Forward Iterator.
+* void reuseLeaderAndDirectory():        sio_8211Writer.
+* void setA(string const& val):          sc_Subfield.
+* void setBI16(long val):                sc_Subfield.
+* void setBI24(long val):                sc_Subfield.
+* void setBI32(long val):                sc_Subfield.
+* void setBI8(long val):                 sc_Subfield.
+* void setBUI16(unsigned long val):      sc_Subfield.
+* void setBUI24(unsigned long val):      sc_Subfield.
+* void setBUI32(unsigned long val):      sc_Subfield.
+* void setBUI8(unsigned long val):       sc_Subfield.
+* void setC(string const& val):          sc_Subfield.
+* void setConverter( sio_8211Converter const * ): sio_8211SubfieldFormat.
+* void setDataStructCode( data_struct_code ): sio_8211FieldFormat.
+* void setDataTypeCode( data_type_code ): sio_8211FieldFormat.
+* void setDelimiter( char ):             sio_8211SubfieldFormat.
+* void setFieldTerm( char ):             sio_8211FieldFormat.
+* void setFileTitle( const char* fn ):   sio_8211Writer.
+* void setFormat( format ):              sio_8211SubfieldFormat.
+* void setFP32(double val):              sc_Subfield.
+* void setFP64(double val):              sc_Subfield.
+* void setI(long val):                   sc_Subfield.
+* void setIsRepeating( bool repeating ): sio_8211FieldFormat.
+* void setLabel( string const & ):       sio_8211SubfieldFormat.
+* void setLength( int ):                 sio_8211SubfieldFormat.
+* void setName( string const& ):         sio_8211FieldFormat.
+* void setR(double val):                 sc_Subfield.
+* void setS(double val):                 sc_Subfield.
+* void setSchema( sio_8211Schema const & schema ): sio_8211Writer.
+* void setTag( string const & ):         sio_8211FieldFormat.
+* void setType( type ):                  sio_8211SubfieldFormat.
+* void setUnitTerm( char ):              sio_8211FieldFormat.
+* Writers:                               Writers.
+* X u(a):                                Container interface.
+* X():                                   Container interface.
+* X(a):                                  Container interface.
+* ~sc_Subfield():                        sc_Subfield.
+* ~sio_8211FieldFormat():                sio_8211FieldFormat.
+* ~sio_8211Reader():                     sio_8211Reader.
+* ~sio_8211SubfieldFormat():             sio_8211SubfieldFormat.
+* ~sio_8211Writer():                     sio_8211Writer.
+* ~X():                                  Container interface.
+
+
+
+Tag Table:
+Node: Top369
+Node: Introduction974
+Node: Installing1538
+Node: Windows1882
+Node: UNIX3322
+Node: Using4904
+Node: Container Classes5954
+Node: Container interface6715
+Node: sc_Module8145
+Node: sc_Record8380
+Node: sc_Field8585
+Node: sc_Subfield9528
+Node: I/O Classes13622
+Node: Readers14313
+Node: Reader and Reader Iterator Base Classes15365
+Node: sio_Reader15857
+Node: sio_ForwardIterator16391
+Node: sio_8211Reader17529
+Node: 8211 Forward Iterator21271
+Node: Reader Example22059
+Node: Writers22252
+Node: sio_Writer22884
+Node: sio_8211Writer24722
+Node: Schemas27598
+Node: sio_8211FieldFormat28052
+Node: sio_8211SubfieldFormat30841
+Node: Repeating fields31928
+Node: A note about repeating binary fields34123
+Node: Support for permuted tags38593
+Node: Dropped leaders and directories40285
+Node: Writer Example41290
+Node: Builder Classes41455
+Node: Builder SDTS Module Classes42333
+Node: Binary Converter Builder44752
+Node: sb_Directory45524
+Node: sb_Accessor46518
+Node: Logical Classes48517
+Node: Credits49020
+Node: Legalese50169
+Node: Support51672
+Node: Bibliography52932
+Node: Concept Index53229
+
+End Tag Table

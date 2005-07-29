@@ -1,0 +1,26 @@
+LIBRARY   PROJ
+VERSION   1.2
+EXPORTS
+	pj_init		@1
+	pj_fwd		@2
+	pj_inv		@3
+	pj_free		@4
+	pj_transform	@5
+        pj_geocentric_to_geodetic @6
+        pj_geodetic_to_geocentric @7
+        pj_deallocate_grids       @8
+        pj_init_plus              @9
+        pj_latlong_from_proj      @10
+        pj_is_latlong             @11
+	pj_get_errno_ref	  @12
+	pj_set_finder             @13
+	pj_strerrno		  @14
+	pj_errno                  @15
+	pj_get_def		  @16
+	pj_dalloc                 @17
+        pj_is_geocent             @18
+        pj_get_release            @19
+
+
+
+

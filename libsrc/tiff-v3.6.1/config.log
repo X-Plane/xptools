@@ -1,0 +1,1458 @@
+Fri Jun 25 00:08:01 PDT 2004
+Running ./configure with arguments:
+
+This file contains information that is captured from running the configure
+script.  Lines that begin with a "+" are command lines echoed by the
+shell.  Other lines are the output of commands; usually the contents of
+test case files or the output from compilers.  If configure does the
+wrong thing, you can use the information captured here to aid in debugging.
+
+++ . ./config.site
+++ cat dummy.c
+main(int argc, char* argv) { exit(0); }
+++ cat xgnu.c
+#ifdef __GNUC__
+yes;
+#endif
+++ gcc -E xgnu.c
+++ egrep yes
+yes;
+++ gcc -o dummy dummy.c
+++ /usr/bin/gcc -g -c dummy.c
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+t.c:1: warning: conflicting types for built-in function `cos'
+++ make -f confMakefile t
+/usr/bin/gcc  -E t.c
+# 1 "t.c"
+#pragma GCC set_debug_pwd "/code/XPTools/libsrc/tiff-v3.6.1"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "t.c"
+# 1 "/usr/include/sys/types.h" 1 3 4
+# 66 "/usr/include/sys/types.h" 3 4
+# 1 "/usr/include/sys/appleapiopts.h" 1 3 4
+# 67 "/usr/include/sys/types.h" 2 3 4
+
+
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 70 "/usr/include/sys/types.h" 2 3 4
+
+
+# 1 "/usr/include/machine/types.h" 1 3 4
+# 30 "/usr/include/machine/types.h" 3 4
+# 1 "/usr/include/ppc/types.h" 1 3 4
+# 69 "/usr/include/ppc/types.h" 3 4
+typedef signed char int8_t;
+typedef unsigned char u_int8_t;
+typedef short int16_t;
+typedef unsigned short u_int16_t;
+typedef int int32_t;
+typedef unsigned int u_int32_t;
+typedef long long int64_t;
+typedef unsigned long long u_int64_t;
+
+typedef int32_t register_t;
+
+typedef long int intptr_t;
+typedef unsigned long int uintptr_t;
+# 31 "/usr/include/machine/types.h" 2 3 4
+# 73 "/usr/include/sys/types.h" 2 3 4
+
+# 1 "/usr/include/machine/ansi.h" 1 3 4
+# 33 "/usr/include/machine/ansi.h" 3 4
+# 1 "/usr/include/ppc/ansi.h" 1 3 4
+# 93 "/usr/include/ppc/ansi.h" 3 4
+typedef union {
+        char __mbstate8[128];
+        long long _mbstateL;
+} __mbstate_t;
+# 34 "/usr/include/machine/ansi.h" 2 3 4
+# 75 "/usr/include/sys/types.h" 2 3 4
+# 1 "/usr/include/machine/endian.h" 1 3 4
+# 30 "/usr/include/machine/endian.h" 3 4
+# 1 "/usr/include/ppc/endian.h" 1 3 4
+# 81 "/usr/include/ppc/endian.h" 3 4
+
+unsigned long htonl (unsigned long);
+unsigned short htons (unsigned short);
+unsigned long ntohl (unsigned long);
+unsigned short ntohs (unsigned short);
+
+# 31 "/usr/include/machine/endian.h" 2 3 4
+# 76 "/usr/include/sys/types.h" 2 3 4
+
+
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+
+
+typedef u_int64_t u_quad_t;
+typedef int64_t quad_t;
+typedef quad_t * qaddr_t;
+
+typedef char * caddr_t;
+typedef int32_t daddr_t;
+typedef int32_t dev_t;
+typedef u_int32_t fixpt_t;
+typedef u_int32_t gid_t;
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+typedef u_int32_t ino_t;
+typedef long key_t;
+typedef u_int16_t mode_t;
+typedef u_int16_t nlink_t;
+typedef quad_t off_t;
+typedef int32_t pid_t;
+typedef quad_t rlim_t;
+typedef int32_t segsz_t;
+typedef int32_t swblk_t;
+typedef u_int32_t uid_t;
+typedef u_int32_t useconds_t;
+# 118 "/usr/include/sys/types.h" 3 4
+typedef unsigned long clock_t;
+
+
+
+
+typedef long unsigned int size_t;
+
+
+
+
+typedef int ssize_t;
+
+
+
+
+typedef long time_t;
+# 147 "/usr/include/sys/types.h" 3 4
+typedef int32_t fd_mask;
+
+
+
+
+
+
+typedef struct fd_set {
+        fd_mask fds_bits[(((1024) + (((sizeof(fd_mask) * 8)) - 1)) / ((sizeof(fd_mask) * 8)))];
+} fd_set;
+# 183 "/usr/include/sys/types.h" 3 4
+struct _pthread_handler_rec
+{
+        void (*routine)(void *);
+        void *arg;
+        struct _pthread_handler_rec *next;
+};
+# 203 "/usr/include/sys/types.h" 3 4
+typedef struct _opaque_pthread_t { long sig; struct _pthread_handler_rec *cleanup_stack; char opaque[596];} *pthread_t;
+
+typedef struct _opaque_pthread_attr_t { long sig; char opaque[36]; } pthread_attr_t;
+
+typedef struct _opaque_pthread_mutexattr_t { long sig; char opaque[8]; } pthread_mutexattr_t;
+
+typedef struct _opaque_pthread_mutex_t { long sig; char opaque[40]; } pthread_mutex_t;
+
+typedef struct _opaque_pthread_condattr_t { long sig; char opaque[4]; } pthread_condattr_t;
+
+typedef struct _opaque_pthread_cond_t { long sig; char opaque[24]; } pthread_cond_t;
+
+typedef struct _opaque_pthread_rwlockattr_t { long sig; char opaque[12]; } pthread_rwlockattr_t;
+
+typedef struct _opaque_pthread_rwlock_t { long sig; char opaque[124]; } pthread_rwlock_t;
+
+typedef struct { long sig; char opaque[4]; } pthread_once_t;
+
+
+
+typedef unsigned long pthread_key_t;
+# 2 "t.c" 2
+++ cat t.c
+#include "sys/types.h"
+#include "stdlib.h"
+++ make -f confMakefile t
+typedef quad_t off_t;
+++ cat t.c
+#include "sys/types.h"
+#include "stdlib.h"
+++ make -f confMakefile t
+typedef long unsigned int size_t;
+typedef int ssize_t;
+void *alloca(size_t);
+void *bsearch(const void *, const void *, size_t,
+            size_t, int (*)(const void *, const void *));
+void *calloc(size_t, size_t);
+void *malloc(size_t);
+int mblen(const char *, size_t);
+size_t mbstowcs(wchar_t * __restrict , const char * __restrict, size_t);
+int mbtowc(wchar_t * __restrict, const char * __restrict, size_t);
+void qsort(void *, size_t, size_t,
+void *realloc(void *, size_t);
+void *valloc(size_t);
+size_t wcstombs(char * __restrict, const wchar_t * __restrict, size_t);
+int heapsort(void *, size_t, size_t,
+int mergesort(void *, size_t, size_t,
+void qsort_r(void *, size_t, size_t, void *,
+void *reallocf(void *, size_t);
+++ cat t.c
+#include "sys/types.h"
+++ make -f confMakefile t
+typedef unsigned char u_char;
+++ cat t.c
+#include "sys/types.h"
+++ make -f confMakefile t
+typedef unsigned short u_short;
+++ cat t.c
+#include "sys/types.h"
+++ make -f confMakefile t
+typedef unsigned char u_int8_t;
+typedef unsigned short u_int16_t;
+typedef unsigned int u_int32_t;
+typedef unsigned long long u_int64_t;
+typedef unsigned int u_int;
+typedef u_int64_t u_quad_t;
+typedef u_int32_t fixpt_t;
+typedef u_int32_t gid_t;
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+typedef u_int32_t ino_t;
+typedef u_int16_t mode_t;
+typedef u_int16_t nlink_t;
+typedef u_int32_t uid_t;
+typedef u_int32_t useconds_t;
+++ cat t.c
+#include "sys/types.h"
+++ make -f confMakefile t
+typedef unsigned long u_long;
+++ cat t.c
+#include <endian.h>
+#ifdef __BYTE_ORDER
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+little;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+big;
+#endif
+#endif
+++ make -f confMakefile t
+t.c:1:20: endian.h: No such file or directory
+make: *** [t] Error 1
+++ make -f confMakefile t
+t.c:1:20: endian.h: No such file or directory
+make: *** [t] Error 1
+++ cat t.c
+main() { int one = 1; char* cp = (char*)&one; exit(*cp!=0); }
+++ make -f confMakefile t
+/usr/bin/gcc  t.c
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+++ cat t.c
+/* this was lifted from GNU autoconf */
+/* Thanks to Mike Haertel and Jim Avera for this test. */
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#if defined(__osf__) || defined(_AIX)
+# define valloc malloc
+#endif
+char *valloc(), *malloc();
+
+int
+main()
+{
+  char *buf1, *buf2, *buf3;
+  int i = getpagesize(), j;
+  int i2 = getpagesize()*2;
+  int fd;
+
+  buf1 = (char *)valloc(i2);
+  buf3 = (char *)malloc(i2);
+  for (j = 0; j < i2; ++j)
+    *(buf1 + j) = rand();
+  fd = open("conftestmmap", O_CREAT | O_RDWR, 0666);
+  write(fd, buf1, i2);
+  buf2 = mmap(0, i, PROT_READ|PROT_WRITE, MAP_VARIABLE|MAP_PRIVATE, fd, 0);
+  for (j = 0; j < i; ++j)
+    if (*(buf1 + j) != *(buf2 + j))
+      exit(1);
+  lseek(fd, (long)i, 0);
+  read(fd, buf2, i); /* read into mapped memory -- file should not change */
+  /* (it does in i386 SVR4.0 - Jim Avera, jima@netcom.com) */
+  lseek(fd, (long)0, 0);
+  read(fd, buf3, i2);
+  for (j = 0; j < i2; ++j)
+    if (*(buf1 + j) != *(buf3 + j))
+      exit(1);
+  exit(0);
+}
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+t.c: In function `main':
+t.c:25: error: `MAP_VARIABLE' undeclared (first use in this function)
+t.c:25: error: (Each undeclared identifier is reported only once
+t.c:25: error: for each function it appears in.)
+make: *** [t] Error 1
+++ make -f confMakefile t
+/usr/bin/gcc  -E t.c
+# 1 "t.c"
+#pragma GCC set_debug_pwd "/code/XPTools/libsrc/tiff-v3.6.1"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "t.c"
+# 1 "/usr/include/stdio.h" 1 3 4
+# 65 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/sys/types.h" 1 3 4
+# 66 "/usr/include/sys/types.h" 3 4
+# 1 "/usr/include/sys/appleapiopts.h" 1 3 4
+# 67 "/usr/include/sys/types.h" 2 3 4
+
+
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 70 "/usr/include/sys/types.h" 2 3 4
+
+
+# 1 "/usr/include/machine/types.h" 1 3 4
+# 30 "/usr/include/machine/types.h" 3 4
+# 1 "/usr/include/ppc/types.h" 1 3 4
+# 69 "/usr/include/ppc/types.h" 3 4
+typedef signed char int8_t;
+typedef unsigned char u_int8_t;
+typedef short int16_t;
+typedef unsigned short u_int16_t;
+typedef int int32_t;
+typedef unsigned int u_int32_t;
+typedef long long int64_t;
+typedef unsigned long long u_int64_t;
+
+typedef int32_t register_t;
+
+typedef long int intptr_t;
+typedef unsigned long int uintptr_t;
+# 31 "/usr/include/machine/types.h" 2 3 4
+# 73 "/usr/include/sys/types.h" 2 3 4
+
+# 1 "/usr/include/machine/ansi.h" 1 3 4
+# 33 "/usr/include/machine/ansi.h" 3 4
+# 1 "/usr/include/ppc/ansi.h" 1 3 4
+# 93 "/usr/include/ppc/ansi.h" 3 4
+typedef union {
+        char __mbstate8[128];
+        long long _mbstateL;
+} __mbstate_t;
+# 34 "/usr/include/machine/ansi.h" 2 3 4
+# 75 "/usr/include/sys/types.h" 2 3 4
+# 1 "/usr/include/machine/endian.h" 1 3 4
+# 30 "/usr/include/machine/endian.h" 3 4
+# 1 "/usr/include/ppc/endian.h" 1 3 4
+# 81 "/usr/include/ppc/endian.h" 3 4
+
+unsigned long htonl (unsigned long);
+unsigned short htons (unsigned short);
+unsigned long ntohl (unsigned long);
+unsigned short ntohs (unsigned short);
+
+# 31 "/usr/include/machine/endian.h" 2 3 4
+# 76 "/usr/include/sys/types.h" 2 3 4
+
+
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+
+
+typedef u_int64_t u_quad_t;
+typedef int64_t quad_t;
+typedef quad_t * qaddr_t;
+
+typedef char * caddr_t;
+typedef int32_t daddr_t;
+typedef int32_t dev_t;
+typedef u_int32_t fixpt_t;
+typedef u_int32_t gid_t;
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+typedef u_int32_t ino_t;
+typedef long key_t;
+typedef u_int16_t mode_t;
+typedef u_int16_t nlink_t;
+typedef quad_t off_t;
+typedef int32_t pid_t;
+typedef quad_t rlim_t;
+typedef int32_t segsz_t;
+typedef int32_t swblk_t;
+typedef u_int32_t uid_t;
+typedef u_int32_t useconds_t;
+# 118 "/usr/include/sys/types.h" 3 4
+typedef unsigned long clock_t;
+
+
+
+
+typedef long unsigned int size_t;
+
+
+
+
+typedef int ssize_t;
+
+
+
+
+typedef long time_t;
+# 147 "/usr/include/sys/types.h" 3 4
+typedef int32_t fd_mask;
+
+
+
+
+
+
+typedef struct fd_set {
+        fd_mask fds_bits[(((1024) + (((sizeof(fd_mask) * 8)) - 1)) / ((sizeof(fd_mask) * 8)))];
+} fd_set;
+# 183 "/usr/include/sys/types.h" 3 4
+struct _pthread_handler_rec
+{
+        void (*routine)(void *);
+        void *arg;
+        struct _pthread_handler_rec *next;
+};
+# 203 "/usr/include/sys/types.h" 3 4
+typedef struct _opaque_pthread_t { long sig; struct _pthread_handler_rec *cleanup_stack; char opaque[596];} *pthread_t;
+
+typedef struct _opaque_pthread_attr_t { long sig; char opaque[36]; } pthread_attr_t;
+
+typedef struct _opaque_pthread_mutexattr_t { long sig; char opaque[8]; } pthread_mutexattr_t;
+
+typedef struct _opaque_pthread_mutex_t { long sig; char opaque[40]; } pthread_mutex_t;
+
+typedef struct _opaque_pthread_condattr_t { long sig; char opaque[4]; } pthread_condattr_t;
+
+typedef struct _opaque_pthread_cond_t { long sig; char opaque[24]; } pthread_cond_t;
+
+typedef struct _opaque_pthread_rwlockattr_t { long sig; char opaque[12]; } pthread_rwlockattr_t;
+
+typedef struct _opaque_pthread_rwlock_t { long sig; char opaque[124]; } pthread_rwlock_t;
+
+typedef struct { long sig; char opaque[4]; } pthread_once_t;
+
+
+
+typedef unsigned long pthread_key_t;
+# 66 "/usr/include/stdio.h" 2 3 4
+# 81 "/usr/include/stdio.h" 3 4
+typedef off_t fpos_t;
+# 96 "/usr/include/stdio.h" 3 4
+struct __sbuf {
+        unsigned char *_base;
+        int _size;
+};
+
+
+struct __sFILEX;
+# 130 "/usr/include/stdio.h" 3 4
+typedef struct __sFILE {
+        unsigned char *_p;
+        int _r;
+        int _w;
+        short _flags;
+        short _file;
+        struct __sbuf _bf;
+        int _lbfsize;
+
+
+        void *_cookie;
+        int (*_close)(void *);
+        int (*_read) (void *, char *, int);
+        fpos_t (*_seek) (void *, fpos_t, int);
+        int (*_write)(void *, const char *, int);
+
+
+        struct __sbuf _ub;
+        struct __sFILEX *_extra;
+        int _ur;
+
+
+        unsigned char _ubuf[3];
+        unsigned char _nbuf[1];
+
+
+        struct __sbuf _lb;
+
+
+        int _blksize;
+        fpos_t _offset;
+} FILE;
+
+
+extern FILE __sF[];
+
+# 234 "/usr/include/stdio.h" 3 4
+
+void clearerr(FILE *);
+int fclose(FILE *);
+int feof(FILE *);
+int ferror(FILE *);
+int fflush(FILE *);
+int fgetc(FILE *);
+int fgetpos(FILE *, fpos_t *);
+char *fgets(char *, int, FILE *);
+FILE *fopen(const char *, const char *);
+int fprintf(FILE *, const char *, ...);
+int fputc(int, FILE *);
+int fputs(const char *, FILE *);
+size_t fread(void *, size_t, size_t, FILE *);
+FILE *freopen(const char *, const char *, FILE *);
+int fscanf(FILE *, const char *, ...);
+int fseek(FILE *, long, int);
+int fsetpos(FILE *, const fpos_t *);
+long ftell(FILE *);
+size_t fwrite(const void *, size_t, size_t, FILE *);
+int getc(FILE *);
+int getchar(void);
+char *gets(char *);
+
+extern const int sys_nerr;
+extern const char *const sys_errlist[];
+
+void perror(const char *);
+int printf(const char *, ...);
+int putc(int, FILE *);
+int putchar(int);
+int puts(const char *);
+int remove(const char *);
+int rename (const char *, const char *);
+void rewind(FILE *);
+int scanf(const char *, ...);
+void setbuf(FILE *, char *);
+int setvbuf(FILE *, char *, int, size_t);
+int sprintf(char *, const char *, ...);
+int sscanf(const char *, const char *, ...);
+FILE *tmpfile(void);
+char *tmpnam(char *);
+int ungetc(int, FILE *);
+int vfprintf(FILE *, const char *, __builtin_va_list);
+int vprintf(const char *, __builtin_va_list);
+int vsprintf(char *, const char *, __builtin_va_list);
+int asprintf(char **, const char *, ...);
+int vasprintf(char **, const char *, __builtin_va_list);
+
+# 291 "/usr/include/stdio.h" 3 4
+
+char *ctermid(char *);
+char *ctermid_r(char *);
+FILE *fdopen(int, const char *);
+int fileno(FILE *);
+
+
+
+
+
+
+
+
+char *fgetln(FILE *, size_t *);
+void flockfile(FILE *);
+const char
+        *fmtcheck(const char *, const char *);
+int fpurge(FILE *);
+int fseeko(FILE *, fpos_t, int);
+fpos_t ftello(FILE *);
+int ftrylockfile(FILE *);
+void funlockfile(FILE *);
+int getc_unlocked(FILE *);
+int getchar_unlocked(void);
+int getw(FILE *);
+int pclose(FILE *);
+FILE *popen(const char *, const char *);
+int putc_unlocked(int, FILE *);
+int putchar_unlocked(int);
+int putw(int, FILE *);
+void setbuffer(FILE *, char *, int);
+int setlinebuf(FILE *);
+char *tempnam(const char *, const char *);
+int snprintf(char *, size_t, const char *, ...);
+int vfscanf(FILE *, const char *, __builtin_va_list);
+int vsnprintf(char *, size_t, const char *, __builtin_va_list);
+int vscanf(const char *, __builtin_va_list);
+int vsscanf(const char *, const char *, __builtin_va_list);
+FILE *zopen(const char *, const char *, int);
+
+
+
+
+
+
+FILE *funopen(const void *,
+                int (*)(void *, char *, int),
+                int (*)(void *, const char *, int),
+                fpos_t (*)(void *, fpos_t, int),
+                int (*)(void *));
+
+
+
+
+
+
+
+
+
+int __srget(FILE *);
+int __svfscanf(FILE *, const char *, __builtin_va_list);
+int __swbuf(int, FILE *);
+
+
+
+
+
+
+
+
+static __inline int __sputc(int _c, FILE *_p) {
+        if (--_p->_w >= 0 || (_p->_w >= _p->_lbfsize && (char)_c != '\n'))
+                return (*_p->_p++ = _c);
+        else
+                return (__swbuf(_c, _p));
+}
+# 2 "t.c" 2
+++ make -f confMakefile t
+/usr/bin/gcc  -E t.c
+# 1 "t.c"
+#pragma GCC set_debug_pwd "/code/XPTools/libsrc/tiff-v3.6.1"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "t.c"
+# 1 "/usr/include/unistd.h" 1 3 4
+# 71 "/usr/include/unistd.h" 3 4
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 72 "/usr/include/unistd.h" 2 3 4
+# 1 "/usr/include/sys/types.h" 1 3 4
+# 66 "/usr/include/sys/types.h" 3 4
+# 1 "/usr/include/sys/appleapiopts.h" 1 3 4
+# 67 "/usr/include/sys/types.h" 2 3 4
+
+
+
+
+
+# 1 "/usr/include/machine/types.h" 1 3 4
+# 30 "/usr/include/machine/types.h" 3 4
+# 1 "/usr/include/ppc/types.h" 1 3 4
+# 69 "/usr/include/ppc/types.h" 3 4
+typedef signed char int8_t;
+typedef unsigned char u_int8_t;
+typedef short int16_t;
+typedef unsigned short u_int16_t;
+typedef int int32_t;
+typedef unsigned int u_int32_t;
+typedef long long int64_t;
+typedef unsigned long long u_int64_t;
+
+typedef int32_t register_t;
+
+typedef long int intptr_t;
+typedef unsigned long int uintptr_t;
+# 31 "/usr/include/machine/types.h" 2 3 4
+# 73 "/usr/include/sys/types.h" 2 3 4
+
+# 1 "/usr/include/machine/ansi.h" 1 3 4
+# 33 "/usr/include/machine/ansi.h" 3 4
+# 1 "/usr/include/ppc/ansi.h" 1 3 4
+# 93 "/usr/include/ppc/ansi.h" 3 4
+typedef union {
+        char __mbstate8[128];
+        long long _mbstateL;
+} __mbstate_t;
+# 34 "/usr/include/machine/ansi.h" 2 3 4
+# 75 "/usr/include/sys/types.h" 2 3 4
+# 1 "/usr/include/machine/endian.h" 1 3 4
+# 30 "/usr/include/machine/endian.h" 3 4
+# 1 "/usr/include/ppc/endian.h" 1 3 4
+# 81 "/usr/include/ppc/endian.h" 3 4
+
+unsigned long htonl (unsigned long);
+unsigned short htons (unsigned short);
+unsigned long ntohl (unsigned long);
+unsigned short ntohs (unsigned short);
+
+# 31 "/usr/include/machine/endian.h" 2 3 4
+# 76 "/usr/include/sys/types.h" 2 3 4
+
+
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+
+
+typedef u_int64_t u_quad_t;
+typedef int64_t quad_t;
+typedef quad_t * qaddr_t;
+
+typedef char * caddr_t;
+typedef int32_t daddr_t;
+typedef int32_t dev_t;
+typedef u_int32_t fixpt_t;
+typedef u_int32_t gid_t;
+typedef u_int32_t in_addr_t;
+typedef u_int16_t in_port_t;
+typedef u_int32_t ino_t;
+typedef long key_t;
+typedef u_int16_t mode_t;
+typedef u_int16_t nlink_t;
+typedef quad_t off_t;
+typedef int32_t pid_t;
+typedef quad_t rlim_t;
+typedef int32_t segsz_t;
+typedef int32_t swblk_t;
+typedef u_int32_t uid_t;
+typedef u_int32_t useconds_t;
+# 118 "/usr/include/sys/types.h" 3 4
+typedef unsigned long clock_t;
+
+
+
+
+typedef long unsigned int size_t;
+
+
+
+
+typedef int ssize_t;
+
+
+
+
+typedef long time_t;
+# 147 "/usr/include/sys/types.h" 3 4
+typedef int32_t fd_mask;
+
+
+
+
+
+
+typedef struct fd_set {
+        fd_mask fds_bits[(((1024) + (((sizeof(fd_mask) * 8)) - 1)) / ((sizeof(fd_mask) * 8)))];
+} fd_set;
+# 183 "/usr/include/sys/types.h" 3 4
+struct _pthread_handler_rec
+{
+        void (*routine)(void *);
+        void *arg;
+        struct _pthread_handler_rec *next;
+};
+# 203 "/usr/include/sys/types.h" 3 4
+typedef struct _opaque_pthread_t { long sig; struct _pthread_handler_rec *cleanup_stack; char opaque[596];} *pthread_t;
+
+typedef struct _opaque_pthread_attr_t { long sig; char opaque[36]; } pthread_attr_t;
+
+typedef struct _opaque_pthread_mutexattr_t { long sig; char opaque[8]; } pthread_mutexattr_t;
+
+typedef struct _opaque_pthread_mutex_t { long sig; char opaque[40]; } pthread_mutex_t;
+
+typedef struct _opaque_pthread_condattr_t { long sig; char opaque[4]; } pthread_condattr_t;
+
+typedef struct _opaque_pthread_cond_t { long sig; char opaque[24]; } pthread_cond_t;
+
+typedef struct _opaque_pthread_rwlockattr_t { long sig; char opaque[12]; } pthread_rwlockattr_t;
+
+typedef struct _opaque_pthread_rwlock_t { long sig; char opaque[124]; } pthread_rwlock_t;
+
+typedef struct { long sig; char opaque[4]; } pthread_once_t;
+
+
+
+typedef unsigned long pthread_key_t;
+# 73 "/usr/include/unistd.h" 2 3 4
+# 1 "/usr/include/sys/unistd.h" 1 3 4
+# 74 "/usr/include/unistd.h" 2 3 4
+# 127 "/usr/include/unistd.h" 3 4
+
+
+void _Exit(int) __attribute__((__noreturn__));
+void _exit(int) __attribute__((__noreturn__));
+int access(const char *, int);
+unsigned int alarm(unsigned int);
+int chdir(const char *);
+int chown(const char *, uid_t, gid_t);
+int close(int);
+size_t confstr(int, char *, size_t);
+int dup(int);
+int dup2(int, int);
+int execl(const char *, const char *, ...);
+int execle(const char *, const char *, ...);
+int execlp(const char *, const char *, ...);
+int execv(const char *, char * const *);
+int execve(const char *, char * const *, char * const *);
+int execvp(const char *, char * const *);
+pid_t fork(void);
+long fpathconf(int, int);
+char *getcwd(char *, size_t);
+int getdomainname(char *, int);
+gid_t getegid(void);
+uid_t geteuid(void);
+gid_t getgid(void);
+int getgroups(int, gid_t []);
+char *getlogin(void);
+int getlogin_r(char *, int);
+pid_t getpgrp(void);
+pid_t getpid(void);
+pid_t getppid(void);
+uid_t getuid(void);
+int isatty(int);
+int link(const char *, const char *);
+off_t lseek(int, off_t, int);
+long pathconf(const char *, int);
+int pause(void);
+int pipe(int *);
+ssize_t read(int, void *, size_t);
+int rmdir(const char *);
+int setdomainname(const char *, int);
+int setgid(gid_t);
+int setpgid(pid_t, pid_t);
+pid_t setsid(void);
+int setuid(uid_t);
+unsigned int sleep(unsigned int);
+long sysconf(int);
+pid_t tcgetpgrp(int);
+int tcsetpgrp(int, pid_t);
+char *ttyname(int);
+char *ttyname_r(int, char *, size_t);
+int unlink(const char *);
+ssize_t write(int, const void *, size_t);
+
+extern char *optarg;
+extern int optind, opterr, optopt, optreset;
+int getopt(int, char * const [], const char *);
+
+
+
+struct timespec;
+struct timeval;
+
+int acct(const char *);
+int async_daemon(void);
+char *brk(const char *);
+int chroot(const char *);
+char *crypt(const char *, const char *);
+int des_cipher(const char *, char *, long, int);
+int des_setkey(const char *key);
+int encrypt(char *, int);
+void endusershell(void);
+int fchdir(int);
+int fchown(int, int, int);
+char *fflagstostr(u_long);
+int fsync(int);
+int ftruncate(int, off_t);
+int getdtablesize(void);
+int getgrouplist(const char *, int, int *, int *);
+long gethostid(void);
+int gethostname(char *, int);
+mode_t getmode(const void *, mode_t);
+int getpagesize(void) __attribute__((__const__));
+char *getpass(const char *);
+int getpgid(pid_t _pid);
+int getsid(pid_t _pid);
+char *getusershell(void);
+char *getwd(char *);
+int lockf(int, int, off_t);
+int initgroups(const char *, int);
+int iruserok(unsigned long, int, const char *, const char *);
+int issetugid(void);
+char *mkdtemp(char *);
+int mknod(const char *, mode_t, dev_t);
+int mkstemp(char *);
+int mkstemps(char *, int);
+char *mktemp(char *);
+int nfssvc(int, void *);
+int nice(int);
+ssize_t pread(int, void *, size_t, off_t);
+
+
+
+
+# 1 "/usr/include/signal.h" 1 3 4
+# 63 "/usr/include/signal.h" 3 4
+# 1 "/usr/include/sys/signal.h" 1 3 4
+# 72 "/usr/include/sys/signal.h" 3 4
+# 1 "/usr/include/machine/signal.h" 1 3 4
+# 27 "/usr/include/machine/signal.h" 3 4
+# 1 "/usr/include/ppc/signal.h" 1 3 4
+# 32 "/usr/include/ppc/signal.h" 3 4
+typedef int sig_atomic_t;
+# 50 "/usr/include/ppc/signal.h" 3 4
+typedef enum {
+        REGS_SAVED_NONE,
+        REGS_SAVED_CALLER,
+
+
+        REGS_SAVED_ALL
+} regs_saved_t;
+# 66 "/usr/include/ppc/signal.h" 3 4
+struct sigcontext {
+    int sc_onstack;
+    int sc_mask;
+        int sc_ir;
+    int sc_psw;
+    int sc_sp;
+        void *sc_regs;
+};
+# 28 "/usr/include/machine/signal.h" 2 3 4
+# 73 "/usr/include/sys/signal.h" 2 3 4
+# 136 "/usr/include/sys/signal.h" 3 4
+typedef unsigned int sigset_t;
+
+union sigval {
+
+        int sigval_int;
+        void *sigval_ptr;
+};
+
+
+
+
+
+
+
+struct sigevent {
+        int sigev_notify;
+        int sigev_signo;
+        union sigval sigev_value;
+        void (*sigev_notify_function)(union sigval);
+        pthread_attr_t *sigev_notify_attributes;
+};
+
+typedef struct __siginfo {
+        int si_signo;
+        int si_errno;
+        int si_code;
+        int si_pid;
+        unsigned int si_uid;
+        int si_status;
+        void *si_addr;
+        union sigval si_value;
+        long si_band;
+        unsigned int pad[7];
+} siginfo_t;
+# 218 "/usr/include/sys/signal.h" 3 4
+union __sigaction_u {
+        void (*__sa_handler)(int);
+        void (*__sa_sigaction)(int, struct __siginfo *,
+                       void *);
+};
+
+
+struct __sigaction {
+        union __sigaction_u __sigaction_u;
+        void (*sa_tramp)(void *, int, int, siginfo_t *, void *);
+        sigset_t sa_mask;
+        int sa_flags;
+};
+
+
+
+
+struct sigaction {
+        union __sigaction_u __sigaction_u;
+        sigset_t sa_mask;
+        int sa_flags;
+};
+# 275 "/usr/include/sys/signal.h" 3 4
+typedef void (*sig_t) (int);
+
+
+
+
+struct sigaltstack {
+        char *ss_sp;
+        int ss_size;
+        int ss_flags;
+};
+
+typedef struct sigaltstack stack_t;
+# 297 "/usr/include/sys/signal.h" 3 4
+struct sigvec {
+        void (*sv_handler)(int);
+        int sv_mask;
+        int sv_flags;
+};
+# 315 "/usr/include/sys/signal.h" 3 4
+struct sigstack {
+        char *ss_sp;
+        int ss_onstack;
+};
+# 348 "/usr/include/sys/signal.h" 3 4
+
+void (*signal (int, void (*) (int))) (int);
+
+# 64 "/usr/include/signal.h" 2 3 4
+
+
+extern const char *const sys_signame[32];
+extern const char *const sys_siglist[32];
+
+
+
+int raise(int);
+
+int kill(pid_t, int);
+int sigaction(int, const struct sigaction *, struct sigaction *);
+int sigaddset(sigset_t *, int);
+int sigaltstack(const struct sigaltstack *, struct sigaltstack *);
+int sigdelset(sigset_t *, int);
+int sigemptyset(sigset_t *);
+int sigfillset(sigset_t *);
+int sigismember(const sigset_t *, int);
+int sigpending(sigset_t *);
+int sigprocmask(int, const sigset_t *, sigset_t *);
+int sigsuspend(const sigset_t *);
+int sigwait(const sigset_t *, int *);
+
+int killpg(pid_t, int);
+int sigblock(int);
+int siginterrupt(int, int);
+int sighold(int);
+int sigrelse(int);
+int sigpause(int);
+int sigreturn(struct sigcontext *);
+int sigsetmask(int);
+int sigvec(int, struct sigvec *, struct sigvec *);
+void psignal(unsigned int, const char *);
+
+
+
+
+# 232 "/usr/include/unistd.h" 2 3 4
+
+int profil(char *, int, int, int);
+
+int pselect(int, fd_set *, fd_set *, fd_set *,
+            const struct timespec *, const sigset_t *);
+
+ssize_t pwrite(int, const void *, size_t, off_t);
+int rcmd(char **, int, const char *, const char *, const char *, int *);
+int readlink(const char *, char *, int);
+int reboot(int);
+int revoke(const char *);
+int rresvport(int *);
+int rresvport_af(int *, int);
+int ruserok(const char *, int, const char *, const char *);
+char *sbrk(int);
+int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
+int setegid(gid_t);
+int seteuid(uid_t);
+int setgroups(int, const gid_t *);
+void sethostid(long);
+int sethostname(const char *, int);
+int setkey(const char *);
+int setlogin(const char *);
+void *setmode(const char *);
+int setpgrp(pid_t pid, pid_t pgrp);
+int setregid(gid_t, gid_t);
+int setreuid(uid_t, uid_t);
+int setrgid(gid_t);
+int setruid(uid_t);
+void setusershell(void);
+int strtofflags(char **, u_long *, u_long *);
+int swapon(const char *);
+int symlink(const char *, const char *);
+void sync(void);
+int syscall(int, ...);
+int truncate(const char *, off_t);
+int ttyslot(void);
+unsigned int ualarm(unsigned int, unsigned int);
+int undelete(const char *);
+int unwhiteout(const char *);
+int usleep(unsigned int);
+void *valloc(size_t);
+pid_t vfork(void);
+
+extern char *suboptarg;
+int getsubopt(char **, char * const *, char **);
+
+
+int getattrlist(const char*,void*,void*,size_t,unsigned long);
+int setattrlist(const char*,void*,void*,size_t,unsigned long);
+int exchangedata(const char*,const char*,unsigned long);
+int checkuseraccess(const char*,uid_t,gid_t*,int,int,unsigned long);
+int getdirentriesattr(int,void*,void*,size_t,unsigned long*,unsigned long*,unsigned long*,unsigned long);
+int searchfs(const char*,void*,void*,unsigned long,unsigned long,void*);
+
+int fsctl(const char *,unsigned long,void*,unsigned long);
+
+
+
+
+# 2 "t.c" 2
+++ make -f confMakefile t
+/usr/bin/gcc  -E t.c
+# 1 "t.c"
+#pragma GCC set_debug_pwd "/code/XPTools/libsrc/tiff-v3.6.1"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "t.c"
+# 1 "/usr/include/string.h" 1 3 4
+# 60 "/usr/include/string.h" 3 4
+# 1 "/usr/include/machine/ansi.h" 1 3 4
+# 33 "/usr/include/machine/ansi.h" 3 4
+# 1 "/usr/include/ppc/ansi.h" 1 3 4
+# 93 "/usr/include/ppc/ansi.h" 3 4
+typedef union {
+        char __mbstate8[128];
+        long long _mbstateL;
+} __mbstate_t;
+# 34 "/usr/include/machine/ansi.h" 2 3 4
+# 61 "/usr/include/string.h" 2 3 4
+
+
+
+typedef long unsigned int size_t;
+
+
+
+
+
+
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 72 "/usr/include/string.h" 2 3 4
+
+
+void *memchr(const void *, int, size_t);
+int memcmp(const void *, const void *, size_t);
+void *memcpy(void *, const void *, size_t);
+void *memmove(void *, const void *, size_t);
+void *memset(void *, int, size_t);
+char *stpcpy(char *, const char *);
+char *strcasestr(const char *, const char *);
+char *strcat(char *, const char *);
+char *strchr(const char *, int);
+int strcmp(const char *, const char *);
+int strcoll(const char *, const char *);
+char *strcpy(char *, const char *);
+size_t strcspn(const char *, const char *);
+char *strerror(int);
+int strerror_r(int, char *, size_t);
+size_t strlen(const char *);
+char *strncat(char *, const char *, size_t);
+int strncmp(const char *, const char *, size_t);
+char *strncpy(char *, const char *, size_t);
+char *strnstr(const char *, const char *, size_t);
+char *strpbrk(const char *, const char *);
+char *strrchr(const char *, int);
+size_t strspn(const char *, const char *);
+char *strstr(const char *, const char *);
+char *strtok(char *, const char *);
+size_t strxfrm(char *, const char *, size_t);
+
+
+
+int bcmp(const void *, const void *, size_t);
+void bcopy(const void *, void *, size_t);
+void bzero(void *, size_t);
+int ffs(int);
+char *index(const char *, int);
+void *memccpy(void *, const void *, int, size_t);
+char *rindex(const char *, int);
+int strcasecmp(const char *, const char *);
+char *strdup(const char *);
+size_t strlcat(char *, const char *, size_t);
+size_t strlcpy(char *, const char *, size_t);
+void strmode(int, char *);
+int strncasecmp(const char *, const char *, size_t);
+char *strsep(char **, const char *);
+char *strsignal(int sig);
+char *strtok_r(char *, const char *, char **);
+void swab(const void *, void *, size_t);
+
+
+# 2 "t.c" 2
+++ make -f confMakefile t
+/usr/bin/gcc  -E t.c
+# 1 "t.c"
+#pragma GCC set_debug_pwd "/code/XPTools/libsrc/tiff-v3.6.1"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "t.c"
+# 1 "/usr/include/stdlib.h" 1 3 4
+# 61 "/usr/include/stdlib.h" 3 4
+# 1 "/usr/include/machine/ansi.h" 1 3 4
+# 33 "/usr/include/machine/ansi.h" 3 4
+# 1 "/usr/include/ppc/ansi.h" 1 3 4
+# 93 "/usr/include/ppc/ansi.h" 3 4
+typedef union {
+        char __mbstate8[128];
+        long long _mbstateL;
+} __mbstate_t;
+# 34 "/usr/include/machine/ansi.h" 2 3 4
+# 62 "/usr/include/stdlib.h" 2 3 4
+# 1 "/usr/include/machine/types.h" 1 3 4
+# 30 "/usr/include/machine/types.h" 3 4
+# 1 "/usr/include/ppc/types.h" 1 3 4
+# 64 "/usr/include/ppc/types.h" 3 4
+# 1 "/usr/include/sys/cdefs.h" 1 3 4
+# 65 "/usr/include/ppc/types.h" 2 3 4
+
+
+
+
+typedef signed char int8_t;
+typedef unsigned char u_int8_t;
+typedef short int16_t;
+typedef unsigned short u_int16_t;
+typedef int int32_t;
+typedef unsigned int u_int32_t;
+typedef long long int64_t;
+typedef unsigned long long u_int64_t;
+
+typedef int32_t register_t;
+
+typedef long int intptr_t;
+typedef unsigned long int uintptr_t;
+# 31 "/usr/include/machine/types.h" 2 3 4
+# 63 "/usr/include/stdlib.h" 2 3 4
+
+# 1 "/usr/include/alloca.h" 1 3 4
+# 32 "/usr/include/alloca.h" 3 4
+typedef long unsigned int size_t;
+
+
+
+void *alloca(size_t);
+
+# 65 "/usr/include/stdlib.h" 2 3 4
+# 75 "/usr/include/stdlib.h" 3 4
+typedef int ct_rune_t;
+
+
+
+
+typedef int rune_t;
+
+
+
+
+
+
+
+typedef int wchar_t;
+# 97 "/usr/include/stdlib.h" 3 4
+typedef int wint_t;
+
+
+typedef struct {
+        int quot;
+        int rem;
+} div_t;
+
+typedef struct {
+        long quot;
+        long rem;
+} ldiv_t;
+# 119 "/usr/include/stdlib.h" 3 4
+extern int __mb_cur_max;
+
+
+
+
+
+void abort(void) __attribute__((__noreturn__));
+int abs(int) __attribute__((__const__));
+int atexit(void (*)(void));
+double atof(const char *);
+int atoi(const char *);
+long atol(const char *);
+void *bsearch(const void *, const void *, size_t,
+            size_t, int (*)(const void *, const void *));
+void *calloc(size_t, size_t);
+div_t div(int, int) __attribute__((__const__));
+void exit(int) __attribute__((__noreturn__));
+void free(void *);
+char *getenv(const char *);
+long labs(long) __attribute__((__const__));
+ldiv_t ldiv(long, long) __attribute__((__const__));
+void *malloc(size_t);
+int mblen(const char *, size_t);
+size_t mbstowcs(wchar_t * __restrict , const char * __restrict, size_t);
+int mbtowc(wchar_t * __restrict, const char * __restrict, size_t);
+void qsort(void *, size_t, size_t,
+            int (*)(const void *, const void *));
+int rand(void);
+void *realloc(void *, size_t);
+void srand(unsigned);
+double strtod(const char *, char **);
+float strtof(const char *, char **);
+long strtol(const char *, char **, int);
+long double
+         strtold(const char *, char **);
+unsigned long
+         strtoul(const char *, char **, int);
+int system(const char *);
+void *valloc(size_t);
+int wctomb(char *, wchar_t);
+size_t wcstombs(char * __restrict, const wchar_t * __restrict, size_t);
+
+
+int putenv(const char *);
+int setenv(const char *, const char *, int);
+
+
+
+u_int32_t
+         arc4random(void);
+void arc4random_addrandom(unsigned char *dat, int datlen);
+void arc4random_stir(void);
+double drand48(void);
+double erand48(unsigned short[3]);
+long jrand48(unsigned short[3]);
+void lcong48(unsigned short[7]);
+long lrand48(void);
+long mrand48(void);
+long nrand48(unsigned short[3]);
+unsigned short
+        *seed48(unsigned short[3]);
+void srand48(long);
+
+
+char *cgetcap(char *, const char *, int);
+int cgetclose(void);
+int cgetent(char **, char **, const char *);
+int cgetfirst(char **, char **);
+int cgetmatch(const char *, const char *);
+int cgetnext(char **, char **);
+int cgetnum(char *, const char *, long *);
+int cgetset(const char *);
+int cgetstr(char *, const char *, char **);
+int cgetustr(char *, const char *, char **);
+
+int daemon(int, int);
+char *devname(int, int);
+char *getbsize(int *, long *);
+int getloadavg(double [], int);
+const char
+        *getprogname(void);
+
+long a64l(const char *);
+char *l64a(long);
+
+
+int heapsort(void *, size_t, size_t,
+            int (*)(const void *, const void *));
+char *initstate(unsigned long, char *, long);
+int mergesort(void *, size_t, size_t,
+            int (*)(const void *, const void *));
+
+
+void qsort_r(void *, size_t, size_t, void *,
+            int (*)(void *, const void *, const void *));
+int radixsort(const unsigned char **, int, const unsigned char *,
+            unsigned);
+void setprogname(const char *);
+int sradixsort(const unsigned char **, int, const unsigned char *,
+            unsigned);
+void sranddev(void);
+void srandomdev(void);
+int rand_r(unsigned *);
+long random(void);
+void *reallocf(void *, size_t);
+char *realpath(const char *, char resolved_path[]);
+char *setstate(char *);
+void srandom(unsigned long);
+
+
+typedef struct {
+        long long quot;
+        long long rem;
+} lldiv_t;
+
+long long
+         atoll(const char *);
+long long
+         llabs(long long);
+lldiv_t lldiv(long long, long long);
+long long
+         strtoll(const char *, char **, int);
+unsigned long long
+         strtoull(const char *, char **, int);
+long long
+         strtoq(const char *, char **, int);
+unsigned long long
+         strtouq(const char *, char **, int);
+
+void unsetenv(const char *);
+
+
+# 2 "t.c" 2
+++ cat t.c
+#include "fcntl.h"
+#ifdef O_RDONLY
+FOUND();
+#endif
+++ make -f confMakefile t
+FOUND();
+++ cat t.c
+#include "string.h"
+++ make -f confMakefile t
+void *memset(void *, int, size_t);
+++ cat t.c
+#include "math.h"
+++ make -f confMakefile t
+extern double floor( double );
+++ cat t.c
+#include "math.h"
+++ make -f confMakefile t
+extern double ceil( double );
+++ cat t.c
+#include "math.h"
+++ make -f confMakefile t
+extern double exp( double );
+extern double ldexp( double, int );
+extern double frexp( double, int * );
+++ cat t.c
+#include "math.h"
+++ make -f confMakefile t
+extern double pow( double, double );
+++ cat t.c
+#include "unistd.h"
+++ make -f confMakefile t
+ssize_t read(int, void *, size_t);
+ssize_t pread(int, void *, size_t, off_t);
+++ cat t.c
+#include "stdlib.h"
+++ make -f confMakefile t
+void *malloc(size_t);
+++ cat t.c
+#include "stdlib.h"
+++ make -f confMakefile t
+void *realloc(void *, size_t);
+++ cat t.c
+#include "stdlib.h"
+++ make -f confMakefile t
+void free(void *);
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+++ make -f confMakefile t
+/usr/bin/gcc  t.c 
+++ cat t.c
+int f() { return 0; }
+++ make -f confMakefile t
+/usr/bin/gcc  -fno-common -c t.c
+/usr/bin/gcc  -dynamiclib -undefined error -o t.dylib t.o
+++ make -f confMakefile t
+/usr/bin/gcc  t.c -limage
+ld: can't locate file for: -limage
+make: *** [t] Error 1
+++ make -f confMakefile t
+/usr/bin/gcc  t.c -lgl
+ld: can't locate file for: -lgl
+make: *** [t] Error 1

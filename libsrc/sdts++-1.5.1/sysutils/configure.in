@@ -1,0 +1,40 @@
+dnl
+dnl $Id: configure.in,v 1.5 2003/06/06 21:30:45 mcoletti Exp $
+dnl
+
+AC_INIT
+AC_CONFIG_SRCDIR([fileutils.h])
+
+AM_INIT_AUTOMAKE(sysutils, 0.0)
+
+
+AC_PROG_MAKE_SET
+
+AC_PREFIX_PROGRAM(gcc)
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_LANG([C++])
+
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+
+
+
+AC_SUBST(CXXFLAGS)
+AC_SUBST(CPPFLAGS)
+AC_SUBST(CFLAGS)
+AC_SUBST(DEFS)
+AC_SUBST(CXX)
+AC_SUBST(LIBS)
+
+
+echo "
+Configuration:
+  Install path:               ${prefix}
+"
+
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
+
+

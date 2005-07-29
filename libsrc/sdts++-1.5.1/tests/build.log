@@ -1,0 +1,388 @@
+...found 1198 targets...
+...updating 14 targets...
+gcc-C++-action ../tests/bin/sc_Subfield_t/gcc/debug/runtime-link-dynamic/sc_Subfield_t.o
+gcc-Link-action ../tests/bin/sc_Subfield_t/gcc/debug/runtime-link-dynamic/sc_Subfield_t
+Chmod1 ../tests/bin/sc_Subfield_t/gcc/debug/runtime-link-dynamic/sc_Subfield_t
+gcc-C++-action ../tests/bin/sl_Point_t/gcc/debug/runtime-link-dynamic/sl_Point_t.o
+In file included from ../sdts++/logical/sl_Point.h:22,
+                 from sl_Point_t.cpp:23:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_Point_t/gcc/debug/runtime-link-dynamic/sl_Point_t
+Chmod1 ../tests/bin/sl_Point_t/gcc/debug/runtime-link-dynamic/sl_Point_t
+gcc-C++-action ../tests/bin/sl_String_t/gcc/debug/runtime-link-dynamic/sl_String_t.o
+In file included from ../sdts++/logical/sl_Point.h:22,
+                 from ../sdts++/logical/sl_String.h:18,
+                 from sl_String_t.cpp:20:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_String_t/gcc/debug/runtime-link-dynamic/sl_String_t
+Chmod1 ../tests/bin/sl_String_t/gcc/debug/runtime-link-dynamic/sl_String_t
+gcc-C++-action ../tests/bin/sl_Chain_t/gcc/debug/runtime-link-dynamic/sl_Chain_t.o
+In file included from ../sdts++/logical/sl_Chain.h:22,
+                 from sl_Chain_t.cpp:20:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_Chain_t/gcc/debug/runtime-link-dynamic/sl_Chain_t
+Chmod1 ../tests/bin/sl_Chain_t/gcc/debug/runtime-link-dynamic/sl_Chain_t
+gcc-C++-action ../tests/bin/sl_Ring_t/gcc/debug/runtime-link-dynamic/sl_Ring_t.o
+In file included from ../sdts++/logical/sl_Chain.h:22,
+                 from ../sdts++/logical/sl_Ring.h:18,
+                 from sl_Ring_t.cpp:20:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_Ring_t/gcc/debug/runtime-link-dynamic/sl_Ring_t
+Chmod1 ../tests/bin/sl_Ring_t/gcc/debug/runtime-link-dynamic/sl_Ring_t
+gcc-C++-action ../tests/bin/sl_Polygon_t/gcc/debug/runtime-link-dynamic/sl_Polygon_t.o
+In file included from ../sdts++/logical/sl_Chain.h:22,
+                 from ../sdts++/logical/sl_Polygon.h:18,
+                 from sl_Polygon_t.cpp:20:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_Polygon_t/gcc/debug/runtime-link-dynamic/sl_Polygon_t
+Chmod1 ../tests/bin/sl_Polygon_t/gcc/debug/runtime-link-dynamic/sl_Polygon_t
+gcc-C++-action ../tests/bin/sl_Node_t/gcc/debug/runtime-link-dynamic/sl_Node_t.o
+In file included from ../sdts++/logical/sl_Point.h:22,
+                 from ../sdts++/logical/sl_Node.h:18,
+                 from sl_Node_t.cpp:20:
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float, float)':
+../sdts++/builder/sb_Spatial.h:89: warning: passing `float' for argument 1 of `
+   void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:109: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:113: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:117: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:121: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:129: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:133: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:137: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:141: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h: In member function `bool 
+   sb_Spatial::assign(float, float)':
+../sdts++/builder/sb_Spatial.h:171: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:172: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setI(long int)'
+../sdts++/builder/sb_Spatial.h:194: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:195: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI8(long int)'
+../sdts++/builder/sb_Spatial.h:199: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:200: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI16(long int)'
+../sdts++/builder/sb_Spatial.h:204: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:205: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI24(long int)'
+../sdts++/builder/sb_Spatial.h:209: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:210: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBI32(long int)'
+../sdts++/builder/sb_Spatial.h:218: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:219: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI8(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:223: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:224: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI16(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:228: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:229: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI24(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:233: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+../sdts++/builder/sb_Spatial.h:234: warning: passing `float' for argument 1 of 
+   `void sc_Subfield::setBUI32(long unsigned int)'
+gcc-Link-action ../tests/bin/sl_Node_t/gcc/debug/runtime-link-dynamic/sl_Node_t
+Chmod1 ../tests/bin/sl_Node_t/gcc/debug/runtime-link-dynamic/sl_Node_t
+...updated 14 targets...

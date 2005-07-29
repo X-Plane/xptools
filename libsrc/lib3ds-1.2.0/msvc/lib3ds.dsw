@@ -1,0 +1,131 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "3ds2m"=.\3ds2m.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_lib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "3ds2rib"=.\3ds2rib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_lib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "3dsdump"=.\3dsdump.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_lib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "all"=.\all.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_dll
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name 3ds2m
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name 3ds2rib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name 3dsdump
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name player
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "lib3ds_dll"=.\lib3ds_dll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "lib3ds_lib"=.\lib3ds_lib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "player"=.\player.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name lib3ds_lib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

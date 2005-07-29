@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# wrapper for 8211 sio_8211Writer test
+#
+
+test_file=foo.ddf;
+
+                                # sio_Writer_t should generate a bogus
+                                # IDEN module file; if it generated file
+                                # doesn't exist, or contains no text, then
+                                # something screwd up
+if [ -r ./sio_Writer_t ]; then
+    test -r $test_file && rm $test_file;
+    ./sio_Writer_t $test_file > /dev/null;
+    if [ $? -ne 0 ]; then exit 1; fi
+    if test -r $test_file -a `wc $test_file | awk '{print $3}'` -gt 0; then
+        exit 0;
+    fi
+else
+    echo sio_Writer_t missing ..;
+    exit 1;
+fi
+
+exit 0

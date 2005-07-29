@@ -1,0 +1,10 @@
+# Use bjam to build with this file.
+#
+# You can get bjam from http://www.boost.org/tools/build/index.html#Jam
+#
+# $Id: Jamfile,v 1.1 2003/06/10 16:24:45 mcoletti Exp $
+#
+project-root ;
+subinclude sdts++ ;
+subinclude sysutils ;
+subinclude tests ;

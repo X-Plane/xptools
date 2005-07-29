@@ -1,0 +1,74 @@
+# This is the makefile for compiling the CGAL shared object library libCGAL.so.
+#
+# N.B. There are different makefiles for creating the object library
+# and the shared object library, because the suffix rules (in particular:
+# the compiler flags) for these libraries are different.
+
+#---------------------------------------------------------------------#
+#                    include platform specific settings
+#---------------------------------------------------------------------#
+# Choose the right include file from the <cgalroot>/make directory.
+
+CGAL_MAKEFILE = ENTER_YOUR_INCLUDE_MAKEFILE_HERE
+include $(CGAL_MAKEFILE)
+
+#---------------------------------------------------------------------#
+#                    compiler flags
+#---------------------------------------------------------------------#
+
+CXXFLAGS = $(CGAL_SHARED_LIB_CXXFLAGS)
+
+#---------------------------------------------------------------------#
+#                    object files
+#---------------------------------------------------------------------#
+
+CGAL_OBJECTS = \
+aff_transformation_tags$(OBJ_EXT) \
+assertions$(OBJ_EXT) \
+Bbox_2_intersections$(OBJ_EXT) \
+Bbox_3_intersections$(OBJ_EXT) \
+cgal_logo$(OBJ_EXT) \
+Color$(OBJ_EXT) \
+File_header_extended_OFF$(OBJ_EXT) \
+File_header_OFF$(OBJ_EXT) \
+File_scanner_OFF$(OBJ_EXT) \
+File_writer_inventor$(OBJ_EXT) \
+File_writer_OFF$(OBJ_EXT) \
+File_writer_VRML_2$(OBJ_EXT) \
+File_writer_wavefront$(OBJ_EXT) \
+Geomview_stream$(OBJ_EXT) \
+Interval_arithmetic$(OBJ_EXT) \
+io$(OBJ_EXT) \
+MP_Float$(OBJ_EXT) \
+optimisation_basic$(OBJ_EXT) \
+Origin$(OBJ_EXT) \
+Polynomial$(OBJ_EXT) \
+Random$(OBJ_EXT) \
+Real_timer$(OBJ_EXT) \
+Timer$(OBJ_EXT)
+
+#---------------------------------------------------------------------#
+#                    target entries
+#---------------------------------------------------------------------#
+
+lib: $(CGAL_OBJECTS) $(CGAL_EXTRA_OBJECTS)
+	$(CGAL_SHARED_LIB_CREATE)$(CGAL_SHARED_LIB) \
+	`ls *$(OBJ_EXT) | awk '{for (i=1; i<=NF;++i){printf "$(CGAL_OBJ_PREFIX)";print $$i}}'`\
+		$(CGAL_SHARED_LIB_LDFLAGS)
+	mv $(CGAL_SHARED_LIB) '$(CGAL_LIB_DESTINATION)'
+	rm $(CGAL_OBJECTS) $(CGAL_EXTRA_OBJECTS)
+
+workaround_4_irix.o:
+	$(CGAL_CC) $(CXXFLAGS) -c Interval_arithmetic/workaround_4_irix.s
+
+workaround_4_irix6.o:
+	$(CGAL_CC) $(CXXFLAGS) -c Interval_arithmetic/workaround_4_irix6.s
+
+
+#---------------------------------------------------------------------#
+#                    suffix rules
+#---------------------------------------------------------------------#
+
+.C$(OBJ_EXT):
+	$(CGAL_CXX)  $(CXXFLAGS)  -c $<
+

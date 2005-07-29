@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# wrapper for sb_Cell test
+#
+
+sample_cell=abcdcel0.ddf;        # CELL module included for test purposes
+
+if [ -r ./${sample_cell} ]; then
+    ./sb_cell_t $sample_cell $test_file > /dev/null;
+
+                                # bail on failure
+    if [ $? -ne 0 ]; then exit 1; fi
+
+else                            # XXX obviously temporary
+    echo ${sample_cell} missing ... skipping CELL module test;
+    exit 0;
+fi
+
+exit 1
