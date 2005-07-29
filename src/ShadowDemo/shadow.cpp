@@ -322,14 +322,14 @@ int		depth_scale = 1;			// This we set up when we learn our real depth buffer si
 double	camera_heading[2] = { 0.0, 0.0 };			// Besides a heading, tilt and dist we keep
 double	camera_tilt[2] = { 40.0, 40.0 };
 double	camera_dist[2] = { 200.0, 200.0 };
-XCamera	camera_camera[2];
+xcam_class	camera_camera[2];
 int		cur_cam = 0;
 
 // Sun position
 double	light_heading = 180;
 double	light_tilt = 45;
 double	light_dist = 200;
-XCamera	light_camera;
+xcam_class	light_camera;
 
 // This matrix scales our fully projected 3-d coordinates [-1..1] into
 // texture S & T friendly coords [0..1].  We use this when calculating
@@ -694,7 +694,7 @@ void	setup_lighting(bool doLights)
 		glDisable(GL_LIGHTING);
 }
 
-void	preview_camera(XCamera * inCamera, GLfloat color[3])
+void	preview_camera(xcam_class * inCamera, GLfloat color[3])
 {
 	glColor3fv(color);
 	
@@ -1165,7 +1165,7 @@ int main(int argc, char ** argv)
 	if (!gObj.cmds.empty())
 	{
 		ObjectToDL(gListID, gObj, 1, 50, true, (PFNGLMULTITEXCOORD2FARBPROC) GL_MultiTexCoord2fARB);
-		LoadTextureFromFile("shadow.png", DECAL, true, NULL, NULL);
+		LoadTextureFromFile("shadow.png", DECAL, tex_MagentaAlpha + tex_Mipmap + tex_Linear, NULL, NULL, NULL, NULL);
 		float	minc[3], maxc[3];
 		GetObjDimensions(gObj, minc, maxc);
 		gGroundDist = max((maxc[0] - minc[0]), (maxc[2] - minc[2]));
