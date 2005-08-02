@@ -57,14 +57,8 @@ void	StringToUpper(string&);
 
 bool	HasExtNoCase(const string& inStr, const char * inExt);
 
-void	ChangePolyCmdCW(XObjCmd& ioCmd);
-
 bool	GetNextNoComments(StTextFileScanner& f, string& s);
 
-// WARNING: this is a dumb radius, a radius from 0,0,0.  It is not
-// the radius of a bounding sphere!  Why it is in this translation
-// unit is also rather questionable.
-double	GetObjRadius(const XObj& inObj);
 
 void	StripPath(string& ioPath);
 void	StripPathCP(string& ioPath);
@@ -123,8 +117,5 @@ private:
 	XPointPoolImp * mImp;
 
 };
-
-void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmd, int maxValence);
-void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence);
 
 #endif

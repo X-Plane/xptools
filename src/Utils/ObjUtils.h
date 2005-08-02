@@ -26,13 +26,15 @@
 #include "ExtrudeFunc.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
-#include "XProtoDefs.h"
+//#include "XProtoDefs.h"
 #include "XObjDefs.h"
 
-void	ApplyPrototype(const Prototype_t& 					inPrototype,
-					   const Polygon2& 						inPoints,
-					   int									inFloors,
-					   XObj&							    outObject);
+
+
+//void	ApplyPrototype(const Prototype_t& 					inPrototype,
+//					   const Polygon2& 						inPoints,
+//					   int									inFloors,
+//					   XObj&							    outObject);
 
 void	GetObjBoundingSphere(const XObj& inObj, Sphere3& outSphere);
 void 	OffsetObject(XObj& ioObj, double x, double y, double z);
@@ -45,8 +47,8 @@ void	GetObjDimensions(const XObj& inObj,
 // locations for a given object at the min and max Y locations
 // this routine extrudes them in an axis opposite the wall 
 // line to make sure X-Z coordinates are square.
-void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
-					float outNewCoords[8][3]);
+//void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
+//					float outNewCoords[8][3]);
 
 // New coords go xyz Xyz xYz XYz xyZ Xyz xYZ XYZ
 // where caps = max, lower = min
@@ -55,11 +57,33 @@ void	ConformObjectToBox(XObj& 	ioObj,
 							float		inMaxCoords[3],
 							float		inNewCoords[8][3]);
 
-bool	LoadPrototype(const char * inFileName, Prototype_t& outProto);
+//bool	LoadPrototype(const char * inFileName, Prototype_t& outProto);
 
-bool	SavePrototype(const char * inFileName, const Prototype_t& outProto);
+//bool	SavePrototype(const char * inFileName, const Prototype_t& outProto);
 
 
 void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float LOD_near, float LOD_far, void * inRef);
+
+void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmd, int maxValence);
+void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence);
+void	ChangePolyCmdCW(XObjCmd& ioCmd);
+
+// WARNING: this is a dumb radius, a radius from 0,0,0.  It is not
+// the radius of a bounding sphere!  Why it is in this translation
+// unit is also rather questionable.
+double	GetObjRadius(const XObj& inObj);
+
+// OBJECT CONVERSION
+// These convert from one obj to the other.  This can take overloaded
+// tris/quads/lines in the OBJ7 but generates separate tris/quads/lines
+// on convert-back.
+void	Obj7ToObj8(const XObj& obj7, XObj8& obj8);
+void	Obj8ToObj7(const XObj8& obj8, XObj& obj7);
+
+// This merges consecutive index commands in an OBJ8 for you.
+void	Obj8_ConsolidateIndexCommands(XObj8& obj8);
+// This calculates OBJ8 normals frmo tris, editing the point pool.
+void	Obj8_CalcNormals(XObj8& obj8);
+
 
 #endif

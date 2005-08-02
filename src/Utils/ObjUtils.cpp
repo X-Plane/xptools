@@ -37,6 +37,9 @@ enum {
 	XYZ	
 };	
 
+#if 0
+
+
 inline void Rescale2f(float	vec[2], float inset)
 {
 	float	dist = sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
@@ -357,7 +360,8 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 			curHeight += inPrototype.layers[n].height;			
 		}
 	}
-}					   
+}
+#endif					   
 
 #pragma mark -
 
@@ -454,6 +458,7 @@ void	GetObjDimensions(const XObj& inObj,
 	}
 }
 
+#if 0
 // Given two points that will be the minimum and max X
 // locations for a given object at the min and max Y locations
 // this routine extrudes them in an axis opposite the wall 
@@ -508,6 +513,8 @@ void	ExtrudeBoxZ(float minCorner[3], float maxCorner[3],
 	outNewCoords[XYZ][1] = maxCorner[1];
 	outNewCoords[XYZ][2] = maxCorner[2] + half_right[2];	
 }					
+
+#endif
 
 static	inline	float	Interp2d(
 							float		val,
@@ -592,6 +599,7 @@ void	ConformObjectToBox( XObj&		obj,
 	}
 }
 
+#if 0
 bool	LoadPrototype(const char * inFileName, Prototype_t& outProto)
 {
 	outProto.layers.clear();
@@ -712,6 +720,7 @@ bool	SavePrototype(const char * inFileName, const Prototype_t& outProto)
 	fclose(fi);
 	return true;
 }
+#endif
 
 void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float LOD_near, float LOD_far, void * inRef)
 {
@@ -759,3 +768,540 @@ void	ExtrudeFuncToObj(int polyType, int count, float * pts, float * sts, float L
 	}
 	obj->cmds.push_back(cmd);
 }
+
+void	DecomposeObjCmd(const XObjCmd& inCmd, vector<XObjCmd>& outCmds, int maxValence)
+{
+	XObjCmd	c;
+	c.cmdType = type_Poly;
+	c.cmdID = obj_Tri;
+	switch(inCmd.cmdID) {
+	case obj_Tri:
+		// Triangles never need breaking down.
+		outCmds.push_back(inCmd);
+		break;
+	case obj_Quad:
+	case obj_Quad_Hard:
+	case obj_Smoke_Black:
+	case obj_Smoke_White:
+	case obj_Movie:
+		// Quads - split into triangles if necessary.
+		if (maxValence > 3) {
+			outCmds.push_back(inCmd);
+			outCmds.back().cmdID = obj_Quad;
+		} else {
+			outCmds.push_back(inCmd);
+			outCmds.back().cmdID = obj_Tri;
+			outCmds.back().st.erase(outCmds.back().st.begin()+3);
+			outCmds.push_back(inCmd);			
+			outCmds.back().cmdID = obj_Tri;
+			outCmds.back().st.erase(outCmds.back().st.begin()+1);
+		}
+		break;
+	case obj_Polygon:
+		// Polygons might be ok.  But if we have to break them down,
+		// we generate N-2 triangles in a fan configuration.
+		if (maxValence < inCmd.st.size())
+		{
+			c.st.push_back(inCmd.st[0]);
+			c.st.push_back(inCmd.st[1]);
+			c.st.push_back(inCmd.st[2]);
+			for (int n = 2; n < inCmd.st.size(); ++n)
+			{
+				c.st[1] = inCmd.st[n-1];
+				c.st[2] = inCmd.st[n  ];
+				outCmds.push_back(c);
+			}
+		} else 
+			outCmds.push_back(inCmd);
+		break;
+	case obj_Tri_Strip:
+		// Triangle strips - every other triangle's vertices
+		// are backward!
+		c.st.push_back(inCmd.st[0]);
+		c.st.push_back(inCmd.st[1]);
+		c.st.push_back(inCmd.st[2]);
+		for (int n = 2; n < inCmd.st.size(); ++n)
+		{
+			if (n%2)
+			{
+				c.st[0] = inCmd.st[n-2];
+				c.st[1] = inCmd.st[n  ];
+				c.st[2] = inCmd.st[n-1];
+				outCmds.push_back(c);
+			} else {
+				c.st[0] = inCmd.st[n-2];
+				c.st[1] = inCmd.st[n-1];
+				c.st[2] = inCmd.st[n  ];
+				outCmds.push_back(c);
+			}
+		}
+		break;
+	case obj_Tri_Fan:
+		// Tri fan - run around the triangle fan emitting triangles.
+		c.st.push_back(inCmd.st[0]);
+		c.st.push_back(inCmd.st[1]);
+		c.st.push_back(inCmd.st[2]);
+		for (int n = 2; n < inCmd.st.size(); ++n)
+		{
+			c.st[1] = inCmd.st[n-1];
+			c.st[2] = inCmd.st[n  ];
+			outCmds.push_back(c);
+		}
+		break;
+	case obj_Quad_Strip:
+		// Quad strips can become either quads or triangles!!
+		if (maxValence > 3)
+		{
+			c.cmdID = obj_Quad;
+			c.st.push_back(inCmd.st[0]);
+			c.st.push_back(inCmd.st[1]);
+			c.st.push_back(inCmd.st[2]);
+			c.st.push_back(inCmd.st[3]);
+			for (int n = 2; n < inCmd.st.size(); n += 2)
+			{
+				c.st[0] = inCmd.st[n-2];
+				c.st[1] = inCmd.st[n-1];
+				c.st[2] = inCmd.st[n+1];
+				c.st[3] = inCmd.st[n  ];
+				outCmds.push_back(c);
+			}
+		} else {
+			c.st.push_back(inCmd.st[0]);
+			c.st.push_back(inCmd.st[1]);
+			c.st.push_back(inCmd.st[2]);
+			for (int n = 2; n < inCmd.st.size(); ++n)
+			{
+				if (n%2)
+				{
+					c.st[0] = inCmd.st[n-2];
+					c.st[1] = inCmd.st[n  ];
+					c.st[2] = inCmd.st[n-1];
+					outCmds.push_back(c);
+				} else {
+					c.st[0] = inCmd.st[n-2];
+					c.st[1] = inCmd.st[n-1];
+					c.st[2] = inCmd.st[n  ];
+					outCmds.push_back(c);
+				}
+			}
+		}
+		break;
+	default:
+		outCmds.push_back(inCmd);
+	}
+}
+
+void	DecomposeObj(const XObj& inObj, XObj& outObj, int maxValence)
+{
+	outObj.cmds.clear();
+	outObj.texture = inObj.texture;
+	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); 
+		cmd != inObj.cmds.end(); ++cmd)
+	{
+		vector<XObjCmd>		newCmds;
+		DecomposeObjCmd(*cmd, newCmds, maxValence);
+		outObj.cmds.insert(outObj.cmds.end(), newCmds.begin(), newCmds.end());
+	}
+}
+
+void	ChangePolyCmdCW(XObjCmd& ioCmd)
+{
+	vector<vec_tex>	v;
+	for (vector<vec_tex>::reverse_iterator riter = ioCmd.st.rbegin();
+		riter != ioCmd.st.rend(); ++riter)
+	{
+		v.push_back(*riter);
+	}
+	ioCmd.st = v;
+}
+
+double	GetObjRadius(const XObj& inObj)
+{
+	double	dist = 0, d;
+	for (vector<XObjCmd>::const_iterator c = inObj.cmds.begin();
+		c != inObj.cmds.end(); ++c)	
+	{
+		for (vector<vec_tex>::const_iterator v = c->st.begin();
+			v != c->st.end(); ++v)
+		{
+			d = sqrt(v->v[0] * v->v[0] +
+					 v->v[1] * v->v[1] +
+					 v->v[2] * v->v[2]);
+			if (d > dist) dist = d;
+		}
+		
+		for (vector<vec_rgb>::const_iterator p = c->rgb.begin();
+			p != c->rgb.end(); ++p)
+		{
+			d = sqrt(p->v[0] * p->v[0] +
+					 p->v[1] * p->v[1] +
+					 p->v[2] * p->v[2]);
+			if (d > dist) dist = d;
+		}
+	}
+	return dist;
+}
+
+int append_rgb(ObjPointPool * pool, const vec_rgb& rgb)
+{	
+	float	dat[6] = { rgb.v[0], rgb.v[1], rgb.v[2], rgb.rgb[0], rgb.rgb[1], rgb.rgb[2] };
+	return pool->append(dat);
+}
+
+int append_st(ObjPointPool * pool, const vec_tex& st)
+{
+	float	dat[8] = { st.v[0], st.v[1], st.v[2], 0.0, 0.0, 0.0, st.st[0], st.st[1] };
+	return pool->append(dat);
+}
+
+void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
+{
+	obj8.texture = obj7.texture + ".png";
+	obj8.texture_lit = obj7.texture + "_LIT.png";
+	obj8.indices.clear();
+	obj8.geo_tri.clear(8);
+	obj8.geo_lines.clear(6);
+	obj8.geo_lights.clear(6);
+	obj8.animation.clear();
+	obj8.lods.resize(1);
+	obj8.lods.back().near = obj8.lods.back().far = 0.0;
+	obj8.lods.back().cmds.clear();
+
+	XObjCmd8	cmd8;
+	int 		n;
+	int			idx_base;
+	
+	for (vector<XObjCmd>::const_iterator cmd = obj7.cmds.begin(); cmd != obj7.cmds.end(); ++cmd)
+	{
+		switch(cmd->cmdID) {	
+		case attr_LOD:
+			if (obj8.lods.back().far != 0.0)
+				obj8.lods.push_back(XObjLOD8());
+			obj8.lods.back().near = cmd->attributes[0];
+			obj8.lods.back().far = cmd->attributes[1];
+			break;
+		case obj_Light:
+			cmd8.cmd = obj8_Lights;
+			cmd8.idx_offset = obj8.geo_lights.count();
+			cmd8.idx_count = cmd->rgb.size();
+			for (n = 0; n < cmd->rgb.size(); ++n)
+				append_rgb(&obj8.geo_lights, cmd->rgb[n]);
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;			
+		case obj_Line:
+			cmd8.cmd = obj8_Lines;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = cmd->rgb.size();
+			for (n = 0; n < cmd->rgb.size(); ++n)
+				obj8.indices.push_back(append_rgb(&obj8.geo_lines, cmd->rgb[n]));
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		case obj_Tri:
+			cmd8.cmd = obj8_Tris;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = cmd->st.size();
+			idx_base = obj8.geo_tri.count();
+			for (n = 0; n < cmd->st.size(); ++n)
+				append_st(&obj8.geo_tri, cmd->st[n]);
+			for (n = 0; n < cmd->st.size(); ++n)
+				obj8.indices.push_back(idx_base+n);			
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		case obj_Quad:
+		case obj_Movie:
+		case obj_Quad_Hard:
+		case obj_Quad_Cockpit:
+			// TODO - quad attrys
+			cmd8.cmd = obj8_Tris;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = cmd->st.size() * 3 / 2;
+			idx_base = obj8.geo_tri.count();
+			for (n = 0; n < cmd->st.size(); ++n)
+				append_st(&obj8.geo_tri, cmd->st[n]);			
+			for (n = 0; n < cmd->st.size(); n += 4)
+			{
+				obj8.indices.push_back(idx_base+n+0);
+				obj8.indices.push_back(idx_base+n+1);
+				obj8.indices.push_back(idx_base+n+2);
+				obj8.indices.push_back(idx_base+n+0);
+				obj8.indices.push_back(idx_base+n+2);
+				obj8.indices.push_back(idx_base+n+3);
+			}
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		case obj_Polygon:
+		case obj_Tri_Fan:		
+			cmd8.cmd = obj8_Tris;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = (cmd->st.size()-2)*3;
+			idx_base = obj8.geo_tri.count();
+			for (n = 0; n < cmd->st.size(); ++n)
+				append_st(&obj8.geo_tri, cmd->st[n]);			
+			for (n = 2; n < cmd->st.size(); ++n)
+			{
+				obj8.indices.push_back(idx_base);
+				obj8.indices.push_back(idx_base+n-1);
+				obj8.indices.push_back(idx_base+n-0);
+			}
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		case obj_Quad_Strip:
+			cmd8.cmd = obj8_Tris;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = (cmd->st.size()-2)*3;
+			idx_base = obj8.geo_tri.count();
+			for (n = 0; n < cmd->st.size(); ++n)
+				append_st(&obj8.geo_tri, cmd->st[n]);			
+			for (n = 2; n < cmd->st.size(); n += 2)
+			{
+				obj8.indices.push_back(idx_base+n-2);
+				obj8.indices.push_back(idx_base+n-1);
+				obj8.indices.push_back(idx_base+n+1);
+				obj8.indices.push_back(idx_base+n-2);
+				obj8.indices.push_back(idx_base+n+1);
+				obj8.indices.push_back(idx_base+n+0);
+			}
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		case obj_Tri_Strip:
+			cmd8.cmd = obj8_Tris;
+			cmd8.idx_offset = obj8.indices.size();
+			cmd8.idx_count = (cmd->st.size()-2)*3;
+			idx_base = obj8.geo_tri.count();
+			for (n = 0; n < cmd->st.size(); ++n)
+				append_st(&obj8.geo_tri, cmd->st[n]);			
+			for (n = 2; n < cmd->st.size(); ++n)
+			{
+				if (n % 2)
+				{
+					obj8.indices.push_back(idx_base+n-2);
+					obj8.indices.push_back(idx_base+n-0);
+					obj8.indices.push_back(idx_base+n-1);
+				} else {
+					obj8.indices.push_back(idx_base+n-2);
+					obj8.indices.push_back(idx_base+n-1);
+					obj8.indices.push_back(idx_base+n-0);
+				}
+			}
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+
+		case attr_Shade_Flat:			
+		case attr_Shade_Smooth:
+		case attr_Ambient_RGB:
+		case attr_Diffuse_RGB:
+		case attr_Emission_RGB:
+		case attr_Specular_RGB:
+		case attr_Shiny_Rat:
+		case attr_No_Depth:
+		case attr_Depth:
+		case attr_Reset:
+		case attr_Cull:
+		case attr_NoCull:
+		case attr_Offset:
+		case obj_Smoke_Black:
+		case obj_Smoke_White:
+
+			cmd8.cmd = cmd->cmdID;
+			for (n = 0; n < cmd->attributes.size(); ++n)
+				cmd8.params[n] = cmd->attributes[n];
+			obj8.lods.back().cmds.push_back(cmd8);
+			break;
+		}
+	}
+	Obj8_ConsolidateIndexCommands(obj8);
+	Obj8_CalcNormals(obj8);
+}
+
+void	Obj8_ConsolidateIndexCommands(XObj8& obj8)
+{
+	for (vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
+	{
+		vector<XObjCmd8>::iterator cmd = lod->cmds.begin(), next;
+		while (cmd != lod->cmds.end())
+		{
+			next = cmd;
+			++next;
+			if (next != lod->cmds.end())
+			{
+				if (next->cmd == cmd->cmd &&
+					(cmd->cmd == obj8_Tris || cmd->cmd == obj8_Lines || cmd->cmd == obj8_Lights) &&
+					((cmd->idx_offset + cmd->idx_count) == next->idx_offset))
+				{
+					cmd->idx_count += next->idx_count;
+					cmd = lod->cmds.erase(next);
+					--cmd;
+				} else
+					++cmd;
+			} else
+				++cmd;
+		}
+	}
+}
+
+void	Obj8_CalcNormals(XObj8& obj8)
+{
+	for (vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
+	for (vector<XObjCmd8>::iterator  cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
+	if (cmd->cmd == obj8_Tris)
+	{
+		for (int o = 0; o < cmd->idx_count; o += 3)
+		{
+			int i1 = obj8.indices[cmd->idx_offset + o + 0];
+			int i2 = obj8.indices[cmd->idx_offset + o + 1];
+			int i3 = obj8.indices[cmd->idx_offset + o + 2];
+			
+			float p1[8], p2[8], p3[8];
+			memcpy(p1, obj8.geo_tri.get(i1), sizeof (p1));
+			memcpy(p2, obj8.geo_tri.get(i2), sizeof (p2));
+			memcpy(p3, obj8.geo_tri.get(i3), sizeof (p3));
+			
+			float n[3], a[3], b[3];
+			a[0] = p3[0] - p1[0];		b[0] = p2[0] - p1[0];
+			a[1] = p3[1] - p1[1];		b[1] = p2[1] - p1[1];
+			a[2] = p3[2] - p1[2];		b[2] = p2[2] - p1[2];
+			
+			n[0]= a[1]*b[2]-b[1]*a[2];
+			n[1]=-a[0]*b[2]+b[0]*a[2];
+			n[2]= a[0]*b[1]-b[0]*a[1];
+
+			float len=sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]);
+
+			if(len==0.0){				
+				n[0]=0.0;				
+				n[1]=1.0;
+				n[2]=0.0;}
+			else{			len=1.0/len;
+				n[0]*=len;
+				n[1]*=len;
+				n[2]*=len;}
+
+			p1[3] = p2[3] = p3[3] = n[0];
+			p1[4] = p2[4] = p3[4] = n[1];
+			p1[5] = p2[5] = p3[5] = n[2];
+			
+			obj8.geo_tri.set(i1, p1);
+			obj8.geo_tri.set(i2, p2);
+			obj8.geo_tri.set(i3, p3);
+			
+		}
+	}
+}
+
+void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
+{
+	obj7.texture = obj8.texture;
+	if (obj7.texture.size() > 4)
+		obj7.texture.erase(obj7.texture.size()-4);
+	
+	obj7.cmds.clear();
+	
+	XObjCmd	cmd7;
+	vec_tex	st;
+	vec_rgb rgb;
+	int n;
+	
+	for (vector<XObjLOD8>::const_iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
+	{
+		cmd7.st.clear();
+		cmd7.rgb.clear();
+		if (lod->far != 0.0)
+		{
+			cmd7.cmdType = type_Attr;
+			cmd7.cmdID = attr_LOD;
+			cmd7.attributes.resize(2);
+			cmd7.attributes[0] = lod->near;
+			cmd7.attributes[1] = lod->far;
+			obj7.cmds.push_back(cmd7);
+			cmd7.attributes.clear();
+		}
+		
+		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
+		{
+			switch(cmd->cmd) {
+			case obj8_Tris:
+				cmd7.cmdType = type_Poly;
+				cmd7.cmdID = obj_Tri;
+				for (n = 0; n < cmd->idx_count; ++n)
+				{
+					const float * p = obj8.geo_tri.get(obj8.indices[cmd->idx_offset+n]);
+					st.v[0] = p[0];
+					st.v[1] = p[1];
+					st.v[2] = p[2];
+					st.st[0] = p[6];
+					st.st[1] = p[7];
+					cmd7.st.push_back(st);
+					if ((n % 3) == 2)
+					{
+						obj7.cmds.push_back(cmd7);	
+						cmd7.st.clear();
+					}
+				}
+				break;
+			case obj8_Lines:
+				cmd7.cmdType = type_PtLine;
+				cmd7.cmdID = obj_Line;
+				for (n = 0; n < cmd->idx_count; ++n)
+				{
+					const float * p = obj8.geo_lines.get(obj8.indices[cmd->idx_offset+n]);
+					rgb.v[0] = p[0];
+					rgb.v[1] = p[1];
+					rgb.v[2] = p[2];
+					rgb.rgb[0] = p[3];
+					rgb.rgb[1] = p[4];
+					rgb.rgb[2] = p[5];
+					cmd7.rgb.push_back(rgb);
+					if ((n % 2) == 1)
+					{
+						obj7.cmds.push_back(cmd7);	
+						cmd7.rgb.clear();
+					}
+				}
+				break;
+			case obj8_Lights:
+				cmd7.cmdType = type_PtLine;
+				cmd7.cmdID = obj_Light;
+				for (n = 0; n < cmd->idx_count; ++n)
+				{
+					const float * p = obj8.geo_lights.get(cmd->idx_offset+n);
+					rgb.v[0] = p[0];
+					rgb.v[1] = p[1];
+					rgb.v[2] = p[2];
+					rgb.rgb[0] = p[3];
+					rgb.rgb[1] = p[4];
+					rgb.rgb[2] = p[5];
+					cmd7.rgb.push_back(rgb);
+					obj7.cmds.push_back(cmd7);	
+					cmd7.rgb.clear();
+				}
+				break;
+
+			case attr_Shade_Flat:
+			case attr_Shade_Smooth:
+			case attr_Ambient_RGB:
+			case attr_Diffuse_RGB:
+			case attr_Emission_RGB:
+			case attr_Specular_RGB:
+			case attr_Shiny_Rat:
+			case attr_No_Depth:
+			case attr_Depth:
+			case attr_LOD:
+			case attr_Reset:
+			case attr_Cull:
+			case attr_NoCull:
+			case attr_Offset:
+				{
+					cmd7.cmdID = cmd->cmd;
+					cmd7.cmdType = type_Attr;
+					int idx = FindIndexForCmd(cmd->cmd);
+					for (n = 0; n < gCmds[idx].elem_count; ++n)
+						cmd7.attributes.push_back(cmd->params[n]);
+					obj7.cmds.push_back(cmd7);	
+					cmd7.attributes.clear();						
+				}
+				break;
+			}				
+		}
+	}
+}
+
