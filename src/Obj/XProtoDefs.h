@@ -1,3 +1,5 @@
+THIS FILE IS OBSOLETE
+
 /* 
  * Copyright (c) 2004, Laminar Research.
  *

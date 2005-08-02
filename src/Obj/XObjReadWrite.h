@@ -24,8 +24,12 @@
 #define XOBJREADWRITE_H
 
 struct	XObj;
+struct	XObj8;
 
 bool	XObjRead(const char * inFile, XObj& outObj);
 bool	XObjWrite(const char * inFile, const XObj& inObj);
+
+bool	XObj8Read(const char * inFile, XObj8& outObj);
+bool	XObj8Write(const char * inFile, const XObj8& outObj);
 
 #endif

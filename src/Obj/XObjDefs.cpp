@@ -24,51 +24,68 @@
 
 cmd_info	gCmds[] = {
 
-{	obj_End,			type_None,		"end",				0 },
-{	obj_Light,			type_PtLine,	"light",			1 },
-{   obj_Line,			type_PtLine,    "line",				2 },
-{   obj_Tri,			type_Poly,		"tri",				3 },
-{   obj_Quad,			type_Poly,		"quad",				4 },
-{   obj_Quad_Cockpit,	type_Poly,		"quad_cockpit",		4 },
-{   obj_Quad_Hard,		type_Poly,		"quad_hard",		4 },
-{   obj_Smoke_Black,	type_Attr,		"smoke_black",		4 },
-{   obj_Smoke_White,	type_Attr,		"smoke_white",		4 },
-{   obj_Movie,			type_Poly,		"quad_movie",		4 },
-{   obj_Polygon,		type_Poly,		"polygon",			0 },
-{   obj_Quad_Strip,		type_Poly,		"quad_strip",		0 },
-{   obj_Tri_Strip,		type_Poly,		"tri_strip",		0 },
-{   obj_Tri_Fan,		type_Poly,		"tri_fan",			0 },
-{   attr_Shade_Flat,	type_Attr,		"ATTR_shade_flat",	0 },
-{   attr_Shade_Smooth,	type_Attr,		"ATTR_shade_smooth",0 },
-{   attr_Shade_Flat,	type_Attr,		"shade_flat",		0 },
-{   attr_Shade_Smooth,	type_Attr,		"shade_smooth",		0 },
-{   attr_Ambient_RGB,	type_Attr,		"ATTR_ambient_rgb",	3 },
-{   attr_Diffuse_RGB,	type_Attr,		"ATTR_difuse_rgb",	3 },
-{   attr_Emission_RGB,	type_Attr,		"ATTR_emission_rgb",3 },
-{	attr_Specular_RGB,	type_Attr,		"ATTR_specular_rgb",3 },
-{   attr_Shiny_Rat,		type_Attr,		"ATTR_shiny_rat",	1 },
-{   attr_No_Depth,		type_Attr,		"ATTR_no_depth",	0 },
-{	attr_Depth,			type_Attr,		"ATTR_depth",		0 },
-{   attr_LOD,			type_Attr,		"ATTR_LOD",			2 },
-{	attr_Reset,			type_Attr,		"ATTR_reset",		0 },
-{	attr_Cull,			type_Attr,		"ATTR_cull",		0 },
-{	attr_NoCull,		type_Attr,		"ATTR_no_cull",		0 },
-{	attr_Offset,		type_Attr,		"ATTR_poly_os",		1 },
-{   attr_Max,			type_None,		NULL,				0 }
+{	obj_End,			type_None,		"end",				0, 1, 0 },
+{	obj_Light,			type_PtLine,	"light",			1, 1, 0 },
+{   obj_Line,			type_PtLine,    "line",				2, 1, 0 },
+{   obj_Tri,			type_Poly,		"tri",				3, 1, 0 },
+{   obj_Quad,			type_Poly,		"quad",				4, 1, 0 },
+{   obj_Quad_Cockpit,	type_Poly,		"quad_cockpit",		4, 1, 0 },
+{   obj_Quad_Hard,		type_Poly,		"quad_hard",		4, 1, 0 },
+{   obj_Smoke_Black,	type_Attr,		"smoke_black",		4, 1, 1 },
+{   obj_Smoke_White,	type_Attr,		"smoke_white",		4, 1, 1 },
+{   obj_Movie,			type_Poly,		"quad_movie",		4, 1, 0 },
+{   obj_Polygon,		type_Poly,		"polygon",			0, 1, 0 },
+{   obj_Quad_Strip,		type_Poly,		"quad_strip",		0, 1, 0 },
+{   obj_Tri_Strip,		type_Poly,		"tri_strip",		0, 1, 0 },
+{   obj_Tri_Fan,		type_Poly,		"tri_fan",			0, 1, 0 },
+{   attr_Shade_Flat,	type_Attr,		"shade_flat",		0, 1, 0 },
+{   attr_Shade_Smooth,	type_Attr,		"shade_smooth",		0, 1, 0 },
+{   attr_Shade_Flat,	type_Attr,		"ATTR_shade_flat",	0, 1, 1 },
+{   attr_Shade_Smooth,	type_Attr,		"ATTR_shade_smooth",0, 1, 1 },
+{   attr_Ambient_RGB,	type_Attr,		"ATTR_ambient_rgb",	3, 1, 1 },
+{   attr_Diffuse_RGB,	type_Attr,		"ATTR_difuse_rgb",	3, 1, 1 },
+{   attr_Emission_RGB,	type_Attr,		"ATTR_emission_rgb",3, 1, 1 },
+{	attr_Specular_RGB,	type_Attr,		"ATTR_specular_rgb",3, 1, 1 },
+{   attr_Shiny_Rat,		type_Attr,		"ATTR_shiny_rat",	1, 1, 1 },
+{   attr_No_Depth,		type_Attr,		"ATTR_no_depth",	0, 1, 1 },
+{	attr_Depth,			type_Attr,		"ATTR_depth",		0, 1, 1 },
+{   attr_LOD,			type_Attr,		"ATTR_LOD",			2, 1, 1 },
+{	attr_Reset,			type_Attr,		"ATTR_reset",		0, 1, 1 },
+{	attr_Cull,			type_Attr,		"ATTR_cull",		0, 1, 1 },
+{	attr_NoCull,		type_Attr,		"ATTR_no_cull",		0, 1, 1 },
+{	attr_Offset,		type_Attr,		"ATTR_poly_os",		1, 1, 1 },
+
+{	obj8_Tris,			type_Indexed,	"TRIS",				2,0,1},
+{	obj8_Lines,			type_Indexed,	"LINES",			2,0,1},
+{	obj8_Lights,		type_Indexed,	"LIGHTS",			2,0,1},
+{	attr_Tex_Normal,	type_Attr,		"ATTR_no_cockpit",	0,0,1},
+{	attr_Tex_Cockpit,	type_Attr,		"ATTR_cockpit",		0,0,1},
+{	attr_No_Blend,		type_Attr,		"ATTR_no_blend",	0,0,1},
+{	attr_Blend,			type_Attr,		"ATTR_blend",		0,0,1},
+{	attr_No_Hard,		type_Attr,		"ATTR_no_hard",		0,0,1},
+{	attr_Hard,			type_Attr,		"ATTR_hard",		0,0,1},
+{	anim_Begin,			type_Anim,		"ANIM_begin",		0,0,1},
+{	anim_End,			type_Anim,		"ANIM_end",			0,0,1},
+{	anim_Rotate,		type_Anim,		"ANIM_rotate",		7,0,1},
+{	anim_Translate,		type_Anim,		"ANIM_translate",	8,0,1},
+
+{   attr_Max,			type_None,		NULL,				0, 0, 0 }
+
 };
 
 
-int	FindObjCmd(const char * inToken)
+int	FindObjCmd(const char * inToken, bool obj_8)
 {
 	int n = 0;
 	while (gCmds[n].name)
 	{
 		if (!strcmp(inToken, gCmds[n].name))
+		if ((!obj_8 && gCmds[n].v7) || (obj_8 && gCmds[n].v8))
 			return n;
 		++n;
 	}
 	
-	return attr_Max;
+	return sizeof(gCmds) / sizeof(gCmds[0])-1;
 }
 
 int	FindIndexForCmd(int inCmd)
@@ -80,5 +97,5 @@ int	FindIndexForCmd(int inCmd)
 			return n;
 		++n;
 	}
-	return 0;
+	return sizeof(gCmds) / sizeof(gCmds[0])-1;
 }
