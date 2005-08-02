@@ -35,7 +35,7 @@
 #include <dime/State.h>
 #include <dime/convert/convert.h>
 
-#include "XUtils.h"
+#include "ObjUtils.h"
 
 bool	ReadObjDXF(const char * inFilePath, XObj& obj, bool inReversePoly)
 {

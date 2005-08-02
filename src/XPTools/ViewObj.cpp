@@ -23,6 +23,7 @@
 #include <time.h>
 #include "hl_types.h"
 #include "XObjDefs.h"
+#include "ObjDraw.h"
 #include "ObjUtils.h"
 #include "XUtils.h"
 #include "GeoUtils.h"
@@ -68,6 +69,7 @@ map<string, pair<string, GLenum> >		gDayTextures;
 map<string, pair<string, GLenum> >		gNightTextures;
 
 static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid);
+static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid);
 static	GLenum		FindTexture(const string& inName, bool inNight);
 static	void		AccumTexture(const string& inFileName);
 static	void		ReloadTexture(const string& inName);
@@ -115,14 +117,16 @@ private:
 	vector<ObjPlacement_t>	mObjInst;
 
 	XObj			mObj;
-	Prototype_t		mPrototype;
+	XObj8			mObj8;
+//	Prototype_t		mPrototype;
 	FacadeObj_t		mFacade;
 	
 	Polygon2 mPts;
 	Sphere3			mBounds;
 
-	bool	mIsPrototype;
+//	bool	mIsPrototype;
 	bool	mIsFacade;
+	bool	mIsObj8;
 	int		mFloors;
 	
 //	float	mScale;
@@ -256,7 +260,8 @@ void			XObjWin::GLDraw(void)
 		
 	glScalef(mScale, mScale, mScale);
 */	
-	PlotOneObj(mObj, mShowCulled, mLit, mSolid);
+	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mSolid);
+	else			PlotOneObj(mObj, mShowCulled, mLit, mSolid);
 	
 		
 	for (vector<ObjPlacement_t>::iterator p = mObjInst.begin(); p != mObjInst.end(); ++p)
@@ -284,7 +289,7 @@ void			XObjWin::GLDraw(void)
 	}
 		
 
-	if (mIsPrototype || mIsFacade)
+	if (mIsFacade)
 	{
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_ALPHA_TEST);
@@ -319,7 +324,7 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 	mZoomer.SetupMatrices(i);
 	
 	mEditNum = -1;
-	if (mIsPrototype || mIsFacade)
+	if (mIsFacade)
 	{
 		for (int n = 0; n < mPts.size(); ++n)
 		{
@@ -386,8 +391,6 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 		{
 			mPts[mEditNum].x = clickPt[0];
 			mPts[mEditNum].y = clickPt[2];
-			if (mIsPrototype)
-				ApplyPrototype(mPrototype, mPts, mFloors, mObj);
 			if (mIsFacade)
 			{
 				Polygon3	pts;
@@ -430,10 +433,23 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 	for (vector<string>::const_iterator i = files.begin(); i != files.end(); ++i)
 	{
 		if (HasExtNoCase(*i, ".obj")) {
-			if (XObjRead(i->c_str(), mObj))
+			if (XObj8Read(i->c_str(), mObj8))
 			{
-				mIsPrototype = false;
+				mIsObj8 = true;
 				mIsFacade = false;
+				string foo(*i);
+				StripPath(foo);
+				ScaleToObj();
+				SetTitle(foo.c_str());
+				ForceRefresh();
+				
+				if (mMeasureOnOpen)
+					KeyPressed('m', 0,0,0);			
+			}				
+			else if (XObjRead(i->c_str(), mObj))
+			{
+				mIsFacade = false;
+				mIsObj8 = false;
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
@@ -451,8 +467,8 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 		{
 			if (ReadFacadeObjFile(i->c_str(), mFacade))
 			{
-				mIsPrototype = false;
 				mIsFacade = true;
+				mIsObj8 = false;
 				mFloors = mFacade.lods[0].walls[0].bottom + mFacade.lods[0].walls[0].middle + mFacade.lods[0].walls[0].top;
 				
 				Polygon3	pts;
@@ -471,23 +487,6 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				SetTitle(foo.c_str());
 				ForceRefresh();
 
-			}
-		} else if (HasExtNoCase(*i, ".pto"))		
-		{			
-			if (LoadPrototype(i->c_str(), mPrototype))
-			{
-				mIsPrototype = true;
-				mIsFacade = false;
-				mFloors = mPrototype.layers.size();
-				
-				ApplyPrototype(mPrototype, mPts, mFloors, mObj);
-				GetObjBoundingSphere(mObj, mBounds);
-				string foo(*i);
-				StripPath(foo);
-				ScaleToObj();
-				SetTitle(foo.c_str());
-				ForceRefresh();
-				
 			}
 		} 
 	}
@@ -554,11 +553,6 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 	case 'U':
 	case 'u':
 		mFloors++;
-		if (mIsPrototype)
-		{
-			ApplyPrototype(mPrototype, mPts, mFloors, mObj);
-			GetObjBoundingSphere(mObj, mBounds);
-		}
 		if (mIsFacade)
 		{
 			Polygon3	pts;
@@ -577,11 +571,6 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 	case 'd':
 		mFloors--;
 		if (mFloors < 0) mFloors = 0;
-		if (mIsPrototype)
-		{
-			ApplyPrototype(mPrototype, mPts, mFloors, mObj);
-			GetObjBoundingSphere(mObj, mBounds);
-		}
 		if (mIsFacade)
 		{
 			Polygon3	pts;
@@ -725,8 +714,77 @@ void		ReloadTexture(const string& inName)
 
 #pragma mark -
 
+struct	ObjViewInfo_t {
+	bool	lit;
+	bool	solid;
+	bool	backside;
+};
+
+static void	ObjView_SetupPoly(void * ref)
+{
+	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
+	glActiveTextureARB(GL_TEXTURE1_ARB);
+	if (i->lit)
+		glEnable(GL_TEXTURE_2D);
+	else
+		glDisable(GL_TEXTURE_2D);
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glEnable(GL_TEXTURE_2D);
+	
+	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	if (i->lit)	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	
+	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
+}
+static void 	ObjView_SetupLine(void * ref)
+{
+	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glDisable(GL_TEXTURE_2D);
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glDisable(GL_TEXTURE_2D);
+	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+}
+
+static void	ObjView_TexCoord(const float * st, void * ref)
+{
+	glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, st);
+	glTexCoord2fv(st);
+}
+
+static void	ObjView_TexCoordPointer(int size, unsigned long type, long stride, const void * pointer, void * ref)
+{
+	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glTexCoordPointer(size, type, stride, pointer);
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	glTexCoordPointer(size, type, stride, pointer);
+}
+
+static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void * ref)
+{
+	if (v1 == v2) return v1;
+	double	now = (float) clock() / (float) CLOCKS_PER_SEC;
+	now *= 10.0;
+	now -= (float) ((int) now);
+	now *= 0.2;
+	if (now > 1.0) now = 2.0 - now;
+	return v1 + (v2 - v1) * now;
+}
+
+static	ObjDrawFuncs_t sCallbacks = { 
+	ObjView_SetupPoly, ObjView_SetupLine, ObjView_SetupLine,
+	ObjView_SetupPoly, ObjView_SetupPoly, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
+};
+
+
+
 void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
 {
+	ObjViewInfo_t info = { inLit, inSolid, inShowCulled };
+
 	string	tex = inObj.texture;
 	StripPathCP(tex);
 	GLenum t = FindTexture(tex, false);
@@ -735,8 +793,6 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
 		glBindTexture(GL_TEXTURE_2D, t);
 	CHECK_ERR();
 		
-
-
 	bool	hasLit = false;		
 	if (inLit)
 	{
@@ -750,7 +806,12 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
 		}
 	}
 
-	for (int side = 0; side < (inShowCulled+1); ++side)
+	if (inSolid)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	if (inShowCulled)
 	{
 		glShadeModel(GL_SMOOTH);
 		GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
@@ -761,167 +822,109 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
 		glEnable(GL_CULL_FACE);
+		glPointSize(4);		
+		glCullFace(GL_FRONT);
 		
-		if (side) 
-		{
-			glCullFace(GL_FRONT);
-		} else {
-			glCullFace(GL_BACK);
-		}
+		info.backside = true;
+		ObjDraw(inObj, 0.0, &sCallbacks, &info);
+
+	}
+
+	info.backside = false;
+
+	glShadeModel(GL_SMOOTH);
+	GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
+	GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
+	GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
+	GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
+										glMaterialf (GL_FRONT,GL_SHININESS,   0);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_CULL_FACE);
+	glPointSize(4);		
+	glCullFace(GL_BACK);
 	
-		bool	draw = true;
+	ObjDraw(inObj, 0.0, &sCallbacks, &info);
+	glPointSize(1);
 
-		for (vector<XObjCmd>::const_iterator i = inObj.cmds.begin(); i != inObj.cmds.end(); ++i)
-		{
-			switch(i->cmdType) {
-			case type_Attr:
-				switch(i->cmdID) {
-				case attr_LOD:
-					draw = (gCamDist >= i->attributes[0]) &&
-							(gCamDist < i->attributes[1]);
-					break;
-				case attr_Shade_Flat  :glShadeModel(GL_FLAT  );																				break;
-				case attr_Shade_Smooth:glShadeModel(GL_SMOOTH);																				break;
-				case attr_Ambient_RGB :{float c[4]={i->attributes[0],i->attributes[1],i->attributes[2],1.0}; glMaterialfv(GL_FRONT, GL_AMBIENT ,c);}	break;
-				case attr_Diffuse_RGB :{float c[4]={i->attributes[0],i->attributes[1],i->attributes[2],1.0}; glMaterialfv(GL_FRONT, GL_DIFFUSE ,c);}	break;
-				case attr_Emission_RGB:{float c[4]={i->attributes[0],i->attributes[1],i->attributes[2],1.0}; glMaterialfv(GL_FRONT, GL_EMISSION,c);}	break;
-				case attr_Specular_RGB:{float c[4]={i->attributes[0],i->attributes[1],i->attributes[2],1.0}; glMaterialfv(GL_FRONT, GL_SPECULAR,c);}	break;
-				case attr_Shiny_Rat   :glMaterialf(GL_FRONT,GL_SHININESS, i->attributes[0]);												break;
-				case attr_No_Depth    :glDisable(GL_DEPTH_TEST);																			break;
-				case attr_Depth       :glEnable(GL_DEPTH_TEST);																				break;
-				case attr_Offset	  :if(i->attributes[0]==0.0)
-									   		{glDisable(GL_POLYGON_OFFSET_FILL);	glPolygonOffset( 0.0,0.0);}
-									   else
-									   		{glEnable(GL_POLYGON_OFFSET_FILL);	glPolygonOffset(-5.0 * i->attributes[0],0.0);}				break;
-				case attr_Reset       :
-			               GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
-				           GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
-				           GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
-				           GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
-																glMaterialf (GL_FRONT,GL_SHININESS,   0);									break;
-				case attr_Cull        :glEnable (GL_CULL_FACE );																			break;
-				case attr_NoCull      :glDisable(GL_CULL_FACE );																			break;
-				}
-				break;
-				
-			case type_PtLine:
-				if (draw) 
-				{
-					glActiveTextureARB(GL_TEXTURE1_ARB);
-					glDisable(GL_TEXTURE_2D);
-					glActiveTextureARB(GL_TEXTURE0_ARB);
-					glDisable(GL_TEXTURE_2D);
-					glDisable(GL_ALPHA_TEST);
-					glPointSize(5);
-					switch(i->cmdID) {
-					case obj_Line:
-						glBegin(GL_LINES);
-						break;
-					case obj_Light:
-						glBegin(GL_POINTS);
-						break;
-					}
-					
-					for (vector<vec_rgb>::const_iterator j = i->rgb.begin(); j != i->rgb.end(); ++j)
-					{
-						glColor3f(j->rgb[0] / 10.0, j->rgb[1] / 10.0, j->rgb[2] / 10.0);
-						glVertex3fv(j->v);
-					}
-					
-					glEnd();
-				}
-				break;			
-				
-				
-				
-			case type_Poly:
-				if (draw) 
-				{
-					if (inSolid)
-						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					else 
-						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-					if (side)
-					{
-						if (inLit)
-							glColor3f(0.5, 0.1, 0.1);
-						else
-							glColor3f(1.0, 0.3, 0.3);
-					} else {
-						if (inLit)
-							glColor3f(0.1, 0.1, 0.1);
-						else
-							glColor3f(1.0, 1.0, 1.0);
-					}
-					glActiveTextureARB(GL_TEXTURE1_ARB);
-					if (hasLit)
-						glEnable(GL_TEXTURE_2D);
-					else
-						glDisable(GL_TEXTURE_2D);
-					
-					if (hasLit)
-					{
-							GLint	hasAlpha;
-							glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &hasAlpha);
-						if (!hasAlpha || !gHasCombine)					
-							glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
-						else {
-							glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-				
-							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, 	GL_ADD);
-							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, 	GL_PREVIOUS_EXT);
-							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, 	GL_SRC_COLOR);
-							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, 	GL_TEXTURE);
-							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, 	GL_SRC_COLOR);
-
-							glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, 	GL_ADD);
-							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, 	GL_PREVIOUS_EXT);
-							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, 	GL_SRC_ALPHA);
-							glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, 	GL_TEXTURE);
-							glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, 	GL_SRC_ALPHA);
-						}
-					}
-					glActiveTextureARB(GL_TEXTURE0_ARB);					
-					glEnable(GL_TEXTURE_2D);						
-					glEnable(GL_ALPHA_TEST);
-					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-					switch(i->cmdID) {
-					case obj_Tri:
-						glBegin(GL_TRIANGLES);
-						break;
-					case obj_Quad:
-					case obj_Quad_Hard:
-					case obj_Smoke_Black:
-					case obj_Smoke_White:
-					case obj_Movie:
-						glBegin(GL_QUADS);
-						break;
-					case obj_Polygon:
-						glBegin(GL_POLYGON);
-						break;
-					case obj_Quad_Strip:
-						glBegin(GL_QUAD_STRIP);
-						break;
-					case obj_Tri_Strip:
-						glBegin(GL_TRIANGLE_STRIP);
-						break;
-					case obj_Tri_Fan:
-						glBegin(GL_TRIANGLE_FAN);
-						break;
-					}
-					
-					for (vector<vec_tex>::const_iterator j = i->st.begin(); j != i->st.end(); ++j)
-					{						
-						if (hasLit)
-							glMultiTexCoord2fvARB(GL_TEXTURE1_ARB, j->st);
-						glTexCoord2fv(j->st);
-						glVertex3fv(j->v);
-					}
-					
-					glEnd();
-				}
-				break;
-			}
-		}
-	}	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
 }
+
+
+void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid)
+{
+	ObjViewInfo_t info = { inLit, inSolid, inShowCulled };
+
+	CHECK_ERR();
+
+	string	tex = inObj.texture;
+	tex.erase(tex.size()-4);
+	StripPathCP(tex);
+	GLenum t = FindTexture(tex, false);
+	
+	if (t)
+		glBindTexture(GL_TEXTURE_2D, t);
+	CHECK_ERR();
+		
+	bool	hasLit = false;		
+	if (inLit)
+	{
+		t = FindTexture(tex, true);
+		if (t && gHasMultitexture && gHasEnvAdd)
+		{
+			glActiveTextureARB(GL_TEXTURE1_ARB);
+			glBindTexture(GL_TEXTURE_2D, t);
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+			hasLit = true;
+		}
+	}
+
+	if (inSolid)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	if (inShowCulled)
+	{
+		glShadeModel(GL_SMOOTH);
+		GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
+		GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
+		GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
+		GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
+											glMaterialf (GL_FRONT,GL_SHININESS,   0);
+		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glEnable(GL_CULL_FACE);
+		glPointSize(4);		
+		glCullFace(GL_FRONT);
+		
+		info.backside = true;
+		CHECK_ERR();
+		ObjDraw8(inObj, 0.0, &sCallbacks, &info);
+		CHECK_ERR();
+
+	}
+
+	info.backside = false;
+
+	glShadeModel(GL_SMOOTH);
+	GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
+	GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
+	GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
+	GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
+										glMaterialf (GL_FRONT,GL_SHININESS,   0);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_CULL_FACE);
+	glPointSize(4);		
+	glCullFace(GL_BACK);
+	
+	CHECK_ERR();
+	ObjDraw8(inObj, 0.0, &sCallbacks, &info);
+	CHECK_ERR();
+	glPointSize(1);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
+	CHECK_ERR();
+}
+

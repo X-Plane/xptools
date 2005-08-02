@@ -71,6 +71,7 @@ const char *	kSettingsItems[] = {
 	"Z axis is up",
 	"-",
 	"Save as OBJ7",
+	"Save as OBJ8",
 	"Save as 3DS",
 	"Save as DXF",
 	0
@@ -89,8 +90,9 @@ enum {
 	axis_Y = 13,
 	axis_Z = 14,
 	save_OBJ7 = 16,
-	save_3DS = 17,
-	save_DXF = 18
+	save_OBJ8 = 17,
+	save_3DS = 18,
+	save_DXF = 19
 };
 
 static	int	gUnits = unit_Meters;
@@ -116,6 +118,7 @@ void	ConformCheckItems(void)
 	XWin::CheckMenuItem(gSettingsM, axis_Y,			gAxis == axis_Y);
 	XWin::CheckMenuItem(gSettingsM, axis_Z,			gAxis == axis_Z);
 	XWin::CheckMenuItem(gSettingsM, save_OBJ7,		gSave == save_OBJ7);
+	XWin::CheckMenuItem(gSettingsM, save_OBJ8,		gSave == save_OBJ8);
 	XWin::CheckMenuItem(gSettingsM, save_3DS,		gSave == save_3DS);
 	XWin::CheckMenuItem(gSettingsM, save_DXF,		gSave == save_DXF);
 }
@@ -211,6 +214,7 @@ int	XGrinderMenuPick(xmenu menu, int item)
 			gAxis = item;
 			break;
 		case save_OBJ7:
+		case save_OBJ8:
 		case save_3DS:
 		case save_DXF:
 			gSave = item;
@@ -256,7 +260,8 @@ void	XGrindFile(const char * inFileName)
 	}
 	
 	switch(gSave) {
-	case save_OBJ7: 	fname_new = noext + "_new.obj";		break;
+	case save_OBJ7: 	
+	case save_OBJ8:		fname_new = noext + "_new.obj";		break;
 	case save_3DS : 	fname_new = noext + "_new.3ds";		break;
 	case save_DXF : 	fname_new = noext + "_new.dxf";		break;
 	}
@@ -266,6 +271,7 @@ void	XGrindFile(const char * inFileName)
 	XGrinder_ShowMessage("Converting %s...",fname.c_str());
 
 	XObj	obj;
+	XObj8	obj8;
 	
 	bool success = false;
 	
@@ -291,18 +297,24 @@ void	XGrindFile(const char * inFileName)
 		if (success)
 			PostProcessObj(obj, false);
 
-	} else {
-		success = XObjRead(inFileName, obj);
+	} else {		
+		success = XObj8Read(inFileName, obj8);
+		if (success)
+		{
+			Obj8ToObj7(obj8, obj);
+		} else
+			success = XObjRead(inFileName, obj);
 	}
 	
 	if (success)
 	{
-		if (gSave != save_OBJ7)
+		if (gSave != save_OBJ7 && gSave != save_OBJ8)
 			PostProcessObj(obj, true);
 		switch(gSave) {
-		case save_OBJ7:		success = XObjWrite		(new_full.c_str(), obj					);			break;
-		case save_3DS :		success = WriteObj3DS	(new_full.c_str(), obj,gPoly == poly_CCW);			break;
-		case save_DXF :		success = WriteObjDXF	(new_full.c_str(), obj,gPoly == poly_CCW);			break;
+		case save_OBJ7:							success = XObjWrite		(new_full.c_str(), obj					);			break;
+		case save_OBJ8:	Obj7ToObj8(obj, obj8);	success = XObj8Write	(new_full.c_str(), obj8					);			break;
+		case save_3DS :							success = WriteObj3DS	(new_full.c_str(), obj,gPoly == poly_CCW);			break;
+		case save_DXF :							success = WriteObjDXF	(new_full.c_str(), obj,gPoly == poly_CCW);			break;
 		default: success = false;
 		}
 		if (!success)

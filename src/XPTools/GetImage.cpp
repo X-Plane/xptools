@@ -29,7 +29,7 @@
 #include "EnvWrite.h"
 #include "Persistence.h"
 #include "PCSBSocketUDP.h"
-#include <xtiffio.h>
+#include <libxtiff/xtiffio.h>
 #include <geotiff.h>
 #include <geotiffio.h>
 #include <geo_normalize.h>

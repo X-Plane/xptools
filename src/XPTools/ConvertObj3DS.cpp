@@ -26,7 +26,7 @@
  //
  
 #include "ConvertObj3DS.h"
-#include "XUtils.h"
+#include "ObjUtils.h"
 
 #include <lib3ds/file.h>
 #include <lib3ds/vector.h>
@@ -152,9 +152,31 @@ bool	ReadObj3DS(const char * inFilePath, XObj& obj, bool inReversePoly)
 	 return success;
 }
 
+void pool_get(ObjPointPool * pool, int idx, float xyz[3], float st[2])
+{
+	float * p = pool->get(idx);
+	xyz[0] = p[0];
+	xyz[1] = p[1];
+	xyz[2] = p[2];
+	st [0] = p[3];
+	st [1] = p[4];
+}
+
+int pool_accumulate(ObjPointPool * pool, const float xyz[3], const float st[2])
+{
+	float d[5];
+	d[0] = xyz[0];
+	d[1] = xyz[1];
+	d[2] = xyz[2];
+	d[3] = st [0];
+	d[4] = st [1];
+	return pool->accumulate(d);
+}
+
 bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 {
-	XPointPool	pool;
+	ObjPointPool	pool;
+	pool.clear(5);
 	bool	success = false;
 	Lib3dsFile * file = lib3ds_file_new();
 	if (!file) return false;
@@ -181,7 +203,7 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 					lib3ds_mesh_new_face_list(mesh, p1.size());
 
 					for (int i = 0; i < pool.count(); ++i)
-						pool.get(i,mesh->pointL[i].pos,mesh->texelL[i]);
+						pool_get(&pool,i,mesh->pointL[i].pos,mesh->texelL[i]);
 					for (int p = 0; p < p1.size(); ++p) {
 						mesh->faceL[p].points[0] = p1[p];
 						mesh->faceL[p].points[1] = p2[p];
@@ -190,7 +212,7 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 					
 					lib3ds_file_insert_mesh(file, mesh);
 					
-					pool.clear();
+					pool.clear(5);
 					p1.clear();
 					p2.clear();
 					p3.clear();
@@ -204,9 +226,9 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 				ChangePolyCmdCW(*cmd);		
 			switch(cmd->cmdID) {
 			case obj_Tri:
-				p1.push_back(pool.accumulate(cmd->st[0].v, cmd->st[0].st));
-				p2.push_back(pool.accumulate(cmd->st[1].v, cmd->st[1].st));
-				p3.push_back(pool.accumulate(cmd->st[2].v, cmd->st[2].st));
+				p1.push_back(pool_accumulate(&pool,cmd->st[0].v, cmd->st[0].st));
+				p2.push_back(pool_accumulate(&pool,cmd->st[1].v, cmd->st[1].st));
+				p3.push_back(pool_accumulate(&pool,cmd->st[2].v, cmd->st[2].st));
 				break;
 			}
 			break;
@@ -221,7 +243,7 @@ bool	WriteObj3DS(const char * inFilePath, const XObj& inObj, bool inReversePoly)
 		lib3ds_mesh_new_face_list(mesh, p1.size());
 
 		for (int i = 0; i < pool.count(); ++i)
-			pool.get(i,mesh->pointL[i].pos,mesh->texelL[i]);
+			pool_get(&pool,i,mesh->pointL[i].pos,mesh->texelL[i]);
 		for (int p = 0; p < p1.size(); ++p) {
 			mesh->faceL[p].points[0] = p1[p];
 			mesh->faceL[p].points[1] = p2[p];

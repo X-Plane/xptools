@@ -21,7 +21,7 @@
  *
  */
 #include "ConvertObjVRML.h"
-#include "XUtils.h"
+#include "ObjUtils.h"
 
 #include <SceneGraph.h>
 
