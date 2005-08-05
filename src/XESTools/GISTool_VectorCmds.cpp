@@ -18,6 +18,27 @@
 #include "ConfigSystem.h"
 #include <ctype.h>
 
+const double	kShapeFileEpsi = 0.1 / (DEG_TO_NM_LAT * NM_TO_MTR);
+
+inline void EpsiClamp(double& v, double c, double e) { if (fabs(v - c) < e) v = c; }
+
+inline void ClampCoord(double& v, double low, double hi, int grid, double& err, double epsi)
+{
+	double	v_new = v;
+	v_new -= low;
+	v_new *= (double) grid;
+	v_new /= (hi - low);
+	v_new = round(v_new);
+	v_new *= (hi - low);
+	v_new /= (double) grid;
+	v_new += low;	
+	err = fabs(v_new - v);
+	if (err < epsi)
+		v = v_new;
+	else
+		err = 0.0;
+}
+
 static void	import_tiger_repository(const string& rt)
 {
 	string root(rt);
@@ -401,6 +422,17 @@ static int DoTigerBounds(const vector<const char *>& args)
 
 static int DoShapeImport(const vector<const char *>& args)
 {
+	// NOTES ON SRTM SHAPE FILES:
+	//
+	// 1. They are made entirely of 3-dpolygon primitives.
+	// 2. For each primitive, the first ring is the polygon, and all additional rings are holes.
+	// 3. All polygons represent water; holes and unfilled space is land.
+	// 4. Polygons are NOT in topological order - we need to make sure we insert outermost polygons first by sorting.  Rings do appear
+	//    to be in order in that they are CCB + hoels - this is legal since shape files have no topology.
+	// 5. Some polys have backward CW/CCW orientation; it is unclear why this is.
+	// 6. Some polygons touch each other on edges - this is legal since shape files have no topology.
+	
+
 	gMap.clear();
 	
 	SHPHandle file = SHPOpen(args[0], "rb");
@@ -409,19 +441,47 @@ static int DoShapeImport(const vector<const char *>& args)
 		fprintf(stderr, "Could not open shape file %s\n", args[0]);
 		return 1;
 	}
+
+	// BEN SEZ: there is NO NEED for the DBF file right now - we are using
+	// STRM Shapefiles - ALL attributes are water (and all islands are neg space
+	// in water.	
+//	char	dbf_name[1024];
+//	strcpy(dbf_name, args[0]);
+//	strcpy(dbf_name + strlen(dbf_name) - 3, "dbf");
+	
+//	DBFHandle	dbf = DBFOpen(dbf_name, "rb");
+//	if (dbf == NULL)
+//	{
+//		fprintf(stderr, "Could not open dbf file %s\n", dbf_name);
+//		SHPClose(file);
+//		return 1;
+//	}
+	
+//	int fc = DBFGetFieldCount(dbf);
+//	int rc = DBFGetRecordCount(dbf);
+//	int facc_field = DBFGetFieldIndex(dbf,"FACC_code");
 	
 	int	entityCount, shapeType;
 	double	bounds_lo[4], bounds_hi[4];
 	
 	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
 	
+	multimap<double, pair<vector<Polygon2>, int> >	ringMap;	// Map from leftmost to a pair of rings + type - YIKES!
+	
+	double	biggest_err_sq = 0.0;
+	
+	double	lon_factor = cos(DEG_TO_RAD * gMapSouth);
+	
 	for (int n = 0; n < entityCount; ++n)
 	{
 		SHPObject * obj = SHPReadObject(file, n);
 
-		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON ||
-			obj->nSHPType == SHPT_POLYGONM)
+		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
 		{
+			vector<Polygon2>	rings;
+			double				left_most = 9.9e9;
+
+//			const char * our_facc = DBFReadStringAttribute(dbf, obj->nShapeId, facc_field);
 			for (int part = 0; part < obj->nParts; ++part)
 			{
 				Polygon2 pts;
@@ -431,6 +491,7 @@ static int DoShapeImport(const vector<const char *>& args)
 				{
 					// SHAPE FILE QUIRK: they use CW polygons.  So part 0 (usually the outer bounds
 					// of a polygon) is CW.
+					left_most = min(obj->padfX[index], left_most);
 					if (part == 0)
 						pts.insert(pts.begin(), Point2(obj->padfX[index],obj->padfY[index]));
 					else
@@ -439,24 +500,93 @@ static int DoShapeImport(const vector<const char *>& args)
 				DebugAssert(pts.front() == pts.back());
 				pts.pop_back();
 				
-//				SimplifyPolygonMaxMove(pts, cos(pts[0].y * DEG_TO_RAD) * NM_TO_DEG_LAT * MTR_TO_NM * 30.0, true, true);
-				MidpointSimplifyPolygon(pts);
+				for (int m = 0; m < pts.size(); ++m)
+				{
+					EpsiClamp(pts[m].x, gMapWest, kShapeFileEpsi);
+					EpsiClamp(pts[m].x, gMapEast, kShapeFileEpsi);
+					EpsiClamp(pts[m].y, gMapNorth, kShapeFileEpsi);
+					EpsiClamp(pts[m].y, gMapSouth, kShapeFileEpsi);
+//					double err_x, err_y;
+//					ClampCoord(pts[m].x, gMapWest, gMapEast, 3600, err_x, kShapeFileEpsi);
+//					ClampCoord(pts[m].y, gMapSouth, gMapNorth, 3600, err_y, kShapeFileEpsi * lon_factor);
+//					double err_local_sq = err_x * err_x + err_y * err_y;
+//					if (err_local_sq > biggest_err_sq) biggest_err_sq = err_local_sq;
+				}
 				
-				Pmwx::Locate_type loc;
-				GISHalfedge * parent = gMap.locate_point(pts[0], loc);
-				DebugAssert(loc == Pmwx::locate_Face);
-				GISFace * face = (parent == NULL) ? gMap.unbounded_face() : parent->face();
-				GISFace * new_face = gMap.insert_ring(face, pts);
-				if (part == 0)	new_face->mTerrainType = terrain_Water;
-				else			new_face->mTerrainType = terrain_Natural;
+				for (Polygon2::iterator i = pts.begin(); i != pts.end(); )
+				{
+					Polygon2::iterator j = i;
+					++j;
+					if (j == pts.end()) j = pts.begin();
+					if (i != j)
+					{
+						if (*j == *i)
+						i = pts.erase(i);
+						else ++i;
+					} else
+						++i;
+				}
+				
+				if (pts.size() < 3)
+					printf("Hrm - ring of size %d\n", pts.size());
+				else 
+				{
+	//				SimplifyPolygonMaxMove(pts, cos(pts[0].y * DEG_TO_RAD) * NM_TO_DEG_LAT * MTR_TO_NM * 30.0, true, true);
+	//				MidpointSimplifyPolygon(pts);
+
+					if (pts.area() < 0.0)
+					{
+	//					printf("REVERSING poly %d, part %d.\n", n, part);
+	//					Bbox2	b = pts.bounds();
+	//					printf("Rect: %lf,%lf -> %lf,%lf\n", b.xmin(), b.ymin(), b.xmax(), b.ymax());
+						std::reverse(pts.begin(), pts.end());
+					}
+
+					rings.push_back(Polygon2());
+					pts.swap(rings.back());
+				}
+				
 			}
-		}
+			
+			ringMap.insert(map<double, pair<vector<Polygon2>, int> >::value_type(left_most, pair<vector<Polygon2>, int>(rings, terrain_Water)));
+		} 
 
 		SHPDestroyObject(obj);	
-	}
-	
-	
+	}	
 	SHPClose(file);
+//	DBFClose(dbf);
+	
+	printf("Leftmost = %lf, hex = %016llx\n", ringMap.begin()->first, ringMap.begin()->first);
+	
+	gMap.unbounded_face()->mTerrainType = terrain_Natural;
+	
+	for (multimap<double, pair<vector<Polygon2>, int> >::iterator poly = ringMap.begin(); poly != ringMap.end(); ++poly)
+	{
+		for (vector<Polygon2>::iterator ring = poly->second.first.begin(); ring != poly->second.first.end(); ++ring)
+		{
+			DebugAssert(ring->area() > 0.0);
+
+			Pmwx::Locate_type loc;
+			GISHalfedge * parent = gMap.locate_point((*ring)[0], loc);
+			DebugAssert(loc == Pmwx::locate_Face);
+			GISFace * face = (parent == NULL) ? gMap.unbounded_face() : parent->face();
+			GISFace * new_face = SafeInsertRing(&gMap,face, (*ring));
+			// All polygons denote water - so first ring is water, others are non-water.  I think.
+			if (ring == poly->second.first.begin())	new_face->mTerrainType = terrain_Water;
+			else 									new_face->mTerrainType = terrain_Natural;
+		}
+	}
+
+	gMap.insert_edge(Point2(gMapWest, gMapSouth), Point2(gMapWest, gMapNorth), NULL, NULL);	//Left
+	gMap.insert_edge(Point2(gMapEast, gMapSouth), Point2(gMapEast, gMapNorth), NULL, NULL);	// Right
+	gMap.insert_edge(Point2(gMapWest, gMapSouth), Point2(gMapEast, gMapSouth), NULL, NULL);	// Bottom
+	gMap.insert_edge(Point2(gMapWest, gMapNorth), Point2(gMapEast, gMapNorth), NULL, NULL);	// Top
+
+	gMap.unbounded_face()->mTerrainType = terrain_Water;
+	
+	double err_m = sqrt(biggest_err_sq) * DEG_TO_NM_LAT * NM_TO_MTR;
+	printf("biggest grid shift is: %lf meters\n", err_m);
+	
 	return 0;
 }	
 

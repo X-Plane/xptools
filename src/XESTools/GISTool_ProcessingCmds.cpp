@@ -53,7 +53,7 @@ static int DoZoning(const vector<const char *>& args)
 static int DoHydroReconstruct(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Rebuilding vectors from elevation...\n");
-	HydroReconstruct(gMap,  gDem,gProgress);
+	HydroReconstruct(gMap,  gDem,args[0], gProgress);
 	return 0;
 }
 
@@ -131,7 +131,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-calcmesh", 		0, 0, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
-{ "-hydro",	 		0, 0, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
+{ "-hydro",	 		1, 1, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 { "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
 { "-derivedems", 	0, 0, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },

@@ -65,6 +65,16 @@ static int DoBbox(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoNearest(const vector<const char *>& args)
+{
+	Point2	p1, p2;
+	double dist = gMap.smallest_dist(p1, p2);
+	double	dist_m = dist * DEG_TO_NM_LAT * NM_TO_MTR;
+	printf("Smallest dist is: %lf meters\n", dist_m);
+	printf("From %lf,%lf to %lf, %lf\n", p1.x, p1.y, p2.x, p2.y);
+	return 1;
+}
+
 static int DoCrop(const vector<const char *>& args)
 {
 	if (gMap.number_of_halfedges() > 0)
@@ -212,7 +222,7 @@ static int DoSave(const vector<const char *>& args)
 		if (nland > 0)
 			break;
 	}
-	if (!gDem.empty() || (nland > 0))
+	if (!gDem.empty() || (nland > 0) || gMap.unbounded_face()->holes_count() > 1)
 	{
 		if (gVerbose) printf("Saving file %s\n", args[0]);
 		WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
@@ -284,6 +294,7 @@ static int DoSimplify(const vector<const char *>& args)
 static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
 { "-bbox", 			0, 0, DoBbox, 			"Show bounds of all maps.", "" },
+{ "-nearest_dist",  0, 0, DoNearest, 		"Returns closest two pts on map.", "" },
 { "-extent", 		4, 4, DoExtent, 		"Set the bounds for further crop and import commands.", "" },
 { "-validate", 		0, 0, DoValidate, 		"Test vector map integrity.", "" },
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },
