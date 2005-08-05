@@ -80,7 +80,8 @@ static	void	DSFSignMD5(const char * inPath)
 	fclose(fi);
 }
 
-bool	ErasePair(multimap<int, int>& ioMap, int key, int value)
+static bool	ErasePair(multimap<int, int>& ioMap, int key, int value);
+static bool	ErasePair(multimap<int, int>& ioMap, int key, int value)
 {
 	typedef multimap<int,int>::iterator iterator;
 	pair<iterator, iterator> range = ioMap.equal_range(key);
@@ -95,7 +96,8 @@ bool	ErasePair(multimap<int, int>& ioMap, int key, int value)
 	return false;
 }
 
-void	WriteStringTable(FILE * fi, const vector<string>& v)
+static void	WriteStringTable(FILE * fi, const vector<string>& v);
+static void	WriteStringTable(FILE * fi, const vector<string>& v)
 {
 	for (int n = 0; n < v.size(); ++n)
 	{
@@ -103,7 +105,8 @@ void	WriteStringTable(FILE * fi, const vector<string>& v)
 	}
 }
 
-void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, int& curPool)
+static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, int& curPool);
+static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, int& curPool)
 {
 	Assert(newPool >= 0 && newPool < 10000);
 	if (newType != curType)

@@ -23,7 +23,7 @@
 #include "DSFPointPool.h"
 #include "XChunkyFileUtils.h"
 #include <utility>
-
+#include "AssertUtils.h"
 using std::pair;
 
 DSFTuple::DSFTuple() : mLen(0)
@@ -33,7 +33,7 @@ DSFTuple::DSFTuple() : mLen(0)
 DSFTuple::DSFTuple(int planes) : mLen(planes)
 {
 	if (planes > MAX_TUPLE_LEN)
-		fprintf(stderr, "ERROR: overrun DSF tuple.\n");
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
 	double * d = mData;
 	while (planes--)
 		*d++ = 0.0;
@@ -241,7 +241,7 @@ bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
 void DSFTuple::push_back(double v)
 {
 	if (mLen == MAX_TUPLE_LEN)
-		fprintf(stderr, "ERROR: overrun DSF tuple.\n");
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
 
 	mData[mLen++] = v;
 }
@@ -249,13 +249,14 @@ void DSFTuple::push_back(double v)
 void DSFTuple::insert(double * ptr, double v)
 {
 	if (mLen == MAX_TUPLE_LEN)
-		fprintf(stderr, "ERROR: overrun DSF tuple.\n");
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
 	int index = ptr - mData;
 	if (index < mLen)
 		memmove(ptr + sizeof(double), ptr, (mLen - index) * sizeof(double));
 	*ptr = v;
 	++mLen;
 }
+
 
 void DSFTuple::dump(void)
 {
@@ -684,4 +685,3 @@ int				DSF32BitPointPool::WriteScaleAtoms(FILE * fi, int id)
 	return 1;
 }
 
-	
