@@ -57,3 +57,27 @@ const char * strstrnocase(const char * haystack, const char * needle)
 	if (p == NULL) return NULL;
 	return haystack + (p - hay.c_str());
 }
+
+void add_tri_to_obj(ACObject * obj, Vertex * v1, Vertex * v2, Vertex * v3)
+{
+	Surface * surf = new_surface();
+	surface_set_type(surf, SURFACE_POLYGON);
+	
+	surface_add_vertex_head(surf, v1, 0, 0);
+	surface_add_vertex_head(surf, v2, 0, 0);
+	surface_add_vertex_head(surf, v3, 0, 0);
+	surface_set_shading(surf, 1);
+	object_add_surface_head(obj, surf);
+}
+
+void	latlonel2xyz(double latlonel[3],
+					double latref, double lonref, double cos_ref,
+					double xyz[3])
+{
+	double lat = latlonel[0] - latref;
+	double lon = latlonel[1] - lonref;
+	
+	xyz[0] = lon * 60.0 * 1852.0 * cos_ref;
+	xyz[1] = latlonel[2];
+	xyz[2] = lat * 60.0 * 1852.0;
+}
