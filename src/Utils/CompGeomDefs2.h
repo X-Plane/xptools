@@ -223,6 +223,10 @@ public:
 	bool		overlap(const Bbox2& rhs) const {	
 	    return 	(xmax() >= rhs.xmin() && rhs.xmax() >= xmin() &&
 				 ymax() >= rhs.ymin() && rhs.ymax() >= ymin()); 			}
+
+	bool		contains(const Bbox2& rhs) const {	
+	    return 	(xmax() >= rhs.xmax() && rhs.xmin() >= xmin() &&
+				 ymax() >= rhs.ymax() && rhs.ymin() >= ymin()); 			}
 				 
 	bool		contains(const Point2& p) const {
 		return (xmin() <= p.x && p.x <= xmax() &&
@@ -253,6 +257,9 @@ public:
 	// This computes the signed area of the polygon, meaning positive for a counter-clockwise polygon, 
 	// negative for a clockwise one.  Works with convex and concave simple polyogns.
 	double		area(void) const;
+	
+	// Calculate bounds
+	Bbox2		bounds(void) const;
 	
 	// This returns the index number of the longest side.
 	int			longest_side(void) const;
@@ -498,6 +505,16 @@ inline	double	Polygon2::area(void) const
 		s += Vector2(at(0), at(n-1)).signed_area(Vector2(at(0), at(n)));
 	}
 	return s;
+}
+
+inline Bbox2 Polygon2::bounds(void) const
+{
+	if (empty()) return Bbox2();
+	
+	Bbox2 b((*this)[0]);
+	for (int n = 1; n < this->size(); ++n)
+		b += ((*this)[n]);
+	return b;
 }
 
 inline int  Polygon2::longest_side(void) const
