@@ -27,6 +27,7 @@
 #include "PlatformUtils.h"
 #include "SceneryPackages.h"
 #include "WED_Assert.h"
+#include <ShapeFil.h>
 #include "MapAlgs.h"
 #include "ObjTables.h"
 #include "NetTables.h"
@@ -53,6 +54,7 @@ enum {
 	specCmd_Div2,
 	specCmd_FaceHeight,
 	specCmd_MeshErr,
+	specCmd_PreviewSHP,
 	specCmd_Count
 };
 
@@ -69,6 +71,7 @@ const char *	kSpecCmdNames [] = {
 	"-",
 	"Show Height of Selected Faces...",
 	"Measure Error in Triangulation...",
+	"Preview Shape File",
 	0
 };
 
@@ -278,6 +281,52 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				
 				sprintf(buf, "mean=%f min=%f max=%f std dev = %f", mean, minv, maxv, devsq);
 				DoUserAlert(buf);				
+			}
+			break;
+		case specCmd_PreviewSHP:
+			{
+				char	buf[1024];
+				buf[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, buf)) return;
+				SHPHandle file = SHPOpen(buf, "rb");
+				if (file == NULL)
+					return;
+				
+				int	entityCount, shapeType;
+				double	bounds_lo[4], bounds_hi[4];
+				
+				gMeshPoints.clear();
+				gMeshLines.clear();
+				SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
+				
+				for (int n = 0; n < entityCount; ++n)
+				{
+					SHPObject * obj = SHPReadObject(file, n);
+
+					if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
+					{
+						for (int part = 0; part < obj->nParts; ++part)
+						{
+							Polygon2 pts;
+							int start_idx = obj->panPartStart[part];
+							int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+							for (int index = start_idx; index < stop_idx; ++index)
+							{
+								if (part == 0)
+									pts.insert(pts.begin(), Point2(obj->padfX[index],obj->padfY[index]));
+								else
+									pts.insert(pts.end(), Point2(obj->padfX[index],obj->padfY[index]));
+							}
+							for (int m = 0; m < pts.size(); ++m)
+							{
+								gMeshLines.push_back(pts.side(m).p1);
+								gMeshLines.push_back(pts.side(m).p2);
+							}
+						}
+					}					
+					SHPDestroyObject(obj);	
+				}	
+				SHPClose(file);
 			}
 			break;
 		case specCmd_ReloadConfigFiles:
