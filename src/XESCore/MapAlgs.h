@@ -256,6 +256,20 @@ void OverlayMap(
  */		
 void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
 
+/*
+ * SafeInsertRing
+ *
+ * This alternative to insert_ring fixes a few limitations of the low-level insertion routine:
+ * 1. It can insert rings with antennas on them.
+ * 2. It can insert rings that share vertices with the existing mesh.  
+ * It does an insert_ring if possible, otherwise it does a slow edge insert.  Please note that
+ * this routine does not handle non-simple polygons (except for antennas), nor does it handle
+ * rings that intersect the existing mesh, so you do need to ensure some topological integration
+ * of yoour input data.
+ *
+ */
+GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& inPoints);
+
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION
  ************************************************************************************************/

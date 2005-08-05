@@ -182,9 +182,15 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_HydroCorrect:
-			HydroReconstruct(gMap,  gDem,WED_ProgressFunc);
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			{
+				char	buf[1024];
+				buf[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, buf)) break;
+						
+				HydroReconstruct(gMap,  gDem,buf,WED_ProgressFunc);
+				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			}
 			break;
 		case procCmd_HydroSimplfiy:
 			SimplifyCoastlines(gMap, 5000.0 / (DEG_TO_NM_LAT * DEG_TO_NM_LAT * NM_TO_MTR * NM_TO_MTR), WED_ProgressFunc);

@@ -67,7 +67,7 @@
 // This causes validate to check for dupe vertices.  Makes validate real slow.
 #define VALIDATE_CHECK_NO_DUPE_VERTICES 0
 // This causes add-vertex to check for new vertices.  This makes adding vertices real slow.
-#define CHECK_NEW_VERTICES_FOR_DUPES 0
+#define CHECK_NEW_VERTICES_FOR_DUPES 1
 // This causese deleting a halfedge to check that it is not used anywhere.  This makes deleting
 // halfedges real slow.
 #define CHECK_DELETE_USED_HALFEDGE 0
@@ -390,6 +390,7 @@ Pmwx::Pmwx()
 
 Pmwx::Pmwx(const Pmwx& rhs)
 {
+	mVertexIndex.clear();
 	mVertices = mHalfedges = 0;
 	mFaces = 1;
 	mUnbounded = new GISFace;
@@ -410,6 +411,7 @@ Pmwx::Pmwx(const GISFace& rhs)
 	mFirstHalfedge = mLastHalfedge= NULL;
 	mFirstFace = mLastFace = mUnbounded;
 	mUnbounded->mTerrainType = terrain_Water;	
+	mVertexIndex.clear();
 	*this = rhs;
 }
 
@@ -446,7 +448,7 @@ struct  HashPtr {
 Pmwx& Pmwx::operator=(const Pmwx& rhs)
 {
 	clear();
-	
+		
 	// OPTIMIZE - we should examine the quality of the hash table that's being bulit off memory pointers.
 	hash_map<const GISHalfedge *, GISHalfedge *, HashPtr>	halfedges;
 	hash_map<const GISVertex   *, GISVertex   *, HashPtr>	vertices;
@@ -639,6 +641,8 @@ void Pmwx::swap(Pmwx& rhs)
 	::swap(mFaces, rhs.mFaces);
 
 	::swap(mUnbounded, rhs.mUnbounded);
+	
+	mVertexIndex.swap(rhs.mVertexIndex);
 }
 
 #pragma mark -
@@ -647,8 +651,8 @@ void Pmwx::swap(Pmwx& rhs)
  * LOW LEVEL ALLOCATION
  *******************************************************************************************/
 
-GISVertex *		Pmwx::new_vertex(void)
-{
+GISVertex *		Pmwx::new_vertex(const Point2& inPt)
+{	
 	++mVertices;
 	GISVertex * v = new GISVertex;
 	v->mLinkNext = NULL;
@@ -658,20 +662,12 @@ GISVertex *		Pmwx::new_vertex(void)
 	mLastVertex = v;
 	if (mFirstVertex == NULL)
 		mFirstVertex = v;
-	return v;
-}
 
-
-GISVertex *		Pmwx::new_vertex(const Point2& inPt)
-{	
-#if CHECK_NEW_VERTICES_FOR_DUPES
-	for (GISVertex * check = mFirstVertex; check; check = check->mLinkNext)
-	{
-		DebugAssert(check->mPoint != inPt);
-	}
-#endif
-	GISVertex * v = new_vertex();
 	v->mPoint = inPt;
+#if CHECK_NEW_VERTICES_FOR_DUPES
+	DebugAssert(mVertexIndex.count(inPt) == 0);
+#endif	
+	mVertexIndex[inPt] = v;
 	return v;
 }
 
@@ -800,6 +796,7 @@ void	Pmwx::MoveVertexToMe(Pmwx * old, GISVertex * inVertex)
 {
 	DebugAssert(old->mVertices > 0);
 	DebugAssert(old != this);
+	
 	old->mVertices--;
 	if (inVertex->mLinkPrev)
 		inVertex->mLinkPrev->mLinkNext = inVertex->mLinkNext;
@@ -912,6 +909,23 @@ void	Pmwx::MoveEdgeToMe(Pmwx * old, GISHalfedge * inHalfedge)
 	
 	MoveHalfedgeToMe(old, inHalfedge->mTwin);
 }
+
+void	Pmwx::UnindexVertex(GISVertex * v)
+{
+#if CHECK_NEW_VERTICES_FOR_DUPES
+	DebugAssert(mVertexIndex.count(v->mPoint) == 1);
+	DebugAssert(mVertexIndex[v->mPoint] = v);
+#endif
+	mVertexIndex.erase(v->mPoint);
+}
+
+void	Pmwx::ReindexVertex(GISVertex * v)
+{
+#if CHECK_NEW_VERTICES_FOR_DUPES
+	DebugAssert(mVertexIndex.count(v->mPoint) == 0);
+#endif
+	mVertexIndex[v->mPoint] = v;
+}
 	
 
 /*******************************************************************************************
@@ -921,6 +935,8 @@ void	Pmwx::MoveEdgeToMe(Pmwx * old, GISHalfedge * inHalfedge)
 
 void	Pmwx::clear()
 {
+	mVertexIndex.clear();
+
 	GISVertex * v, * killv;
 	GISHalfedge * h, * killh;
 	GISFace * f, * killf;
@@ -983,11 +999,10 @@ bool			Pmwx::is_valid() const
 			NOT_VALID("We have a dead vertex in our main vertex list.")
 	
 #if VALIDATE_CHECK_NO_DUPE_VERTICES	
-		for (GISVertex * vv = v->mLinkNext; vv; vv = vv->mLinkNext)
-		{
-			if (vv->point() == v->point())
-				NOT_VALID("Two vertices have the same coordinates.")
-		}
+		if (mVertexIndex.count(v->mPoint) != 1)
+			NOT_VALID("Non-indexed vertex.")
+		if (mVertexIndex.find(v->mPoint)->second != v)
+			NOT_VALID("Vertex index pts back to wrong vertex!.")
 #endif		
 
 		if (!v->mLinkNext && v != mLastVertex) 
@@ -1181,8 +1196,21 @@ inline bool better_xcross(const Segment2& best, double best_x, const Segment2& t
 		return trial_x > best_x;
 }
 
+GISVertex *		Pmwx::locate_vertex(const Point2& p)
+{
+	VertexMap::iterator i = mVertexIndex.find(p);
+	return (i == mVertexIndex.end()) ? NULL : i->second;
+}
+
 GISHalfedge *	Pmwx::locate_point(const Point2& p, Locate_type& loc)
 {
+	GISVertex *	quick;
+	if ((quick = locate_vertex(p)) != NULL)
+	{
+		loc = locate_Vertex;
+		return quick->halfedge();
+		
+	}
 	GISFace *		owner = mUnbounded;				// This is the face we are searching inside.
 	GISFace *		next_found = NULL;				// This is the best find we have so far.
 	Point2 			best = Point2(-9.9e9, p.y);
@@ -1566,6 +1594,23 @@ GISHalfedge *	Pmwx::ray_shoot(
 
 
 #pragma mark -
+
+void	Pmwx::set_vertex_location(GISVertex * inVertex, const Point2& inPoint)
+{
+	VertexMap::iterator old = mVertexIndex.find(inVertex->mPoint);
+#if DEV
+	DebugAssert(old != mVertexIndex.end());
+	DebugAssert(old->second == inVertex);
+#endif
+	if (old != mVertexIndex.end())
+		mVertexIndex.erase(old);
+	inVertex->mPoint = inPoint;
+#if CHECK_NEW_VERTICES_FOR_DUPES
+	DebugAssert(mVertexIndex.count(inPoint) == 0);
+#endif
+	mVertexIndex[inPoint] = inVertex;
+}
+
 
 GISHalfedge *			Pmwx::split_edge(GISHalfedge * inEdge, const Point2& split)
 {
@@ -1956,6 +2001,8 @@ GISHalfedge *		Pmwx::insert_edge(const Point2& p1, const Point2& p2,
 GISHalfedge * Pmwx::insert_edge(const Point2& p1, const Point2& p2, GISHalfedge * hint, Locate_type location,
 						void(* notifier)(GISHalfedge *, GISHalfedge *, void *), void * ref)
 {
+	DebugAssert(p1 != p2);
+	
 	GISHalfedge *	new_he;
 
 	Point2			cur, 		found;
@@ -2107,6 +2154,34 @@ GISHalfedge *	Pmwx::nox_insert_edge_between_vertices(GISVertex * p1, GISVertex *
 		get_preceding(p2->halfedge(), p1->point()));
 }
 
+/*******************************************************************************************
+ * MISC STUFF
+ *******************************************************************************************/
+
+double Pmwx::smallest_dist(Point2& p1, Point2& p2)
+{
+	if (mVertices < 2) return 0.0;
+	double	small_sq = 9.9e9;
+	
+	for (GISVertex * i = mFirstVertex; i != NULL; i = i->mLinkNext)
+	for (GISVertex * j = i->mLinkNext; j != NULL; j = j->mLinkNext)
+	{
+		DebugAssert(i != j);
+		DebugAssert(i->mPoint != j->mPoint);
+		
+		double dx = i->mPoint.x - j->mPoint.x;
+		double dy = i->mPoint.y - j->mPoint.y;
+		double	local_sq = dx * dx + dy * dy;
+		if (local_sq < small_sq)
+		{
+			p1 = i->mPoint;
+			p2 = j->mPoint;
+			small_sq = local_sq;
+		}
+	}
+	
+	return sqrt(small_sq);
+}
 
 /*******************************************************************************************
  * TOPOLOGY SUBROUTINE HELPERS!
@@ -2486,6 +2561,12 @@ GISHalfedge *	Pmwx::insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge *
 
 void			Pmwx::delete_vertex(GISVertex * ve)
 {
+#if DEV
+	DebugAssert(mVertexIndex.count(ve->mPoint) == 1);
+	DebugAssert(mVertexIndex[ve->mPoint] == ve);
+#endif
+	mVertexIndex.erase(ve->mPoint);
+
 	// First patch us out of the inline
 	if (ve->mLinkPrev)	ve->mLinkPrev->mLinkNext = ve->mLinkNext;
 	if (ve->mLinkNext)	ve->mLinkNext->mLinkPrev = ve->mLinkPrev;

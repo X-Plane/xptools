@@ -428,7 +428,7 @@ public:
 		mTotal = mVertices + mHalfedges + mFaces;
 	}
 	
-	void scan_vertex (GISVertex* v)
+	GISVertex * scan_vertex (Pmwx& the_map)
 	{	
 		++mCount;
 		if (mProgress && mTotal && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
@@ -439,8 +439,9 @@ public:
 		Point2	p(x,y);
 //		if (p == Point2(0.0, 0.0))
 //			printf("WARNING: got null pt.\n");
-		v->set_point(p);
+		GISVertex * v = the_map.new_vertex(p);
 		mVerticesVec.push_back(v);
+		return v;
 	}
 
 	void scan_halfedge (GISHalfedge* h)
@@ -563,9 +564,8 @@ public:
 		unsigned int  i;
 		for (i = 0; i < number_of_vertices(); i++) 			
 		{
-			GISVertex* nv = the_map.new_vertex();
+			GISVertex * nv = scan_vertex (the_map);
 			nv->set_halfedge((GISHalfedge *) 0x0BADF00D);
-			scan_vertex (nv);
 			vertices_vec.push_back(nv);
 		}
 

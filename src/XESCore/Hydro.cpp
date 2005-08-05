@@ -3,6 +3,7 @@
 #include "MapDefs.h"
 #include "DEMDefs.h"
 #include "DEMAlgs.h"
+#include <ShapeFil.h>
 #include "MapAlgs.h"
 #include "WED_Globals.h"
 #include "AssertUtils.h"
@@ -30,10 +31,21 @@
 #define REQUIRED_SLOPE 100.0
 
 // Number of DEM squares to look through to find river exit.
-#define DEM_EXIT_SEARCH_RANGE 15
+#define DEM_EXIT_SEARCH_RANGE 10
 
 // Use 4-way flow instead of 8-way
 #define DIRS_FOUR 0
+
+// How far do we look around to see if this is hilly terrain?  Use this to tell VMAP to chill out
+#define VMAP_RELIEF_RANGE 3
+// If our steepness is beyond this, shouldn't be using VMAP!
+#define VMAP_TOO_STEEP 24
+
+
+// Size in DEM posts of the blocks to decide on what we want
+#define SRTM_CHOICE_BLOCK_SIZE 10
+// If less than this is wet by SRTM - hrm - maybe VMAP is on to something?
+#define SRTM_TRUSTED_WETNESS 0.05
 
 #if DIRS_FOUR
 #define	DIRS_COUNT 4
@@ -575,7 +587,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 		
 		float sum = 0.0;
 		int ctr = 0;
-		int needed = 0.7 * (float) count;
+		int needed = 0.5 * (float) count;
 		for (multimap<int, float, greater<int> >::iterator i = freqtable.begin(); i != freqtable.end(); ++i)
 		{
 			minv_lim = min(minv_lim, i->second);
@@ -671,6 +683,217 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 	PROGRESS_DONE(inProg, 0, 1, "Editing Coastlines...")
 }
 
+/******************************************************************************************************************************
+ * SHAPE-FILE BASED CORRECTION
+ ******************************************************************************************************************************/
+
+void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShapeFile, ProgressFunc inProg)
+{
+	const DEMGeo& elev(dems[dem_Elevation]);
+
+	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
+	new_wet.copy_geo(elev);
+	new_wet = NO_DATA;
+
+	DEMGeo	old_wet(elev.mWidth, elev.mHeight);
+	old_wet.copy_geo(elev);
+	old_wet = NO_DATA;
+
+	DEMGeo	wetness(elev.mWidth, elev.mHeight);
+	wetness.copy_geo(elev);
+
+//	DEMGeo	relief(elev.mWidth, elev.mHeight);
+//	relief.copy_geo(elev);
+
+	/************************************************************************************
+	 * RASTERIZE SHAPE FILE FOR SRTM IDEA OF WATER BODIES
+	 ************************************************************************************/
+	 
+	SHPHandle file = SHPOpen(inShapeFile, "rb");
+	if (file == NULL)	return;
+	int	entityCount, shapeType;
+	double	bounds_lo[4], bounds_hi[4];
+	
+	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
+	
+	PolyRasterizer	raster;
+
+	set<GISHalfedge *>	edges;
+	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
+	if (e->mDominant)
+	if ((e->face()->IsWater() != e->twin()->face()->IsWater() && !e->face()->is_unbounded() && !e->twin()->face()->is_unbounded()) ||
+		(e->face()->IsWater() && e->twin()->face()->is_unbounded()) ||
+		(e->face()->is_unbounded() && e->twin()->face()->IsWater()))
+	{
+		edges.insert(e);
+	}	
+
+	for (int n = 0; n < entityCount; ++n)
+	{
+		SHPObject * obj = SHPReadObject(file, n);
+
+		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
+		{
+			for (int part = 0; part < obj->nParts; ++part)
+			{
+				int start_idx = obj->panPartStart[part];
+				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+				Polygon2 pts(stop_idx - start_idx);
+				for (int index = start_idx; index < stop_idx; ++index)
+				{
+					pts[index-start_idx] = Point2(obj->padfX[index],obj->padfY[index]);
+				}
+				DebugAssert(pts.front() == pts.back());
+				pts.pop_back();
+				
+				for (int i = 0; i < pts.size(); ++i)
+				{
+					int j = (i + 1) % pts.size();
+					double x1 = new_wet.lon_to_x(pts[i].x);
+					double y1 = new_wet.lat_to_y(pts[i].y);
+					double x2 = new_wet.lon_to_x(pts[j].x);
+					double y2 = new_wet.lat_to_y(pts[j].y);
+
+					if (y1 != y2)
+					{
+						if (y1 < y2)
+							raster.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
+						else
+							raster.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
+					}
+				}
+			}
+		} 
+
+		SHPDestroyObject(obj);	
+	}	
+	SHPClose(file);
+
+	raster.SortMasters();
+	
+	int rx1, rx2, x, y, dx, dy;
+	float e;
+	
+	y = 0;
+	raster.StartScanline(y);
+	while (!raster.DoneScan())
+	{
+		while (raster.GetRange(rx1, rx2))
+		{
+			for (x = rx1; x < rx2; ++x)
+			{
+				e = elev.get(x,y);
+				DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
+				new_wet(x,y) = e;
+			}
+		}
+		++y;
+		if (y >= elev.mHeight) 
+			break;
+		raster.AdvanceScanline(y);		
+	}
+
+	/************************************************************************************
+	 * RASTERIZE OLD VMAP0 DATA, BUT CORRECT WATER BODIES TO NOT CLIMB UP MOUNTAINS!
+	 ************************************************************************************/
+
+
+	set<GISFace *>	water;
+	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
+	if (!f->is_unbounded())
+	if (f->IsWater())
+		water.insert(f);
+		
+	while (!water.empty())
+	{
+		set<GISFace *> group;
+		FindConnectedWetFaces(*water.begin(), group);
+		BuildCorrectedWaterBody(elev, old_wet, group);
+		for (set<GISFace *>::iterator g = group.begin(); g != group.end(); ++g)
+			water.erase(*g);
+	}	
+	
+	/************************************************************************************
+	 * OR JUST A STRAIGHT RENDER OF VMAP0?
+	 ************************************************************************************/
+
+#if 0
+	PolyRasterizer	raster_old;
+	SetupRasterizerForDEM(edges, old_wet, raster_old);	
+
+	y = 0;
+	raster_old.StartScanline(y);
+	while (!raster_old.DoneScan())
+	{
+		while (raster_old.GetRange(rx1, rx2))
+		{
+			for (x = rx1; x < rx2; ++x)
+			{
+				e = elev.get(x,y);
+				DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
+				old_wet(x,y) = e;
+			}
+		}
+		++y;
+		if (y >= elev.mHeight) 
+			break;
+		raster_old.AdvanceScanline(y);		
+	}
+	
+#endif	
+
+	/************************************************************************************
+	 * COMBINE RESULTS
+	 ************************************************************************************/
+	
+	for (y = 0; y < elev.mHeight ; y++)
+	for (x = 0; x < elev.mWidth  ; x++)
+	{
+		double	bmin, bmax;
+		bmin = bmax = elev.get(x,y);
+		for (dy = y-VMAP_RELIEF_RANGE; dy <= y+VMAP_RELIEF_RANGE; ++dy)
+		for (dx = x-VMAP_RELIEF_RANGE; dx <= x+VMAP_RELIEF_RANGE; ++dx)
+		{
+			e = elev.get(dx,dy);
+			bmin = MIN_NODATA(bmin, e);
+			
+			// We only consider points LOWER than us.  We are trying to find the span of water bodies, which will generally be the lowest point.  So only consider
+			// for a point P that its surroundings go down.  (If P has a lot of stuff above it, so what - it can still be water - it is surrounded by cliffs!)
+//			bmax = MAX_NODATA(bmax, e);
+		}
+		if ((bmax-bmin) > VMAP_TOO_STEEP && old_wet.get(x,y) != NO_DATA)
+			old_wet(x,y) = NO_DATA;
+//		relief(x,y) = bmax-bmin;
+	
+		int	c_old = 0, c_new = 0;
+		for (dy = -SRTM_CHOICE_BLOCK_SIZE; dy <= SRTM_CHOICE_BLOCK_SIZE; ++dy)
+		for (dx = -SRTM_CHOICE_BLOCK_SIZE; dx <= SRTM_CHOICE_BLOCK_SIZE; ++dx)
+		{
+			if (old_wet.get(x+dx,y+dy) != NO_DATA) ++c_old;
+			if (new_wet.get(x+dx,y+dy) != NO_DATA) ++c_new;
+		}
+		double rat = (double) c_new   / (double) ((SRTM_CHOICE_BLOCK_SIZE*2+1) * (SRTM_CHOICE_BLOCK_SIZE*2+1));
+		wetness(x,y) = rat;
+	}
+
+	for (y = 0; y < elev.mHeight ; ++y)
+	for (x = 0; x < elev.mWidth  ; ++x)
+	if (wetness(x,y) < SRTM_TRUSTED_WETNESS && new_wet.get(x,y) == NO_DATA)
+	{
+		new_wet(x,y) = old_wet(x,y);
+	}
+	
+	new_wet.swap(dems[dem_HydroElevation]);	
+	wetness.swap(dems[dem_Wizard]);
+}
+
+
+/******************************************************************************************************************************
+ * MASTER HYDRO RECONSTRUCTION FOR GLOBAL DATA
+ ******************************************************************************************************************************/
+
+#pragma mark -
+
 void	ConformWater(DEMGeoMap& dems, bool inWrite)
 {
 	DEMGeo&	water_elev(dems[dem_HydroElevation]);
@@ -742,14 +965,9 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 	}
 }
 
-/******************************************************************************************************************************
- * MASTER HYDRO RECONSTRUCTION FOR GLOBAL DATA
- ******************************************************************************************************************************/
-
-
-void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, ProgressFunc inFunc)
+void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * shapeFile, ProgressFunc inFunc)
 {
-	CorrectWaterBodies(ioMap, ioDem, inFunc);
+	UpdateWaterWithShapeFile(ioMap, ioDem, shapeFile, inFunc);
 	ConformWater(ioDem, false);
 	BuildRivers		  (ioMap, ioDem, inFunc);
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
@@ -758,7 +976,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, ProgressFunc inFunc)
 	
 	Pmwx	water;
 	water.unbounded_face()->mTerrainType = terrain_Natural;
-	DemToVector(foo, water, true, terrain_Water, inFunc);
+	DemToVector(foo, water, false, terrain_Water, inFunc);
 	
 	water.insert_edge(Point2(foo.mWest, foo.mSouth), Point2(foo.mEast, foo.mSouth), NULL, NULL);
 	water.insert_edge(Point2(foo.mWest, foo.mNorth), Point2(foo.mEast, foo.mNorth), NULL, NULL);
@@ -787,6 +1005,8 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, ProgressFunc inFunc)
 /******************************************************************************************************************************
  * COASTLINE SIMPLIFICATION FOR US XES
  ******************************************************************************************************************************/
+
+#pragma mark -
 
 #define SLIVER_PROTECTION	0.984807753012
 

@@ -383,7 +383,6 @@ public:
 	GISHalfedge *		halfedge()				{ return mHalfedge; }
 	const GISHalfedge *	halfedge() const		{ return mHalfedge; }
 
-	void			set_point(const Point2& p) 		{ mPoint = p; }
 	void			set_halfedge(GISHalfedge * e)	{ mHalfedge = e; }
 	
 	unsigned int 	degree() const;
@@ -671,11 +670,18 @@ public:
 						const Point2&		dest,
 						Point2&				crossing,
 						Locate_type&		loc);
-	
+						
+	/* Vertex location - this is more specific than point location in that it utilizes
+	 * the hash table and then bails. */
+	GISVertex *		locate_vertex(const Point2& inLocation);	
 
 	/*****************************************************************************
 	 * BASIC TOPOLOGICAL EDITING
 	 *****************************************************************************/
+	
+	/* Relocate a vertex - please note that this does not check for 
+	 * induced edge collisions. */	 
+	void			set_vertex_location(GISVertex * inVertex, const Point2& inPoint);
 	
 	/* Given an edge, split it into two, creating a new vertex.
 	 * Returns inEdge, whose target is now the split pt. */
@@ -718,12 +724,19 @@ public:
 	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);	
 	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);	
 	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2);
+
+	/*****************************************************************************
+	 * MISC STUFF
+	 *****************************************************************************/
+	/* Returns the smallest distance between any two points.  WARNING: this is 
+	 * currently O(N^2) time! */
+	double		smallest_dist(Point2& p1, Point2& p2);
 	
 
 	/*****************************************************************************
 	 * LOW LEVEL ACCESS - ONLY USE FOR SPECIALIZED CONSTRUCTION/FABRICATION
 	 *****************************************************************************/
-	GISVertex *		new_vertex();
+public:
 	GISVertex *		new_vertex(const Point2& inPoint);
 	GISHalfedge *	new_halfedge();	
 	GISHalfedge *	new_halfedge(const GISHalfedge *);	
@@ -736,6 +749,9 @@ public:
 	void	MoveVertexToMe		(Pmwx * old, GISVertex * inVertex);
 	void	MoveHalfedgeToMe	(Pmwx * old, GISHalfedge * inHalfedge);
 	void	MoveEdgeToMe		(Pmwx * old, GISHalfedge * inHalfedge);
+	
+	void	UnindexVertex(GISVertex * v);
+	void	ReindexVertex(GISVertex * v);
 
 	/*****************************************************************************
 	 * SPATIAL INDEXING
@@ -793,6 +809,9 @@ private:
 		int		mFaces;
 
 		GISFace *		mUnbounded;
+		
+	typedef	map<Point2, GISVertex *, lesser_y_then_x>	VertexMap;
+		VertexMap		mVertexIndex;
 };
 
 #endif

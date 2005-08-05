@@ -541,11 +541,28 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 
 bool	CanMerge(Net_ChainInfo_t * road1, Net_ChainInfo_t * road2, double angle)
 {
-	if (angle > 0.7) return true;
+	if (angle > 0.85) return true;
 	if (gNetEntities[road1->entity_type].limited_access) return false;
 	if (gNetEntities[road2->entity_type].limited_access) return false;
 	return true;
 }
+
+// This struct contains all the chains that will go in one layer.  We also cache whether
+// anyone is limited access and the most north-south angle of any of them in dy form.
+struct	HighwayLayer_t {
+	Net_ChainInfoSet	chains;
+	bool				lim_access;
+	double				abs_y;
+};
+
+// This sorts - prioritize highways on top, and NS over EW.
+struct SortLayersByHighway {
+	bool	operator()(const HighwayLayer_t& lhs, const HighwayLayer_t& rhs) const {
+		if (lhs.lim_access != rhs.lim_access)
+			return rhs.lim_access;
+		return lhs.abs_y < rhs.abs_y;
+	}
+};
 
 void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
@@ -555,7 +572,7 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 	{
 		Net_JunctionInfo_t * junc = *juncIter;
 		
-		vector<Net_ChainInfoSet>	layers;
+		vector<HighwayLayer_t>	layers;
 		
 		for (Net_ChainInfoSet::iterator chainIter = junc->chains.begin(); chainIter != junc->chains.end(); ++chainIter)
 		{
@@ -566,7 +583,7 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			this_vec.normalize();
 			
 			for (int l = 0; l < layers.size(); ++l)
-			for (Net_ChainInfoSet::iterator posMerge = layers[l].begin(); posMerge != layers[l].end(); ++posMerge)
+			for (Net_ChainInfoSet::iterator posMerge = layers[l].chains.begin(); posMerge != layers[l].chains.end(); ++posMerge)
 			{
 				Vector2	merge_vec = (*posMerge)->vector_to_junc_flat(junc);
 				merge_vec.normalize();
@@ -580,10 +597,19 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			}
 			
 			if (best_layer == layers.size())
-				layers.push_back(Net_ChainInfoSet());
-
-			layers[best_layer].insert(*chainIter);
+			{
+				layers.push_back(HighwayLayer_t());
+				layers.back().lim_access = false;
+				layers.back().abs_y = 0.0;
+				
+			}
+			layers[best_layer].chains.insert(*chainIter);
+			if (gNetEntities[(*chainIter)->entity_type].limited_access)
+				layers[best_layer].lim_access = true;
+			layers[best_layer].abs_y = max(layers[best_layer].abs_y, fabs(this_vec.dy));
 		}
+
+		sort(layers.begin(), layers.end(), SortLayersByHighway());
 		
 		for (int new_layer = 1; new_layer < layers.size(); ++new_layer)
 		{
@@ -592,7 +618,7 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			new_junc->location = junc->location;
 			new_junc->ground = junc->ground;
 			new_junc->location.z += (5.0 * new_layer);
-			for (Net_ChainInfoSet::iterator migrate = layers[new_layer].begin(); migrate != layers[new_layer].end(); ++migrate)
+			for (Net_ChainInfoSet::iterator migrate = layers[new_layer].chains.begin(); migrate != layers[new_layer].chains.end(); ++migrate)
 			{
 				new_junc->chains.insert(*migrate);
 				junc->chains.erase(*migrate);

@@ -884,9 +884,17 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		ioMapA.MoveFaceToMe(&ioMapB, *faceIter);
 
 	for (vertIter = moveVertFromA.begin(); vertIter != moveVertFromA.end(); ++vertIter)
+		ioMapA.UnindexVertex(*vertIter);
+	for (vertIter = moveVertFromB.begin(); vertIter != moveVertFromB.end(); ++vertIter)
+		ioMapB.UnindexVertex(*vertIter);
+	for (vertIter = moveVertFromA.begin(); vertIter != moveVertFromA.end(); ++vertIter)
 		ioMapB.MoveVertexToMe(&ioMapA, *vertIter);
 	for (vertIter = moveVertFromB.begin(); vertIter != moveVertFromB.end(); ++vertIter)
 		ioMapA.MoveVertexToMe(&ioMapB, *vertIter);
+	for (vertIter = moveVertFromA.begin(); vertIter != moveVertFromA.end(); ++vertIter)
+		ioMapB.ReindexVertex(*vertIter);
+	for (vertIter = moveVertFromB.begin(); vertIter != moveVertFromB.end(); ++vertIter)
+		ioMapA.ReindexVertex(*vertIter);
 
 	for (int n = 0; n < inBoundsA.size(); ++n)
 	{
@@ -902,6 +910,7 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	for (edgeIter = moveEdgeFromB.begin(); edgeIter != moveEdgeFromB.end(); ++edgeIter)
 	if ((*edgeIter)->mDominant)
 		ioMapA.MoveEdgeToMe(&ioMapB, *edgeIter);
+		
 }
 
 
@@ -1350,6 +1359,37 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			subdiv = subdiv->next();
 		}
 	}	
+}
+
+GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& inPoints)
+{
+	bool	needs_slow = false;
+	set<Point2, lesser_x_then_y>	pts;
+	int n;
+	for (n = 0; n < inPoints.size(); ++n)
+	{
+		if (inPmwx->locate_vertex(inPoints[n]) != NULL)
+		{
+			needs_slow = true;
+			break;
+		}
+		if (pts.count(inPoints[n]) > 0)
+		{
+			needs_slow = true;
+			break;
+		}
+		pts.insert(inPoints[n]);
+	}
+
+	if (!needs_slow)
+		return inPmwx->insert_ring(parent, inPoints);
+	
+	GISHalfedge * he;	
+	for (n = 0; n < inPoints.size(); ++n)
+	{
+		he = inPmwx->insert_edge(inPoints[n], inPoints[(n+1)%inPoints.size()], NULL, NULL);
+	}
+	return he->face();
 }
 
 #pragma mark -
