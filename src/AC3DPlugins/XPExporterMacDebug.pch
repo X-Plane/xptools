@@ -1,0 +1,132 @@
+#pragma precompile_target "XPExporterMacDebugPCH"
+
+
+
+#ifdef TARGET_API_MAC_CARBON
+
+	#if !TARGET_API_MAC_CARBON
+
+		#error TARGET_API_MAC_CARBON must be on to use this prefix file!
+
+	#endif
+
+#else
+
+	#define TARGET_API_MAC_CARBON 1
+
+#endif
+
+
+
+#include <os_enum.h>
+
+
+
+#if __MACH__
+
+	#pragma c99 on
+
+	
+
+	#define _MSL_USING_MW_C_HEADERS 1
+
+	
+
+	#ifndef __NOEXTENSIONS__
+
+		#define __NOEXTENSIONS__
+
+	#endif
+
+	#ifndef __CF_USE_FRAMEWORK_INCLUDES__
+
+		#define __CF_USE_FRAMEWORK_INCLUDES__
+
+	#endif
+
+	
+
+	#define __dest_os __mac_os_x
+
+#else
+
+	#define __dest_os __mac_os
+
+#endif
+
+
+
+#define __MSL_LONGLONG_SUPPORT__
+
+
+
+#define APL 1
+
+
+
+#if APL
+
+#if __MACH__
+
+#define CRLF "\r"
+
+#else
+
+#define CRLF "\n"
+
+#endif
+
+#elif IBM
+
+#define CRLF "\r\n"
+
+#else
+
+#error NO PLATFORM!
+
+#endif
+
+
+
+#if APL
+
+//#define _STDINT_H_
+
+//#include <Carbon.h>
+
+#endif
+
+
+
+#define XUTILS_EXCLUDE_MAC_CRAP 1
+
+
+
+#include <vector>
+
+
+
+#undef _MSL_USE_INLINE
+
+#include <cctype>
+
+#define _MSL_USE_INLINE 1
+
+
+
+#include <stdlib.h>
+
+#include <stdio.h>
+
+#include <time.h>
+
+#include <string>
+
+#include <map>
+
+#include "PlatformUtils.h"
+
+#include "XDefs.h"
+
+
+

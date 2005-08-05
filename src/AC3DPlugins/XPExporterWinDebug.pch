@@ -1,0 +1,23 @@
+#pragma precompile_target "XPExporterWinDebugPCH"
+
+
+
+#define WINDOWS 1
+
+#define WINDOWS_LEAN_AND_MEAN 1
+
+#define IBM 1
+
+#include <vector>
+
+#include <string>
+
+#include <map>
+
+#include <windows.h>
+
+#include <commdlg.h>
+
+#include "PlatformUtils.h"
+
+#include "XDefs.h"
