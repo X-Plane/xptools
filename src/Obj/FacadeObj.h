@@ -23,6 +23,9 @@
 #ifndef FACADEOBJ_H
 #define FACADEOBJ_H
 
+class	Polygon3;
+class	Vector3;
+
 #include <vector>
 using std::vector;
 

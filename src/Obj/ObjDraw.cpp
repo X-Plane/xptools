@@ -195,7 +195,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 
 	const XObjLOD8 * our_lod = &obj.lods.back();
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
-	if (lod->near <= dist && lod->far >= dist)
+	if (lod->lod_near <= dist && lod->lod_far >= dist)
 		our_lod = &*lod;
 
 

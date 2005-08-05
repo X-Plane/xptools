@@ -170,8 +170,8 @@ struct	XObjCmd8 {
 };	
 
 struct	XObjLOD8 {
-	float					near;
-	float					far;
+	float					lod_near;
+	float					lod_far;
 	vector<XObjCmd8>		cmds;
 };
 

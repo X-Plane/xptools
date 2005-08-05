@@ -23,9 +23,6 @@
 #ifndef EXTRUDEFUNC_H
 #define EXTRUDEFUNC_H
 
-#include "CompGeomDefs3.h"
-#include "CompGeomDefs2.h"
-
 enum
 {
 	// These are geometry codes - it means we're getting geometry.

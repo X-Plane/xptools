@@ -471,7 +471,7 @@ bool	XObjWrite(const char * inFile, const XObj& inObj)
  ****************************************************************************************/
 bool	XObj8Read(const char * inFile, XObj8& outObj)
 {
-		int 	count, n;
+		int 	n;
 
 	outObj.texture.clear();
 	outObj.texture_lit.clear();
@@ -539,7 +539,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	XObjAnim8	animation;
 
 	outObj.lods.push_back(XObjLOD8());
-	outObj.lods.back().near = outObj.lods.back().far = 0;
+	outObj.lods.back().lod_near = outObj.lods.back().lod_far = 0;
 
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
@@ -647,9 +647,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ATTR_LOD near far
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ATTR_LOD", Xtrue))
 		{
-			if (outObj.lods.back().far != 0)	outObj.lods.push_back(XObjLOD8());
-			outObj.lods.back().near = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
-			outObj.lods.back().far = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			if (outObj.lods.back().lod_far != 0)	outObj.lods.push_back(XObjLOD8());
+			outObj.lods.back().lod_near = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			outObj.lods.back().lod_far = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
 		} 
 		// ANIM_rotate x y z r1 r2 v1 v2 dref
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", Xfals))
@@ -777,9 +777,9 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	
 	for (vector<XObjLOD8>::const_iterator lod = outObj.lods.begin(); lod != outObj.lods.end(); ++lod)
 	{
-		if (lod->far != 0.0)
+		if (lod->lod_far != 0.0)
 		{
-			fprintf(fi, "ATTR_LOD %f %f" CRLF, lod->near, lod->far);
+			fprintf(fi, "ATTR_LOD %f %f" CRLF, lod->lod_near, lod->lod_far);
 		}
 		
 		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
