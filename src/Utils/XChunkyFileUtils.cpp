@@ -31,10 +31,10 @@
 
 using std::vector;
 
-short	SwapValueTyped(short v	) { return (short ) SWAP16(v); }
-int		SwapValueTyped(int v	) { return (int   ) SWAP32(v); }
-float	SwapValueTyped(float v	) { return (float ) SWAP32(v); }
-double	SwapValueTyped(double v	) { return (double) SWAP64(v); }
+inline short	SwapValueTyped(short v	) { return (short ) SWAP16(v); }
+inline int		SwapValueTyped(int v	) { return (int   ) SWAP32(v); }
+inline float	SwapValueTyped(float v	) { return (float ) SWAP32(v); }
+inline double	SwapValueTyped(double v	) { return (double) SWAP64(v); }
 
 #pragma mark class FlatDecoder
 
