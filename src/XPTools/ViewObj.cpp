@@ -40,6 +40,10 @@
 //#include <glut.h>
 #include <glu.h>
 
+#include "CompGeomDefs2.h"
+#include "CompGeomDefs3.h"
+
+
 static	bool	gHasMultitexture = false;
 static	bool	gHasEnvAdd = false;
 static	bool	gHasCombine = false;
@@ -403,7 +407,10 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 				mObj.texture = mFacade.texture;
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			}
-			GetObjBoundingSphere(mObj, mBounds);
+			xflt	s[4];
+			GetObjBoundingSphere(mObj, s);
+			mBounds.c = Point3(s[0], s[1], s[2]);
+			mBounds.radius_squared = s[3];
 			ForceRefresh();
 		}
 	} else {
@@ -480,7 +487,10 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				mObj.cmds.clear();
 				mObj.texture = mFacade.texture;
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-				GetObjBoundingSphere(mObj, mBounds);
+				xflt	s[4];
+				GetObjBoundingSphere(mObj, s);
+				mBounds.c = Point3(s[0], s[1], s[2]);
+				mBounds.radius_squared = s[3];
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
@@ -564,7 +574,10 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
 			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-			GetObjBoundingSphere(mObj, mBounds);
+			xflt	s[4];
+			GetObjBoundingSphere(mObj, s);
+			mBounds.c = Point3(s[0], s[1], s[2]);
+			mBounds.radius_squared = s[3];
 		}			
 		break;
 	case 'D':
@@ -582,7 +595,10 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
 			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
-			GetObjBoundingSphere(mObj, mBounds);
+			xflt	s[4];
+			GetObjBoundingSphere(mObj, s);
+			mBounds.c = Point3(s[0], s[1], s[2]);
+			mBounds.radius_squared = s[3];
 		}			
 		break;
 	}
@@ -594,7 +610,10 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 void		XObjWin::ScaleToObj(void)
 {
 	mZoomer.ResetToIdentity();
-	GetObjBoundingSphere(mObj, mBounds);
+	xflt	s[4];
+	GetObjBoundingSphere(mObj, s);
+	mBounds.c = Point3(s[0], s[1], s[2]);
+	mBounds.radius_squared = s[3];
 	double	rad = GetObjRadius(mObj);
 	if (rad > 0.0)
 	{
