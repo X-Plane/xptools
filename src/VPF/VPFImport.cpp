@@ -6,6 +6,9 @@
 #include "ProgressUtils.h"
 #include "ParamDefs.h"
 
+// A NOTE ON STRANGE ROUNDING ERRORS:
+// VPF coordinates at 0.0 are not exactly 0 - but they are close, so we must round them down.
+
 // A note on skipping: it is possible for a node to be in a VPF tile but not link to any actual entity in the tile (e.g. not link to any
 // halfedge) because it is a corner that touches the cut line and there is no boundary inserted around the tile.  Therefore 
 // we need to blow this node off - skip allows us to track this.
