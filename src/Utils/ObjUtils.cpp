@@ -365,7 +365,7 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 
 #pragma mark -
 
-void	GetObjBoundingSphere(const XObj& inObj, Sphere3& outSphere)
+void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 {
 	vector<Point3>	pts;
 	
@@ -382,7 +382,12 @@ void	GetObjBoundingSphere(const XObj& inObj, Sphere3& outSphere)
 		}
 	}
 
-	FastBoundingSphere(pts, outSphere);
+	Sphere3	sphere;
+	FastBoundingSphere(pts, sphere);
+	outSphere[0] = sphere.c.x;
+	outSphere[1] = sphere.c.y;
+	outSphere[2] = sphere.c.z;
+	outSphere[3] = sphere.radius_squared;
 }
 
 void OffsetObject(XObj& ioObj, double x, double y, double z)
@@ -942,13 +947,15 @@ double	GetObjRadius(const XObj& inObj)
 	return dist;
 }
 
-int append_rgb(ObjPointPool * pool, const vec_rgb& rgb)
+static int append_rgb(ObjPointPool * pool, const vec_rgb& rgb);
+static int append_rgb(ObjPointPool * pool, const vec_rgb& rgb)
 {	
 	float	dat[6] = { rgb.v[0], rgb.v[1], rgb.v[2], rgb.rgb[0], rgb.rgb[1], rgb.rgb[2] };
 	return pool->append(dat);
 }
 
-int append_st(ObjPointPool * pool, const vec_tex& st)
+static int append_st(ObjPointPool * pool, const vec_tex& st);
+static int append_st(ObjPointPool * pool, const vec_tex& st)
 {
 	float	dat[8] = { st.v[0], st.v[1], st.v[2], 0.0, 0.0, 0.0, st.st[0], st.st[1] };
 	return pool->append(dat);
@@ -964,7 +971,7 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	obj8.geo_lights.clear(6);
 	obj8.animation.clear();
 	obj8.lods.resize(1);
-	obj8.lods.back().near = obj8.lods.back().far = 0.0;
+	obj8.lods.back().lod_near = obj8.lods.back().lod_far = 0.0;
 	obj8.lods.back().cmds.clear();
 
 	XObjCmd8	cmd8;
@@ -975,10 +982,10 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	{
 		switch(cmd->cmdID) {	
 		case attr_LOD:
-			if (obj8.lods.back().far != 0.0)
+			if (obj8.lods.back().lod_far != 0.0)
 				obj8.lods.push_back(XObjLOD8());
-			obj8.lods.back().near = cmd->attributes[0];
-			obj8.lods.back().far = cmd->attributes[1];
+			obj8.lods.back().lod_near = cmd->attributes[0];
+			obj8.lods.back().lod_far = cmd->attributes[1];
 			break;
 		case obj_Light:
 			cmd8.cmd = obj8_Lights;
@@ -1205,13 +1212,13 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 	{
 		cmd7.st.clear();
 		cmd7.rgb.clear();
-		if (lod->far != 0.0)
+		if (lod->lod_far != 0.0)
 		{
 			cmd7.cmdType = type_Attr;
 			cmd7.cmdID = attr_LOD;
 			cmd7.attributes.resize(2);
-			cmd7.attributes[0] = lod->near;
-			cmd7.attributes[1] = lod->far;
+			cmd7.attributes[0] = lod->lod_near;
+			cmd7.attributes[1] = lod->lod_far;
 			obj7.cmds.push_back(cmd7);
 			cmd7.attributes.clear();
 		}

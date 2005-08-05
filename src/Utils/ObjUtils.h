@@ -24,8 +24,8 @@
 #define OBJUTILS_H
 
 #include "ExtrudeFunc.h"
-#include "CompGeomDefs2.h"
-#include "CompGeomDefs3.h"
+//#include "CompGeomDefs2.h"
+//#include "CompGeomDefs3.h"
 //#include "XProtoDefs.h"
 #include "XObjDefs.h"
 
@@ -36,7 +36,7 @@
 //					   int									inFloors,
 //					   XObj&							    outObject);
 
-void	GetObjBoundingSphere(const XObj& inObj, Sphere3& outSphere);
+void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4]);
 void 	OffsetObject(XObj& ioObj, double x, double y, double z);
 
 void	GetObjDimensions(const XObj& inObj,
