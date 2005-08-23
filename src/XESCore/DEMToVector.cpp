@@ -8,7 +8,7 @@
 static int	dir_x[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
 static int	dir_y[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 
-void BuildSmoothedPts(const Polygon2& pts, Polygon2& op)
+void BuildSmoothedPts(const Polygon2& pts, Polygon2& op, bool smooth)
 {
 	int sz;
 	double scaling = cos(pts[0].y * DEG_TO_RAD);
@@ -45,8 +45,11 @@ void BuildSmoothedPts(const Polygon2& pts, Polygon2& op)
 
 //	MidpointSimplifyPolygon(op);	
 
-	SimplifyPolygonMaxMove(op, 0.000416666666, true, true);
-	SmoothPolygon(op, 0.000277777778, 30);
+	if (smooth)
+	{
+		SimplifyPolygonMaxMove(op, 0.000416666666, true, true);
+		SmoothPolygon(op, 0.000277777778, 30);
+	}
 }
 
 int	FindNextCCW(const DEMGeo& dem, int x, int y, int last_dir)
@@ -137,8 +140,7 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 		} while (x != sx || y != sy);
 
 		Polygon2	pts_smooth;
-		if (doSmooth) BuildSmoothedPts(pts, pts_smooth);
-		else		  pts_smooth = pts;
+		BuildSmoothedPts(pts, pts_smooth, doSmooth);
 		raw_pts += pts.size();
 		smooth_pts += pts_smooth.size();
 
