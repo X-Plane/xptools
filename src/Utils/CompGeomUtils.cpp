@@ -192,8 +192,8 @@ void	InsetPolygon2(
 				// twice the road thickness from the intersect point.  Not good!  
 				Point2	p1(segments[incoming_n].p2);
 				Point2	p2(segments[outgoing_n].p1);
-				p1 += (v1 * inRatios[outgoing_n] * inInset);
-				p2 += (v2 * inRatios[outgoing_n] * -inInset);
+				p1 += (v1 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) *  inInset);
+				p2 += (v2 * ((inRatios == NULL) ? 1.0 : inRatios[outgoing_n]) * -inInset);
 				outChain.insert(outChain.end(), p1);
 				outChain.insert(outChain.end(), p2);
 				if (antennaFunc) antennaFunc(outgoing_n + (num_inserted++), ref);				
