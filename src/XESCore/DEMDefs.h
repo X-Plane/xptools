@@ -138,6 +138,7 @@ struct	DEMGeo {
 	inline float&	operator()(int, int);
 	inline float	operator()(int, int) const;
 	inline float	get(int x, int y) const;									// Get value at x,y, NO_DATA if out of bonds
+	inline void		set(int x, int y, float v);									// Safe set - no-op if off
 	inline float	get_clamp(int x, int y) const;								// Get value at x,y, clamped to within the DME
 	inline float	get_dir(int x, int y, int dx, int dy, 						// Get first value in a given direction and dist that doesn't
 						int max_radius, float blank, float& outDist) const;		// Match 'blank'
@@ -294,6 +295,12 @@ inline float	DEMGeo::get(int x, int y) const
 {
 	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return NO_DATA;
 	return mData[x + y * mWidth];
+}
+
+inline void	DEMGeo::set(int x, int y, float v)
+{
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return;
+	mData[x + y * mWidth] = v;
 }
 
 inline float	DEMGeo::get_clamp(int x, int y) const
