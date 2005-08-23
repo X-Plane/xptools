@@ -40,6 +40,7 @@
 #include "PlatformUtils.h"
 
 #include "XPLMGraphics.h"
+#include "Hydro.h"
 
 const	int kPointClickSlop = 4;
 
@@ -209,7 +210,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 	
 int		WED_SelectionTool::GetNumButtons(void)
 {
-	return 5;
+	return 6;
 }
 
 void	WED_SelectionTool::GetNthButtonName(int n, string& s)
@@ -220,6 +221,7 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	case 2: s=  "Inset"; break;
 	case 3: s=  "Clear"; break;
 	case 4: s=  "Next"; break;
+	case 5: s=  "Simplify"; break;
 	}
 }
 
@@ -332,7 +334,19 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			(*fsel)->mPolyObjs.clear();
 		return;
-			
+	case 5:
+		try {
+			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
+			{
+				SimplifyWaterCCB(gMap, (*fsel)->outer_ccb());
+			}
+		} catch (...) {
+		}
+		gEdgeSelection.clear();
+		gFaceSelection.clear();
+		gVertexSelection.clear();
+		break;
+
 
 	}
 	DebugAssert(gMap.is_valid());
