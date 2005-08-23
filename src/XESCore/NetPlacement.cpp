@@ -617,6 +617,7 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			new_juncs.insert(new_junc);
 			new_junc->location = junc->location;
 			new_junc->ground = junc->ground;
+			// TODO - don't hard-code height here.
 			new_junc->location.z += (5.0 * new_layer);
 			for (Net_ChainInfoSet::iterator migrate = layers[new_layer].chains.begin(); migrate != layers[new_layer].chains.end(); ++migrate)
 			{
