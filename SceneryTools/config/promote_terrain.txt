@@ -1,0 +1,46 @@
+#TERRAIN PROMOTION TABLE!
+#
+# This table describes how adjacent terrain "promotes" terrain that is nearby.  This is used to "spread"
+# high-interest terrain in different ways.  Adjacent is the value of the highest-terrain'd nearby terrain.
+# US is the terrain being acted on, and result is waht US becomes.  So any natural terrain that is next to
+# mixed farm will become mixed farm.
+#
+# Currently this formula is applied exactly once during zoning.
+#
+#
+#				ADJACENT						US								RESULT
+PROMOTE_TERRAIN terrain_MixedFarm				terrain_Natural					terrain_MixedFarm
+
+PROMOTE_TERRAIN terrain_FarmTown				terrain_Natural					terrain_FarmTown
+PROMOTE_TERRAIN terrain_FarmTown				terrain_MixedFarm				terrain_FarmTown
+PROMOTE_TERRAIN terrain_FarmTown				terrain_Farm					terrain_FarmTown
+
+PROMOTE_TERRAIN terrain_OutlayResidential		terrain_Natural					terrain_OutlayResidential
+PROMOTE_TERRAIN terrain_OutlayResidential		terrain_Farm					terrain_FarmTown
+
+#outlay highrise has NO promotion effect on its neighbors - it is isolated weirdness!
+
+PROMOTE_TERRAIN	terrain_Residential				terrain_Natural					terrain_OutlayResidential
+PROMOTE_TERRAIN	terrain_Residential				terrain_Farm					terrain_FarmTown
+
+PROMOTE_TERRAIN terrain_CommercialSprawl		terrain_Natural					terrain_CommercialSprawl
+
+PROMOTE_TERRAIN terrain_Urban					terrain_Natural					terrain_Residential
+PROMOTE_TERRAIN terrain_Urban					terrain_OutlayResidential		terrain_Residential
+PROMOTE_TERRAIN terrain_Urban					terrain_Residential				terrain_Urban
+PROMOTE_TERRAIN terrain_Urban					terrain_CommercialSprawl		terrain_Urban
+
+PROMOTE_TERRAIN terrain_Industrial				terrain_Natural					terrain_Industrial
+PROMOTE_TERRAIN terrain_Industrial				terrain_OutlayResidential		terrain_Industrial
+PROMOTE_TERRAIN terrain_Industrial				terrain_Residential				terrain_Industrial
+PROMOTE_TERRAIN terrain_Industrial				terrain_CommercialSprawl		terrain_Industrial
+PROMOTE_TERRAIN terrain_Industrial				terrain_Urban					terrain_Industrial
+
+PROMOTE_TERRAIN terrain_Downtown				terrain_Natural					terrain_Urban
+PROMOTE_TERRAIN terrain_Downtown				terrain_OutlayResidential		terrain_Urban
+PROMOTE_TERRAIN terrain_Downtown				terrain_Residential				terrain_Urban
+PROMOTE_TERRAIN terrain_Downtown				terrain_CommercialSprawl		terrain_Urban
+
+#One more special case - Airports downgrade adjacent downtown to urban...this is to make sure
+#we do not have any tall objects near our airports!
+PROMOTE_TERRAIN terrain_Airport					terrain_Downtown				terrain_Urban

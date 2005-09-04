@@ -1,0 +1,346 @@
+#
+# This file defines many of the colors used in WorldEditor.  Colors are either six digit
+# hex numbers (this is "web-style" oclors, e.g. 00FF55 for green with a bit of blue, or
+# three comma-separated values for 0-255 style colors, e.g. 0,255,100 for a similar color.
+#
+#
+ENUM_COLOR	NO_VALUE																000000
+
+ENUM_COLOR lu_usgs_INTERRUPTED_AREAS												000000
+ENUM_COLOR lu_usgs_URBAN_IRREGULAR													808080
+ENUM_COLOR lu_usgs_URBAN_SQUARE														808080
+ENUM_COLOR lu_usgs_LOW_SPARSE_GRASSLAND												ABCA82
+ENUM_COLOR lu_usgs_CONIFEROUS_FOREST												366E64
+ENUM_COLOR lu_usgs_DECIDUOUS_CONIFER_FOREST											389645
+ENUM_COLOR lu_usgs_DECIDUOUS_BROADLEAF_FOREST										008000
+ENUM_COLOR lu_usgs_EVERGREEN_BROADLEAF_FORESTS										1BD164
+ENUM_COLOR lu_usgs_TALL_GRASSES_AND_SHRUBS											7BDD3F
+ENUM_COLOR lu_usgs_BARE_DESERT														F1D77D
+ENUM_COLOR lu_usgs_UPLAND_TUNDRA													D2BE88
+ENUM_COLOR lu_usgs_IRRIGATED_GRASSLAND												09FF09
+ENUM_COLOR lu_usgs_SEMI_DESERT														D5CA69
+ENUM_COLOR lu_usgs_GLACIER_ICE														FFFFFF
+ENUM_COLOR lu_usgs_WOODED_WET_SWAMP													10D227
+ENUM_COLOR lu_usgs_INLAND_WATER														80B6F2
+ENUM_COLOR lu_usgs_SEA_WATER														5457DC
+ENUM_COLOR lu_usgs_SHRUB_EVERGREEN													D2E89E
+ENUM_COLOR lu_usgs_SHRUB_DECIDUOUS													8F935D
+ENUM_COLOR lu_usgs_MIXED_FOREST_AND_FIELD											1212FF
+ENUM_COLOR lu_usgs_EVERGREEN_FOREST_AND_FIELDS										29BD72
+ENUM_COLOR lu_usgs_COOL_RAIN_FOREST													039B39
+ENUM_COLOR lu_usgs_CONIFER_BOREAL_FOREST											248A89
+ENUM_COLOR lu_usgs_COOL_CONIFER_FOREST												368078
+ENUM_COLOR lu_usgs_COOL_MIXED_FOREST												20A080
+ENUM_COLOR lu_usgs_MIXED_FOREST														19A34D
+ENUM_COLOR lu_usgs_COOL_BROADLEAF_FOREST											2F8D52
+ENUM_COLOR lu_usgs_DECIDUOUS_BROADLEAF_FOREST2										2DB42A
+ENUM_COLOR lu_usgs_CONIFER_FOREST													20763C
+ENUM_COLOR lu_usgs_MONTANE_TROPICAL_FORESTS											00CA5A
+ENUM_COLOR lu_usgs_SEASONAL_TROPICAL_FOREST											2AAD19
+ENUM_COLOR lu_usgs_COOL_CROPS_AND_TOWNS_IRREGULAR									B8CEBA
+ENUM_COLOR lu_usgs_COOL_CROPS_AND_TOWNS_SQUARE										B8CEBA
+ENUM_COLOR lu_usgs_CROPS_AND_TOWN_IRREGULAR											CCE0A6
+ENUM_COLOR lu_usgs_CROPS_AND_TOWN_SQUARE											CCE0A6
+ENUM_COLOR lu_usgs_DRY_TROPICAL_WOODS												9EED63
+ENUM_COLOR lu_usgs_TROPICAL_RAINFOREST												0DC711
+ENUM_COLOR lu_usgs_TROPICAL_DEGRADED_FOREST											75B618
+ENUM_COLOR lu_usgs_CORN_AND_BEANS_CROPLAND_IRREGULAR								EAF626
+ENUM_COLOR lu_usgs_CORN_AND_BEANS_CROPLAND_SQUARE									EAF626
+ENUM_COLOR lu_usgs_RICE_PADDY_AND_FIELD_IRREGULAR									FFFFC0
+ENUM_COLOR lu_usgs_RICE_PADDY_AND_FIELD_SQUARE										FFFFC0
+ENUM_COLOR lu_usgs_HOT_IRRIGATED_CROPLAND_IRREGULAR									D9F789
+ENUM_COLOR lu_usgs_HOT_IRRIGATED_CROPLAND_SQUARE									D9F789
+ENUM_COLOR lu_usgs_COOL_IRRIGATED_CROPLAND_IRREGULAR								70DD27
+ENUM_COLOR lu_usgs_COOL_IRRIGATED_CROPLAND_SQUARE									70DD27
+ENUM_COLOR lu_usgs_COLD_IRRIGATED_CROPLAND											2727FF
+ENUM_COLOR lu_usgs_COOL_GRASSES_AND_SHRUBS											A5DE6E
+ENUM_COLOR lu_usgs_HOT_AND_MILD_GRASSES_AND_SHRUBS									CEEC64
+ENUM_COLOR lu_usgs_COLD_GRASSLAND													BAE8C3
+ENUM_COLOR lu_usgs_SAVANNA_WOODS													8BC117
+ENUM_COLOR lu_usgs_MIRE_BOG_FEN														33DE2A
+ENUM_COLOR lu_usgs_MARSH_WETLAND													27E134
+ENUM_COLOR lu_usgs_MEDITERRANEAN_SCRUB												9DD935
+ENUM_COLOR lu_usgs_DRY_WOODY_SCRUB													91AF69
+ENUM_COLOR lu_usgs_DRY_EVERGREEN_WOODS												3030FF
+ENUM_COLOR lu_usgs_VOLCANIC_ROCK													3131FF
+ENUM_COLOR lu_usgs_SAND_DESERT														F8F5A0
+ENUM_COLOR lu_usgs_SEMI_DESERT_SHRUBS												E2BF56
+ENUM_COLOR lu_usgs_SEMI_DESERT_SAGE													D0C142
+ENUM_COLOR lu_usgs_BARREN_TUNDRA													D0EC9E
+ENUM_COLOR lu_usgs_COOL_SOUTHERN_HEMISPHERE_MIXED_FORESTS							3AA83F
+ENUM_COLOR lu_usgs_COOL_FIELDS_AND_WOODS											61CD4B
+ENUM_COLOR lu_usgs_FOREST_AND_FIELD													7ECA66
+ENUM_COLOR lu_usgs_COOL_FOREST_AND_FIELD											15AB15
+ENUM_COLOR lu_usgs_FIELDS_AND_WOODY_SAVANNA											9CC54D
+ENUM_COLOR lu_usgs_SUCCULENT_AND_THORN_SCRUB										CBC05F
+ENUM_COLOR lu_usgs_SMALL_LEAF_MIXED_WOODS											21A57B
+ENUM_COLOR lu_usgs_DECIDUOUS_AND_MIXED_BOREAL_FOREST								21A961
+ENUM_COLOR lu_usgs_NARROW_CONIFERS													11B5B3
+ENUM_COLOR lu_usgs_WOODED_TUNDRA													448266
+ENUM_COLOR lu_usgs_HEATH_SCRUB														B5A66B
+ENUM_COLOR lu_usgs_COASTAL_WETLAND__NW												4141FF
+ENUM_COLOR lu_usgs_COASTAL_WETLAND__NE												4242FF
+ENUM_COLOR lu_usgs_COASTAL_WETLAND__SE												4343FF
+ENUM_COLOR lu_usgs_COASTAL_WETLAND__SW												4444FF
+ENUM_COLOR lu_usgs_POLAR_AND_ALPINE_DESERT											E9E1B9
+ENUM_COLOR lu_usgs_GLACIER_ROCK														4646FF
+ENUM_COLOR lu_usgs_SALT_PLAYAS														4747FF
+ENUM_COLOR lu_usgs_MANGROVE															19D319
+ENUM_COLOR lu_usgs_WATER_AND_ISLAND_FRINGE											4949FF
+ENUM_COLOR lu_usgs_LAND_WATER_AND_SHORE												4A4AFF
+ENUM_COLOR lu_usgs_LAND_AND_WATER_RIVERS											4B4BFF
+ENUM_COLOR lu_usgs_CROP_AND_WATER_MIXTURES_IRREGULAR								89CDAE
+ENUM_COLOR lu_usgs_CROP_AND_WATER_MIXTURES_SQUARE									89CDAE
+ENUM_COLOR lu_usgs_SOUTHERN_HEMISPHERE_CONIFERS										4D4DFF
+ENUM_COLOR lu_usgs_SOUTHERN_HEMISPHERE_MIXED_FOREST									1F9D28
+ENUM_COLOR lu_usgs_WET_SCLEROPHYLIC_FOREST											39AD57
+ENUM_COLOR lu_usgs_COASTLINE_FRINGE													5050FF
+ENUM_COLOR lu_usgs_BEACHES_AND_DUNES												5151FF
+ENUM_COLOR lu_usgs_SPARSE_DUNES_AND_RIDGES											5252FF
+ENUM_COLOR lu_usgs_BARE_COASTAL_DUNES												5353FF
+ENUM_COLOR lu_usgs_RESIDUAL_DUNES_AND_BEACHES										5454FF
+ENUM_COLOR lu_usgs_COMPOUND_COASTLINES												5555FF
+ENUM_COLOR lu_usgs_ROCKY_CLIFFS_AND_SLOPES											5656FF
+ENUM_COLOR lu_usgs_SANDY_GRASSLAND_AND_SHRUBS										5757FF
+ENUM_COLOR lu_usgs_BAMBOO															5858FF
+ENUM_COLOR lu_usgs_MOIST_EUCALYPTUS													31BF38
+ENUM_COLOR lu_usgs_RAIN_GREEN_TROPICAL_FOREST										00E605
+ENUM_COLOR lu_usgs_WOODY_SAVANNA													77A830
+ENUM_COLOR lu_usgs_BROADLEAF_CROPS													95FF5B
+ENUM_COLOR lu_usgs_GRASS_CROPS_IRREGULAR											DEFF5B
+ENUM_COLOR lu_usgs_GRASS_CROPS_SQUARE												DEFF5B
+ENUM_COLOR lu_usgs_CROPS_GRASS_SHRUBS_IRREGULAR										E9C67B
+ENUM_COLOR lu_usgs_CROPS_GRASS_SHRUBS_SQUARE										E9C67B
+ENUM_COLOR lu_usgs_EVERGREEN_TREE_CROP												1CE317
+ENUM_COLOR lu_usgs_DECIDUOUS_TREE_CROP												28BE3D
+ENUM_COLOR lu_usgs_Unused97															000000
+ENUM_COLOR lu_usgs_Unused98															000000
+ENUM_COLOR lu_usgs_Unused99															000000
+ENUM_COLOR lu_usgs_NO_DATA															000000
+
+
+ENUM_COLOR  climate_TropicalRainForest						990099
+ENUM_COLOR  climate_TropicalMonsoon							FF99FF
+ENUM_COLOR  climate_TropicalDry								FF66FF
+ENUM_COLOR  climate_DrySteppe								FF6600
+ENUM_COLOR  climate_DryDesert								FF9933
+ENUM_COLOR	climate_TemperateAny							99FF99
+ENUM_COLOR  climate_TemperateSummerDry						66CC00
+ENUM_COLOR  climate_TemperateWinterDry						006600
+ENUM_COLOR  climate_TemperateWet							003300
+ENUM_COLOR	climate_ColdAny									66CCFF
+ENUM_COLOR  climate_ColdSummerDry							3366FF
+ENUM_COLOR  climate_ColdWinterDry							000099
+ENUM_COLOR  climate_PolarTundra								9999CC
+ENUM_COLOR  climate_PolarFrozen								FFFFFF
+
+#ENUM_COLOR  phenom_Unknown									FF00FF
+#ENUM_COLOR  phenom_Water									0022FF
+#ENUM_COLOR  phenom_FreshWater								4433FF
+#ENUM_COLOR  phenom_SeaWater								0000CC
+#ENUM_COLOR  phenom_Ice										EEEEEE
+
+#ENUM_COLOR  phenom_Soil									663333
+#ENUM_COLOR  phenom_Rock									AAAAAA
+#ENUM_COLOR  phenom_Sand									886622
+
+#ENUM_COLOR  phenom_Urban									777777
+
+#ENUM_COLOR  phenom_Grass									006600
+#ENUM_COLOR  phenom_TallGrass								339933
+#ENUM_COLOR  phenom_GrassAndShrubs							55DD55
+#ENUM_COLOR  phenom_TallShrubs								77FF77
+#ENUM_COLOR  phenom_Swamp									664444
+#ENUM_COLOR  phenom_Crops									00DD00
+#ENUM_COLOR  phenom_WetCrops								00DD77
+
+#ENUM_COLOR  phenom_Forest									44DD44
+#ENUM_COLOR  phenom_DeciForest								66FF66
+#ENUM_COLOR  phenom_ConiForest								008800
+#ENUM_COLOR  phenom_MixedForest								66FF66
+#ENUM_COLOR  phenom_SwampTrees								664444
+#ENUM_COLOR  phenom_Orchard									44DD66
+#ENUM_COLOR  phenom_ConiOrchard								66FF88
+#ENUM_COLOR  phenom_DeciOrchard								008822
+
+ENUM_COLOR   terrain_Water									2222DD
+ENUM_COLOR   terrain_Natural								000000
+
+ENUM_COLOR   terrain_Marker_Artificial						FF00FF
+ENUM_COLOR   terrain_MixedFarm								004400
+ENUM_COLOR   terrain_MixedFarmHill							003300
+ENUM_COLOR   terrain_Farm									008800
+ENUM_COLOR   terrain_FarmHill								007700
+ENUM_COLOR   terrain_FarmTown								447744
+ENUM_COLOR   terrain_FarmTownHill							336633
+	
+ENUM_COLOR   terrain_OutlayResidential						444444
+ENUM_COLOR   terrain_OutlayResidentialHill					333333
+ENUM_COLOR   terrain_OutlayHighrise							006666
+ENUM_COLOR   terrain_OutlayHighriseHill						005555
+ENUM_COLOR   terrain_Residential							999900
+ENUM_COLOR   terrain_ResidentialHill						888800
+ENUM_COLOR   terrain_CommercialSprawl						008888
+ENUM_COLOR   terrain_CommercialSprawlHill					007700
+ENUM_COLOR   terrain_Urban									BBBB00
+ENUM_COLOR   terrain_UrbanHill								AAAA00
+ENUM_COLOR   terrain_Industrial								BB7700
+ENUM_COLOR   terrain_IndustrialHill							AA6600
+ENUM_COLOR   terrain_Downtown								FFFF00
+ENUM_COLOR   terrain_DowntownHill							EEEE00
+	
+ENUM_COLOR   terrain_Marker_Features						FF00FF
+ENUM_COLOR   terrain_MilitaryBase							555555
+ENUM_COLOR   terrain_TrailerPark							005500
+ENUM_COLOR   terrain_Campground								005500
+ENUM_COLOR   terrain_Marina									0000BB
+ENUM_COLOR   terrain_GolfCourse								448800
+ENUM_COLOR   terrain_Cemetary								448800
+ENUM_COLOR   terrain_Park									448800
+ENUM_COLOR   terrain_ForestPark								447700
+ENUM_COLOR   terrain_Airport								666666
+
+
+ENUM_COLOR	sink_Known										0000FF
+ENUM_COLOR	sink_Invalid									FF0000
+ENUM_COLOR	sink_Unresolved									FF00FF
+ENUM_COLOR	sink_Lake										8888FF
+ENUM_COLOR	drain_Dir0										88FF88
+ENUM_COLOR	drain_Dir1										AADD88
+ENUM_COLOR	drain_Dir2										BBCC88
+ENUM_COLOR	drain_Dir3										DDAA88
+ENUM_COLOR	drain_Dir4										FF8888
+ENUM_COLOR	drain_Dir5										DDAA88
+ENUM_COLOR	drain_Dir6										BBCC88
+ENUM_COLOR	drain_Dir7										AADD88
+
+#These are the original rainfall color bands from the people who made the koeppen data
+#COLOR_BAND	dem_Rainfall	0		25			230,230,230		190,190,190
+#COLOR_BAND	dem_Rainfall	25		75			190,190,190		150,150,150
+#COLOR_BAND	dem_Rainfall	75		125 		150,150,150		196,112,110
+#COLOR_BAND	dem_Rainfall	125 	225 		196,112,110		200,179,150
+#COLOR_BAND	dem_Rainfall	225 	275 		200,179,150		255,199,117
+#COLOR_BAND	dem_Rainfall	275 	375 		255,199,117		255,255,84
+#COLOR_BAND	dem_Rainfall	375 	475 		255,255,84		145,255,153
+#COLOR_BAND	dem_Rainfall	475 	725 		145,255,153		0,255,0
+#COLOR_BAND	dem_Rainfall	725 	975 		0,255,0			64,199,56
+#COLOR_BAND	dem_Rainfall	975 	1475		64,199,56		13,150,5
+#COLOR_BAND	dem_Rainfall	1475	2475		13,150,5		5,112,94
+#COLOR_BAND	dem_Rainfall	2475	4975		5,112,94		255,0,255
+#COLOR_BAND	dem_Rainfall	4975	7475		255,0,255		128,0,128
+#COLOR_BAND	dem_Rainfall	7475	10005		128,0,128		0,138,255
+
+#These are Sergio's replacement color bands.
+COLOR_BAND	dem_Rainfall	0		50			255,255,163		255,255,163
+COLOR_BAND	dem_Rainfall	50		250			251,175,92		251,175,92
+COLOR_BAND	dem_Rainfall	250		700			196,223,155		196,223,155
+COLOR_BAND	dem_Rainfall	700		1200		0,89,40			0,89,40
+COLOR_BAND	dem_Rainfall	1200	1800		170,226,255		170,226,255
+COLOR_BAND	dem_Rainfall	1800	2800		59,124,255		59,124,255
+COLOR_BAND	dem_Rainfall	2800	10005		29,0,125		29,0,125
+
+COLOR_BAND	dem_HydroQuantity	0		25			230,230,230		190,190,190
+COLOR_BAND	dem_HydroQuantity	25		75			190,190,190		150,150,150
+COLOR_BAND	dem_HydroQuantity	75		125 		150,150,150		196,112,110
+COLOR_BAND	dem_HydroQuantity	125 	225 		196,112,110		200,179,150
+COLOR_BAND	dem_HydroQuantity	225 	275 		200,179,150		255,199,117
+COLOR_BAND	dem_HydroQuantity	275 	375 		255,199,117		255,255,84
+COLOR_BAND	dem_HydroQuantity	375 	475 		255,255,84		145,255,153
+COLOR_BAND	dem_HydroQuantity	475 	725 		145,255,153		0,255,0
+COLOR_BAND	dem_HydroQuantity	725 	975 		0,255,0			64,199,56
+COLOR_BAND	dem_HydroQuantity	975 	1475		64,199,56		13,150,5
+COLOR_BAND	dem_HydroQuantity	1475	2475		13,150,5		5,112,94
+COLOR_BAND	dem_HydroQuantity	2475	4975		5,112,94		255,0,255
+COLOR_BAND	dem_HydroQuantity	4975	7475		255,0,255		128,0,128
+COLOR_BAND	dem_HydroQuantity	7475	10005		128,0,128		0,138,255
+
+COLOR_BAND	dem_Biomass			0		10			230,230,230,	160,160,160
+COLOR_BAND	dem_Biomass			10		30			160,160,160		255,230,150
+COLOR_BAND	dem_Biomass			30		50			255,230,150		255,199,117
+COLOR_BAND	dem_Biomass			50		70			255,199,117		181,112,110
+COLOR_BAND	dem_Biomass			70		110			181,112,110		158,186,90
+COLOR_BAND	dem_Biomass			110		170			158,186,90		255,255,0
+COLOR_BAND	dem_Biomass			170		310			255,255,0		160,255,0
+COLOR_BAND	dem_Biomass			310		610			160,255,0		10,230,30
+COLOR_BAND	dem_Biomass			610		1210		10,230,30		0,170,0
+COLOR_BAND	dem_Biomass			1210	2010		0,170,0			5,112,94
+COLOR_BAND	dem_Biomass			2010	2510		5,112,94		0,138,255
+COLOR_BAND	dem_Biomass			2510	3010		0,138,255		0,0,255
+
+#These are the original temperature color bands from the people who made the Koeppen data.
+#COLOR_BAND	dem_Temperature		-60		-29.5		160,160,160		192,192,192
+#COLOR_BAND	dem_Temperature		-29.5	-24.5		192,192,192		220,220,220
+#COLOR_BAND	dem_Temperature		-24.5	-14.5		220,220,220		138,200,230
+#COLOR_BAND	dem_Temperature		-14.5	-9.5		138,200,230		0,240,255
+#COLOR_BAND	dem_Temperature		-9.5	-4.5		0,240,255		138,240,145
+#COLOR_BAND	dem_Temperature		-4.5	0.5			138,240,145		234,255,145
+#COLOR_BAND	dem_Temperature		0.5		10.5		234,255,145		181,143,0
+#COLOR_BAND	dem_Temperature		10.5	15.5		181,143,0		255,143,0
+#COLOR_BAND	dem_Temperature		15.5	20.5		255,143,0		255,84,0
+#COLOR_BAND	dem_Temperature		20.5	30.5		255,84,0		255,0,0
+#COLOR_BAND	dem_Temperature		30.5	35.5		255,0,0			194,0,0
+#COLOR_BAND	dem_Temperature		35.5	40.0		194,0,0			97,0,0
+
+#These are Sergio's new temperature color bands
+COLOR_BAND	dem_Temperature		-60		-20			0,174,239		0,174,239
+COLOR_BAND	dem_Temperature		-20		-10			250,250,250		250,250,250
+COLOR_BAND	dem_Temperature		-10		-8			150,150,150		150,150,150
+COLOR_BAND	dem_Temperature		-8		-5			215,225,132		215,225,132
+COLOR_BAND	dem_Temperature		-5		2			0,89,40			0,89,40
+COLOR_BAND	dem_Temperature		2		12			7,155,0			7,155,0
+COLOR_BAND	dem_Temperature		12		18			255,255,0		255,255,0
+COLOR_BAND	dem_Temperature		18		24			247,148,28		247,148,28
+COLOR_BAND	dem_Temperature		24		40			237,27,35		237,27,35
+
+COLOR_BAND	dem_TemperatureRange	0.0 	5.0 	255,255,141		237,237,135
+COLOR_BAND	dem_TemperatureRange	5.0 	10.0	237,237,135		219,219,85 
+COLOR_BAND	dem_TemperatureRange	10.0	15.0	219,219,85 		201,201,51 
+COLOR_BAND	dem_TemperatureRange	15.0	20.0	201,201,51 		182,182,88 
+COLOR_BAND	dem_TemperatureRange	20.0	25.0	182,182,88 		197,164,78 
+COLOR_BAND	dem_TemperatureRange	25.0	30.0	197,164,78 		246,164,78 
+COLOR_BAND	dem_TemperatureRange	30.0	35.0	246,164,78 		255,153,39 
+COLOR_BAND	dem_TemperatureRange	35.0	40.0	255,153,39 		255,145,119
+COLOR_BAND	dem_TemperatureRange	40.0	45.0	255,145,119		255,120,67 
+COLOR_BAND	dem_TemperatureRange	45.0	50.0	255,120,67 		207,135,149
+COLOR_BAND	dem_TemperatureRange	50.0	55.0	207,135,149		168,103,129
+COLOR_BAND	dem_TemperatureRange	55.0	60.0    168,103,129		150,79,90 
+COLOR_BAND	dem_TemperatureRange	60.0    65.0    150,79,90 		130,50,50 
+
+COLOR_BAND	dem_RelativeElevation	-5		0		0,255,0			0,255,0
+COLOR_BAND	dem_RelativeElevation	-5		0.3		0,255,0			255,255,0
+COLOR_BAND	dem_RelativeElevation	0.3		0.7		255,255,0		255,255,0
+COLOR_BAND	dem_RelativeElevation	0.7		1.0		255,255,0		127,127,127
+COLOR_BAND	dem_RelativeElevation	1.0		5.0		127,127,127		127,127,127
+
+COLOR_BAND	dem_ElevationRange		0		100		0,0,0			0,127,0
+COLOR_BAND	dem_ElevationRange		100		500		0,127,0			127,127,0
+COLOR_BAND	dem_ElevationRange		500		1000	127,127,0		127,0,0
+COLOR_BAND	dem_ElevationRange		1000	2000	127,0,0			127,0,127
+COLOR_BAND	dem_ElevationRange		2000	3000	127,0,127		0,0,127
+
+COLOR_BAND	dem_Elevation			-500	500		167,179,139		167,179,139
+COLOR_BAND	dem_Elevation			500		1000	149,161,121		149,161,121
+COLOR_BAND	dem_Elevation			1000	1500	190,183,137		190,183,137
+COLOR_BAND	dem_Elevation			1500	3000	193,175,107		193,175,107
+COLOR_BAND	dem_Elevation			3000	6000	183,157,81		183,157,81
+COLOR_BAND	dem_Elevation			6000	30000	177,139,56		177,139,56
+
+COLOR_BAND	dem_UrbanDensity		0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanDensity		0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanPropertyValue	0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanPropertyValue	0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanRadial			0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanRadial			0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_UrbanTransport		0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_UrbanTransport		0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_Slope				0		0.5		0,255,0			255,255,0
+COLOR_BAND	dem_Slope				0.5		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_SlopeHeading		-1.0	0.0		0,255,0			255,255,0
+COLOR_BAND	dem_SlopeHeading		0.0		1.0		255,255,0		255,0,0
+
+COLOR_BAND	dem_Wizard				0.0		1.0		0,0,0			255,255,255

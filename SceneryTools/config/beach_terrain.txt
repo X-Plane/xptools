@@ -1,0 +1,15 @@
+#
+# Man-made terrain table
+#
+# This table defines the appearance of man-made terrain.  Man-made terrain is placed via algorithms that are not included here.
+#
+#
+#BEACH	min_slope	max_slope	terrain				min_wave	max_wave		min_len		beach
+BEACH	0			10			NO_VALUE			0.8			1.0				128.0		1
+BEACH	0			10			NO_VALUE			0.7			1.0				 80.0		2
+BEACH	10			30			NO_VALUE			0.5			1.0				 40.0		3
+BEACH	30			50			NO_VALUE			0.5			1.0				 60.0		4
+BEACH	50			90			NO_VALUE			0.0			1.0				100.0		5
+
+BEACH	0			30			NO_VALUE			0.0			1.0				  0.0		6
+BEACH	30			90			NO_VALUE			0.0			1.0				  0.0		7
