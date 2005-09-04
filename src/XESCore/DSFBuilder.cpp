@@ -55,6 +55,8 @@
 
 // We have to transform generic/specific int pair land uses into one numbering system and back!
 
+// Edge-wrapper...turns out CDT::Edge is so deeply templated that stuffing it in a map crashes CW8.
+// So we build a dummy wrapper around an edge to prevent a template with a huge expanded name.
 struct	edge_wrapper {
 	edge_wrapper() : edge(NULL, 0) { };
 	edge_wrapper(const CDT::Edge e) : edge(e) { };
@@ -68,7 +70,7 @@ struct	edge_wrapper {
 	CDT::Edge	edge;
 };
 
-
+// Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
 static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6])
 {
 	int				 i;
@@ -1136,8 +1138,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
 	DrapeRoads(junctions, chains, inHiresMesh);
 	VerticalPartitionRoads(junctions, chains);
-	OptimizeNetwork(junctions, chains);
-//	MakeHappyBridges(chains);
+	VerticalBuildBridges(junctions, chains);
+	InterpolateRoadHeights(junctions, chains);
+	AssignExportTypes(junctions, chains);
+	OptimizeNetwork(junctions, chains, false);
+	SpacePowerlines(junctions, chains, 1000.0, 10.0);
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;	
 
 	cur_id = 1;
@@ -1156,7 +1161,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			
 		cbs.BeginSegment_f(
 						0, 
-						gNetEntities[(*ci)->entity_type].export_type, 
+						(*ci)->export_type,
 						(*ci)->start_junction->index,
 						coords3,
 						false,
