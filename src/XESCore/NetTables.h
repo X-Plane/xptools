@@ -33,8 +33,10 @@ struct	NetEntityInfo {
 	float		width;
 	float		pad;	
 	float		building_percent;
-	int			limited_access;
-	int			export_type;
+	float		max_slope;
+	int			use_mode;
+	int			export_type_normal;
+	int			export_type_overpass;
 };
 typedef hash_map<int, NetEntityInfo>			NetEntityInfoTable;
 
@@ -45,16 +47,27 @@ struct	Road2NetInfo {
 };
 typedef hash_multimap<int, Road2NetInfo>		Road2NetInfoTable;
 
+struct	BridgeInfo {
+	int			entity_type;
+	float		min_length;
+	float		max_length;
+	float		min_height;
+	float		max_height;
+	float		gradient;
+	int			export_type;
+};
+typedef	vector<BridgeInfo>				BridgeInfoTable;
 
 
 extern	NetFeatureInfoTable				gNetFeatures;
 extern 	NetEntityInfoTable				gNetEntities;
 extern	Road2NetInfoTable				gRoad2Net;
-//extern	set<int>						gBridgeTypes;
-
+extern	BridgeInfoTable					gBridgeInfo;
 void	LoadNetFeatureTables(void);
 
 bool	IsSeparatedHighway(int road_type);
 int		SeparatedToOneway(int road_type);
+
+int		FindBridgeRule(int entity_type, double len, double agl1, double agl2);
 
 #endif
