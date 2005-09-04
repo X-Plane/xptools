@@ -932,7 +932,8 @@ put in  color enums?
 	sprintf(buf,"Lat: %02d.%06d%c Lon: %03d.%06d%c", 
 		lat / 1000000, lat % 1000000, ns,
 		lon / 1000000, lon % 1000000, ew);
-	XPLMDrawString(white, r - 300, b + 7, buf, NULL, xplmFont_Basic);
+	XPLMDrawTranslucentDarkBox(r-300, b + 20 + h, r - 300 + strlen(buf) * w, b + 20 - 1);	
+	XPLMDrawString(white, r - 300, b + 20, buf, NULL, xplmFont_Basic);
 }
 
 /***************************************************************************************************************************************
