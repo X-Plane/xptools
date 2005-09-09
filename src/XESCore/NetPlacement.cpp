@@ -34,6 +34,9 @@ clean this out
 #endif
 #include "WED_Globals.h"
 
+// Move a bridge N meters to simlify it
+#define	BRIDGE_TURN_SIMPLIFY	20
+
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 {
 	if (!he->mDominant) he = he->twin();
@@ -170,6 +173,19 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
  ******************************************************************************************/
 #pragma mark -
 
+Net_ChainInfo_t * Net_JunctionInfo_t::get_other(Net_ChainInfo_t * me)
+{
+	DebugAssert(chains.size() == 2);
+	Net_ChainInfoSet::iterator iter = chains.begin();
+	
+	Net_ChainInfo_t * one = *iter++;
+	Net_ChainInfo_t * two = *iter++;
+	if (me == one) return two;
+	if (me == two) return one;	
+	DebugAssert(!"Not found!");
+	return me;
+}
+
 double		Net_JunctionInfo_t::GetMatchingAngle(Net_ChainInfo_t * chain1, Net_ChainInfo_t * chain2)
 {
 	Vector3	vec1 = chain1->vector_to_junc(this);
@@ -254,6 +270,20 @@ double		Net_ChainInfo_t::meter_length(int pt_start, int pt_stop)
 		total += LonLatDistMeters(p1.x, p1.y, p2.x, p2.y);
 	}
 	return total;
+}
+
+double		Net_ChainInfo_t::dot_angle(int ctr_pt)
+{
+	Point3	p1(nth_pt(ctr_pt-1));
+	Point3	p2(nth_pt(ctr_pt  ));
+	Point3	p3(nth_pt(ctr_pt+1));
+	
+	Vector2	v1(Point2(p1.x, p1.y), Point2(p2.x, p2.y));
+	Vector2	v2(Point2(p2.x, p2.y), Point2(p3.x, p3.y));
+	
+	v1.normalize();
+	v2.normalize();
+	return v1.dot(v2);
 }
 
 void					Net_ChainInfo_t::split_seg(int n, double rat)
@@ -553,35 +583,51 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 	printf("Total of %d road pts, %d were added for mesh.\n", total, added);
 }
 
-/*
-bool	CanMerge(Net_ChainInfo_t * road1, Net_ChainInfo_t * road2, double angle)
+void	PromoteShapePoints(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
-	if (angle > 0.85) return true;
-	if (gNetEntities[road1->entity_type].use_mode == use_Limited) return false;
-	if (gNetEntities[road2->entity_type].use_mode == use_Limited) return false;
-	return true;
-}
-
-// This struct contains all the chains that will go in one layer.  We also cache whether
-// anyone is limited access and the most north-south angle of any of them in dy form.
-struct	HighwayLayer_t {
-	Net_ChainInfoSet	chains;
-	bool				lim_access;
-	bool				water_bridge;
-	double				abs_y;
-};
-
-// This sorts - prioritize bridges, then highways on top, and NS over EW.
-struct SortLayersByHighway {
-	bool	operator()(const HighwayLayer_t& lhs, const HighwayLayer_t& rhs) const {
-		if (lhs.water_bridge != rhs.water_bridge)
-			return rhs.water_bridge;
-		if (lhs.lim_access != rhs.lim_access)
-			return rhs.lim_access;
-		return lhs.abs_y < rhs.abs_y;
+	ValidateNetworkTopology(ioJunctions, ioChains);
+	printf("Promote: before: %d juncs, %d chains\n", ioJunctions.size(), ioChains.size());
+	Net_ChainInfoSet	new_chains;
+	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
+	if (!(*chainIter)->over_water)
+	{
+		Net_ChainInfo_t * chain = *chainIter;
+		while (!chain->shape.empty())
+		{
+			Net_ChainInfo_t * new_chain = new Net_ChainInfo_t;
+			Net_JunctionInfo_t * new_junc = new Net_JunctionInfo_t;
+			
+			new_chains.insert(new_chain);
+			ioJunctions.insert(new_junc);
+			
+			new_junc->location = chain->shape.back();
+			new_junc->agl = chain->agl.back();
+			new_junc->power_crossing = chain->power_crossing.back();
+			new_junc->chains.insert(new_chain);
+			new_junc->chains.insert(chain);
+			new_junc->vertical_locked = false;
+			
+			new_chain->start_junction = new_junc;
+			new_chain->end_junction = chain->end_junction;
+			new_chain->entity_type = chain->entity_type;
+			new_chain->export_type = chain->export_type;
+			new_chain->over_water = chain->over_water;
+			
+			chain->shape.pop_back();
+			chain->agl.pop_back();
+			chain->power_crossing.pop_back();
+			
+			chain->end_junction->chains.erase(chain);
+			chain->end_junction->chains.insert(new_chain);
+			
+			chain->end_junction = new_junc;
+		}
 	}
-};
-*/
+	ioChains.insert(new_chains.begin(), new_chains.end());
+	printf("Promote: after: %d juncs, %d chains\n", ioJunctions.size(), ioChains.size());
+	ValidateNetworkTopology(ioJunctions, ioChains);
+
+}
 
 // RoadLayers - THEORY OF OPERATION
 // We need to keep track of what has been put at what level of our intersection...we use a vector of ints
@@ -879,7 +925,7 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 					ramp_junc = CloneJunction(junc);
 					cloned_junctions.push_back(ramp_junc);
 					new_juncs.insert(ramp_junc);
-					int ramp_level = occupied.GetGoodSlot(use_Limited, false);
+					int ramp_level = occupied.GetGoodSlot(use_Limited, true);
 					occupied.UseSlot(use_Limited, ramp_level);
 					ramp_junc->location.z += (5.0 * ramp_level);
 					ramp_junc->agl = 5.0 * ramp_level;
@@ -918,40 +964,275 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 	printf("total_power_crossings=%d\n",total_power_crossings);
 }
 
+// Given a chain, go from origin along chain at least scan_dist or until we hit a locked or otherwise screwy
+// vertex.  
+double find_highest_ground_along_chain(Net_ChainInfo_t * chain, Net_JunctionInfo_t * origin, double scan_dist)
+{
+	Net_JunctionInfo_t * junc = chain->other_junc(origin);
+	double msl = max(origin->location.z - origin->agl,
+					 junc->location.z - junc->agl);
+	scan_dist -= chain->meter_length(0, chain->seg_count());
+	
+	while (scan_dist > 0.0 && !junc->vertical_locked && junc->chains.size() == 2)
+	{
+		chain = junc->get_other(chain);
+		junc = chain->other_junc(junc);
+		msl = max(msl,
+						 junc->location.z - junc->agl);
+	
+		scan_dist -= chain->meter_length(0, chain->seg_count());
+		
+	}
+	
+	return msl;
+}
+
 void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
+		int		n;
+		
 	for (Net_ChainInfoSet::iterator chain = ioChains.begin(); chain != ioChains.end(); ++chain)	
 	if ((*chain)->over_water)
 	{
-		double total_len = (*chain)->meter_length(0, (*chain)->pt_count()-1);
+		/* STEP 1 - SIMPLIFICATION */
+		
+		// Go through this bridge and remove shaping points as long as we don't displace the bridge more than
+		// a few meters at most (BRIDGE_TURN_SIMPLIFY).  Why?  There  are a lot of spurious shape points in
+		// roads, particularly due to crossing of mesh triangles.  We want the longest segs so we have the 
+		// most options in terms of breaking up and building the bridge.  (If we have shape points, our bridge
+		// options are more limited.)
+	
+		for (int i = 0; i < (*chain)->shape.size(); ++i)
+		{
+			Point3	p1 = (*chain)->nth_pt(i  );
+			Point3	p2 = (*chain)->nth_pt(i+1);
+			Point3	p3 = (*chain)->nth_pt(i+2);
+
+			Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
+			
+			double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x, p_mid.y);
+			
+			if (displacement < BRIDGE_TURN_SIMPLIFY)
+			{
+				gMeshPoints.push_back(Point2((*chain)->shape[i].x,(*chain)->shape[i].y));
+				(*chain)->shape.erase((*chain)->shape.begin()+i);
+				(*chain)->agl.erase((*chain)->agl.begin()+i);
+				(*chain)->power_crossing.erase((*chain)->power_crossing.begin()+i);
+				--i;
+			}
+		}
+
+		/* STEP 2 - BRIDGE CHOICE */
+		
+		// Pick a bridge, any bridge.  Go to the spreadsheet to look up bridge choices.
+	
+		double	total_len = 0.0;
+		double	biggest_len = 0.0;
+		double	smallest_len = 9.9e9;
+		double	sharpest_turn = 1.0;	// 1.0 == straight!
+		for (int n = 0; n < (*chain)->seg_count(); ++n)
+		{
+			double local_len = (*chain)->meter_length(n, n+1);
+			total_len += local_len;
+			biggest_len = max(biggest_len, local_len);
+			smallest_len = min(smallest_len, local_len);
+			
+			if (n > 0) sharpest_turn = min(sharpest_turn,(*chain)->dot_angle(n));
+		}
 
 		double	agl1 = -1.0;
 		double	agl2 = -1.0;
 		if ((*chain)->start_junction->vertical_locked)	agl1 = (*chain)->start_junction->agl;
 		if ((*chain)->end_junction->vertical_locked)	agl2 = (*chain)->end_junction->agl;
 		
-		int	bridge_rule = FindBridgeRule((*chain)->entity_type, total_len, agl1, agl2);
-		if (bridge_rule == -1.0)
+		int	bridge_rule = FindBridgeRule((*chain)->entity_type, total_len, smallest_len, biggest_len, (*chain)->seg_count(), sharpest_turn, agl1, agl2);
+		if (bridge_rule == -1)
 		{
-			AssertPrintf("Bridge rule failed for type=%s, len=%lf, agl1=%lf, agl2=%lf", FetchTokenString((*chain)->entity_type), total_len, agl1, agl2);
+			(*chain)->export_type = -1;
+
 		} else {
+		
+			/* STEP 3 - PICK STARTING POINTS */
+			
+			// Now we have to decide how high up the bridge starts!  Our rule is:
+			// Look out for search_dist to see how high the ground is (or a locked junction is).  Call that our uniform height.
+			// If preferred is higher up, use preferred.  Clamp to min and max.
+
+			if (agl1 == -1)
+			{
+				if ((*chain)->start_junction->chains.size() == 2)
+				{
+					agl1 = max(find_highest_ground_along_chain(
+									(*chain)->start_junction->get_other(*chain),
+									(*chain)->start_junction,
+									gBridgeInfo[bridge_rule].search_dist) - (*chain)->start_junction->location.z,
+								(double) gBridgeInfo[bridge_rule].pref_start_agl);
+					
+				} else
+					agl1 = gBridgeInfo[bridge_rule].pref_start_agl;
+
+				agl1 = max((double) gBridgeInfo[bridge_rule].min_start_agl, agl1);
+				agl1 = min((double) gBridgeInfo[bridge_rule].max_start_agl, agl1);
+			}
+
+			if (agl2 == -1)
+			{
+				if ((*chain)->end_junction->chains.size() == 2)
+				{
+					agl2 = max(find_highest_ground_along_chain(
+									(*chain)->end_junction->get_other(*chain),
+									(*chain)->end_junction,
+									gBridgeInfo[bridge_rule].search_dist) - (*chain)->end_junction->location.z,
+								(double) gBridgeInfo[bridge_rule].pref_start_agl);
+					
+				} else
+					agl2 = gBridgeInfo[bridge_rule].pref_start_agl;
+
+				agl2 = max((double) gBridgeInfo[bridge_rule].min_start_agl, agl2);
+				agl2 = min((double) gBridgeInfo[bridge_rule].max_start_agl, agl2);
+			}
+			
+			/* STEP 4 - PICK BRIDGE GEOMETRY */
+			
+			// Now we have to pick the bridge height at max clearnace.  First guess: total-length based.
+			// Then limit by how high we can get			
+			double	total_length = (*chain)->meter_length(0, (*chain)->seg_count());
+			double	center_height = total_length * gBridgeInfo[bridge_rule].height_ratio;
+			// Make sure it's not below either of our ends!
+			center_height = max(center_height, agl1);
+			center_height = max(center_height, agl2);			
+			// Limit by the amount we can climb do to slope constraints.
+			center_height = min(center_height, agl1 + total_length * 0.5 * gBridgeInfo[bridge_rule].road_slope);
+			center_height = min(center_height, agl2 + total_length * 0.5 * gBridgeInfo[bridge_rule].road_slope);
+			// Limit by explicit rules to keep within a sane range.
+			center_height = min(center_height, (double) gBridgeInfo[bridge_rule].max_center_agl);
+			center_height = max(center_height, (double) gBridgeInfo[bridge_rule].min_center_agl);
+
+			// This is our guestimate for how long the ramps have to be, roughly.
+			double	ramp1 = (center_height - agl1) / gBridgeInfo[bridge_rule].road_slope;
+			double	ramp2 = (center_height - agl2) / gBridgeInfo[bridge_rule].road_slope;
+			double	ramp_rat1 = (				ramp1) / total_length;
+			double	ramp_rat2 = (total_length - ramp2) / total_length;
+
+			if (ramp1 + ramp2 > total_length)
+			{
+				ramp_rat1 = ramp_rat2 = (ramp1) / (ramp1 + ramp2);
+				ramp1 = total_length * (	  ramp_rat1);
+				ramp2 = total_length * (1.0 - ramp_rat2);
+			}
+			
+			/* STEP 5 - POINT SPLITTING */
+			
+			// The spreadsheet contains three rules on how to split up the roadway: by count (split everything by N),
+			// by length (split if the length is more than 2N), and by arch, which will try to make sure we have split points
+			// where we need them.
+						
+			if (gBridgeInfo[bridge_rule].split_count > 1)
+			for (n = 0; n < (*chain)->seg_count(); ++n)
+			{
+				int ctr = gBridgeInfo[bridge_rule].split_count;
+				while (ctr > 1)
+				{
+					(*chain)->split_seg(n, 1.0 / (float) ctr);
+					--ctr;
+					++n;
+				}
+			}
+
+			if (gBridgeInfo[bridge_rule].split_length > 0.0)
+			for (n = 0; n < (*chain)->seg_count(); ++n)
+			{
+				double local_len = (*chain)->meter_length(n,n+1);
+				double reps = local_len / gBridgeInfo[bridge_rule].split_length;
+				int	   reps_i = reps;
+				
+				while (reps_i > 1)
+				{
+					(*chain)->split_seg(n, 1.0 / (float) reps_i);
+					++n;
+					--reps_i;
+				}
+			}
+			
+			if (gBridgeInfo[bridge_rule].split_arch)
+			{
+				double 	cume_len = 0.0;				// How far along the chain we've gone
+				double	len_local; 					// Length of this one segment in meters
+				double	scaled_start, scaled_end;	// Start and end of this segment as a ratio of the whole chain
+				double	ramp_rat1_local;			// position of the ramp cut points relative to the segment.  Values 
+				double	ramp_rat2_local;			// negative or greater than one indicate we're off the edge of the seg!
+				
+				for (n = 0; n < (*chain)->seg_count(); ++n)
+				{
+					len_local = (*chain)->meter_length(n,n+1);
+					scaled_start = cume_len / total_length;
+					cume_len += len_local;
+					scaled_end = cume_len / total_length;
+					
+					ramp_rat1_local = (ramp_rat1 - scaled_start) / (scaled_end - scaled_start);
+					if (ramp_rat1_local > 0.1 && ramp_rat1_local < 0.9)
+					{
+						(*chain)->split_seg(n, ramp_rat1_local);
+						break;
+					}
+					if (ramp_rat1_local < 0.0)
+						break;					
+				}
+
+				cume_len = 0.0;
+				for (n = 0; n < (*chain)->seg_count(); ++n)
+				{
+					len_local = (*chain)->meter_length(n,n+1);
+					scaled_start = cume_len / total_length;
+					cume_len += len_local;
+					scaled_end = cume_len / total_length;
+					
+					ramp_rat2_local = (ramp_rat2 - scaled_start) / (scaled_end - scaled_start);
+					if (ramp_rat2_local > 0.1 && ramp_rat2_local < 0.9)
+					{
+						(*chain)->split_seg(n, ramp_rat2_local);
+						break;
+					}
+					if (ramp_rat2_local < 0.0)
+						break;
+				}
+			}
+			
+			/* STEP 6 - ARCH BRIDGE */
+			
+			double	cur_height;
+			double	length_start = 0.0;
+			double	length_end;
+			double	shape_rat;
+			
+			for (n = 0; n < (*chain)->shape.size(); ++n)
+			{
+				length_start += (*chain)->meter_length(n,n+1);
+				length_end = total_length - length_start;
+				shape_rat = length_start / total_length;
+					 if (shape_rat <= ramp_rat1)cur_height = agl1 + (length_start * gBridgeInfo[bridge_rule].road_slope);
+				else if (shape_rat >= ramp_rat2)cur_height = agl2 + (length_end   * gBridgeInfo[bridge_rule].road_slope);
+				else							cur_height = center_height;					
+				if (cur_height > center_height)	cur_height = center_height;
+				
+				(*chain)->agl[n] = cur_height;
+				(*chain)->shape[n].z += cur_height;
+			}
 		
 			if (!(*chain)->start_junction->vertical_locked)
 			{
 				(*chain)->start_junction->vertical_locked = true;
-				(*chain)->start_junction->agl = max(5.0f, gBridgeInfo[bridge_rule].min_height);
-				(*chain)->start_junction->location.z += max(5.0f, gBridgeInfo[bridge_rule].min_height);
+				(*chain)->start_junction->agl = agl1;
+				(*chain)->start_junction->location.z += agl1;
 			}
 			if (!(*chain)->end_junction->vertical_locked)
 			{
 				(*chain)->end_junction->vertical_locked = true;
-				(*chain)->end_junction->agl = max(5.0f, gBridgeInfo[bridge_rule].min_height);
-				(*chain)->end_junction->location.z += max(5.0f, gBridgeInfo[bridge_rule].min_height);
+				(*chain)->end_junction->agl = agl2;
+				(*chain)->end_junction->location.z += agl2;
 			}
 				
-			(*chain)->export_type = gBridgeInfo[bridge_rule].export_type;
-			
-			// TODO - build actual bridge arch with split!
+			(*chain)->export_type = gBridgeInfo[bridge_rule].export_type;			
 		}
 	}
 }
@@ -973,7 +1254,7 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		bool	nearby_locked = false;
 		for (chain = (*junc)->chains.begin(); chain != (*junc)->chains.end(); ++chain)
 		{
-			DebugAssert((*chain)->over_water == false);
+			DebugAssert((*chain)->over_water == false || (*chain)->export_type == -1);	// If it's water, it better be hidden or locked down
 			
 			if ((*chain)->other_junc(*junc)->vertical_locked)
 			{
@@ -984,17 +1265,12 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		
 		if (nearby_locked)
 			to_process.insert(q_type::value_type(shortest_len, *junc));
-	}// else
-	//	(*junc)->lock_dist_m = 0.0;
-	
-//	FILE * fi = fopen("road.txt", "a");
-//	fprintf(fi, "Processing...\n");
+	}
 	
 	while (!to_process.empty())
 	{
 		Net_JunctionInfo_t * current = to_process.begin()->second;
 		double		current_lock_dist = to_process.begin()->first;
-//		current->lock_dist_m = to_process.begin()->first;
 		to_process.erase(to_process.begin());
 		
 		if (!current->vertical_locked)
@@ -1002,10 +1278,8 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			double	min_msl = current->location.z		  ;
 			double	max_msl = current->location.z + 1000.0;
 			double	gnd_msl = current->location.z		  ;
+			double	max_agl = 0.0						  ;
 
-//			fprintf(fi,"Processing %lf, %lf: min=%lf, max=%lf, gnd=%lf, prio = %lf\n",
-//					current->location.x, current->location.y, min_msl, max_msl, gnd_msl, current->lock_dist_m);
-			
 			for (chain = current->chains.begin(); chain != current->chains.end(); ++chain)
 			{
 				Net_JunctionInfo_t * other = (*chain)->other_junc(current);
@@ -1015,37 +1289,18 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 													  
 					double var = seg_len * gNetEntities[(*chain)->entity_type].max_slope;
 					
-//					fprintf(fi,"     var=%lf, location.z = %lf, old range = %lf - %lf ", var, other->location.z, min_msl, max_msl);
 					min_msl = max(min_msl, other->location.z - var);
 					max_msl = min(max_msl, other->location.z + var);
-//					fprintf(fi," new range = %lf - %lf\n", min_msl, max_msl);
+					max_agl = max(max_agl, other->agl);
 				} else {
 					double len = current_lock_dist + (*chain)->meter_length(0, (*chain)->seg_count());
 					to_process.insert(q_type::value_type(len, other));
 				}
 			}
-/*			
-			for (chain = current->chains.begin(); chain != current->chains.end(); ++chain)
-			{
-				Net_JunctionInfo_t * other = (*chain)->other_junc(current);
-				if (other->vertical_locked)
-				{
-					double seg_len = (*chain)->meter_length(0, (*chain)->seg_count());
-					double var = seg_len * gNetEntities[(*chain)->entity_type].max_slope;
-					fprintf(fi,"  Seg len = %lf, var = %lf, type = %s, Y=%lf goes to %lf,%lf\n", 
-						seg_len, var, FetchTokenString((*chain)->entity_type), other->location.z, other->location.x, other->location.y);
-				} else {
-					double seg_len = (*chain)->meter_length(0, (*chain)->seg_count());
-					fprintf(fi,"  Seg len = %lf, unlocked, type = %s, goes to %lf, %lf\n", 
-						seg_len, FetchTokenString((*chain)->entity_type), other->location.x, other->location.y);
-				}				
-			}
-*/		
 			
-			if (min_msl > max_msl)			min_msl = ((min_msl + max_msl) * 0.5);			
-			if (min_msl < gnd_msl)			min_msl = gnd_msl;
-			
-//			fprintf(fi,"    final height: min=%lf,max=%lf,gnd=%lf\n", min_msl, max_msl, gnd_msl);
+			if (min_msl > max_msl)				min_msl = ((min_msl + max_msl) * 0.5);			
+			if (min_msl < gnd_msl)				min_msl = gnd_msl;			
+			if (min_msl > (gnd_msl + max_agl))	min_msl = gnd_msl + max_agl;
 			
 			current->location.z = min_msl;
 			current->agl = min_msl - gnd_msl;
@@ -1053,12 +1308,15 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		}	
 		
 	}
-//	fclose(fi);
-	
+
+/*	
 	// TODO - this code sucks!  Ideally we'd consider the sloep factor as we smooth out each junction and
 	// potentially chop up segments that defy slope-bridging constraints!
 	// (Also we need to examine code above, where slope constraints can do whacky things in a hilly area.
 	// I think we need to break up any segments that defy slope constraints, so we can whack them all later.)
+	
+	It is also disabled - we don't use shape points for on-land anymore, we use a ton of junctions!
+	
 	for (chain = ioChains.begin(); chain != ioChains.end(); ++chain)
 	if (gNetEntities[(*chain)->entity_type].use_mode != use_Power)
 	{	
@@ -1088,9 +1346,7 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 			}
 		}
 	}
-
-
-	
+*/	
 }
 
 void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
@@ -1112,6 +1368,22 @@ void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCha
 	}
 }
 
+void DeleteBlankChains(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
+{
+	for (Net_ChainInfoSet::iterator chain = ioChains.begin(); chain != ioChains.end();)
+	{
+		if ((*chain)->export_type == -1)
+		{
+			(*chain)->start_junction->chains.erase(*chain);
+			(*chain)->end_junction->chains.erase(*chain);
+			delete *chain;
+			ioChains.erase(chain++);
+		} else {
+			++chain;
+		}
+	}
+}
+
 void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, double ideal_dist_m, double max_dip)
 {
 	int		total_pts = 0;
@@ -1119,38 +1391,8 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 	int		kill_pts = 0;
 	int		kill_xos = 0;
 	int		end_crossings = 0;
-	int		true_crossings = 0;
 
-	gMeshPoints.clear();
-
-	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
-	if (gNetEntities[(*chainIter)->entity_type].use_mode == use_Power)
-	for (int n = 0; n < (*chainIter)->seg_count(); ++n)
-	{
-		Segment3 seg((*chainIter)->nth_seg(n));
-		do {
-			(*chainIter)->split_seg(n, 0.5); 
-		}	
-		while (LonLatDistMeters(seg.p1.x, seg.p1.y, seg.p2.x, seg.p2.y) > ideal_dist_m);
-		++n;
-	}	
-	
-	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
-	if (gNetEntities[(*chainIter)->entity_type].use_mode == use_Power)
-	for (int n = 0; n < (*chainIter)->power_crossing.size(); ++n)
-	if ((*chainIter)->power_crossing[n])
-	{
-		++true_crossings;
-//		gMeshPoints.push_back(Point2((*chainIter)->shape[n].x,(*chainIter)->shape[n].y));
-	}
-//	for (Net_JunctionInfoSet::iterator juncIter = ioJunctions.begin(); juncIter != ioJunctions.end(); ++juncIter)
-//	if ((*juncIter)->power_crossing)
-//	{
-//		++true_crossings;
-//		gMeshPoints.push_back(Point2((*juncIter)->location.x,(*juncIter)->location.y));
-//	}
-	
-	printf("True power crossing count after stuff...shape only=%d\n", true_crossings);
+//	gMeshPoints.clear();
 	
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
 	if (gNetEntities[(*chainIter)->entity_type].use_mode == use_Power)
@@ -1178,11 +1420,6 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 				Point3	p2 = chain->nth_pt(i+1);
 				Point3	p3 = chain->nth_pt(i+2);
 
-				Vector2	v1(Point2(p1.x, p1.y), Point2(p2.x, p2.y));
-				Vector2	v2(Point2(p2.x, p2.y), Point2(p3.x, p3.y));
-				v1.normalize();
-				v2.normalize();
-			
 				double len1 = chain->meter_length(i  , i+1);	// Counting off by one since i is in shape pts, not total pts!
 				double len2 = chain->meter_length(i+1, i+2);
 				
@@ -1194,31 +1431,10 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 
 				double	mid_msl = msl1 * (1.0 - rat) + msl2 * rat;
 
-				Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).midpoint(rat);
+				Point2	p_mid = Segment2(Point2(p1.x,p1.y), Point2(p3.x, p3.y)).projection(Point2(p2.x,p2.y));
 				
 				double	displacement = LonLatDistMeters(p2.x, p2.y, p_mid.x, p_mid.y);
 				
-				double dot = v1.dot(v2);
-
-				if (first_time && chain->power_crossing[i])
-				{
-					bool len_ok = (len1 + len2) < ideal_dist_m;
-					bool dip_ok = (mid_msl + max_dip) > msl;
-					bool peak_ok = (msl <= msl1 || msl <= msl2);
-//					bool dot_ok = dot > 0.999;
-					bool dot_ok = displacement < 5.0;
-
-					printf("Len=%s Dip=%s Peak=%s dot=%s    len1=%lf len2=%lf msl1=%lf msl=%lf msl2=%lf msl_mid=%lf disp=%lf\n", 
-						len_ok ? "y" : "n",
-						dip_ok ? "y" : "n",
-						peak_ok ? "y" : "n",
-						dot_ok ? "y" : "n",
-						len1, len2,
-						msl1, msl, msl2, mid_msl,
-						displacement);
-				}
-				
-			
 				if ((len1 + len2) < ideal_dist_m &&		// We're short enough that we can wipe the middle and
 					(mid_msl + max_dip) > msl &&		// removing this wouldn't cause the segment to dip too deep and
 					(msl <= msl1 || msl <= msl2) &&		// This isn't a local high-point
@@ -1227,7 +1443,7 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 				if (!first_time || chain->power_crossing[i])
 				{
 					if (chain->power_crossing[i]){ ++kill_xos;
-					gMeshPoints.push_back(Point2(chain->shape[i].x, chain->shape[i].y));
+//					gMeshPoints.push_back(Point2(chain->shape[i].x, chain->shape[i].y));
 
 					}
 												  ++kill_pts;
@@ -1243,11 +1459,4 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 		} while (did_work);		
 	}
 	printf("Total pts=%d total xos=%d, kill pts=%d, kill xos=%d, end xos=%d\n", total_pts, total_xos, kill_pts, kill_xos, end_crossings);
-	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
-	if (gNetEntities[(*chainIter)->entity_type].use_mode == use_Power)
-	for (int n = 0; n < (*chainIter)->seg_count(); ++n)
-	{
-		Segment3 seg = (*chainIter)->nth_seg(n);
-		printf("  Seg %d: dist = %lf\n", n, LonLatDistMeters(seg.p1.x,seg.p1.y,seg.p2.x,seg.p2.y));
-	}
 }

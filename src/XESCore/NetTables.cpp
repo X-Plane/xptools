@@ -23,6 +23,8 @@
 #include "NetTables.h"
 #include "EnumSystem.h"
 #include "ConfigSystem.h"
+#include "AssertUtils.h"
+#include "XESConstants.h"
 
 NetFeatureInfoTable				gNetFeatures;
 NetEntityInfoTable				gNetEntities;
@@ -78,9 +80,24 @@ bool	ReadRoadBridge(const vector<string>& tokens, void * ref)
 {
 	BridgeInfo	info;
 	
-	if (TokenizeLine(tokens, " efffffi", &info.entity_type, 
+	if (TokenizeLine(tokens, " efffffffififfffffffi", 
+		&info.entity_type, 
 		&info.min_length, &info.max_length,
-		&info.min_height, &info.max_height, &info.gradient, &info.export_type) != 8) return false;
+		&info.min_seg_length, &info.max_seg_length,
+		&info.min_seg_count, &info.max_seg_count,
+		&info.curve_limit,
+		&info.split_count, &info.split_length, &info.split_arch,
+		&info.min_start_agl, &info.max_start_agl,
+		&info.search_dist,   &info.pref_start_agl,
+		&info.min_center_agl, &info.max_center_agl,
+		&info.height_ratio, &info.road_slope,
+		&info.export_type) != 21) return false;
+	
+		// Special case these - otherwise we get inexact values from deg-rad conversion.
+		 if (info.curve_limit == 90.0)		info.curve_limit = 0.0;
+	else if (info.curve_limit ==180.0)		info.curve_limit =-1.0;
+	else if (info.curve_limit ==  0.0)		info.curve_limit = 1.0;
+	else									info.curve_limit = cos(info.curve_limit * DEG_TO_RAD);
 	
 	gBridgeInfo.push_back(info);
 	return true;	
@@ -114,15 +131,26 @@ int		SeparatedToOneway(int road_type)
 	return new_type;
 }	
 
-int		FindBridgeRule(int entity_type, double len, double agl1, double agl2)
+int		FindBridgeRule(int entity_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2)
 {
+	DebugAssert(len > 0.0);
+	DebugAssert(smallest_seg > 0.0);
+	DebugAssert(biggest_seg > 0.0);
+	DebugAssert(smallest_seg <= biggest_seg);
+	DebugAssert(num_segments > 0);
+	DebugAssert(len >= biggest_seg);
+	
 	for (int n = 0; n < gBridgeInfo.size(); ++n)
 	{
 		BridgeInfo& rule = gBridgeInfo[n];
 		if (rule.entity_type == entity_type &&
-			(rule.min_length == rule.max_length || len == 0.0 || (rule.min_length <= len && len <= rule.max_length)) &&
-			(rule.min_height == rule.max_height || agl1 == -1.0 || (rule.min_height <= agl1 && agl1 <= rule.max_height)) &&
-			(rule.min_height == rule.max_height || agl2 == -1.0 || (rule.min_height <= agl2 && agl2 <= rule.max_height)))
+			(rule.curve_limit <= curve_dot) &&
+			(rule.min_length == rule.max_length || (rule.min_length <= len && len <= rule.max_length)) &&
+			(rule.min_start_agl == rule.max_start_agl || agl1 == -1.0 || (rule.min_start_agl <= agl1 && agl1 <= rule.max_start_agl)) &&
+			(rule.min_start_agl == rule.max_start_agl || agl2 == -1.0 || (rule.min_start_agl <= agl2 && agl2 <= rule.max_start_agl)) &&
+			(rule.min_seg_length == rule.max_seg_length || (rule.min_seg_length <= smallest_seg && biggest_seg <= rule.max_seg_length)) &&
+			(rule.min_seg_count == rule.max_seg_count || (rule.min_seg_count <= num_segments && num_segments <= rule.max_seg_count))
+		)
 		{
 			return n;
 		}

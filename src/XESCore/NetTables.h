@@ -49,11 +49,33 @@ typedef hash_multimap<int, Road2NetInfo>		Road2NetInfoTable;
 
 struct	BridgeInfo {
 	int			entity_type;
+	
+	// Rulez
 	float		min_length;
 	float		max_length;
-	float		min_height;
-	float		max_height;
-	float		gradient;
+	float		min_seg_length;
+	float		max_seg_length;
+	float		min_seg_count;
+	float		max_seg_count;
+	float		curve_limit;	// Expressed as a DOT product (Cosine) - 0 means no limit, 1.0 means straight!
+
+	// Splitting
+	int			split_count;
+	float		split_length;
+	int			split_arch;
+	
+	// Geometry
+	float		min_start_agl;
+	float		max_start_agl;
+	float		search_dist;
+	float		pref_start_agl;
+	
+	float		min_center_agl;
+	float		max_center_agl;
+	float		height_ratio;
+	float		road_slope;
+
+	// Export to X-Plane	
 	int			export_type;
 };
 typedef	vector<BridgeInfo>				BridgeInfoTable;
@@ -68,6 +90,6 @@ void	LoadNetFeatureTables(void);
 bool	IsSeparatedHighway(int road_type);
 int		SeparatedToOneway(int road_type);
 
-int		FindBridgeRule(int entity_type, double len, double agl1, double agl2);
+int		FindBridgeRule(int entity_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2);
 
 #endif
