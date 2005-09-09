@@ -75,6 +75,35 @@ static int DoNearest(const vector<const char *>& args)
 	return 1;
 }
 
+static int DoWaterCount(const vector<const char *>& args)
+{
+	double total = 0.0;
+	for (Pmwx::Face_iterator face = gMap.faces_begin(); face != gMap.faces_end(); ++face)
+	if (!face->is_unbounded())
+	if (face->IsWater())
+	{
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			total += (Vector2(stop->source()->point(), circ->source()->point()).signed_area(
+					  Vector2(stop->source()->point(), circ->target()->point())));
+			++circ;
+		} while (circ != stop);
+		
+		for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+		{
+			circ = stop = *hole;
+			do {
+				total += (Vector2(stop->source()->point(), circ->source()->point()).signed_area(
+						  Vector2(stop->source()->point(), circ->target()->point())));
+				++circ;
+			} while (circ != stop);
+		}
+	}
+	printf("TOTAL WATER AREA = %lf\n", total);
+	return 1;
+}
+
 static int DoCrop(const vector<const char *>& args)
 {
 	if (gMap.number_of_halfedges() > 0)
@@ -295,6 +324,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
 { "-bbox", 			0, 0, DoBbox, 			"Show bounds of all maps.", "" },
 { "-nearest_dist",  0, 0, DoNearest, 		"Returns closest two pts on map.", "" },
+{ "-water_count",	0, 0, DoWaterCount,		"Count amount of water in file.", "" },
 { "-extent", 		4, 4, DoExtent, 		"Set the bounds for further crop and import commands.", "" },
 { "-validate", 		0, 0, DoValidate, 		"Test vector map integrity.", "" },
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },

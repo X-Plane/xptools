@@ -188,7 +188,7 @@ void	BuildFakeLib(const char * dir)
 		fprintf(rds, "# %s\n", FetchTokenString(net->first));
 		
 		fprintf(rds, "ROAD_TYPE %d   %f %f 0   1.0 1.0 1.0 \n",
-			net->second.export_type, net->second.width, net->second.width);
+			net->second.export_type_normal, net->second.width, net->second.width);
 //		if (bridge)	fprintf(rds, "SEGMENT 0 20000     0 -3 0.0    0  0 0.0\n");
 					fprintf(rds, "SEGMENT 0 20000     0  0 0.0    1  0 1.0\n");
 //		if (bridge)	fprintf(rds, "SEGMENT 0 20000     1  0 1.0    1 -3 1.0\n");
