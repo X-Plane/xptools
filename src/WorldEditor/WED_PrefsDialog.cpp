@@ -47,6 +47,7 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CAPTION, "Cliff Height:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.cliff_height, XP_TAG, TAG_CLIFF_HEIGHT, XP_END,
 							XP_ROW, XP_CAPTION, "Max Error:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.max_error, XP_END,
 							XP_ROW, XP_CHECKBOX, "Use Fowler-Little", &gMeshPrefs.fowler_little, XP_NOTIFY, DoFowlerLittle, XP_TAG, TAG_FOWLER_LITTLE, XP_END,
+							XP_ROW, XP_CAPTION, "Change Tex Length", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.rep_switch_m, XP_END,
 						XP_END,
 						XP_COLUMN,
 							XP_ROW, XP_CAPTION, "Local Area Search:", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
