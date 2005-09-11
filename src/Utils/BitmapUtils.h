@@ -175,10 +175,12 @@ void	RotateBitmapCCW(
 /* This routine converts a 3-channel bitmap to a 4-channel bitmap by converting
  * magenta pixels to alpha. */
 int	ConvertBitmapToAlpha(
-			struct ImageInfo *		ioImage);
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha);
 			
 /* This routine converts a 4-channel bitmap to a 3-channel bitmap by converting
  * alpha back to magenta. */
 int	ConvertAlphaToBitmap(
-			struct ImageInfo *		ioImage);
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha);
 #endif

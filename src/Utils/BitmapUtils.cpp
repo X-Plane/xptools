@@ -549,7 +549,8 @@ void	RotateBitmapCCW(
 }			
 			
 int	ConvertBitmapToAlpha(
-			struct ImageInfo *		ioImage)
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha)
 {
 		unsigned char * 	oldData, * newData, * srcPixel, * dstPixel;
 		long 	count;
@@ -575,7 +576,8 @@ int	ConvertBitmapToAlpha(
 		 * opaque and retains its color.  NOTE: one of the problems with the magenta=alpha strategy is 
 		 * that we don't know what color was 'under' the transparency, so if we stretch or skew this bitmap
 		 * we can't really do a good job of interpolating. */
-		if ((srcPixel[0] == 0xFF) &&
+		if (doMagentaAlpha && 
+			(srcPixel[0] == 0xFF) &&
 			(srcPixel[1] == 0x00) &&
 			(srcPixel[2] == 0xFF))
 		{
@@ -606,29 +608,24 @@ int	ConvertBitmapToAlpha(
 
 
 int	ConvertAlphaToBitmap(
-			struct ImageInfo *		ioImage)
+			struct ImageInfo *		ioImage,
+			bool					doMagentaAlpha)
 {
 		unsigned char * 	oldData, * newData, * srcPixel, * dstPixel;
 		long 	count;
 		long 	x,y;
+		int		pad;
 		
 	if (ioImage->channels == 3)
 		return 0;
 
-	/* Allocate a new bitmap at 3 channels.
-	 * WARNING WARNING WARNING WARNING WARNING:
-	 * THIS CODE IS BUGGY!!!!!!!!!!!!!!!!!!!!!
-	 *
-	 * There is no padding being allocated to our new buffer, but we do calculate
-	 * a pad below.  If we are working with a non-multiple-of-four width image,
-	 * we will scribble over memory and cause chaos.
-	 */
-	newData = (unsigned char *) malloc(ioImage->width * ioImage->height * 3);
+	pad = ((ioImage->width * 3 + 3) & ~3) - (ioImage->width * 3);
+	newData = (unsigned char *) malloc((ioImage->width * 3 + pad) * ioImage->height);
 	if (newData == NULL)
 		return ENOMEM;	
 	oldData = ioImage->data;
 	
-	ioImage->pad = ((ioImage->width * 3 + 3) & ~3) - (ioImage->width * 3);
+	ioImage->pad = pad;
 	
 	srcPixel = oldData;
 	dstPixel = newData;
@@ -651,7 +648,7 @@ int	ConvertAlphaToBitmap(
 		 * bit deep.
 		 *
 		 */
-		if (srcPixel[3] != 0xFF)
+		if (doMagentaAlpha && srcPixel[3] != 0xFF)
 		{
 			dstPixel[0] = 0xFF;
 			dstPixel[1] = 0x00;
