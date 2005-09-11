@@ -27,7 +27,7 @@
 #define SRTM_VERTICAL_SLOP 8
 
 // Required flow to actually build the river.
-#define REQUIRED_FLOW 1500.0
+#define REQUIRED_FLOW 24000.0		// was 1500, 6000 is better
 // Max slope over which a river can go.  This huge value basically turns off slope checking.
 #define REQUIRED_SLOPE 100.0
 
