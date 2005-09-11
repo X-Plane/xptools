@@ -164,6 +164,30 @@ int	MyWriteBitmapToFile	(const struct ImageInfo * inImage, const char * inFilePa
 		return WriteBitmapToPNG(inImage, pngPath.c_str(), NULL, 0);
 }
 
+void	MyCopyBitmapSection(
+			const struct ImageInfo *	inSrc,
+			const struct ImageInfo	*	inDst,
+			long				inSrcLeft,
+			long				inSrcTop,
+			long				inSrcRight,
+			long				inSrcBottom,
+			long				inDstLeft,
+			long				inDstTop,
+			long				inDstRight,
+			long				inDstBottom)
+{
+	if (inSrcRight - inSrcLeft == inDstRight - inDstLeft &&
+		inSrcBottom - inSrcTop == inDstBottom - inDstTop)
+	{
+		CopyBitmapSectionDirect(*inSrc, *inDst, inSrcLeft, inSrcTop,inDstLeft, inDstTop,inSrcRight-inSrcLeft, inSrcBottom-inSrcTop);
+	} 
+	else 
+	{
+		CopyBitmapSection(inSrc,inDst,inSrcLeft,inSrcTop,inSrcRight,inSrcBottom,inDstLeft,inDstTop,inDstRight, inDstBottom);
+	}
+}
+
+
 #if 0
 
 void	DrawPts(double pts[4][2], double y_min, double y_max, double x_min, double x_max)
@@ -294,7 +318,7 @@ void	TakeFromRefImage(
 		
 		string	fname = string(texName);
 		if (gSaveMode == save_BMP && final.channels == 4)
-			ConvertAlphaToBitmap(&final);
+			ConvertAlphaToBitmap(&final, true);
 		MyWriteBitmapToFile(&final, fname.c_str());
 //		fname = string(texName) + "non_distort.bmp";
 //		WriteBitmapToFile(&image, fname.c_str());
@@ -517,7 +541,7 @@ void	DownloadRange(const char * scale, double inLatSouth, double inLonWest, doub
 			ImageInfo	scaled;
 			CreateNewBitmap(new_width, new_height, 3, &scaled);
 			
-			CopyBitmapSection(&image, &scaled,
+			MyCopyBitmapSection(&image, &scaled,
 				0, 0, image.width, image.height,
 				0, 0, scaled.width, scaled.height);
 			
@@ -562,10 +586,12 @@ void	MergePhotos(int x1, int y1, int x2, int y2, int res_per_quad, const char * 
 	
 	int	err = 0;
 	if (isMerge)
-		err = CreateNewBitmap(x_res, y_res, 3, &big_image);
-	else
+		err = CreateNewBitmap(x_res, y_res, (gSaveMode == save_BMP) ? 3 : 4, &big_image);
+	else {
 		err = MyCreateBitmapFromFile(inFileName, &big_image);
-
+		if (gSaveMode == save_BMP)		ConvertAlphaToBitmap(&big_image, false);
+		else							ConvertBitmapToAlpha(&big_image, false);
+	}
 	
 	if (err == 0)
 	{
@@ -589,8 +615,12 @@ void	MergePhotos(int x1, int y1, int x2, int y2, int res_per_quad, const char * 
 				else {
 					err = MyCreateBitmapFromFile(fname.c_str(), &tex);
 					if (err != 0)
-						err = CreateNewBitmap(res_per_quad * (gVertices[v].scale + 1), res_per_quad * (gVertices[v].scale + 1), 3, &tex);
+						err = CreateNewBitmap(res_per_quad * (gVertices[v].scale + 1), res_per_quad * (gVertices[v].scale + 1), (gSaveMode == save_BMP) ? 3 : 4, &tex);
 				}
+				
+				if (tex.channels == 3 && gSaveMode == save_PNG)		ConvertBitmapToAlpha(&tex, false);
+				if (tex.channels == 4 && gSaveMode == save_BMP)		ConvertAlphaToBitmap(&tex, false);
+				
 				if (err == 0)
 				{
 					int	smlLeft = (double) tex.width * (double) gVertices[v].xOff / (double) (gVertices[v].scale + 1);
@@ -599,11 +629,11 @@ void	MergePhotos(int x1, int y1, int x2, int y2, int res_per_quad, const char * 
 					int smlTop = (double) tex.height * (double) (gVertices[v].yOff + 1) / (double) (gVertices[v].scale + 1);
 
 					if (isMerge)
-						CopyBitmapSection(&tex, &big_image,
+						MyCopyBitmapSection(&tex, &big_image,
 							smlLeft, smlBottom, smlRight, smlTop,
 							bigLeft, bigBottom, bigRight, bigTop);
 					else
-						CopyBitmapSection(&big_image, &tex,
+						MyCopyBitmapSection(&big_image, &tex,
 							bigLeft, bigBottom, bigRight, bigTop,
 							smlLeft, smlBottom, smlRight, smlTop);
 					
