@@ -32,6 +32,24 @@
 struct	PolyRasterizer;
 struct	DEMGeo;
 
+/************************************************************************************************
+ * FACE SETS AND EDGE SETS
+ ************************************************************************************************
+ * 
+ * It is often useful to treat a group of faces or a group of edges as a unit...two examples:
+ *
+ * - A body of water might be made up of multiple faces becaue bridges split the body of water.
+ *   So we use a face set to represent the entire body of water.
+ *
+ * - When merging or copying from one map to another, a single face or single edge in one map
+ *   may be represented by many edges or faces in the new one!
+ *
+ * Generally when we have an edge set we mean a set of halfedges that form one or more rings.
+ * (But the edge set is not ordered!)  When we have a face set, the area of the faces is not
+ * necessarily continuous and may contain holes, islands, or whatever!
+ *
+ */
+
 /*
  * FindEdgesForFace
  *
@@ -78,12 +96,35 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
 
 /************************************************************************************************
  * MAP EDITING
- ************************************************************************************************/
+ ************************************************************************************************
+ *
+ * Our fundamental map editing operations are:
+ * 
+ * Swap - given two rings of equal geometry in two maps, swap what's inside and on them.
+ * Merge - insert all of one map into another.
+ * 
+ * We build all of our algorithms up from these.  One other noteworthy algorithm: "TopoIntegration"
+ * just means pre-inserting the intersections of all edges from two maps into both so that we know
+ * that there are no edge-edge intersections between the two.  See the topointegrate notes for why
+ * we would want this.
+ *
+ * Besides the algs derived from swap, and merge, some of the "cleaning" algorithms simply go around
+ * deleting edges.  These routines are slow because the topological transformations they can induce
+ * are complex and must be computed one-at-a-time.  
+ *
+ * (Where possible algorithms that work on defined extents like "crop" use swap ops, which are MUCH 
+ * faster.  While swap algs are still linear to the number of elements "swapped", almost all 
+ * topological operations - inserting and removing edges fundamentally change topology - have a time
+ * complexity greater than constant, so a topological op on a linear set is worse than linear time,
+ * often by a lot!)
+ *
+ */
 
 /*
  * CropMap
  *
- * Crop a map along lat and lon lines.
+ * Crop a map along a square box and keep one half.  This is a higher level version of the other
+ * crop-map.
  *
  * Performance: O(N) + O(K*M) where
  *	N = number of halfedges inserted to form the cropped boundary and
@@ -105,7 +146,9 @@ void	CropMap(
  *
  * Pass in a map, and a blank map to receive what is inside the ring passed in inRingCCW.  
  * The ring MUST be counterclockwise.  This gives you more precise control over what is cropped
- * and what is saved and chucked.
+ * and what is saved and chucked.  (This can be used to do cut, copy, paste, clear, etc.)
+ *
+ * (This is a convenient high level swap.)
  *
  */
 void	CropMap(
@@ -126,6 +169,8 @@ void	CropMap(
  *
  * The holes of the master face are then swapped back.
  *
+ * (This is a convenient high level swap.)
+ *
  */
 void	SwapFace(
 			Pmwx&			inMaster,
@@ -140,12 +185,24 @@ void	SwapFace(
  * Given a face on a map, this routine 'cleans' its interior, removing any
  * antennas, holes, or anything else in its interior.
  *
+ * (This is a convenient high level swap.)
+ *
  */
 void	CleanFace(
 			Pmwx&				inMap,
 			Pmwx::Face_handle	inFace);
 
-
+/*
+ * OverlayMap
+ *
+ * Inserts all part of inSrc into inDst.  inSrc must not have antennas outside of the holes in
+ * the unbounded face.  InSrc is left with gutted holes of inDst's remains where land was, 
+ * inDst has contents overwritten.
+ *
+ */
+void OverlayMap(
+			Pmwx& 	inDst, 
+			Pmwx& 	inSrc);
 
 /*
  * ReduceToWaterBodies
@@ -235,17 +292,6 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 					Pmwx& 							ioMapB, 
 					const vector<GISHalfedge *>&	inBoundsA,
 					const vector<GISHalfedge *>&	inBoundsB);
-
-/*
- * OverlayMap
- *
- * Inserts all part of inSrc into inDst.  inSrc must not have antennas outside of the holes in
- * the unbounded face.  InSrc is left with gutted holes where land as, inDst has contents overwritten.
- *
- */
-void OverlayMap(
-			Pmwx& 	inDst, 
-			Pmwx& 	inSrc);
 			
 /*
  * TopoIntegrateMaps
@@ -263,7 +309,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
  * 1. It can insert rings with antennas on them.
  * 2. It can insert rings that share vertices with the existing mesh.  
  * It does an insert_ring if possible, otherwise it does a slow edge insert.  Please note that
- * this routine does not handle non-simple polygons (except for antennas), nor does it handle
+ * this routine does NOT handle non-simple polygons (except for antennas), nor does it handle
  * rings that intersect the existing mesh, so you do need to ensure some topological integration
  * of yoour input data.
  *
@@ -271,7 +317,7 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB);
 GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& inPoints);
 
 /************************************************************************************************
- * MAP ANALYSIS AND RASTERIZATION
+ * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/
 
 /*
@@ -296,12 +342,33 @@ void	CalcBoundingBox(
 			Point2&		sw,
 			Point2&		ne);
 
-
-
+/*
+ * GetMapFaceAreaMeters
+ *
+ * Given a map in lat/lon and a face, return its area in meters.
+ *
+ */
 double	GetMapFaceAreaMeters(const Pmwx::Face_handle f);
+
+/*
+ * GetMapEdgeLengthMeters
+ * 
+ * Given an edge in lat/lon, return is length in meters.
+ *
+ */
 double	GetMapEdgeLengthMeters(const Pmwx::Halfedge_handle e);
+
+/*
+ * GetParamAverage
+ * GetParamHistogram
+ * 
+ * Given a face and a raster DEM in the same coordinate system, find either the min, max and average
+ * of the value in the DEM over the face area, or find a full histogram for the face erea.
+ * Please note that the histogram is NOT initialized; so that you can run it on multiple faces.
+ *
+ */
 float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outMin, float * outMax);
-int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram);	// does NOT CLEAR
+int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram);
 
 /*
  * ClipDEMToFaceSet
@@ -313,6 +380,17 @@ int		GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, 
  */
 bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEMGeo& inDstDEM, int& outX1, int& outY1, int& outX2, int& outY2);
 
+/*
+ * SetupRasterizerForDEM
+ *
+ * Given a face (or edge set containing a finite area) and a DEM in the same coordinates, set up the polygon
+ * rasterizer to rasterize the DEM over the face set.  
+ *
+ * This is useful for preparing iterating to iterate over every DEM point contained within a face or edge set.
+ * The lowest Y coordinate in the DEM that is within the rasterized area is returned as a good start value to
+ * the rasterize outer loop.
+ *
+ */
 int		SetupRasterizerForDEM(const Pmwx::Face_handle f, const DEMGeo& dem, PolyRasterizer& rasterizer);
 int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem, PolyRasterizer& rasterizer);
 
@@ -322,6 +400,11 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
 
 /*
  * InsetPmwx
+ *
+ * WARNING WARNING WARNING: This routine's implementation is INCORRECT and UNRELIABLE.
+ * The SK_Skeleton APIs are designed to provide correct straight-skeleton-based inset
+ * calculations; InsetPmwx is an old attempt to write an inset routine without proper
+ * skeleton treatmant and should not be used!
  *
  * Given a Pmwx and a face, inset the face.  This is a complex and powerful inset routine;
  * unlike InsetPolygon, it can handle (1) holes in the polygon and (2) generacy (e.g. the 
