@@ -39,6 +39,7 @@ struct	MeshPrefs_t {
 	float	max_error;
 	int		fowler_little;
 	int		border_match;
+	float	rep_switch_m;
 };
 extern MeshPrefs_t	gMeshPrefs;
 

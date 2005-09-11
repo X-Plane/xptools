@@ -81,6 +81,10 @@ struct	NaturalTerrainInfo_t {
 	float			urban_trans_min;
 	float			urban_trans_max;
 	
+	float			lat_min;
+	float			lat_max;
+	int				variant;
+	
 	// DEFS
 	int				name;
 	int				layer;
@@ -122,7 +126,9 @@ int		FindNaturalTerrain(
 				float	elevrange,
 				float	urban_density,
 				float	urban_radial,
-				float	urban_trans);
+				float	urban_trans,
+				float	lat,			// use NO_DATA!
+				int		variant);		// use 0
 
 /************************************************************************
  * ZONED TERRAIN PROMOTIONS

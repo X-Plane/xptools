@@ -129,7 +129,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	NaturalTerrainInfo_t	info;
 	string					name, proj;
-	if (TokenizeLine(tokens, " eeeffffffffiffffffffffffsifsfssefff",
+	
+	int						auto_vary;
+	
+	if (TokenizeLine(tokens, " eeeffffffffiffffffffffffffisifsfssefff",
 		&info.terrain,
 		&info.landuse,
 		&info.climate,
@@ -157,6 +160,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		&info.urban_trans_min,
 		&info.urban_trans_max,
 
+		&info.lat_min,
+		&info.lat_max,
+		&auto_vary,
+
 		&name,
 		&info.layer,
 		&info.xon_dist,
@@ -173,7 +180,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		&info.map_rgb[0],
 		&info.map_rgb[1],
 		&info.map_rgb[2]
-		) != 36) return false;
+		) != 39) return false;
 		
 	if (info.elev_min > info.elev_max)	return false;
 	if (info.slope_min > info.slope_max)	return false;
@@ -185,23 +192,18 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.urban_density_min > info.urban_density_max)	return false;
 	if (info.urban_radial_min > info.urban_radial_max)	return false;
 	if (info.urban_trans_min > info.urban_trans_max)	return false;
-		
-	if (!LowerCheckName(name)) return false;
-	info.name = LookupTokenCreate(name.c_str());	
+	if (info.lat_min > info.lat_max)					return false;
 	
 	info.map_rgb[0] /= 255.0;
 	info.map_rgb[1] /= 255.0;
 	info.map_rgb[2] /= 255.0;
 	
-	if (info.forest_type != NO_VALUE)
-		sForests.insert(info.forest_type);
+	if (info.forest_type != NO_VALUE)	sForests.insert(info.forest_type);
 		
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
 		
-//	if (info.comp_tex == "-") info.comp_tex.clear();
-
 	// We use 1-cos notation, which keeps our order constant.	
 	info.slope_min = 1.0 - cosdeg(info.slope_min);
 	info.slope_max = 1.0 - cosdeg(info.slope_max);
@@ -212,14 +214,42 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_min = cosdeg(info.slope_heading_min);
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
+
+	if (auto_vary)
+	{
+		for (int rep = 1; rep <= 4; ++rep)
+		{
+			info.variant = rep;
+			info.map_rgb[2] += ((float) rep / 80.0);
+
+			string rep_name = name;
+			rep_name += ('0' + rep);
+			if (!LowerCheckName(rep_name)) return false;
+			info.name = LookupTokenCreate(rep_name.c_str());	
+			
+			int rn = gNaturalTerrainTable.size();
+			gNaturalTerrainTable.push_back(info);
+
+			gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
+			if (gNaturalTerrainIndex.count(info.name) == 0)
+				gNaturalTerrainIndex[info.name] = rn;
+		}
+
+	} else {
+		
+		info.variant = 0;
+		
+		if (!LowerCheckName(name)) return false;
+		info.name = LookupTokenCreate(name.c_str());	
+		
+		int rn = gNaturalTerrainTable.size();
+		gNaturalTerrainTable.push_back(info);
+
+		gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
+		if (gNaturalTerrainIndex.count(info.name) == 0)
+			gNaturalTerrainIndex[info.name] = rn;
+	}
 	
-	int rn = gNaturalTerrainTable.size();
-	gNaturalTerrainTable.push_back(info);
-
-	gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
-	if (gNaturalTerrainIndex.count(info.name) == 0)
-		gNaturalTerrainIndex[info.name] = rn;
-
 	return true;	
 }
 
@@ -317,7 +347,9 @@ int	FindNaturalTerrain(
 				float	elevrange,
 				float	urban_density,
 				float	urban_radial,
-				float	urban_trans)
+				float	urban_trans,
+				float	lat,
+				int		variant)
 {
 	// OPTIMIZE - figure out what the major keys should be.
 	
@@ -347,6 +379,8 @@ int	FindNaturalTerrain(
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
 		if (!rec.near_water || water)
+		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
+		if (rec.variant == 0 || variant == 0 || rec.variant == variant)
 		{
 			best_typed = rec_num;
 			choice_typed = rec.name;
@@ -374,6 +408,8 @@ int	FindNaturalTerrain(
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
 		if (!rec.near_water || water)
+		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
+		if (rec.variant == 0 || variant == 0 || rec.variant == variant)		
 		{
 			best_untyped = rec_num;
 			choice_untyped = rec.name;
