@@ -176,9 +176,9 @@ void	PostProcessObj(XObj& ioObj, bool inReverse)
 	
 	if (gCenterH)
 	{
-		Sphere3	sphere;
+		float sphere[4];
 		GetObjBoundingSphere(ioObj, sphere);
-		OffsetObject(ioObj, -sphere.c.x, 0.0, -sphere.c.z);	// DO NOT center on Y!!
+		OffsetObject(ioObj, -sphere[0], 0.0, -sphere[2]);	// DO NOT center on Y!!
 	}
 }
 
