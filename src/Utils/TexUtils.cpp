@@ -95,7 +95,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	// Process alpha.  Then remove padding.  Finally, figure out the next biggest power of 2.  If we aren't
 	// a power of 2, we need to resize.  That will be done with rescaling if the user wants.  Also if the bitmap
 	// is bigger than the max power of 2 supported by the HW, force rescaling.
-	if (inFlags & tex_MagentaAlpha)	ConvertBitmapToAlpha(&im);	
+	if (inFlags & tex_MagentaAlpha)	ConvertBitmapToAlpha(&im, true);	
 	if (im.pad != 0)
  		UnpadImage(&im);
 
