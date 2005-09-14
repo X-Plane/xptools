@@ -877,8 +877,9 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid)
 	CHECK_ERR();
 
 	string	tex = inObj.texture;
+	if (tex.size() > 4)
 	tex.erase(tex.size()-4);
-	StripPathCP(tex);
+		StripPathCP(tex);
 	GLenum t = FindTexture(tex, false);
 	
 	if (t)
@@ -902,6 +903,21 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	GLfloat lgt_amb[4]={ 0.20, 0.20, 0.20,1.0};		glLightfv(GL_LIGHT0,GL_AMBIENT ,lgt_amb);
+	GLfloat lgt_dif[4]={ 0.80, 0.80, 0.80,1.0};		glLightfv(GL_LIGHT0,GL_DIFFUSE ,lgt_dif);
+	GLfloat lgt_dir[4]={ 1.0, 0.0, 0.0, 0.0 };		glLightfv(GL_LIGHT0,GL_POSITION,lgt_dir);
+	glPopMatrix();
+	
+	glEnable(GL_NORMALIZE);
 
 	if (inShowCulled)
 	{
