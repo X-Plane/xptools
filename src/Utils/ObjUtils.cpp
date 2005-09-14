@@ -978,6 +978,10 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	int 		n;
 	int			idx_base;
 	
+	bool		is_hard = false;
+	bool		is_cock = false;
+	bool		now_hard, now_cock;
+	
 	for (vector<XObjCmd>::const_iterator cmd = obj7.cmds.begin(); cmd != obj7.cmds.end(); ++cmd)
 	{
 		switch(cmd->cmdID) {	
@@ -986,6 +990,8 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 				obj8.lods.push_back(XObjLOD8());
 			obj8.lods.back().lod_near = cmd->attributes[0];
 			obj8.lods.back().lod_far = cmd->attributes[1];
+			is_hard = false;
+			is_cock = false;
 			break;
 		case obj_Light:
 			cmd8.cmd = obj8_Lights;
@@ -1018,7 +1024,24 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 		case obj_Movie:
 		case obj_Quad_Hard:
 		case obj_Quad_Cockpit:
-			// TODO - quad attrys
+			// TODO: movies?
+			now_hard = cmd->cmdID == obj_Quad_Hard;
+			now_cock = cmd->cmdID == obj_Quad_Cockpit;
+			
+			if (now_hard != is_hard)
+			{
+				is_hard = now_hard;
+				cmd8.cmd = (now_hard) ? attr_Hard : attr_No_Hard;
+				obj8.lods.back().cmds.push_back(cmd8);
+			}
+
+			if (now_cock != is_cock)
+			{
+				is_cock = now_cock;
+				cmd8.cmd = is_cock ? attr_Tex_Cockpit : attr_Tex_Normal;
+				obj8.lods.back().cmds.push_back(cmd8);
+			}
+			
 			cmd8.cmd = obj8_Tris;
 			cmd8.idx_offset = obj8.indices.size();
 			cmd8.idx_count = cmd->st.size() * 3 / 2;
