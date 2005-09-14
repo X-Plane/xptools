@@ -215,8 +215,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				if (arrayMode_Tri != arrayMode)
 				{
 					arrayMode = arrayMode_Tri;
-					glVertexPointer(3, GL_FLOAT, 32, obj.geo_tri.get(0));							CHECK_GL_ERR
-					glNormalPointer(GL_FLOAT, 32, ((const char *) obj.geo_tri.get(0)) + 12);		CHECK_GL_ERR
+					glVertexPointer			(3, GL_FLOAT, 32, 				  obj.geo_tri.get(0)		  );	CHECK_GL_ERR
+					glNormalPointer			(	GL_FLOAT, 32, ((const char *) obj.geo_tri.get(0)) + 12	  );	CHECK_GL_ERR
 					funcs->TexCoordPointer_f(2, GL_FLOAT, 32, ((const char *) obj.geo_tri.get(0)) + 24,ref);	CHECK_GL_ERR
 				}
 				glEnableClientState(GL_VERTEX_ARRAY);				CHECK_GL_ERR
