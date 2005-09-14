@@ -1,5 +1,6 @@
 #include "obj_export.h"
 #include "dsf_export.h"
+#include "obj8_export.h"
 #include "obj_tools.h"
 #include <ac_plugin.h>
 
@@ -32,10 +33,13 @@ ac_unbackslash_string(path);
 //	printf("vers=%lf\n", vers);
 
 	ac_register_file_exporter("OBJ7Save", ".obj", "X-Plane 7 Object File", do_obj7_save, "X-Plane 7 Object File Export Plugin"); 
-	ac_register_file_importer("OBJ7Load", ".obj", "X-Plane 7 Object File", do_obj7_load, "X-Plane 7 Object File Import Plugin"); 
+//	ac_register_file_importer("OBJ7Load", ".obj", "X-Plane 7 Object File", do_obj7_load, "X-Plane 7 Object File Import Plugin"); 
 
 	ac_register_file_exporter("DSFSave", ".dsf", "X-Plane DSF (scenery) File", do_dsf_save, "X-Plane 8 DSF Export Plugin"); 
 	ac_register_file_importer("DSFLoad", ".dsf", "X-Plane DSF (scenery) File", do_dsf_load, "X-Plane 8 DSF Import Plugin"); 
+
+	ac_register_file_exporter("OBJ8Save", ".obj", "X-Plane 8 Object File", do_obj8_save, "X-Plane 8 Object File Export Plugin");
+	ac_register_file_importer("OBJ8Load", ".obj", "X-Plane 8 Object File", do_obj8_load, "X-Plane 8 Object File Import Plugin"); 
 
 //	ac_register_file_exporter("XAutoCarSave", ".car", "X-Auto Car File", do_car_save, "X-Auto Car File Export Plugin"); 
 //	ac_register_file_importer("XAutoCarLoad", ".car", "X-Auto Car File", do_car_load, "X-Auto Car File Import Plugin"); 
