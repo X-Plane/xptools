@@ -1,6 +1,20 @@
 #ifndef OBJPOINTPOOL_H
 #define OBJPOINTPOOL_H
 
+#include <vector>
+#include <map>
+
+using std::map;
+using std::vector;
+
+template <class T>
+struct lex_compare_vector : public binary_function<vector<T>, vector<T>, bool> {
+
+	bool operator()(const vector<T>& lhs, const vector<T>& rhs) const {
+		return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	}
+};
+
 class ObjPointPool {
 public:
 	ObjPointPool();
@@ -19,7 +33,11 @@ public:
 
 private:
 
+	typedef	vector<float>									key_type;
+	typedef map<key_type, int, lex_compare_vector<float> >	index_type;
+
 	vector<float>	mData;
+	index_type		mIndex;
 	int				mDepth;
 
 };
