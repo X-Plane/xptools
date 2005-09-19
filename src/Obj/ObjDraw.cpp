@@ -141,7 +141,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				}
 				for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 				{
-					glColor3f(rgb->rgb[0] * 0.1, rgb->rgb[1] * 0.1, rgb->rgb[2] * 0.1);
+					glColor3f(fabs(rgb->rgb[0]) * 0.1, fabs(rgb->rgb[1]) * 0.1, fabs(rgb->rgb[2]) * 0.1);
 					glVertex3fv(rgb->v);
 				}
 				glEnd();
