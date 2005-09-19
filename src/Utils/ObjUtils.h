@@ -37,6 +37,7 @@
 //					   XObj&							    outObject);
 
 void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4]);
+void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4]);
 void 	OffsetObject(XObj& ioObj, double x, double y, double z);
 
 void	GetObjDimensions(const XObj& inObj,
@@ -72,18 +73,7 @@ void	ChangePolyCmdCW(XObjCmd& ioCmd);
 // the radius of a bounding sphere!  Why it is in this translation
 // unit is also rather questionable.
 double	GetObjRadius(const XObj& inObj);
-
-// OBJECT CONVERSION
-// These convert from one obj to the other.  This can take overloaded
-// tris/quads/lines in the OBJ7 but generates separate tris/quads/lines
-// on convert-back.
-void	Obj7ToObj8(const XObj& obj7, XObj8& obj8);
-void	Obj8ToObj7(const XObj8& obj8, XObj& obj7);
-
-// This merges consecutive index commands in an OBJ8 for you.
-void	Obj8_ConsolidateIndexCommands(XObj8& obj8);
-// This calculates OBJ8 normals frmo tris, editing the point pool.
-void	Obj8_CalcNormals(XObj8& obj8);
+double	GetObjRadius8(const XObj8& inObj);
 
 
 #endif
