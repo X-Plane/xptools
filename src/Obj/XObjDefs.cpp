@@ -67,7 +67,7 @@ cmd_info	gCmds[] = {
 {	anim_Begin,			type_Anim,		"ANIM_begin",		0,0,1},
 {	anim_End,			type_Anim,		"ANIM_end",			0,0,1},
 {	anim_Rotate,		type_Anim,		"ANIM_rotate",		7,0,1},
-{	anim_Translate,		type_Anim,		"ANIM_translate",	8,0,1},
+{	anim_Translate,		type_Anim,		"ANIM_trans",		8,0,1},
 
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
