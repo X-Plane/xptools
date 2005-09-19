@@ -675,7 +675,7 @@ ACObject *	do_obj7_load(char *filename)
 	gObj.cmds.clear();
 	if (!XObjRead(filename, gObj))
 	{
-		message_dialog("can't read OBJ7 file '%s'", filename);
+//		message_dialog("can't read OBJ7 file '%s'", filename);
 		return NULL;
 	}
 	

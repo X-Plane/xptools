@@ -11,12 +11,23 @@
 #undef Boolean
 #endif
 
+#define BONES 0
+
 #include "obj8_export.h"
 #include "ac_utils.h"
 
 #include "XObjDefs.h"
 #include "XObjReadWrite.h"
+#include "ObjConvert.h"
 
+#include <list>
+using std::list;
+
+
+// Set this to 1 and each change in culling or flat/smooth shading pops another object.
+#define	OBJ_FOR_ALL_ATTRS	0
+// Set this 1 to provide _DEPTH attribute to support depth
+#define SUPPORT_NO_DEPTH 0
 
 static float	gRepTexX = 1.0;
 static float	gRepTexY = 1.0;
@@ -24,10 +35,19 @@ static float	gOffTexX = 0.0;
 static float	gOffTexY = 0.0;
 
 static XObj8	gObj8;
-static bool		gSmooth;
-static bool		gTwoSided;
-static bool		gIsCockpit;
-static bool		gWasCockpit;
+
+static int		gSmooth;
+static int		gTwoSided;
+static int		gIsCockpit;
+static int		gWasCockpit;
+
+static int		gHardPoly;
+static int		gPolyOS;
+static int		gBlend;
+#if SUPPORT_NO_DEPTH
+static int		gDepth;
+#endif
+
 static string	gTexName;
 static int		gErrMissingTex;
 static int		gHasTexNow;
@@ -36,26 +56,69 @@ static List *	gBadObjects;
 
 
 /* OBJ8 import and export */
+static void obj8_assure_one_lod(void);
 static void obj8_reset_properties();
 static void obj8_output_triangle(Surface *s);
 static void obj8_output_polyline(Surface *s);
 static void obj8_output_polygon(Surface *s);
+static void obj8_output_light(ACObject *ob);
 static void obj8_output_object(ACObject *ob, set<ACObject *> * stopset);
 
+static int do_obj8_save_common(char * fname, ACObject * obj, bool convert);
 
+
+#if BONES
+
+extern "C"
+{
+Prototype ACJoint *ac_new_joint();
+
+Prototype void ac_object_set_local_position(ACObject *b, Point3 *p);
+Prototype void ac_object_set_local_rotation(ACObject *b, Point3 *p);
+Prototype void ac_object_init_transform(ACObject *ob); // call this after setting local pos/rot
+Prototype void ac_object_add_position_key(ACObject *b, float ftime, Point3 *p);
+Prototype void ac_object_add_rotation_key(ACObject *b, float ftime, Point3 *p);
+
+Prototype void animator_set_max_time(float t);
+
+Prototype void ac_vertex_set_joint(Vertex *v, int b);
+Prototype int ac_vertex_get_joint(Vertex *v);
+
+Prototype void ac_object_init_transform(ACObject *ob); // create the animation matrix from local pos and rot
+Prototype void ac_object_init_transform_recurse(ACObject *ob); // create the animation matrix from local pos and rot
+}
+
+#endif
 
 
 /***************************************************************************************************
  * OBJ8 IMPORT AND EXPORT
  ***************************************************************************************************/
 
+static void obj8_assure_one_lod(void)
+{
+	if (gObj8.lods.empty())
+	{
+		gObj8.lods.push_back(XObjLOD8());
+		gObj8.lods.back().lod_near = 0;
+		gObj8.lods.back().lod_far  = 0;	
+	}
+}
+
 void obj8_reset_properties(void)
 {
 	// NOTE: in obj8 x-plaen resets props - just remember that we're reset!
-	gSmooth = true;
-	gTwoSided = false;
-	gIsCockpit = false;
-	gWasCockpit = false;
+	gSmooth = 1;
+	gTwoSided = 0;
+	gIsCockpit = 0;
+	gWasCockpit = 0;
+
+#if SUPPORT_NO_DEPTH	
+	gDepth = 1;
+#endif
+	gBlend = 1;
+	gHardPoly = 0;
+	gPolyOS = 0;
 }
 
 void obj8_output_triangle(Surface *s)
@@ -91,13 +154,8 @@ void obj8_output_triangle(Surface *s)
 	
 	int		end_i = gObj8.indices.size();
 	
-	if (gObj8.lods.empty())
-	{
-		gObj8.lods.push_back(XObjLOD8());
-		gObj8.lods.back().lod_near = 0;
-		gObj8.lods.back().lod_far  = 0;
-	}
-	
+	obj8_assure_one_lod();
+		
 	if (gObj8.lods.back().cmds.empty() || 
 		gObj8.lods.back().cmds.back().cmd != obj8_Tris ||
 		gObj8.lods.back().cmds.back().idx_count + gObj8.lods.back().cmds.back().idx_offset != start_i)
@@ -124,6 +182,9 @@ void obj8_output_polyline(Surface *s)
 	float 	ds1[6] = { 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
 	float 	ds2[6] = { 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
 	int		idx1, idx2;
+
+	index_to_3f(s->col, &ds1[3], &ds1[4], &ds1[5]);
+	index_to_3f(s->col, &ds2[3], &ds2[4], &ds2[5]);
 
 	for (n=0; n < s->numvert-1; n++)
 	{
@@ -157,12 +218,7 @@ void obj8_output_polyline(Surface *s)
 	
 	int		end_i = gObj8.indices.size();
 	
-	if (gObj8.lods.empty())
-	{
-		gObj8.lods.push_back(XObjLOD8());
-		gObj8.lods.back().lod_near = 0;
-		gObj8.lods.back().lod_far  = 0;
-	}
+	obj8_assure_one_lod();
 	
 	if (gObj8.lods.back().cmds.empty() || 
 		gObj8.lods.back().cmds.back().cmd != obj8_Lines ||
@@ -189,12 +245,7 @@ void obj8_output_polygon(Surface *s)
 	
 	XObjCmd8	cmd;
 
-	if (gObj8.lods.empty())
-	{
-		gObj8.lods.push_back(XObjLOD8());
-		gObj8.lods.back().lod_near = 0;
-		gObj8.lods.back().lod_far = 0;
-	}
+	obj8_assure_one_lod();
 		
 	if (is_two_sided != gTwoSided)
 	{
@@ -231,6 +282,42 @@ void obj8_output_polygon(Surface *s)
 	}
 }
 
+static void obj8_output_light(ACObject *ob)
+{
+	Point3	xyz, rgb = { 1.0, 1.0, 1.0 };
+	ac_entity_get_point_value(ob, "loc", &xyz);
+	
+	char * title = ac_object_get_name(ob);
+	char * token = strstr(title, "_RGB=");
+	if (token != NULL)
+	{
+		if (strlen(token) > 5)
+		{
+			token += 5;
+			sscanf(token, "%f,%f,%f", &rgb.x, &rgb.y, &rgb.z);
+		}
+	}
+	float	dat[6] = { xyz.x, xyz.y, xyz.z, rgb.x, rgb.y, rgb.z };
+	
+	int idx = gObj8.geo_lights.accumulate(dat);
+	
+	obj8_assure_one_lod();
+	if (!gObj8.lods.back().cmds.empty() &&
+		 gObj8.lods.back().cmds.back().cmd == obj8_Lights &&
+		 (gObj8.lods.back().cmds.back().idx_offset + gObj8.lods.back().cmds.back().idx_count) == idx)
+	{
+		gObj8.lods.back().cmds.back().idx_count++;
+	} else {
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = obj8_Lights;
+		gObj8.lods.back().cmds.back().idx_offset = idx;
+		gObj8.lods.back().cmds.back().idx_count = 1;
+	}
+}
+
+
+
+
 
 
 void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
@@ -253,6 +340,98 @@ void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
 		gObj8.lods.back().lod_near = lod_start;
 		gObj8.lods.back().lod_far = lod_end;
 	}
+	
+	if (strstr(ac_object_get_name(ob), "ANIMATION") != NULL)
+	{
+		obj8_assure_one_lod();
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = anim_Begin;
+		
+		char * startp = ac_object_get_data(ob);
+		if (startp)
+		{
+			char * endp = startp + strlen(startp);
+			while (startp != endp)
+			{
+				char * stopp = startp;
+				while (stopp < endp && *stopp != '\n')
+					++stopp;
+				if (stopp < endp) ++stopp;
+				
+				char		dataref[512];
+				XObjAnim8	anim;
+				if (sscanf(startp, "TRANSLATE %f %f %f %f %f %f %f %f %s",
+					&anim.xyzrv1[0],&anim.xyzrv1[1],&anim.xyzrv1[2],
+					&anim.xyzrv2[0],&anim.xyzrv2[1],&anim.xyzrv2[2],
+					&anim.xyzrv1[4],&anim.xyzrv2[4],dataref) == 9)
+				{
+					anim.dataref = dataref;
+					gObj8.animation.push_back(anim);
+					gObj8.lods.back().cmds.push_back(XObjCmd8());
+					gObj8.lods.back().cmds.back().cmd = anim_Translate;
+					gObj8.lods.back().cmds.back().idx_offset = gObj8.animation.size()-1;
+				}
+
+				if (sscanf(startp, "ROTATE %f %f %f %f %f %f %f %s",
+					&anim.xyzrv1[0],&anim.xyzrv1[1],&anim.xyzrv1[2],
+					&anim.xyzrv1[3],&anim.xyzrv2[3],
+					&anim.xyzrv1[4],&anim.xyzrv2[4],dataref) == 8)
+				{
+					anim.dataref = dataref;
+					gObj8.animation.push_back(anim);
+					gObj8.lods.back().cmds.push_back(XObjCmd8());
+					gObj8.lods.back().cmds.back().cmd = anim_Rotate;
+					gObj8.lods.back().cmds.back().idx_offset = gObj8.animation.size()-1;
+				}				
+				
+				startp = stopp;				
+			}
+		}
+	}
+	
+		int	now_poly_os, now_hard, now_blend;
+#if SUPPORT_NO_DEPTH
+		int now_depth;
+#endif		
+
+	if (pull_int_attr(ob, "_POLY_OS=", &now_poly_os) &&
+		now_poly_os != gPolyOS)
+	{
+		obj8_assure_one_lod();
+		gPolyOS = now_poly_os;
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = attr_Offset;
+		gObj8.lods.back().cmds.back().params[0] = gPolyOS;			
+	}
+
+	if (pull_int_attr(ob, "_HARD=", &now_hard) &&
+		now_hard != gHardPoly)
+	{
+		obj8_assure_one_lod();
+		gHardPoly = now_hard;
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = gHardPoly ? attr_Hard : attr_No_Hard;
+	}
+
+	if (pull_int_attr(ob, "_BLEND=", &now_blend) &&
+		now_blend != gBlend)
+	{
+		obj8_assure_one_lod();
+		gBlend = now_blend;
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = gBlend ? attr_Blend : attr_No_Blend;
+	}
+
+#if SUPPORT_NO_DEPTH
+	if (pull_int_attr(ob, "_DEPTH=", &now_depth) &&
+		now_depth != gDepth)
+	{
+		obj8_assure_one_lod();
+		gDepth = now_depth;
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = gDepth ? attr_Depth : attr_No_Depth;
+	}
+#endif
 	
 	bool bad_obj = false;
 	
@@ -297,16 +476,28 @@ void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
     if (no_tex_count < gErrMissingTex && !bad_obj)
     	list_add_item_head(&gBadObjects, ob);
 
+	if (ac_entity_is_class(ob, AC_CLASS_LIGHT))
+	{
+		obj8_output_light(ob);
+	}
+
     for (p = kids; p != NULL; p = p->next)
     {
     	ACObject * child = (ACObject *)p->data;
     	if (stopset == NULL || stopset->find(child) == stopset->end())
 	        obj8_output_object(child, stopset);
 	}
+	
+	if (strstr(ac_object_get_name(ob), "ANIMATION") != NULL)
+	{
+		gObj8.lods.back().cmds.push_back(XObjCmd8());
+		gObj8.lods.back().cmds.back().cmd = anim_End;
+	}
+	
 }
 
 
-int do_obj8_save(char * fname, ACObject * obj)
+int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 {
 	
 	gObj8.lods.clear();	
@@ -324,12 +515,8 @@ int do_obj8_save(char * fname, ACObject * obj)
 	gErrDoubleTex = false;
 	gBadObjects = NULL;
 
-	gSmooth = true;
-	gTwoSided = false;
-	gIsCockpit = false;
-	gWasCockpit = false;
-    obj8_output_object(obj, NULL);
 	obj8_reset_properties();
+    obj8_output_object(obj, NULL);
     
     string::size_type p = gTexName.find_last_of("\\/");
     if (p != gTexName.npos) gTexName.erase(0,p+1);
@@ -337,12 +524,23 @@ int do_obj8_save(char * fname, ACObject * obj)
     if (gObj8.texture.size() > 4)
 	    gObj8.texture_lit = gObj8.texture.substr(0, gObj8.texture.size()-4) + "_lit" + gObj8.texture.substr(gObj8.texture.size()-4);
 
-	if (!XObj8Write(fname, gObj8))
-    {
-        message_dialog("can't open file '%s' for writing", fname);
-        return 0;
-    }
-    
+	if (convert)
+	{
+		XObj	obj7;
+		Obj8ToObj7(gObj8, obj7);
+		if (!XObjWrite(fname, obj7))
+	    {
+	        message_dialog("can't open file '%s' for writing", fname);
+	        return 0;
+	    }
+		
+	} else {
+		if (!XObj8Write(fname, gObj8))
+	    {
+	        message_dialog("can't open file '%s' for writing", fname);
+	        return 0;
+	    }
+	}    
     if (gErrMissingTex)
     	message_dialog("Warning: %d objects did not have texturse assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
@@ -362,14 +560,30 @@ int do_obj8_save(char * fname, ACObject * obj)
 
 ACObject *	do_obj8_load(char *filename)
 {
+#if BONES
+		animator_set_max_time(60.0);
+#endif
+
 		ACObject * 	group_obj = NULL;
 		ACObject * 	lod_obj = NULL;
 		ACObject * 	stuff_obj = NULL;
+		list<ACObject *>	anim_obj;
+#if BONES
+		list<ACJoint *>		anim_joint;
+		vector<ACJoint *>	top_joints;
+#endif
 		
 		char *		tex_full_name = NULL;
 		int			tex_id = -1;
 		char *		panel_full_name = NULL;
 		int			panel_id = -1;
+
+		char		anim_cmd[1024];
+		string		anim_dat;
+		char *		anim_old_cmd;
+
+		Point3		key1, key2;
+					int i;
 
 	Point3	p3;
 	char	strbuf[256];
@@ -377,11 +591,16 @@ ACObject *	do_obj8_load(char *filename)
 	gObj8.lods.clear();
 	if (!XObj8Read(filename, gObj8))
 	{
-		message_dialog("can't read OBJ7 file '%s'", filename);
-		return NULL;
-	}
+		XObj	obj7;
+
+		if (!XObjRead(filename, obj7))
+			return NULL;
 	
+		Obj7ToObj8(obj7, gObj8);
+	}
+		
     group_obj = new_object(OBJECT_NORMAL);	
+    
     string	fname(filename);
     string::size_type p = fname.find_last_of("\\/");	
     string justName = (p == fname.npos) ? fname : fname.substr(p+1);
@@ -443,9 +662,12 @@ ACObject *	do_obj8_load(char *filename)
     	bool	shade_flat = false;
     	bool	two_side = false;
     	bool	panel_tex = false;
+
     	bool	no_blend = false;
     	bool	hard_poly = false;
+#if SUPPORT_NO_DEPTH
     	bool	no_depth = false;
+#endif    	
     	float	offset = 0;
     	
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
@@ -463,13 +685,20 @@ ACObject *	do_obj8_load(char *filename)
 					{
 						if (tex_id != -1) object_texture_set(stuff_obj, tex_id);
 					}
-					object_add_child(lod_obj, stuff_obj);						
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), stuff_obj);
+#if SUPPORT_NO_DEPTH
+					sprintf(strbuf, "_POLY_OS=%d _HARD=%d _BLEND=%d _DEPTH=%d",
+						(int) offset, hard_poly ? 1 : 0, no_blend ? 0 : 1, no_depth ? 0 : 1);
+#else
+					sprintf(strbuf, "_POLY_OS=%d _HARD=%d _BLEND=%d",
+						(int) offset, hard_poly ? 1 : 0, no_blend ? 0 : 1);
+#endif						
+					object_set_name(stuff_obj, strbuf);
 				}
 
 				if (cmd->cmd == obj8_Tris)
 				{
 					vector<Vertex *> verts;
-					int i;
 					for (i = 0; i < cmd->idx_count; ++i)
 					{
 						float * dat = gObj8.geo_tri.get(gObj8.indices[cmd->idx_offset + i]);
@@ -477,6 +706,10 @@ ACObject *	do_obj8_load(char *filename)
 						p3.y = dat[1];
 						p3.z = dat[2];
 						verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
+#if BONES						
+						if (!anim_joint.empty())
+							ac_vertex_set_joint(verts.back(), (int) anim_joint.back());
+#endif							
 					}
 					
 			        Surface * s = NULL;
@@ -505,14 +738,20 @@ ACObject *	do_obj8_load(char *filename)
 						p3.y = dat[1];
 						p3.z = dat[2];
 						verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
+#if BONES						
+						if (!anim_joint.empty())
+							ac_vertex_set_joint(verts.back(), (int) anim_joint.back());
+#endif							
 					}
 					
 			        Surface * s = NULL;
 					for (i = 0; i < cmd->idx_count; ++i)
 					{
+						float * dat = gObj8.geo_lines.get(gObj8.indices[cmd->idx_offset + i]);
 						if ((i % 2) == 0) 
 						{
 							s = new_surface();
+							surface_set_rgb_long(s, rgb_floats_to_long(dat[3], dat[4], dat[5]));							
 						    surface_set_type(s, SURFACE_LINE);
 						    surface_set_twosided(s, two_side);
 						    surface_set_shading(s, !shade_flat);
@@ -552,6 +791,7 @@ ACObject *	do_obj8_load(char *filename)
 				if (offset != cmd->params[0]) stuff_obj = NULL;
 				offset = cmd->params[0];
 				break;
+#if SUPPORT_NO_DEPTH
 			case attr_No_Depth:			
 				if (!no_depth) stuff_obj = NULL;
 				no_depth = true;
@@ -560,18 +800,128 @@ ACObject *	do_obj8_load(char *filename)
 				if (no_depth) stuff_obj = NULL;
 				no_depth = false;
 				break;
+#endif				
+			case attr_Shade_Flat:		
+#if OBJ_FOR_ALL_ATTRS
+				if (!shade_flat)	stuff_obj = NULL;
+#endif				
+				shade_flat = true;	
+				break;
+			case attr_Shade_Smooth:		
+#if OBJ_FOR_ALL_ATTRS
+				if (shade_flat)	stuff_obj = NULL;
+#endif				
+				shade_flat = false;	
+				break;
+			case attr_Cull:	
+#if OBJ_FOR_ALL_ATTRS
+				if (two_side)	stuff_obj = NULL;
+#endif							
+				two_side = false;	
+				break;
+			case attr_NoCull:			
+#if OBJ_FOR_ALL_ATTRS
+				if (!two_side)	stuff_obj = NULL;
+#endif							
+				two_side = true;	
+				break;
 				
-			case anim_Begin:			stuff_obj = NULL;	break;	// TODO animation
-			case anim_End:				stuff_obj = NULL;	break;
-			case anim_Rotate:			stuff_obj = NULL;	break;
-			case anim_Translate:		stuff_obj = NULL;	break;
+			case anim_Begin:
+				{
+					stuff_obj = NULL;
+					ACObject * parent = anim_obj.empty() ? lod_obj : anim_obj.back();
+					anim_obj.push_back(new_object(OBJECT_NORMAL));
+					object_add_child(parent, anim_obj.back());
+					object_set_name(anim_obj.back(), "ANIMATION");
+#if BONES
+					ACJoint * parent_joint = anim_joint.empty() ? group_obj : anim_joint.back();
+					anim_joint.push_back(ac_new_joint());
+					object_add_child(parent_joint, anim_joint.back());
+					if (parent_joint == group_obj)
+						top_joints.push_back(anim_joint.back());
+					object_set_name(anim_joint.back(), "JOINT");
+#endif					
 
-			case attr_Shade_Flat:		shade_flat = true;	break;
-			case attr_Shade_Smooth:		shade_flat = false;	break;
-			case attr_Cull:				two_side = false;	break;
-			case attr_NoCull:			two_side = true;	break;
+					}
+				break;
+			case anim_End:
+				stuff_obj = NULL;
+				anim_obj.pop_back();
+				break;
+			case anim_Translate:
+				anim_old_cmd = ac_object_get_data(anim_obj.back());
+				if (anim_old_cmd)
+					anim_dat = anim_old_cmd;
+				else
+					anim_dat.clear();
+				sprintf(anim_cmd, "TRANSLATE %f %f %f %f %f %f %f %f %s\n",
+					gObj8.animation[cmd->idx_offset].xyzrv1[0],
+					gObj8.animation[cmd->idx_offset].xyzrv1[1],
+					gObj8.animation[cmd->idx_offset].xyzrv1[2],
 
+					gObj8.animation[cmd->idx_offset].xyzrv2[0],
+					gObj8.animation[cmd->idx_offset].xyzrv2[1],
+					gObj8.animation[cmd->idx_offset].xyzrv2[2],
+
+					gObj8.animation[cmd->idx_offset].xyzrv1[4],
+					gObj8.animation[cmd->idx_offset].xyzrv2[4],
+					gObj8.animation[cmd->idx_offset].dataref.c_str());
+				anim_dat += anim_cmd;
+				object_set_userdata(anim_obj.back(), (char *) anim_dat.c_str());
+				
+				key1.x = gObj8.animation[cmd->idx_offset].xyzrv1[0];
+				key1.y = gObj8.animation[cmd->idx_offset].xyzrv1[1];
+				key1.z = gObj8.animation[cmd->idx_offset].xyzrv1[2];
+
+				key2.x = gObj8.animation[cmd->idx_offset].xyzrv2[0];
+				key2.y = gObj8.animation[cmd->idx_offset].xyzrv2[1];
+				key2.z = gObj8.animation[cmd->idx_offset].xyzrv2[2];
+#if BONES				
+				ac_object_add_position_key(anim_joint.back(), 0,  &key1);
+				ac_object_add_position_key(anim_joint.back(), 60, &key2);
+				key1.x = key1.y = key2.y = 0.0;
+				ac_object_add_rotation_key(anim_joint.back(), 0,  &key1);
+				ac_object_add_rotation_key(anim_joint.back(), 60, &key1);
+#endif				
+				break;
+			case anim_Rotate:
+				anim_old_cmd = ac_object_get_data(anim_obj.back());
+				if (anim_old_cmd)
+					anim_dat = anim_old_cmd;
+				else
+					anim_dat.clear();
+				sprintf(anim_cmd, "ROTATE %f %f %f %f %f %f %f %s\n",
+					gObj8.animation[cmd->idx_offset].xyzrv1[0],
+					gObj8.animation[cmd->idx_offset].xyzrv1[1],
+					gObj8.animation[cmd->idx_offset].xyzrv1[2],
+
+					gObj8.animation[cmd->idx_offset].xyzrv1[3],
+					gObj8.animation[cmd->idx_offset].xyzrv2[3],
+
+					gObj8.animation[cmd->idx_offset].xyzrv1[4],
+					gObj8.animation[cmd->idx_offset].xyzrv2[4],
+					gObj8.animation[cmd->idx_offset].dataref.c_str());
+				anim_dat += anim_cmd;
+				object_set_userdata(anim_obj.back(), (char *) anim_dat.c_str());
+				break;
 			case obj8_Lights:			
+				for (i = 0; i < cmd->idx_count; ++i)
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
+					float * dat = gObj8.geo_lights.get(cmd->idx_offset + i);
+					pt_ac3.x = dat[0];
+					pt_ac3.y = dat[1];
+					pt_ac3.z = dat[2];
+					ac_entity_set_point_value(light, "loc", &pt_ac3);
+					
+					sprintf(strbuf, "_RGB=%f,%f,%f", dat[3], dat[4], dat[5]);
+					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					object_set_name(light, strbuf);
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
+				}
+				break;
 			case obj_Smoke_Black:
 			case obj_Smoke_White:
 			case attr_Ambient_RGB:	
@@ -580,13 +930,31 @@ ACObject *	do_obj8_load(char *filename)
 			case attr_Specular_RGB:
 			case attr_Shiny_Rat:
 			case attr_Reset:
+#if !SUPPORT_NO_DEPTH
+			case attr_No_Depth:			
+			case attr_Depth:
+#endif			
 				break;
 			}	
 		}
 	}
+
+#if BONES    
+    for (vector<ACJoint *>::iterator joint = top_joints.begin(); joint != top_joints.end(); ++joint)
+    	ac_object_init_transform_recurse(*joint);
+#endif
     
 	object_calc_normals_force(group_obj);
 
     return group_obj;
 }
 
+int 		do_obj8_save(char * fname, ACObject * obj)
+{
+	return do_obj8_save_common(fname, obj, false);
+}
+
+int 		do_obj7_save_convert(char * fname, ACObject * obj)
+{
+	return do_obj8_save_common(fname, obj, true);
+}

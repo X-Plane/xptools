@@ -172,3 +172,37 @@ void do_calc_lod(void)
 		}
 	}
 }
+
+void do_animation_group(void)
+{
+	List * objs_l = ac_selection_get_objects();
+	if (objs_l == NULL) return;
+	vector<ACObject *> 	objs;
+	set<ACObject *>		parents;
+	while (objs_l)
+	{
+		objs.push_back((ACObject *) objs_l->data);
+		objs_l = objs_l->next;
+		ACObject * p = ac_object_get_parent(objs.back());
+		if (p != NULL)
+			parents.insert(p);
+	}
+	list_free(&objs_l);
+	
+	if (objs.empty())	return;
+
+	if (parents.size() > 1)
+	{
+		message_dialog("Cannot animate these %d objects; they are not all part of the same group.", objs.size());
+		return;
+	}	
+	
+	ACObject * new_obj = new_object(OBJECT_GROUP);
+	object_set_name(new_obj, "ANIMATION");
+
+	for (int n = 0; n < objs.size(); ++n)
+		object_reparent(objs[n], new_obj);
+	
+	object_add_child(*parents.begin(), new_obj);	
+	tcl_command("hier_update");
+}

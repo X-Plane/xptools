@@ -81,3 +81,17 @@ void	latlonel2xyz(double latlonel[3],
 	xyz[1] = latlonel[2];
 	xyz[2] = lat * 60.0 * 1852.0;
 }
+
+int pull_int_attr(ACObject * ob, const char * attr, int * value)
+{
+	char * title = ac_object_get_name(ob);
+//	printf("Title = %s\n", title);
+	char * token = strstr(title, attr);
+//	printf("token = %s\n", token);
+	if (token == NULL) return 0;
+	if (strlen(token) <= strlen(attr))	return 0;
+	token += strlen(attr);
+	if (value) *value = atoi(token);
+//	printf("Value was: %d\n", *value);
+	return 1;
+}
