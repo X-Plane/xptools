@@ -25,6 +25,7 @@
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
 #include "ObjUtils.h"
+#include "ObjConvert.h"
 #include "XUtils.h"
 
 #include "ConvertObjDXF.h"
@@ -106,6 +107,12 @@ static	int	gSave = save_OBJ7;
 
 void	ConformCheckItems(void)
 {
+	switch(gSave) {
+	case save_OBJ7:		XGrinder_ShowMessage("Drag a file into this window to convert it to OBJ7.");	break;
+	case save_OBJ8:		XGrinder_ShowMessage("Drag a file into this window to convert it to OBJ8.");	break;
+	case save_3DS:		XGrinder_ShowMessage("Drag a file into this window to convert it to 3DS.");	break;
+	case save_DXF:		XGrinder_ShowMessage("Drag a file into this window to convert it to DXF.");	break;
+	}
 	XWin::CheckMenuItem(gSettingsM, unit_Inches, 	gUnits == unit_Inches);
 	XWin::CheckMenuItem(gSettingsM, unit_Feet, 		gUnits == unit_Feet);
 	XWin::CheckMenuItem(gSettingsM, unit_Meters, 	gUnits == unit_Meters);

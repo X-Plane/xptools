@@ -72,8 +72,8 @@ float	gCamDist = 200;
 map<string, pair<string, GLenum> >		gDayTextures;
 map<string, pair<string, GLenum> >		gNightTextures;
 
-static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid);
-static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid);
+static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
+static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
 static	GLenum		FindTexture(const string& inName, bool inNight);
 static	void		AccumTexture(const string& inFileName);
 static	void		ReloadTexture(const string& inName);
@@ -139,6 +139,8 @@ private:
 //	float	mYTrans;
 	bool	mSolid;
 	bool	mLit;
+	bool	mAnimate;
+	bool	mLighting;
 	bool	mMeasureOnOpen;
 	int		mShowCulled;
 	int		mShowBounds;
@@ -173,7 +175,7 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 
 
 XObjWin::XObjWin(const char * inFileName) : XWinGL(inFileName ? inFileName : "Drag Obj Here", 50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
-	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), mShowBounds(false), mLit(false), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1)
+	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), mShowBounds(false), mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1)
 {
 	mPts.push_back(Point2(-10.0,  10.0));
 	mPts.push_back(Point2( 10.0,  10.0));
@@ -264,8 +266,8 @@ void			XObjWin::GLDraw(void)
 		
 	glScalef(mScale, mScale, mScale);
 */	
-	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mSolid);
-	else			PlotOneObj(mObj, mShowCulled, mLit, mSolid);
+	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate);
+	else			PlotOneObj(mObj, mShowCulled, mLit, mLighting, mSolid, mAnimate);
 	
 		
 	for (vector<ObjPlacement_t>::iterator p = mObjInst.begin(); p != mObjInst.end(); ++p)
@@ -275,7 +277,7 @@ void			XObjWin::GLDraw(void)
 		glTranslatef(p->x, p->y, p->z);
 		glRotatef(-p->r, 0.0, 1.0, 0.0);
 		if (mObjDB.find(p->obj) != mObjDB.end())
-			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mSolid);		
+			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate);		
 		glPopMatrix();
 	}
 	
@@ -309,6 +311,9 @@ void			XObjWin::GLDraw(void)
 		glPointSize(1.0);
 	}
 	mZoomer.ResetMatrices();
+	
+	if (mAnimate)
+		ForceRefresh();
 
 }
 
@@ -548,9 +553,17 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 	case 'F':
 		mSolid = !mSolid;
 		break;
+	case 'A':
+	case 'a':
+		mAnimate = !mAnimate;
+		break;
+	case 'n':
+	case 'N':
+		mLit = !mLit;
+		break;
 	case 'l':
 	case 'L':
-		mLit = !mLit;
+		mLighting = !mLighting;
 		break;
 	case 'c':
 	case 'C':
@@ -611,10 +624,13 @@ void		XObjWin::ScaleToObj(void)
 {
 	mZoomer.ResetToIdentity();
 	xflt	s[4];
-	GetObjBoundingSphere(mObj, s);
+	if (mIsObj8)	
+		GetObjBoundingSphere8(mObj8, s);
+	else
+		GetObjBoundingSphere(mObj, s);
 	mBounds.c = Point3(s[0], s[1], s[2]);
 	mBounds.radius_squared = s[3];
-	double	rad = GetObjRadius(mObj);
+	double	rad = mIsObj8 ? GetObjRadius8(mObj8) : GetObjRadius(mObj);
 	if (rad > 0.0)
 	{
 		mZoomer.SetScale(50.0 / rad);
@@ -656,6 +672,12 @@ void	XGrindInit(void)
 		gHasEnvAdd = true;
 	if (strstr(ext,"GL_EXT_texture_env_combine") || strstr(ext,"GL_ARB_texture_env_combine") || full >= 130)
 		gHasCombine = true;
+		
+	if (!gHasMultitexture)
+	{
+		DoUserAlert("Your OpenGL drivers are not new enough to run ObjView.");
+		exit(1);
+	} 
 }
 
 #pragma mark -
@@ -735,20 +757,39 @@ void		ReloadTexture(const string& inName)
 
 struct	ObjViewInfo_t {
 	bool	lit;
+	bool	lighting;
 	bool	solid;
 	bool	backside;
+	bool	animate;
+	
+	GLenum		tex;
+	GLenum		tex_lit;
+	GLenum		pan;
+	GLenum		pan_lit;
 };
 
 static void	ObjView_SetupPoly(void * ref)
 {
 	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
 	glActiveTextureARB(GL_TEXTURE1_ARB);
-	if (i->lit)
+	if (i->lit && i->tex_lit != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, i->tex_lit);
 		glEnable(GL_TEXTURE_2D);
-	else
+	} else
 		glDisable(GL_TEXTURE_2D);
+	if (i->lighting)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
+		
 	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glEnable(GL_TEXTURE_2D);
+	if (i->tex != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, i->tex);
+		glEnable(GL_TEXTURE_2D);
+	} else
+		glDisable(GL_TEXTURE_2D);
 	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	if (i->lit)	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -757,8 +798,42 @@ static void	ObjView_SetupPoly(void * ref)
 	
 	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
+
+static void	ObjView_SetupPanel(void * ref)
+{
+	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
+	glActiveTextureARB(GL_TEXTURE1_ARB);
+	if (i->lit && i->pan_lit != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, i->pan_lit);
+		glEnable(GL_TEXTURE_2D);
+	} else
+		glDisable(GL_TEXTURE_2D);
+	if (i->lighting)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
+		
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+	if (i->pan != 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, i->pan);
+		glEnable(GL_TEXTURE_2D);
+	} else
+		glDisable(GL_TEXTURE_2D);
+	
+	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	if (i->lit)	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	
+	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
+}
+
+
 static void 	ObjView_SetupLine(void * ref)
 {
+	glDisable(GL_LIGHTING);
 	glActiveTextureARB(GL_TEXTURE1_ARB);
 	glDisable(GL_TEXTURE_2D);
 	glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -784,51 +859,65 @@ static void	ObjView_TexCoordPointer(int size, unsigned long type, long stride, c
 
 static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void * ref)
 {
+	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
+	if (!i->animate) return (v1 + v2) * 0.5;
 	if (v1 == v2) return v1;
 	double	now = (float) clock() / (float) CLOCKS_PER_SEC;
-	now *= 10.0;
+	
+	now *= 0.1;
 	now -= (float) ((int) now);
-	now *= 0.2;
-	if (now > 1.0) now = 2.0 - now;
+	
+	
+	if (now > 0.5)	now = 1.0 - now;
+	now *= 2.0;
+	
 	return v1 + (v2 - v1) * now;
 }
 
 static	ObjDrawFuncs_t sCallbacks = { 
 	ObjView_SetupPoly, ObjView_SetupLine, ObjView_SetupLine,
-	ObjView_SetupPoly, ObjView_SetupPoly, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
+	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
 };
 
 
 
-void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
+void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
 {
-	ObjViewInfo_t info = { inLit, inSolid, inShowCulled };
+	ObjViewInfo_t info = { inLit, inLighting, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
 	string	tex = inObj.texture;
-	StripPathCP(tex);
-	GLenum t = FindTexture(tex, false);
-	
-	if (t)
-		glBindTexture(GL_TEXTURE_2D, t);
-	CHECK_ERR();
+	StripPathCP(tex);	
+	info.tex = FindTexture(tex, false);	
+	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
 		
-	bool	hasLit = false;		
 	if (inLit)
 	{
-		t = FindTexture(tex, true);
-		if (t && gHasMultitexture && gHasEnvAdd)
+		info.tex_lit = FindTexture(tex, true);
+		if (info.tex_lit)
 		{
 			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D, t);
+			glBindTexture(GL_TEXTURE_2D, info.tex_lit);
 			glActiveTextureARB(GL_TEXTURE0_ARB);
-			hasLit = true;
 		}
 	}
-
+	
+	info.pan = FindTexture("panel", false);
+	if (inLit)
+		info.pan_lit = FindTexture("panel", true);
+	
 	if (inSolid)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	if (inLighting)
+	{
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+	} else 
+		glDisable(GL_LIGHTING);
 
 	if (inShowCulled)
 	{
@@ -870,45 +959,51 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inSolid)
 }
 
 
-void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inSolid)
+void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
 {
-	ObjViewInfo_t info = { inLit, inSolid, inShowCulled };
-
 	CHECK_ERR();
+
+	ObjViewInfo_t info = { inLit, inLighting, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
 	string	tex = inObj.texture;
-	if (tex.size() > 4)
-	tex.erase(tex.size()-4);
-		StripPathCP(tex);
-	GLenum t = FindTexture(tex, false);
-	
-	if (t)
-		glBindTexture(GL_TEXTURE_2D, t);
-	CHECK_ERR();
+	if (tex.size() > 4)	tex.erase(tex.size()-4);
+	StripPathCP(tex);	
+	info.tex = FindTexture(tex, false);	
+	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
 		
-	bool	hasLit = false;		
 	if (inLit)
 	{
-		t = FindTexture(tex, true);
-		if (t && gHasMultitexture && gHasEnvAdd)
+		string tex_night = inObj.texture_lit;
+		if (tex_night.size() > 4)	tex_night.erase(tex_night.size() - 4);
+		StripPathCP(tex_night);	
+								info.tex_lit = FindTexture(tex_night, true);
+		if (info.tex_lit == 0)	info.tex_lit = FindTexture(tex_night, false);
+		if (info.tex_lit)
 		{
 			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D, t);
+			glBindTexture(GL_TEXTURE_2D, info.tex_lit);
 			glActiveTextureARB(GL_TEXTURE0_ARB);
-			hasLit = true;
 		}
 	}
+	
+	info.pan = FindTexture("panel", false);
+	if (inLit)
+		info.pan_lit = FindTexture("panel", true);
 
 	if (inSolid)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-
+	if (inLighting)
+	{
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+	} else 
+		glDisable(GL_LIGHTING);
+		
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
