@@ -13,7 +13,7 @@ static void GL_ERR(int err)
 static void	Default_SetupPoly(void * ref)
 {
 	glEnable(GL_TEXTURE_2D);
-	glColor3f(1.0, 1.0, 1.0);
+//	glColor3f(1.0, 1.0, 1.0);
 }
 static void 	Default_SetupLine(void * ref)
 {
@@ -26,12 +26,12 @@ static void	Default_SetupLight(void * ref)
 static void	Default_SetupMovie(void * ref)
 {
 	glEnable(GL_TEXTURE_2D);
-	glColor3f(1.0, 1.0, 1.0);
+//	glColor3f(1.0, 1.0, 1.0);
 }
 static void	Default_SetupPanel(void * ref)
 {
 	glEnable(GL_TEXTURE_2D);
-	glColor3f(1.0, 1.0, 1.0);
+//	glColor3f(1.0, 1.0, 1.0);
 }
 static void	Default_TexCoord(const float * st, void * ref)
 {
@@ -74,6 +74,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	if (funcs == NULL) funcs = &sDefault;
 	int 	drawMode = drawMode_Non;
 	bool	do_draw = true;
+	float	mat_col[3] = { 1.0, 1.0, 1.0 };
 	
 	for (vector<XObjCmd>::const_iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
 	{
@@ -114,6 +115,7 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 			
 			switch(cmd->cmdType) {
 			case type_Poly:
+				glColor3fv(mat_col);
 				switch(cmd->cmdID) {
 				case obj_Tri:				glBegin(GL_TRIANGLES);	break;
 				case obj_Quad:				
@@ -150,19 +152,23 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				switch(cmd->cmdID) {
 				case attr_Shade_Flat:	glShadeModel(GL_FLAT); break;
 				case attr_Shade_Smooth: glShadeModel(GL_SMOOTH); break;
-				case attr_Ambient_RGB: { float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_AMBIENT ,rgba);	} break;
-				case attr_Diffuse_RGB: { float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_DIFFUSE ,rgba);	} break;
+//				case attr_Ambient_RGB: { float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_AMBIENT ,rgba);	} break;
+				case attr_Diffuse_RGB:  mat_col[0] = cmd->attributes[0]; mat_col[1] = cmd->attributes[1]; mat_col[2] = cmd->attributes[2]; glColor3fv(mat_col);	 break;
 				case attr_Emission_RGB:{ float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_EMISSION,rgba);	} break;
-				case attr_Specular_RGB:{ float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_SPECULAR,rgba);	} break;
-				case attr_Shiny_Rat:	glMaterialf (GL_FRONT,GL_SHININESS,cmd->attributes[0]); break;
+//				case attr_Specular_RGB:{ float rgba[4] = { cmd->attributes[0],cmd->attributes[1],cmd->attributes[2],1.0 }; glMaterialfv(GL_FRONT,GL_SPECULAR,rgba);	} break;
+				case attr_Shiny_Rat:	{ float rgba[4] = { cmd->attributes[0], cmd->attributes[0], cmd->attributes[0], 1.0 };
+											glLightfv	(GL_LIGHT0,GL_SPECULAR ,rgba);
+											glMaterialfv (GL_FRONT, GL_SPECULAR, rgba);
+											glMateriali (GL_FRONT,GL_SHININESS,128); } break;
 				case attr_No_Depth:		glDisable(GL_DEPTH_TEST);
 				case attr_Depth:		glEnable(GL_DEPTH_TEST);
-				case attr_Reset: { float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, diff[4] = { 0.8, 0.8, 0.8, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 };
-									glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
-									glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
+				case attr_Reset: { float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 }; mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
+//									glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
+//									glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
 									glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
 									glMaterialfv(GL_FRONT, GL_EMISSION, zero);
-									glMaterialf (GL_FRONT,GL_SHININESS,0.0); } break;
+									glColor3fv(mat_col);
+									glMateriali (GL_FRONT,GL_SHININESS,0); } break;
 				case attr_Cull:		glEnable(GL_CULL_FACE);		break;
 				case attr_NoCull:	glDisable(GL_CULL_FACE);	break;
 				case attr_Offset:	if (cmd->attributes[0] != 0)
@@ -198,6 +204,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	if (lod->lod_near <= dist && lod->lod_far >= dist)
 		our_lod = &*lod;
 
+	float	mat_col[3] = { 1.0, 1.0, 1.0 };
 
 	if (our_lod != NULL)
 	{
@@ -223,7 +230,7 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				glEnableClientState(GL_NORMAL_ARRAY);				CHECK_GL_ERR
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);		CHECK_GL_ERR
 				glDisableClientState(GL_COLOR_ARRAY);				CHECK_GL_ERR
-				glColor3f(1.0, 1.0, 1.0);							CHECK_GL_ERR
+				glColor3fv(mat_col);								CHECK_GL_ERR
 				glDrawElements(GL_TRIANGLES, cmd->idx_count, GL_UNSIGNED_INT, &obj.indices[cmd->idx_offset]);		CHECK_GL_ERR
 				break;
 			case obj8_Lines:
@@ -286,11 +293,15 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	
 			case attr_Shade_Flat:	glShadeModel(GL_FLAT); 	 CHECK_GL_ERR break;
 			case attr_Shade_Smooth: glShadeModel(GL_SMOOTH); CHECK_GL_ERR break;
-			case attr_Ambient_RGB: 	glMaterialfv(GL_FRONT,GL_AMBIENT, cmd->params); 	CHECK_GL_ERR break;
-			case attr_Diffuse_RGB:  glMaterialfv(GL_FRONT,GL_DIFFUSE, cmd->params); 	CHECK_GL_ERR break;
+//			case attr_Ambient_RGB: 	glMaterialfv(GL_FRONT,GL_AMBIENT, cmd->params); 	CHECK_GL_ERR break;
+			case attr_Diffuse_RGB:  mat_col[0] = cmd->params[0]; mat_col[1] = cmd->params[1]; mat_col[2] = cmd->params[2];		glColor3fv(mat_col); 	CHECK_GL_ERR break;
 			case attr_Emission_RGB: glMaterialfv(GL_FRONT,GL_EMISSION, cmd->params); 	CHECK_GL_ERR break;
-			case attr_Specular_RGB: glMaterialfv(GL_FRONT,GL_SPECULAR, cmd->params); 	CHECK_GL_ERR break;
-			case attr_Shiny_Rat:	glMaterialf (GL_FRONT,GL_SHININESS,cmd->params[0]); CHECK_GL_ERR break;
+//			case attr_Specular_RGB: glMaterialfv(GL_FRONT,GL_SPECULAR, cmd->params); 	CHECK_GL_ERR break;
+			case attr_Shiny_Rat:	{ GLfloat spec[4] = { cmd->params[0], cmd->params[0], cmd->params[0], 1.0 };
+
+											glLightfv	(GL_LIGHT0,GL_SPECULAR ,spec);
+											glMaterialfv (GL_FRONT, GL_SPECULAR, spec);
+											glMateriali (GL_FRONT,GL_SHININESS,128); } break;
 			case attr_No_Depth:		glDisable(GL_DEPTH_TEST);	CHECK_GL_ERR	break;
 			case attr_Depth:		glEnable(GL_DEPTH_TEST);	CHECK_GL_ERR	break;
 			case attr_Reset: { float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, diff[4] = { 0.8, 0.8, 0.8, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 };
@@ -298,7 +309,9 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 								glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
 								glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
 								glMaterialfv(GL_FRONT, GL_EMISSION, zero);
-								glMaterialf (GL_FRONT,GL_SHININESS,0.0); } CHECK_GL_ERR break;
+								glColor3f(1.0, 1.0, 1.0);
+								mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
+								glMateriali (GL_FRONT,GL_SHININESS,0); } CHECK_GL_ERR break;
 			case attr_Cull:		glEnable(GL_CULL_FACE);		CHECK_GL_ERR break;
 			case attr_NoCull:	glDisable(GL_CULL_FACE);	CHECK_GL_ERR break;
 			case attr_Offset:	if (cmd->params[0] != 0)
