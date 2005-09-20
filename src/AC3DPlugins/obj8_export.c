@@ -53,6 +53,9 @@ static int		gErrMissingTex;
 static int		gHasTexNow;
 static bool		gErrDoubleTex;
 static List *	gBadObjects;
+static bool		gErrBadCockpit;
+static bool		gErrBadHard;
+static List *	gBadSurfaces;
 
 
 /* OBJ8 import and export */
@@ -266,6 +269,20 @@ void obj8_output_polygon(Surface *s)
 		cmd.cmd = gIsCockpit ? attr_Tex_Cockpit : attr_Tex_Normal;
 		gObj8.lods.back().cmds.push_back(cmd);
 		gIsCockpit = gWasCockpit;		
+	}
+
+	if (s->numvert != 4)
+	{
+		if (gIsCockpit)
+		{
+			gErrBadCockpit = true;
+			list_add_item_head(&gBadSurfaces, s);
+		}
+		if (gHardPoly)
+		{
+			gErrBadHard = true;
+			list_add_item_head(&gBadSurfaces, s);
+		}
 	}
 
 	List *slist = (List *)surface_get_triangulations(s);
@@ -514,6 +531,9 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 	gHasTexNow = false;
 	gErrDoubleTex = false;
 	gBadObjects = NULL;
+	gBadSurfaces = NULL;
+	gErrBadCockpit = false;
+	gErrBadHard = false;
 
 	obj8_reset_properties();
     obj8_output_object(obj, NULL);
@@ -542,10 +562,26 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 	    }
 	}    
     if (gErrMissingTex)
-    	message_dialog("Warning: %d objects did not have texturse assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
+    	message_dialog("Warning: %d objects did not have textures assigned.  You must assign a texture to every object for X-Plane output.", gErrMissingTex);
     if (gErrDoubleTex)
     	message_dialog("This model uses more than one texture.  You may only use one texture for an X-Plane OBJ.");
-	if (gBadObjects)
+
+   if (gErrBadCockpit && convert)
+    	message_dialog("This model has non-quad surfaces that use the panel texture.  Only quad surfaces may use the panel texture in OBJ7.");
+   if (gErrBadHard && convert)
+    	message_dialog("This model has non-quad surfaces that rae marked as hard.  Only quad surfaces may be hard in OBJ7.");
+ 
+   if (gBadSurfaces)
+    {
+    	if (convert) {    	
+			clear_selection();
+			ac_selection_select_surfacelist(gBadSurfaces);
+			redraw_all();    	
+		}
+		list_free(&gBadSurfaces);
+		gBadSurfaces = NULL;
+    }
+	else if (gBadObjects)
     {
 		clear_selection();
 		ac_selection_select_objectlist(gBadObjects);
