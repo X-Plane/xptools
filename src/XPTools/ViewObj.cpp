@@ -20,6 +20,9 @@
  * THE SOFTWARE.
  *
  */
+ 
+#define FACADES 0
+
 #include <time.h>
 #include "hl_types.h"
 #include "XObjDefs.h"
@@ -36,7 +39,9 @@
 #include <set>
 #include "PlatformUtils.h"
 #include "OE_Zoomer3d.h"
+#if FACADES
 #include "FacadeObj.h"
+#endif
 //#include <glut.h>
 #include <glu.h>
 
@@ -123,13 +128,16 @@ private:
 	XObj			mObj;
 	XObj8			mObj8;
 //	Prototype_t		mPrototype;
+#if FACADES
 	FacadeObj_t		mFacade;
-	
-	Polygon2 mPts;
+#endif	
+	Polygon2 		mPts;
 	Sphere3			mBounds;
 
 //	bool	mIsPrototype;
+#if FACADES
 	bool	mIsFacade;
+#endif	
 	bool	mIsObj8;
 	int		mFloors;
 	
@@ -294,7 +302,7 @@ void			XObjWin::GLDraw(void)
 		glPopMatrix();
 	}
 		
-
+#if FACADES
 	if (mIsFacade)
 	{
 		glDisable(GL_TEXTURE_2D);
@@ -310,6 +318,7 @@ void			XObjWin::GLDraw(void)
 		glEnd();
 		glPointSize(1.0);
 	}
+#endif	
 	mZoomer.ResetMatrices();
 	
 	if (mAnimate)
@@ -333,6 +342,7 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 	mZoomer.SetupMatrices(i);
 	
 	mEditNum = -1;
+#if FACADES
 	if (mIsFacade)
 	{
 		for (int n = 0; n < mPts.size(); ++n)
@@ -347,6 +357,7 @@ void			XObjWin::ClickDown(int inX, int inY, int inButton)
 				mEditNum = n;
 		}
 	}
+#endif	
 	if (mEditNum == -1)
 	{
 		if (inButton == 0)
@@ -400,6 +411,7 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 		{
 			mPts[mEditNum].x = clickPt[0];
 			mPts[mEditNum].y = clickPt[2];
+#if FACADES
 			if (mIsFacade)
 			{
 				Polygon3	pts;
@@ -410,8 +422,10 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 			
 				mObj.cmds.clear();
 				mObj.texture = mFacade.texture;
+				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			}
+#endif			
 			xflt	s[4];
 			GetObjBoundingSphere(mObj, s);
 			mBounds.c = Point3(s[0], s[1], s[2]);
@@ -448,7 +462,9 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			if (XObj8Read(i->c_str(), mObj8))
 			{
 				mIsObj8 = true;
+#if FACADES
 				mIsFacade = false;
+#endif				
 				string foo(*i);
 				StripPath(foo);
 				ScaleToObj();
@@ -460,7 +476,9 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			}				
 			else if (XObjRead(i->c_str(), mObj))
 			{
+#if FACADES
 				mIsFacade = false;
+#endif				
 				mIsObj8 = false;
 				string foo(*i);
 				StripPath(foo);
@@ -475,7 +493,9 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 		{
 			SetGLContext();
 			AccumTexture(*i);
-		} else if (HasExtNoCase(*i, ".fac"))
+		} 
+#if FACADES
+		else if (HasExtNoCase(*i, ".fac"))
 		{
 			if (ReadFacadeObjFile(i->c_str(), mFacade))
 			{
@@ -491,6 +511,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 			
 				mObj.cmds.clear();
 				mObj.texture = mFacade.texture;
+				if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 				xflt	s[4];
 				GetObjBoundingSphere(mObj, s);
@@ -503,13 +524,15 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				ForceRefresh();
 
 			}
-		} 
+		}
+#endif		 
 	}
 }
 
 int			XObjWin::KeyPressed(char inKey, long, long, long)
 {
 	SetGLContext();
+	int x, y;	
 
 	switch(inKey) {
 	case 'M':
@@ -544,10 +567,9 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 //		mYTrans -= (mScale / 4.0);
 		break;
 	case '=':
-//		mScale *= 1.1;
-		break;
 	case '-':
-//		mScale *= 0.9;
+		GetMouseLoc(&x, &y);	
+		MouseWheel(x, y, inKey == '=' ? 1 : -1, 0);
 		break;
 	case 'f':
 	case 'F':
@@ -576,6 +598,7 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 	case 'U':
 	case 'u':
 		mFloors++;
+#if FACADES
 		if (mIsFacade)
 		{
 			Polygon3	pts;
@@ -586,17 +609,20 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
+			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
 			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			xflt	s[4];
 			GetObjBoundingSphere(mObj, s);
 			mBounds.c = Point3(s[0], s[1], s[2]);
 			mBounds.radius_squared = s[3];
 		}			
+#endif		
 		break;
 	case 'D':
 	case 'd':
 		mFloors--;
 		if (mFloors < 0) mFloors = 0;
+#if FACADES
 		if (mIsFacade)
 		{
 			Polygon3	pts;
@@ -607,12 +633,14 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		
 			mObj.cmds.clear();
 			mObj.texture = mFacade.texture;
+			if (mObj.texture.size() > 4) mObj.texture.erase(mObj.texture.size()-4);
 			BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			xflt	s[4];
 			GetObjBoundingSphere(mObj, s);
 			mBounds.c = Point3(s[0], s[1], s[2]);
 			mBounds.radius_squared = s[3];
 		}			
+#endif
 		break;
 	}
 	if (gCamDist < 0) gCamDist = 0;
@@ -796,7 +824,7 @@ static void	ObjView_SetupPoly(void * ref)
 	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	
-	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
+//	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
 
 static void	ObjView_SetupPanel(void * ref)
@@ -827,7 +855,7 @@ static void	ObjView_SetupPanel(void * ref)
 	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	
-	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
+//	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
 
 
@@ -883,6 +911,7 @@ static	ObjDrawFuncs_t sCallbacks = {
 
 void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
 {
+	inLighting = false;	// NEVER light these - it don't work yet!
 	ObjViewInfo_t info = { inLit, inLighting, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
 	string	tex = inObj.texture;
@@ -1001,9 +1030,10 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 		glEnable(GL_LIGHT0);
 		glEnable(GL_COLOR_MATERIAL);
 		glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-	} else 
+	} else {
 		glDisable(GL_LIGHTING);
-		
+		glDisable(GL_COLOR_MATERIAL);
+	}		
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
