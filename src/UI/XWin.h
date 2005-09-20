@@ -66,9 +66,7 @@ public:
 			void			SetTimerInterval(double seconds);
 			
 			void			GetBounds(int * outX, int * outY);
-#if IBM
 			void			GetMouseLoc(int * outX, int * outY);
-#endif			
 
 	// Callbacks
 	virtual	void			Timer(void)=0;

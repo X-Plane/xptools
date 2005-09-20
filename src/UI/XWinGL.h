@@ -29,13 +29,14 @@
 #include "XWin.h"
 
 #if IBM
-   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC )(GLenum,GLfloat,GLfloat);
-   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC)(GLenum,const GLfloat *);
-   typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC   )(GLenum                );
-
-   extern PFNGLMULTITEXCOORD2FARBPROC  glMultiTexCoord2fARB	;
-   extern PFNGLMULTITEXCOORD2FVARBPROC glMultiTexCoord2fvARB;
-   extern PFNGLACTIVETEXTUREARBPROC    glActiveTextureARB	;
+   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
+   typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
+   typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC      )(GLenum                );
+   typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC)(GLenum texture        );
+   extern PFNGLMULTITEXCOORD2FARBPROC     glMultiTexCoord2fARB	;
+   extern PFNGLMULTITEXCOORD2FVARBPROC    glMultiTexCoord2fvARB;
+   extern PFNGLACTIVETEXTUREARBPROC       glActiveTextureARB	;
+   extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
 
 #define GL_TEXTURE0_ARB                   0x84C0
 #define GL_TEXTURE1_ARB                   0x84C1

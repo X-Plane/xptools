@@ -196,6 +196,17 @@ void			XWin::GetBounds(int * outX, int * outY)
 	if (outY) *outY = bounds.bottom;
 }
 
+void		XWin::GetMouseLoc(int * outX, int * outY)
+{
+	Point	pt;
+	GetMouse(&pt);
+	SetPortWindowPort(mWindow);
+	GlobalToLocal(&pt);
+	if (outX) *outX = pt.h;
+	if (outY) *outY = pt.v;
+}
+
+
 #pragma mark -
 
 pascal OSStatus	XWin::MacEventHandler(
