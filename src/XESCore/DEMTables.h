@@ -118,6 +118,7 @@ int		FindNaturalTerrain(
 				int 	climate, 
 				float 	elevation, 
 				float 	slope,
+				float	slope_tri,
 				float	temp,
 				float	rain,
 				int		water,

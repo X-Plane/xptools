@@ -339,6 +339,7 @@ int	FindNaturalTerrain(
 				int 	climate, 
 				float 	elevation, 
 				float 	slope,
+				float 	slope_tri,
 				float	temp,
 				float	rain,
 				int		water,
@@ -365,10 +366,12 @@ int	FindNaturalTerrain(
 	{
 		int rec_num = i->second;
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
+		
+		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 
 		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
 		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)
-		if (rec.slope_min == rec.slope_max || slope == NO_DATA || (rec.slope_min <= slope && slope <= rec.slope_max))
+		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
 		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
 		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
@@ -395,9 +398,11 @@ int	FindNaturalTerrain(
 		int rec_num = i->second;
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
 
+		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
+
 		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
 		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)
-		if (rec.slope_min == rec.slope_max || slope == NO_DATA || (rec.slope_min <= slope && slope <= rec.slope_max))
+		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
 		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
 		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
