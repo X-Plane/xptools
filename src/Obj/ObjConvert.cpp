@@ -1,6 +1,79 @@
 #include "ObjConvert.h"
 #include "XObjDefs.h"
 
+static bool operator==(const vec_tex& lhs, const vec_tex& rhs);
+bool operator==(const vec_tex& lhs, const vec_tex& rhs) 
+{ 
+	return		
+		lhs.v[0] == rhs.v[0] &&
+		lhs.v[1] == rhs.v[1] &&
+		lhs.v[2] == rhs.v[2] &&
+		lhs.st[0] == rhs.st[0] &&
+		lhs.st[1] == rhs.st[1];
+}
+
+const int	TRI_HARD =	attr_Max  ;
+const int	TRI_COCK =	attr_Max+1;
+
+static void	special_tris_to_quads(XObj& obj)
+{
+	for (vector<XObjCmd>::iterator cmd = obj.cmds.begin(); cmd != obj.cmds.end(); ++cmd)
+	{
+		vector<XObjCmd>::iterator	cmd2 = cmd;
+		++cmd2;
+		
+		if (cmd2 != obj.cmds.end())
+		{
+			if (cmd->cmdID == TRI_HARD && cmd2->cmdID ==TRI_HARD)
+			{
+				     if (cmd->st[0] == cmd2->st[1] && cmd->st[1] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+1,cmd2->st[2]); }
+				else if (cmd->st[0] == cmd2->st[2] && cmd->st[1] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+1,cmd2->st[0]); }
+				else if (cmd->st[0] == cmd2->st[0] && cmd->st[1] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+1,cmd2->st[1]); }
+
+				else if (cmd->st[1] == cmd2->st[1] && cmd->st[2] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+2,cmd2->st[2]); }
+				else if (cmd->st[1] == cmd2->st[2] && cmd->st[2] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+2,cmd2->st[0]); }
+				else if (cmd->st[1] == cmd2->st[0] && cmd->st[2] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+2,cmd2->st[1]); }
+
+				else if (cmd->st[2] == cmd2->st[1] && cmd->st[0] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+3,cmd2->st[2]); }
+				else if (cmd->st[2] == cmd2->st[2] && cmd->st[0] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+3,cmd2->st[0]); }
+				else if (cmd->st[2] == cmd2->st[0] && cmd->st[0] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Hard; cmd->st.insert(cmd->st.begin()+3,cmd2->st[1]); }
+				else cmd->cmdID = obj_Tri;
+				
+				if (cmd->cmdID != cmd2->cmdID)
+				{
+					cmd = obj.cmds.erase(cmd2);
+					--cmd;
+				}
+			}
+
+			else if (cmd->cmdID == TRI_COCK && cmd2->cmdID ==TRI_COCK)
+			{
+				     if (cmd->st[0] == cmd2->st[1] && cmd->st[1] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+1,cmd2->st[2]); }
+				else if (cmd->st[0] == cmd2->st[2] && cmd->st[1] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+1,cmd2->st[0]); }
+				else if (cmd->st[0] == cmd2->st[0] && cmd->st[1] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+1,cmd2->st[1]); }
+
+				else if (cmd->st[1] == cmd2->st[1] && cmd->st[2] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+2,cmd2->st[2]); }
+				else if (cmd->st[1] == cmd2->st[2] && cmd->st[2] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+2,cmd2->st[0]); }
+				else if (cmd->st[1] == cmd2->st[0] && cmd->st[2] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+2,cmd2->st[1]); }
+
+				else if (cmd->st[2] == cmd2->st[1] && cmd->st[0] == cmd2->st[0]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+3,cmd2->st[2]); }
+				else if (cmd->st[2] == cmd2->st[2] && cmd->st[0] == cmd2->st[1]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+3,cmd2->st[0]); }
+				else if (cmd->st[2] == cmd2->st[0] && cmd->st[0] == cmd2->st[2]) { cmd->cmdID = obj_Quad_Cockpit; cmd->st.insert(cmd->st.begin()+3,cmd2->st[1]); }
+				else cmd->cmdID = obj_Tri;
+				
+				if (cmd->cmdID != cmd2->cmdID)
+				{
+					cmd = obj.cmds.erase(cmd2);
+					--cmd;
+				}
+				
+			}
+		} else {
+			if (cmd->cmdID == TRI_HARD || cmd->cmdID == TRI_COCK) cmd->cmdID = obj_Tri;
+		}
+	}
+}
+
 static int append_rgb(ObjPointPool * pool, const vec_rgb& rgb);
 static int append_rgb(ObjPointPool * pool, const vec_rgb& rgb)
 {	
@@ -36,6 +109,7 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	bool		is_cock = false;
 	bool		now_hard, now_cock;
 	
+	vector<XObjCmd>::const_iterator next;
 	for (vector<XObjCmd>::const_iterator cmd = obj7.cmds.begin(); cmd != obj7.cmds.end(); ++cmd)
 	{
 		switch(cmd->cmdID) {	
@@ -112,6 +186,29 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 				obj8.indices.push_back(idx_base+n+3);
 			}
 			obj8.lods.back().cmds.push_back(cmd8);
+			
+			next = cmd;
+			++next;
+			if (next != obj7.cmds.end() && next->cmdID != obj_Quad && next->cmdID != obj_Movie && next->cmdID != obj_Quad_Cockpit && next->cmdID != obj_Quad_Hard)
+			{
+				now_hard = false;
+				now_cock = false;
+				
+				if (now_hard != is_hard)
+				{
+					is_hard = now_hard;
+					cmd8.cmd = (now_hard) ? attr_Hard : attr_No_Hard;
+					obj8.lods.back().cmds.push_back(cmd8);
+				}
+
+				if (now_cock != is_cock)
+				{
+					is_cock = now_cock;
+					cmd8.cmd = is_cock ? attr_Tex_Cockpit : attr_Tex_Normal;
+					obj8.lods.back().cmds.push_back(cmd8);
+				}
+			}
+			
 			break;
 		case obj_Polygon:
 		case obj_Tri_Fan:		
@@ -300,9 +397,11 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 	vec_tex	st;
 	vec_rgb rgb;
 	int n;
+	int tri_cmd;
 	
 	for (vector<XObjLOD8>::const_iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
 	{
+		tri_cmd = obj_Tri;
 		cmd7.st.clear();
 		cmd7.rgb.clear();
 		if (lod->lod_far != 0.0)
@@ -321,7 +420,7 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 			switch(cmd->cmd) {
 			case obj8_Tris:
 				cmd7.cmdType = type_Poly;
-				cmd7.cmdID = obj_Tri;
+				cmd7.cmdID = tri_cmd;
 				for (n = 0; n < cmd->idx_count; ++n)
 				{
 					const float * p = obj8.geo_tri.get(obj8.indices[cmd->idx_offset+n]);
@@ -376,6 +475,11 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 				}
 				break;
 
+			case attr_Hard:			tri_cmd = TRI_HARD;	break;
+			case attr_No_Hard:		tri_cmd = obj_Tri;	break;
+			case attr_Tex_Normal:	tri_cmd = obj_Tri;	break;
+			case attr_Tex_Cockpit:	tri_cmd = TRI_COCK;	break;
+
 			case attr_Shade_Flat:
 			case attr_Shade_Smooth:
 			case attr_Ambient_RGB:
@@ -403,5 +507,6 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 			}				
 		}
 	}
+	special_tris_to_quads(obj7);
 }
 
