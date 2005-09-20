@@ -43,6 +43,7 @@ cmd_info	gCmds[] = {
 {   attr_Shade_Flat,	type_Attr,		"shade_flat",		0, 1, 0 },
 {   attr_Shade_Smooth,	type_Attr,		"shade_smooth",		0, 1, 0 },
 {   attr_Ambient_RGB,	type_Attr,		"ATTR_ambient_rgb",	3, 1, 1 },
+{   attr_Diffuse_RGB,	type_Attr,		"ATTR_diffuse_rgb",	3, 1, 1 },
 {   attr_Diffuse_RGB,	type_Attr,		"ATTR_difuse_rgb",	3, 1, 1 },
 {   attr_Emission_RGB,	type_Attr,		"ATTR_emission_rgb",3, 1, 1 },
 {	attr_Specular_RGB,	type_Attr,		"ATTR_specular_rgb",3, 1, 1 },
