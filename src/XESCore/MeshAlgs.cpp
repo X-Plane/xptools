@@ -1866,19 +1866,18 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	utrn = SAFE_AVERAGE(utrn1, utrn2, utrn3);	// Could be safe max.
 				
 
-/*
-				float	el1 = tri->vertex(0)->info().height;
-				float	el2 = tri->vertex(1)->info().height;
-				float	el3 = tri->vertex(2)->info().height;
-				float	el = (el1 + el2 + el3) / 3.0;
+//				float	el1 = tri->vertex(0)->info().height;
+//				float	el2 = tri->vertex(1)->info().height;
+//				float	el3 = tri->vertex(2)->info().height;
+//				float	el_tri = (el1 + el2 + el3) / 3.0;
 				
-				float	sl = 1.0 - tri->info().normal[2];
-*/				
+				float	sl_tri = 1.0 - tri->info().normal[2];
+
 				float	patches = (gMeshPrefs.rep_switch_m == 0.0) ? 100.0 : (60.0 * NM_TO_MTR / gMeshPrefs.rep_switch_m);
 				int x_variant = fabs(center_x /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int y_variant = fabs(center_y /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int variant = ((x_variant + y_variant * 2) % 4) + 1;
-				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, tm, rn, near_water, sh, re, er, uden, urad, utrn, center_y, variant);
+				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, rn, near_water, sh, re, er, uden, urad, utrn, center_y, variant);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				
