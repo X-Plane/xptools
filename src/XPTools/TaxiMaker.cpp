@@ -25,6 +25,7 @@
 #include "PlatformUtils.h"
 #include "XGrinderApp.h"
 #include "XObjReadWrite.h"
+#include "ObjUtils.h"
 
 float	gMasterScale = 0.6;		// Size of one square panel
 float	gPoleHeight = 0.3;		// Height off the ground
