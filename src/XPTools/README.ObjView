@@ -1,0 +1,278 @@
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+                              O B J V I E W
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+CHANGE HISTORY:
+
+-------------------------------------------------------------------------------
+
+
+
+Version 2.0b1 9/20/05
+
+	- Support for OBJ8
+
+	- Preview Lighting
+
+	- Preview Animation
+
+
+
+ObjView is a 3-d viewer for X-Plane object files (version 2, 7 and 8). ÊX-Plane
+
+has four major revisions of the ".obj" format, none of which are related to 
+
+other public .obj formats (Alias Wavefront Objects):
+
+
+
+ o 	Obj format 1 files were supported in X-Plane 5.0 and early versions of 
+
+    X-Plane 6.0. ÊObj format 1 files use multiple bitmap files, with bitmaps 
+
+    applied entirely to each primitive.  These objects are not supported by
+
+    ObjView and are now very rare.
+
+    
+
+ o 	Obj format 2 files are supported in X-Plane version 6.0 and newer. ÊObj 
+
+    format 2 files use one bitmap file, with parts of the bitmap applied to
+
+    each  primitive.
+
+    
+
+ o	Obj format 7 files are supported in X-Plane version 7.0 and newer ÊObj 
+
+    format 7 files are extensible, use one bitmap file per object, and contain 
+
+    all features of format 2 files as well as new ones.
+
+    
+
+ o  Obj format 8 is suppoed in X-Plane 8.20 and newer  Obj 8 files allow for
+
+    animation, smooth surfaces, and some other new capabilities.
+
+
+
+Within each major type of object file, soem features were added to the format 
+
+later; users of the latest version X-Plane 8 (8.20) or 7 should not have any 
+
+problems with this. ÊObjView does not support original Obj version 1 files.
+
+
+
+All object files are text files; you can open the file in WordPad to see its
+
+version.  The version number is the second line and will be: 2 (version 2),
+
+700 (version 7) or 800 (version 8).  A lack of version number indicates 
+
+version one.
+
+
+
+WARNING: the OBJ format described here is X-Plane's OBJ format, which is 
+
+totally different from the Alias/Wavefront OBJ format.  This program does not
+
+work with WaveFront files!
+
+
+
+-------------------------------------------------------------------------------
+
+SYSTEM REQUIREMENTS AND INSTALLATION
+
+-------------------------------------------------------------------------------
+
+
+
+ObjView should run on any Mac OS X or Windows machine capable of running 
+
+X-Plane.  If you cannot run X-Plane you may not be able to run ObjView.
+
+Good OpenGL drivers (for OpenGL 1.2 or newer) are required.  For OS X 10.3 or
+
+newer is recommended; for Windows, XP is recommended.
+
+
+
+Simply decompress the .zip or .sit file; ObjView is totally stand-alone.
+
+
+
+-------------------------------------------------------------------------------
+
+USING OBJVIEW
+
+-------------------------------------------------------------------------------
+
+
+
+To use ObjView, simply double click the application and drag an .obj file into
+
+the window to view it. ÊThe mouse wheel or +/- keys zoom in and out. ÊDrag the
+
+mouse over the object with the left button moves it; with the right button
+
+(or control + the left button) rotates it. ÊOn the Macintosh you can also open
+
+additional ObjView windows by dragging .obj files onto the application icon in 
+
+the dock. ÊThe mouse wheel zooms like the + and - keys.
+
+
+
+One note: ObjView zooms in and out around the mouse, so you must point to the
+
+part of the object you want to see closer. ÊThis can take some getting used to, 
+
+but once you work this way you will find it to be a rapid way to move around
+
+the object, particularly if you have a scroll wheel mouse.
+
+
+
+-------------------------------------------------------------------------------
+
+LIMITATIONS
+
+-------------------------------------------------------------------------------
+
+
+
+ObjView has some limitations in its viewing of objects:
+
+
+
+- It does not display smoke puffs.
+
+- Lights do not flash and the special lighting commands (99 99 99) etc. are
+
+  not previewed.
+
+- Lighting mode does not work for OBJ2/OBJ7 files.
+
+
+
+-------------------------------------------------------------------------------
+
+VIEWING OBJECTS WITH TEXTURES
+
+-------------------------------------------------------------------------------
+
+
+
+To view textures in ObjView, drag a .bmp or .png file for the object's textures
+
+into the window that you want to view the object with. ÊObjView does not pay
+
+attention to the relative paths of the bitmap file and object file; simply drag
+
+any properly named object and texture file into the same window to view the
+
+object with textures.
+
+
+
+If you drag a Panel.png file onto ObjView, it will be used to show the cockpit
+
+panel texture part of your object.
+
+
+
+Note: on the Macintosh, textures are shared between all open ObjView windows.
+
+This allows you to view multiple objects with a common texture easily,
+
+but you will not be able to view two objects with different textures of the
+
+same name. ÊFor example, if a building from Boston uses the texture 
+
+boston:wall.bmp and a building in Chicago uses the texture chicago:wall.bmp, 
+
+you will not be able to view both objects at once because ObjView ignores the 
+
+boston: or chicago: prefix and loads only the most recently specified wall.bmp 
+
+image for both files.
+
+
+
+-------------------------------------------------------------------------------
+
+KEYBOARD COMMANDS
+
+-------------------------------------------------------------------------------
+
+
+
+All keys are case insensitive except where noted.
+
+
+
+A   Toggle animation.
+
+
+
+B   Toggle the bounding sphere of the object.
+
+
+
+C   Toggle back-face culling.  Normally one-sided geometry is only one-sided
+
+    but this option overrides it.
+
+
+
+M   Lower-case: measure the current object and display its X, Y and Z 
+
+    dimensions in meters.
+
+
+
+    Capitalized: toggle measure-on-open (starts off).  When on, any object that
+
+    is oppened is immediately measured.  (Useful for finding the dimensions of
+
+    a lot of objects.
+
+
+
+N   Toggle night lighting.
+
+
+
+[   Toggle the camera distance farther or closer by 500 meters.  This can be
+
+]   used to preview LOD.  
+
+
+
+F   Toggle whether the object is drawn solid or wire-frame.
+
+
+
+=   Scale the size of the object up or down.  This is not the same as moving
+
+-   the camera; it just makes the object bigger.
+
