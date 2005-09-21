@@ -62,7 +62,7 @@ XWinGL::XWinGL(XWinGL * inShare) :
 	glMultiTexCoord2fvARB   =(PFNGLMULTITEXCOORD2FVARBPROC   )wglGetProcAddress("glMultiTexCoord2fvARB"   );
 	glActiveTextureARB      =(PFNGLACTIVETEXTUREARBPROC      )wglGetProcAddress("glActiveTextureARB"      );
 	glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)wglGetProcAddress("glClientActiveTextureARB");
-
+	
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
 }	
@@ -101,6 +101,7 @@ XWinGL::XWinGL(const char * inTitle, int inX, int inY, int inWidth, int inHeight
 	glMultiTexCoord2fARB =(PFNGLMULTITEXCOORD2FARBPROC )wglGetProcAddress("glMultiTexCoord2fARB" );
 	glMultiTexCoord2fvARB=(PFNGLMULTITEXCOORD2FVARBPROC)wglGetProcAddress("glMultiTexCoord2fvARB");
 	glActiveTextureARB   =(PFNGLACTIVETEXTUREARBPROC   )wglGetProcAddress("glActiveTextureARB"   );
+	glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)wglGetProcAddress("glClientActiveTextureARB");
 
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
