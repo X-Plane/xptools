@@ -268,7 +268,7 @@ void obj8_output_polygon(Surface *s)
 	{
 		cmd.cmd = gIsCockpit ? attr_Tex_Cockpit : attr_Tex_Normal;
 		gObj8.lods.back().cmds.push_back(cmd);
-		gIsCockpit = gWasCockpit;		
+		gWasCockpit = gIsCockpit;		
 	}
 
 	if (s->numvert != 4)
