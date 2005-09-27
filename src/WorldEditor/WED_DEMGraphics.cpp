@@ -483,6 +483,18 @@ void ColorForValue(
 				float			value,
 				unsigned char	rgb[3])
 {
+	if (gColorBands.count(dem_type) != 0)
+	{
+		ColorBandMap& table(gColorBands[dem_type]);
+		GetColorForTable(value, table, rgb);			
+		return;
+	}
+	if (gEnumDEMs.count(dem_type))
+	{
+		GetColorForLU(value, rgb);			
+		return;
+	}
+
 	RGBColor_t * c = NULL;
 	switch(dem_type) {
 	case dem_Elevation:	
