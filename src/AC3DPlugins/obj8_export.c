@@ -1,7 +1,29 @@
 /** OBJ7 exporter for AC3D **/
 
 /*
-	
+
+ANDY SEZ ABOUT MATERIALS:
+There's:
+
+Prototype int ac_palette_get_new_material_index(ACMaterialTemplate *m)
+ if this material exists then return it's index
+    otherwise, allocate a new one, copy the contents from m
+    and return it's index
+This calls:
+
+Prototype Boolean material_compare(ACMaterial *m, ACMaterialTemplate *m2)
+
+That checks each part of the material.  So- you'll get a whole new material
+if there's the slightest difference.
+
+If you only need RGB, use:
+
+Prototype long rgb_to_index(long rgbcol)
+
+This only checks the rgb of existing materials - not all the other
+attributes.
+
+
 */
 
 #include "ac_plugin.h"
@@ -343,7 +365,7 @@ void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
 
-    printf("outputing %s\n", ac_object_get_name(ob));
+//    printf("outputing %s\n", ac_object_get_name(ob));
 
     ac_object_get_contents(ob, &numvert, &numsurf, &numkids,
         &vertices, &surfaces, &kids); 
@@ -510,7 +532,7 @@ void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
 		gObj8.lods.back().cmds.push_back(XObjCmd8());
 		gObj8.lods.back().cmds.back().cmd = anim_End;
 	}
-	
+
 }
 
 

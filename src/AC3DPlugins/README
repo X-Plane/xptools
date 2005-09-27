@@ -26,6 +26,10 @@ KNOWN BUGS:
 
 
 
+Version 2.0b2 TBD
+
+	- Bug fix for animation export.
+
 Version 2.0b1 9/20/05
 
 	- Pretty much a total rewrite of Obj I/O code for XP7.
@@ -370,7 +374,7 @@ For OBJ features that AC3D does not support natively, the export plugin uses
 
 the ANNOTATION system.  The idea is simple: you label your AC3D objects and
 
-groups with special names and put text in the "User data..." area and the
+groups with special names and/or put text in the "User data..." area and the
 
 export plugin reads this data to do special tricks.
 
@@ -418,9 +422,9 @@ be set using annotation, but not previewed in AC3D.
 
 
 
-The exporter looks for objects with the following words inside them to control
+The exporter looks for objects with the following words inside the object name
 
-these attributes:
+to control these attributes:
 
 
 
