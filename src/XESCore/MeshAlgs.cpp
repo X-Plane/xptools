@@ -31,7 +31,6 @@
 #include "AssertUtils.h"
 #include "PerfUtils.h"
 #include "MapAlgs.h"
-#include "XUtils.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
 
@@ -1762,6 +1761,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
 	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
 	DEMGeo& inUrbanTransport(inDEMs[dem_UrbanTransport]);
+	DEMGeo& usquare(inDEMs[dem_UrbanSquare]);
 
 	DEMGeo	landuse(inDEMs[dem_LandUse]);
 
@@ -1864,7 +1864,12 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	utrn2 = inUrbanTransport.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
 				float	utrn3 = inUrbanTransport.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
 				float	utrn = SAFE_AVERAGE(utrn1, utrn2, utrn3);	// Could be safe max.
-				
+
+				float usq  = usquare.search_nearest(center_x, center_y);
+				float usq1 = usquare.search_nearest(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
+				float usq2 = usquare.search_nearest(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
+				float usq3 = usquare.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				usq = MAJORITY_RULES(usq, usq1, usq2, usq3);
 
 //				float	el1 = tri->vertex(0)->info().height;
 //				float	el2 = tri->vertex(1)->info().height;
@@ -1877,7 +1882,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int x_variant = fabs(center_x /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int y_variant = fabs(center_y /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int variant = ((x_variant + y_variant * 2) % 4) + 1;
-				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, rn, near_water, sh, re, er, uden, urad, utrn, center_y, variant);
+				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, rn, near_water, sh, re, er, uden, urad, utrn, usq, center_y, variant);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				
