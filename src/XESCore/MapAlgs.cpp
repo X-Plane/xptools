@@ -34,7 +34,7 @@
 
 
 // Show all ideal insert lines for an inset!
-#define DEBUG_SHOW_INSET 1
+#define DEBUG_SHOW_INSET 0
 
 #if DEBUG_SHOW_INSET
 #include "WED_Globals.h"
@@ -513,7 +513,6 @@ int SimplifyMap(Pmwx& ioMap)
 		bool	stuff = h->face()->mAreaFeature.mFeatType != h->twin()->face()->mAreaFeature.mFeatType ||
 					(h->face()->mAreaFeature.mFeatType != NO_VALUE &&
 						h->face()->mAreaFeature.mParams != h->twin()->face()->mAreaFeature.mParams);
-		
 		bool	river = h->mParams.find(he_IsRiver) != h->mParams.end();
 		if (river && (iWet || oWet)) river = false;	// Wipe out rivers that are inside water bodies or coastlines too.
 
@@ -1836,13 +1835,13 @@ void	InsetPmwx(Pmwx& inMap, GISFace * inFace)
 					double	needed_for_short;
 					if (incs.squared_length() > outs.squared_length())
 					{
-						margin_for_long = incs.squared_distance(outs.p2);
+						margin_for_long = Line2(incs).squared_distance(outs.p2);
 						needed_for_long = (double) inc->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
 						needed_for_short = (double) out->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
 						
 					} else {
 
-						margin_for_long = outs.squared_distance(incs.p2);
+						margin_for_long = Line2(outs).squared_distance(incs.p2);
 						needed_for_long = (double) out->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
 						needed_for_short = (double) inc->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
 					}
