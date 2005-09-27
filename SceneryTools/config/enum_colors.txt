@@ -7,8 +7,8 @@
 ENUM_COLOR	NO_VALUE																000000
 
 ENUM_COLOR lu_usgs_INTERRUPTED_AREAS												000000
-ENUM_COLOR lu_usgs_URBAN_IRREGULAR													808080
-ENUM_COLOR lu_usgs_URBAN_SQUARE														808080
+ENUM_COLOR lu_usgs_URBAN_IRREGULAR													707070
+ENUM_COLOR lu_usgs_URBAN_SQUARE														909090
 ENUM_COLOR lu_usgs_LOW_SPARSE_GRASSLAND												ABCA82
 ENUM_COLOR lu_usgs_CONIFEROUS_FOREST												366E64
 ENUM_COLOR lu_usgs_DECIDUOUS_CONIFER_FOREST											389645
@@ -268,18 +268,18 @@ COLOR_BAND	dem_Biomass			2010	2510		5,112,94		0,138,255
 COLOR_BAND	dem_Biomass			2510	3010		0,138,255		0,0,255
 
 #These are the original temperature color bands from the people who made the Koeppen data.
-#COLOR_BAND	dem_Temperature		-60		-29.5		160,160,160		192,192,192
-#COLOR_BAND	dem_Temperature		-29.5	-24.5		192,192,192		220,220,220
-#COLOR_BAND	dem_Temperature		-24.5	-14.5		220,220,220		138,200,230
-#COLOR_BAND	dem_Temperature		-14.5	-9.5		138,200,230		0,240,255
-#COLOR_BAND	dem_Temperature		-9.5	-4.5		0,240,255		138,240,145
-#COLOR_BAND	dem_Temperature		-4.5	0.5			138,240,145		234,255,145
-#COLOR_BAND	dem_Temperature		0.5		10.5		234,255,145		181,143,0
-#COLOR_BAND	dem_Temperature		10.5	15.5		181,143,0		255,143,0
-#COLOR_BAND	dem_Temperature		15.5	20.5		255,143,0		255,84,0
-#COLOR_BAND	dem_Temperature		20.5	30.5		255,84,0		255,0,0
-#COLOR_BAND	dem_Temperature		30.5	35.5		255,0,0			194,0,0
-#COLOR_BAND	dem_Temperature		35.5	40.0		194,0,0			97,0,0
+COLOR_BAND	dem_TemperatureSeaLevel		-60		-29.5		160,160,160		192,192,192
+COLOR_BAND	dem_TemperatureSeaLevel		-29.5	-24.5		192,192,192		220,220,220
+COLOR_BAND	dem_TemperatureSeaLevel		-24.5	-14.5		220,220,220		138,200,230
+COLOR_BAND	dem_TemperatureSeaLevel		-14.5	-9.5		138,200,230		0,240,255
+COLOR_BAND	dem_TemperatureSeaLevel		-9.5	-4.5		0,240,255		138,240,145
+COLOR_BAND	dem_TemperatureSeaLevel		-4.5	0.5			138,240,145		234,255,145
+COLOR_BAND	dem_TemperatureSeaLevel		0.5		10.5		234,255,145		181,143,0
+COLOR_BAND	dem_TemperatureSeaLevel		10.5	15.5		181,143,0		255,143,0
+COLOR_BAND	dem_TemperatureSeaLevel		15.5	20.5		255,143,0		255,84,0
+COLOR_BAND	dem_TemperatureSeaLevel		20.5	30.5		255,84,0		255,0,0
+COLOR_BAND	dem_TemperatureSeaLevel		30.5	35.5		255,0,0			194,0,0
+COLOR_BAND	dem_TemperatureSeaLevel		35.5	40.0		194,0,0			97,0,0
 
 #These are Sergio's new temperature color bands
 COLOR_BAND	dem_Temperature		-60		-20			0,174,239		0,174,239
@@ -344,3 +344,11 @@ COLOR_BAND	dem_SlopeHeading		-1.0	0.0		0,255,0			255,255,0
 COLOR_BAND	dem_SlopeHeading		0.0		1.0		255,255,0		255,0,0
 
 COLOR_BAND	dem_Wizard				0.0		1.0		0,0,0			255,255,255
+
+COLOR_BAND	dem_UrbanSquare			1	2	0,200,0		200,0,0
+
+COLOR_ENUM_DEM	dem_HydroDirection
+COLOR_ENUM_DEM	dem_HydroElevation
+COLOR_ENUM_DEM	dem_OrigLandUse
+COLOR_ENUM_DEM	dem_LandUse
+COLOR_ENUM_DEM	dem_Climate
