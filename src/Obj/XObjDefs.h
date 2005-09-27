@@ -115,6 +115,7 @@ struct	cmd_info {
 };
 
 extern	cmd_info	gCmds[];
+extern	int			gCmdCount;
 
 struct	vec_tex {
 	float	v[3];
