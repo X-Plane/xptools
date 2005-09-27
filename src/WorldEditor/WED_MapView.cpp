@@ -85,14 +85,15 @@ struct	DEMViewInfo_t {
 	
 static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
-{		dem_Elevation,			"Elevation (Strata)"			,	dem_Elevation,				false,	false,	"MSL=%fm "		},
-{		dem_Elevation,			"Elevation (Shaded Relief)"		,	dem_Shaded,					true,	false,	"MSL=%fm "		},
+{		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
+//{		dem_Elevation,			"Elevation (Shaded Relief)"		,	dem_Shaded,					true,	false,	"MSL=%fm "		},
 {		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
 {		dem_Rainfall,			"Rainfall"						,	dem_Rainfall,				true,	false,	"Rain=%fmm "	},
 {		dem_Temperature,		"Temperature"					,	dem_Temperature,			true,	false,	"Temp=%fC "		},
+{		dem_TemperatureSeaLevel,"Sea Level Temperature"			,	dem_Temperature,			true,	false,	"Temp=%fC "		},
 {		dem_TemperatureRange,	"Temperature Range"				,	dem_TemperatureRange,		true,	false,	"TempR=%fC "	},
 //{		dem_TerrainPhenomena,	"Terrain Phenomena"				,	dem_Enum,					false,	true,	"Ter=%s "		},
 //{		dem_2dVegePhenomena,	"2d Vegetation Phenomena"		,	dem_Enum,					false,	true,	"2d=%s "		},
@@ -103,6 +104,8 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
 {		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Ratio=%f "	},
 {		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Ratio=%f "		},
+{		dem_UrbanSquare,		"Urban Square"					,	dem_UrbanSquare,			true,	false,	"Square=%f "		},
+
 //{		dem_TerrainType,		"X-Plane Terrain"				,	dem_Enum,					false,	true,	"T=%s "			},
 {		dem_Slope,				"Slope"							,	dem_Slope,					true,	false,	"A=%f "			},
 {		dem_SlopeHeading,		"Slope Heading"					,	dem_SlopeHeading,			true,	false,	"H=%f "			},
@@ -124,6 +127,7 @@ const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 enum {
 	viewCmd_DEMChoice = 0,
 	viewCmd_ShowShading,
+	viewCmd_DEMDataChoice,
 	viewCmd_Break,
 	viewCmd_RecalcDEM,	
 	viewCmd_PrevDEM,
@@ -145,6 +149,7 @@ enum {
 const char *	kCmdNames [] = {
 	"Raster Layer",
 	"Show Shading on Raster Layer",
+	"Show Raster Data",
 	"-",
 	"Recalculate Raster Data Preview",
 	"Previous Raster",
@@ -166,6 +171,7 @@ const char *	kCmdNames [] = {
 static	const char	kCmdKeys [] = {
 	0,	 0,
 	0,	 0,
+	0,	 0,
 	0,	 0,	// Divider
 	'R', xplm_ControlFlag,
 	XPLM_KEY_UP, xplm_ControlFlag + xplm_OptionAltFlag,
@@ -185,6 +191,7 @@ static	const char	kCmdKeys [] = {
 
 static	XPLMMenuID	sViewMenu = NULL;
 static	XPLMMenuID	sDEMMenu = NULL;
+static	XPLMMenuID	sDEMDataMenu = NULL;
 static	int			sDEMType = 0;
 static	int			sShowMeshPoints = 1;
 static	int			sShowMeshLines  = 1;
@@ -197,6 +204,7 @@ int			sShowShading = 1;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
+static int			sShowDEMData[DEMChoiceCount-1] = { 0 };
 
 
 //static	int			sShowMeshBorders = 1;
@@ -204,6 +212,7 @@ float		sShadingDecl = 45;
 
 void	WED_MapView_HandleMenuCommand(void *, void *);
 void	WED_MapView_HandleDEMMenuCommand(void *, void *);
+void	WED_MapView_HandleDEMDataMenuCommand(void *, void *);
 void	WED_MapView_UpdateCommandStatus(void);
 
 void	SetupNormalShading(void)
@@ -288,9 +297,12 @@ WED_MapView::WED_MapView(
 		++n;
 	}
 	sDEMMenu = XPLMCreateMenu("DEMs", sViewMenu, viewCmd_DEMChoice, WED_MapView_HandleDEMMenuCommand, reinterpret_cast<void*>(this));
+	sDEMDataMenu = XPLMCreateMenu("DEM Data", sViewMenu, viewCmd_DEMDataChoice, WED_MapView_HandleDEMDataMenuCommand, reinterpret_cast<void*>(this));
 	for (n = 0; n < DEMChoiceCount; ++n)
 	{	
 		XPLMAppendMenuItem(sDEMMenu, kDEMs[n].cmdName, (void *) n, 1);
+		if (n != 0)
+			XPLMAppendMenuItem(sDEMDataMenu, kDEMs[n].cmdName, (void *) n, 1);
 		if (n <= 9)
 			XPLMSetMenuItemKey(sDEMMenu, n, '0' + n, xplm_ControlFlag);
 		if (n >= 10 && n <= 19)
@@ -652,13 +664,13 @@ fix this
 
 	if (sShowMeshPoints)
 	{
-		glPointSize(2);
-		glColor3f(0.2, 1.0, 1.0);
+		glPointSize(3);
 		glBegin(GL_POINTS);
-		for (vector<Point2>::iterator i = gMeshPoints.begin(); i != gMeshPoints.end(); ++i)
+		for (vector<pair<Point2, Point3> >::iterator i = gMeshPoints.begin(); i != gMeshPoints.end(); ++i)
 		{
-			glVertex2f((i->x),
-					   (i->y));		
+			glColor3f(i->second.x, i->second.y, i->second.z);
+			glVertex2f((i->first.x),
+					   (i->first.y));		
 		}
 		glEnd();
 		glPointSize(1);
@@ -667,12 +679,12 @@ fix this
 	if (sShowMeshLines)
 	{
 		glLineWidth(2);
-		glColor4f(0.8, 0.3, 0.1, 0.5);
 		glBegin(GL_LINES);
-		for (vector<Point2>::iterator i = gMeshLines.begin(); i != gMeshLines.end(); ++i)
+		for (vector<pair<Point2, Point3> >::iterator i = gMeshLines.begin(); i != gMeshLines.end(); ++i)
 		{
-			glVertex2f((i->x),
-					   (i->y));		
+			glColor4f(i->second.x, i->second.y, i->second.z, 0.5);
+			glVertex2f((i->first.x),
+					   (i->first.y));		
 		}
 		glEnd();
 		glLineWidth(1);
@@ -910,8 +922,49 @@ put in  color enums?
 	{
 		XPLMDrawString(white, mToolStatusOffset, b + 7, status, NULL, xplmFont_Basic);
 	}
-	XPLMDrawTranslucentDarkBox(l+3, t - 30 + h, l + 5 + strlen(kDEMs[sDEMType].cmdName) * w, t - 30 -1);
-	XPLMDrawString(white, l + 5, t - 30, kDEMs[sDEMType].cmdName, NULL, xplmFont_Basic);
+	
+	{
+		int	x, y;
+		XPLMGetMouseLocation(&x, &y);
+		double	lat, lon;
+		lat = mZoomer->YPixelToLat(y);
+		lon = mZoomer->XPixelToLon(x);	
+		
+		
+		int	k = t - 30;
+		
+		for (int n = 0; n < DEMChoiceCount; ++n)
+		{
+			char buf[1024];
+			if (n == 0)
+			{
+				sprintf(buf, "Viewing: %s", kDEMs[sDEMType].cmdName);
+				XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
+				XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
+				k -= (h+1);
+			}
+			else if (sShowDEMData[n-1] || n == sDEMType)
+			{			
+				float hh = gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
+				
+				// HACK city - for certain DEMs, do the trig on the fly.
+				
+				if (kDEMs[n].dem == dem_Slope)
+					hh = RAD_TO_DEG * acos(1.0 - hh);
+				else if (kDEMs[n].dem == dem_SlopeHeading)
+					hh = RAD_TO_DEG * acos(hh);
+				
+				if (kDEMs[n].is_enum)
+					sprintf(buf,kDEMs[n].format_string,FetchTokenString(hh));
+				else
+					sprintf(buf,kDEMs[n].format_string,hh);
+				XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
+				XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
+				k -= (h+1);				
+			}
+		}
+	}	
+	
 	
 	XPLMDrawTranslucentDarkBox(r-gNaturalTerrainFile.size() * w - 20, t - 30 + h, r - 15, t - 30 - 1);
 	XPLMDrawString(white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str(), NULL, xplmFont_Basic);
@@ -1296,6 +1349,14 @@ void	WED_MapView_HandleDEMMenuCommand(void * r, void * i)
 	WED_MapView_UpdateCommandStatus();	
 }
 
+void	WED_MapView_HandleDEMDataMenuCommand(void * r, void * i)
+{
+	int item = (int) i - 1;
+	sShowDEMData[item] = 1 - sShowDEMData[item];
+
+	WED_MapView_UpdateCommandStatus();	
+}
+
 void	WED_MapView_HandleMenuCommand(void * r, void * i)
 {
 	int cmd = (int) i;
@@ -1381,6 +1442,12 @@ void	WED_MapView_UpdateCommandStatus(void)
 	for (int n = 0; n < DEMChoiceCount; ++n) {
 		XPLMCheckMenuItem(sDEMMenu, n, (sDEMType == n) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (gDem.find(kDEMs[n].dem) != gDem.end()));
+		
+		if (n != 0)
+		{
+			XPLMCheckMenuItem(sDEMDataMenu, n-1, sShowDEMData[n-1] ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+			XPLMEnableMenuItem(sDEMDataMenu, n-1, (gDem.find(kDEMs[n].dem) != gDem.end()));
+		}
 	}
 }
 
@@ -1396,31 +1463,15 @@ char * WED_MapView::MonitorCaption(void)
 	float fps = (elapsed == 0.0) ? 60.0 : 1.0 / elapsed;
 	n += sprintf(buf+n, "Framerate: %03d ", (int) fps);
 
-	int	x, y;
-	double	lat, lon;
-	XPLMGetMouseLocation(&x, &y);
-	lat = mZoomer->YPixelToLat(y);
-	lon = mZoomer->XPixelToLon(x);	
-	
-	if (sDEMType != 0)
-	if (gDem.find(kDEMs[sDEMType].dem) != gDem.end())
-	{
-		float h = gDem[kDEMs[sDEMType].dem].xy_nearest(lon, lat, x, y);
-		
-		// HACK city - for certain DEMs, do the trig on the fly.
-		
-		if (kDEMs[sDEMType].dem == dem_Slope)
-			h = RAD_TO_DEG * acos(1.0 - h);
-		else if (kDEMs[sDEMType].dem == dem_SlopeHeading)
-			h = RAD_TO_DEG * acos(h);
-		
-		if (kDEMs[sDEMType].is_enum)
-			n += sprintf(buf+n,kDEMs[sDEMType].format_string,FetchTokenString(h));
-		else
-			n += sprintf(buf+n,kDEMs[sDEMType].format_string,h);
-	}
+	n += sprintf(buf+n,"Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+
 	
 	CDT::Face_handle	recent;
+		int	x, y;
+		XPLMGetMouseLocation(&x, &y);
+		double	lat, lon;
+		lat = mZoomer->YPixelToLat(y);
+		lon = mZoomer->XPixelToLon(x);	
 	
 	static int hint_id = CDT::gen_cache_key();
 	int i;
@@ -1432,10 +1483,8 @@ char * WED_MapView::MonitorCaption(void)
 		int ts = recent->info().terrain_specific;
 		if (tg != terrain_Water) {
 			n += sprintf(buf+n, "Tri:%s/%s ", FetchTokenString(tg),FetchTokenString(ts));
-			gLayer = ts;
 		} else {
 			n += sprintf(buf+n, "Tri:%s/%s ", FetchTokenString(tg),FetchTokenString(ts));
-			gLayer = NO_DATA; 
 		}
 
 #if DEBUG_PRINT_NORMAL
@@ -1454,8 +1503,6 @@ char * WED_MapView::MonitorCaption(void)
 		}
 #endif		
 	}		
-
-	n += sprintf(buf+n,"Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
-	
+		
 	return buf;
 }
