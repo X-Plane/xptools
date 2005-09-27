@@ -63,7 +63,8 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
 // GeoTiff - must be projceted
 bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName);
-
+// DTED - contains its own geo info
+bool	ExtractDTED(DEMGeo& inMap, const char * inFileName);
 
 /*****************************************************************************
  * DEM TRANSLATION SYSTEM

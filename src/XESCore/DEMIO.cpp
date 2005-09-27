@@ -698,6 +698,119 @@ bail:
 
 }
 
+// DTED - military elevation DEMs.  I found a spec here:
+// http://www.nga.mil/ast/fm/acq/89020B.pdf
+// DTED comes with lots of packaging but we just open the .dt0, .dt1 or .dt2 file.
+// We read a few headers, jump ahead, and splat down the fixed-length records.
+//
+// UHL (80 bytes) - user header
+// DSI (648 bytes) - data info
+// ACC (2700 bytes) - accuracy info
+// Then follows the real data records.  For each scanline we have:
+// 	252 3-byte block count, 2-byte lon, 2-byte lat then
+//	magnitude-signed big-endian shorts for elevatoin
+//  4-byte checksum
+
+struct DTED_UHL_t {
+	char			cookie[3];					// Must be 'UHL'
+	char			version;					// Must be	'1'
+	char			longitude[8];				// West edge In form of 1180000W = -118.0
+	char			latitude[8];				// South edge In form of 0340000N = 34.0
+	char			lon_interval[4];			// Approx lon spacing in tenth-arc-seconds, e.g.  0300 = 30 arc-second
+	char			lat_interval[4];			// Approx lat spacing in tenth-arc-seconds, e.g.  0300 = 30 arc-second
+	char			vert_accuracy[4];			// Absolute vertical accuray, 90th percentile in meters, e.g. 0026 = 26m might be "NA"
+	char			security_code[3];			// Securtity code, might be 'U  ' one of S=Secret,C=Confidential,U=Unclassified,R=Restricted
+	char			unique_ref_num[12];			// May be blank, some kind of producer-defined blob
+	char			num_lines_lon[4];			// Num scanlines H, e.g. 0121 = 121 pixels wide
+	char			num_lines_lat[4];			// Num scanlines V, e.g. 3601 = 3601 pixels wide
+	char			multiple_accuracy_flag;		// '0' or '1' 
+	char			reserved[24];				// Usually lblank
+};	
+
+bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
+{	
+	MFMemFile *			fi = NULL;
+	const DTED_UHL_t *	uhl;
+	const char *		base_ptr;
+	int					x, y;
+	const char *		end_ptr;
+
+	fi = MemFile_Open(inFileName);
+	if (fi == NULL) goto bail;
+	if (MemFile_GetEnd(fi) - MemFile_GetBegin(fi) < (80 + 648 + 2700)) goto bail;
+	
+	uhl = (const DTED_UHL_t *) MemFile_GetBegin(fi);
+	
+	if (uhl->cookie[0] != 'U' || uhl->cookie[1] != 'H' || uhl->cookie[2] != 'L') goto bail;
+	if (uhl->version != '1') goto bail;
+	
+	inMap.mSouth = 
+		(uhl->latitude[0]-'0') * 1000000 +
+		(uhl->latitude[1]-'0') * 100000 +
+		(uhl->latitude[2]-'0') * 10000 +
+		(uhl->latitude[3]-'0') * 1000+
+		(uhl->latitude[4]-'0') * 100 +
+		(uhl->latitude[5]-'0') * 10 +
+		(uhl->latitude[6]-'0') * 1;
+	if (uhl->latitude[7] == 'S' || uhl->latitude[7] == 's')
+		inMap.mSouth = -inMap.mSouth;
+	inMap.mSouth /= 10000.0;
+
+	inMap.mWest = 
+		(uhl->longitude[0]-'0') * 1000000 +
+		(uhl->longitude[1]-'0') * 100000 +
+		(uhl->longitude[2]-'0') * 10000 +
+		(uhl->longitude[3]-'0') * 1000+
+		(uhl->longitude[4]-'0') * 100 +
+		(uhl->longitude[5]-'0') * 10 +
+		(uhl->longitude[6]-'0') * 1;
+	if (uhl->longitude[7] == 'W' || uhl->longitude[7] == 'w')
+		inMap.mWest = -inMap.mWest;
+	inMap.mWest /= 10000.0;
+	
+	inMap.mNorth = inMap.mSouth + 1.0;
+	inMap.mEast = inMap.mWest + 1.0;
+	
+	int x_size = (uhl->num_lines_lon[0]-'0') * 1000 + 
+				 (uhl->num_lines_lon[1]-'0') * 100 + 
+				 (uhl->num_lines_lon[2]-'0') * 10 + 
+				 (uhl->num_lines_lon[3]-'0') * 1;
+	int y_size = (uhl->num_lines_lat[0]-'0') * 1000 + 
+				 (uhl->num_lines_lat[1]-'0') * 100 + 
+				 (uhl->num_lines_lat[2]-'0') * 10 + 
+				 (uhl->num_lines_lat[3]-'0') * 1;
+
+	if (x_size < 1 || y_size < 1 || x_size > 10000 || y_size > 10000) goto bail;
+	if (inMap.mWest < -180.0 || inMap.mEast > 180.0 || inMap.mSouth < -90.0 || inMap.mNorth > 90.0) goto bail;
+	
+	inMap.resize(x_size, y_size);
+
+	base_ptr = MemFile_GetBegin(fi) + 80 + 648 + 2700;
+	end_ptr = MemFile_GetEnd(fi);
+	for (x = 0; x < x_size; ++x)
+	{
+		base_ptr += 8;
+		for (y = 0; y < y_size; ++y)
+		{
+			if (base_ptr >= end_ptr) goto bail;
+			unsigned char c1 = (unsigned char) *base_ptr++;
+			if (base_ptr >= end_ptr) goto bail;
+			unsigned char c2 = (unsigned char) *base_ptr++;
+			
+			float height = c2 + ((c1 & 0x7F) << 8);
+			if (c1 & 0x80)	height = -height;
+			if (height == -32767.0)	height = NO_DATA;
+			inMap(x,y) = height;			
+		}
+		base_ptr += 4;
+	}
+	
+	MemFile_Close(fi);
+	return true;
+bail:
+	if (fi) MemFile_Close(fi);
+	return false;
+}
 
 #pragma mark -
 
