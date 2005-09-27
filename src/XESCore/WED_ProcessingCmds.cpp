@@ -51,6 +51,22 @@
 
 #include "ObjPlacement.h"
 
+extern ProcessingPrefs_t	gProcessingCmdPrefs = {
+	/*		do_upsample_environment	*/			1,
+	/*		do_calc_slope			*/			1,
+	/*		do_hydro_correct		*/			0,
+	/*		do_hydro_simplify		*/			0,
+	/*		do_derive_dems			*/			1,
+	/*		do_add_urban_roads		*/			0,
+	/*		do_build_roads			*/			1,
+	/*		do_airports				*/			1,
+	/*		do_zoning				*/			1,
+	/*		do_triangulate			*/			1,
+	/*		do_assign_landuse		*/			1,
+	/*		remove_duplicate_objs	*/			0,
+	/*		place_buildings			*/			0,
+	/*		build_3d_forests		*/			0 };
+
 
 enum {
 	procCmd_UpsampleEnviro,
@@ -62,14 +78,13 @@ enum {
 	procCmd_BuildRoads,
 	procCmd_DoAirports,
 	procCmd_DoZoning,
-//	procCmd_DoBeaches,
 //	procCmd_LowResTri,
 	procCmd_HiResTri,
 	procCmd_AssignLUToMesh,
 	procCmd_Divider1,	
 	procCmd_RemoveDupes,
-	procCmd_InstantiateGT,
 	procCmd_InstantiateFor,
+	procCmd_InstantiateGT,
 	procCmd_Divider2,
 	procCmd_DoProcessing,
 	procCmd_ExportDSFNew,
@@ -87,14 +102,13 @@ const char *	kProcCmdNames [] = {
 	"Pick Road Types",
 	"Process Airports",
 	"Do Zoning",
-//	"Add Beaches",
 //	"Create Low Res Mesh",
 	"Create Hi Res Mesh",	
 	"Apply Terrain To Mesh",
 	"-",
 	"Remove Duplicate Features",
-	"Instantiate Face Objects",
 	"Instantiate Forests",
+	"Instantiate Face Objects",
 	"-",
 	"All Processing",
 	"Export DSF to New Scenery Package...",
@@ -117,8 +131,8 @@ static	const char	kCmdKeys [] = {
 	0,	0,
 	0,	0,	// divider
 	0,	0,
-	0,	0,
 	'F',xplm_ControlFlag,
+	0,	0,
 	0,	0,	// divider
 	'P',xplm_ControlFlag,
 	0,	0,
@@ -214,15 +228,22 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 						DEMGeoMap	overDem;
 						AptVector	overApt;
 						ReadXESFile(fi, overMap, overTri, overDem, overApt, WED_ProgressFunc);
-						
-						Point2 master1, master2, slave1, slave2;
-						CalcBoundingBox(gMap, master1, master2);
-						CalcBoundingBox(overMap, slave1, slave2);
-						
-						Vector2	delta(slave1, master1);
-						for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
-							i->point() += delta;
-						
+
+                        Point2 master1, master2, slave1, slave2;
+                        CalcBoundingBox(gMap, master1, master2);
+                        CalcBoundingBox(overMap, slave1, slave2);
+                        
+                        Vector2 delta(slave1, master1);
+
+                        for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                        	overMap.UnindexVertex(i);
+
+                        for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                            i->point() += delta;
+
+                        for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                        	overMap.ReindexVertex(i);
+ 						
 						AddEuroRoads(gMap, overMap, gDem[dem_Slope], gDem[dem_LandUse], lu_usgs_URBAN_IRREGULAR, WED_ProgressFunc);
 						WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 						MemFile_Close(fi);
@@ -282,20 +303,20 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoProcessing:		
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_UpsampleEnviro );
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_CalcSlope	   );			
-			if (gWedPrefs.hydro_correct)
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HydroCorrect   );
-			if (gWedPrefs.hydro_simplify)
-			WED_HandleProcMenuCmd(NULL, (void *)		procCmd_HydroSimplfiy  );
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_DeriveDEMs     );
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_BuildRoads	   );
-			WED_HandleProcMenuCmd(NULL, (void *)		procCmd_DoAirports	   );
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_DoZoning	   );
-//			WED_HandleProcMenuCmd(NULL, (void *)		procCmd_DoBeaches	   );
-//			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_LowResTri	   );
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HiResTri	   );		
-			WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_AssignLUToMesh );
+			if (gProcessingCmdPrefs.do_upsample_environment		)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_UpsampleEnviro );
+			if (gProcessingCmdPrefs.do_calc_slope				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_CalcSlope	   );
+			if (gProcessingCmdPrefs.do_hydro_correct			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HydroCorrect   );
+			if (gProcessingCmdPrefs.do_hydro_simplify			)	WED_HandleProcMenuCmd(NULL, (void *)		procCmd_HydroSimplfiy  );
+			if (gProcessingCmdPrefs.do_derive_dems				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_DeriveDEMs     );
+			if (gProcessingCmdPrefs.do_add_urban_roads			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_AddUrbanRoads  );
+			if (gProcessingCmdPrefs.do_build_roads				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_BuildRoads	   );
+			if (gProcessingCmdPrefs.do_airports					)	WED_HandleProcMenuCmd(NULL, (void *)		procCmd_DoAirports	   );
+			if (gProcessingCmdPrefs.do_zoning					)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_DoZoning	   );
+			if (gProcessingCmdPrefs.do_triangulate				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HiResTri	   );
+			if (gProcessingCmdPrefs.do_assign_landuse			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_AssignLUToMesh );
+			if (gProcessingCmdPrefs.build_3d_forests			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_InstantiateFor );
+			if (gProcessingCmdPrefs.remove_duplicate_objs		)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_RemoveDupes    );
+			if (gProcessingCmdPrefs.place_buildings				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_InstantiateGT  );
 			break;
 		case procCmd_ExportDSFNew:
 		case procCmd_ExportDSFExisting:

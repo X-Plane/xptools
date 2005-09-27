@@ -23,6 +23,25 @@
 #ifndef WED_PROCESSINGCMDS_H
 #define WED_PROCESSINGCMDS_H
 
+struct ProcessingPrefs_t {
+	int		do_upsample_environment;
+	int		do_calc_slope;
+	int		do_hydro_correct;
+	int		do_hydro_simplify;
+	int		do_derive_dems;
+	int		do_add_urban_roads;
+	int		do_build_roads;
+	int		do_airports;
+	int		do_zoning;
+	int		do_triangulate;
+	int		do_assign_landuse;
+	int		remove_duplicate_objs;
+	int		build_3d_forests;	
+	int		place_buildings;
+};
+
+extern ProcessingPrefs_t	gProcessingCmdPrefs;
+
 void	RegisterProcessingCommands(void);
 
 #endif
