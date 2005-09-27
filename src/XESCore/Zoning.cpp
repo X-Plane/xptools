@@ -29,6 +29,10 @@
 #include "ObjTables.h"
 #include "ParamDefs.h"
 
+
+// NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
+// it isn't assigned.
+
 const double	kSkyscraperAGL = 30.0;
 
 void	ZoneManMadeAreas(
