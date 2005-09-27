@@ -210,7 +210,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 	
 int		WED_SelectionTool::GetNumButtons(void)
 {
-	return 6;
+	return 7;
 }
 
 void	WED_SelectionTool::GetNthButtonName(int n, string& s)
@@ -221,7 +221,8 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	case 2: s=  "Inset"; break;
 	case 3: s=  "Clear"; break;
 	case 4: s=  "Next"; break;
-	case 5: s=  "Simplify"; break;
+	case 5: s=  "Simplify Water"; break;
+	case 6: s=  "Simplify pmwx"; break;
 	}
 }
 
@@ -346,8 +347,12 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		gFaceSelection.clear();
 		gVertexSelection.clear();
 		break;
-
-
+	case 6:
+		SimplifyMap(gMap);
+		gEdgeSelection.clear();
+		gFaceSelection.clear();
+		gVertexSelection.clear();
+		break;
 	}
 	DebugAssert(gMap.is_valid());
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
