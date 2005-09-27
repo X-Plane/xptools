@@ -83,10 +83,33 @@ void	AddEuroRoads(
 		{
 #if !DEBUG_SHOW_AREAS		
 			(*face)->mTerrainType = terrain_Natural;
+
+// BEN SAYS:
+///	This was an attempt to copy a small section and reuse it.  It does NOT work becaus ethe copy cost is way more expensive than other factors in this alg.
+/*			
+			Pmwx	roadCopy(ioRoadSrc);
+			Bbox2	box;
+			Pmwx::Ccb_halfedge_circulator	circ = (*face)->outer_ccb();
+			Pmwx::Ccb_halfedge_circulator	start = circ;
+			box = Bbox2(circ->source()->point());
+			do {
+				box += circ->source()->point();
+				++circ;
+			} while (circ != start);
+			
+			Vector2	delta(box.p1);
+			
+			for (Pmwx::Vertex_iterator v = roadCopy.vertices_begin(); v != roadCopy.vertices_end(); ++v)
+			{
+				roadCopy.UnindexVertex(v);
+				v->point() += delta;
+				roadCopy.ReindexVertex(v);
+			}		*/
+			
 			SwapFace(ioBase, ioRoadSrc, *face, NULL);
 #endif			
 		}
 	}
-	
+
 	SimplifyMap(ioBase);
 }
