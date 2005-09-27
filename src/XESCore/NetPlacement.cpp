@@ -29,11 +29,6 @@
 #include "MeshAlgs.h"
 #include "MapDefs.h"
 
-#if !DEV
-clean this out
-#endif
-#include "WED_Globals.h"
-
 // Move a bridge N meters to simlify it
 #define	BRIDGE_TURN_SIMPLIFY	20
 
@@ -334,18 +329,14 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 				// us as the middle junction.
 				if (sc->end_junction != me)		sc->reverse();
 				if (ec->start_junction != me)	ec->reverse();
-				if (sc->end_junction != me)		
-					printf("Topology error.\n");
-				if (ec->start_junction != me)
-					printf("Topology error.\n");				
+				Assert (sc->end_junction == me);	
+				Assert(ec->start_junction == me);
 
 				// These junctions cap the new complete chain.
 				Net_JunctionInfo_t * sj = sc->start_junction;
 				Net_JunctionInfo_t * ej = ec->end_junction;		
-				if (sj == me)
-					printf("Topology error.\n");		
-				if (ej == me)
-					printf("Topology error.\n");		
+				Assert (sj != me);
+				Assert (ej != me);
 				// Accumulate all shape points.
 				sc->shape.push_back(me->location);
 				sc->agl.push_back(me->agl);
@@ -455,8 +446,6 @@ void	BuildNetworkTopology(Pmwx& inMap, Net_JunctionInfoSet& outJunctions, Net_Ch
 		junc->location.y = v->point().y;
 		junc->location.z = 0.0;
 		junc->power_crossing = false;
-//		if (junc->location.x < -119.0 || junc->location.x > -116.0 || junc->location.y < 33.0 || junc->location.y > 36.0)
-//			printf("Bad vertex!\n");
 		junctionTable.insert(JunctionTableType::value_type(v,junc));
 		outJunctions.insert(junc);
 	}
@@ -507,15 +496,15 @@ void	ValidateNetworkTopology(Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet
 		for (ci = (*ji)->chains.begin(); ci != (*ji)->chains.end(); ++ci)
 		{
 			if ((*ci)->start_junction != (*ji) && (*ci)->end_junction != (*ji))
-				printf("VALIDATION ERR - junction has a chain not pointing back at the junction.\n");				
+				AssertPrintf("VALIDATION ERR - junction has a chain not pointing back at the junction.\n");				
 		}
 	}
 	for (ci = outChains.begin(); ci != outChains.end(); ++ci)
 	{
 		if ((*ci)->start_junction->chains.find(*ci) == (*ci)->start_junction->chains.end())
-			printf("VALIDATION ERROR - chain refers to a junction not pointing back at the chain.\n");
+			AssertPrintf("VALIDATION ERROR - chain refers to a junction not pointing back at the chain.\n");
 		if ((*ci)->end_junction->chains.find(*ci) == (*ci)->end_junction->chains.end())
-			printf("VALIDATION ERROR - chain refers to a junction not pointing back at the chain.\n");
+			AssertPrintf("VALIDATION ERROR - chain refers to a junction not pointing back at the chain.\n");
 	}
 }
 
@@ -704,7 +693,6 @@ void	MigrateChain(Net_ChainInfo_t * chain, Net_JunctionInfo_t * old_j, Net_Junct
 void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
 	int	total_power_crossings = 0;
-	gMeshPoints.clear();
 	
 	typedef	pair<Net_ChainInfo_t *, Net_ChainInfo_t *> 		HighwayPair;
 	typedef	multimap<double, HighwayPair, greater<double> >	HighwayAngleMap;
@@ -765,7 +753,6 @@ void	VerticalPartitionRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 		{
 			junc->power_crossing = true;
 			++total_power_crossings;
-			gMeshPoints.push_back(Point2(junc->location.x, junc->location.y));
 		}
 
 			Net_JunctionInfo_t * 			street_junc = NULL;
@@ -1014,7 +1001,6 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 			
 			if (displacement < BRIDGE_TURN_SIMPLIFY)
 			{
-				gMeshPoints.push_back(Point2((*chain)->shape[i].x,(*chain)->shape[i].y));
 				(*chain)->shape.erase((*chain)->shape.begin()+i);
 				(*chain)->agl.erase((*chain)->agl.begin()+i);
 				(*chain)->power_crossing.erase((*chain)->power_crossing.begin()+i);
