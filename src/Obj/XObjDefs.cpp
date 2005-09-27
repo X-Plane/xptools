@@ -74,6 +74,8 @@ cmd_info	gCmds[] = {
 
 };
 
+int gCmdCount = sizeof(gCmds) / sizeof(gCmds[0]);
+
 
 int	FindObjCmd(const char * inToken, bool obj_8)
 {
@@ -86,7 +88,7 @@ int	FindObjCmd(const char * inToken, bool obj_8)
 		++n;
 	}
 	
-	return sizeof(gCmds) / sizeof(gCmds[0])-1;
+	return sizeof(gCmds) / sizeof(gCmds[0]);
 }
 
 int	FindIndexForCmd(int inCmd)
@@ -98,5 +100,5 @@ int	FindIndexForCmd(int inCmd)
 			return n;
 		++n;
 	}
-	return sizeof(gCmds) / sizeof(gCmds[0])-1;
+	return sizeof(gCmds) / sizeof(gCmds[0]);
 }

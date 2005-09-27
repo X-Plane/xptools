@@ -724,7 +724,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			string	attr_name;
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &attr_name);
 			int cmd_idx = FindObjCmd(attr_name.c_str(), true);
-			if (cmd_idx != attr_Max)
+			if (cmd_idx != gCmdCount)
 			{
 				cmd.cmd = gCmds[cmd_idx].cmd_id;
 				for (n = 0; n < gCmds[cmd_idx].elem_count; ++n)
@@ -842,7 +842,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			default: 
 				{
 					int idx = FindIndexForCmd(cmd->cmd);
-					if (idx != attr_Max)
+					if (idx != gCmdCount)
 					{
 						fprintf(fi, "%s", gCmds[idx].name);
 						for (n = 0; n < gCmds[idx].elem_count; ++n)
