@@ -978,7 +978,7 @@ inline double	calc_error(Polygon2& ioPolygon, int p, int d_prev, int d_next, boo
 		if (dot > 0.0 && !allow_out) return max_err;
 	
 		// ERROR CALCULATION
-		double me = seg.squared_distance(t);
+		double me = Line2(seg).squared_distance(t);
 		if (me > worst) worst = me;
 	}
 	return worst;

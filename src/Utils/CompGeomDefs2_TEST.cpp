@@ -130,7 +130,6 @@ static void TEST_Segment2(void)
 	TEST_Run(pythag.midpoint(0.25) == Point2(0.75, 1.0));
 	
 	TEST_Run(Segment2(Point2(0,0), Point2(40, 40)).projection(Point2(-1, 11)) == Point2(5, 5));
-	TEST_Run(Segment2(Point2(0,0), Point2(40, 40)).squared_distance(Point2(-1, 11)) == 72.0);
 
 	TEST_Run(!Segment2(Point2(0,0), Point2(40, 40)).collinear_has_on(Point2(-1.0, -1.0)));
 	TEST_Run( Segment2(Point2(0,0), Point2(40, 40)).collinear_has_on(Point2(0.0, 0.0)));
@@ -233,7 +232,19 @@ static void TEST_Line2(void)
 	Line2		l1(s1);
 	Line2		l2(s2);
 	TEST_Run(l1 != l2);
+
+	TEST_Run(Line2(Point2(0,0), Point2(40, 40)).squared_distance(Point2(-1, 11)) == 72.0);
+	
+	Line2		l(Point2(0,10), Point2(40, 10));
+	l.normalize();
+	TEST_Run(l.a == 0.0);
+	TEST_Run(l.b == 1.0);
+	TEST_Run(l.c == -10.0);
+
+	TEST_Run(l.squared_distance(Point2(29.3249, 5.0)) == 25.0);
 }
+
+
 
 static void TEST_Bbox2(void)
 {

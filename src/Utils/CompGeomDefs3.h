@@ -205,6 +205,9 @@ struct	Plane3 {
 	bool	intersect(const Plane3& p, Line3& l) const;
 	bool	intersect(const Plane3& p1, const Plane3& p2, Point3& p) const;
 	double	squared_distance(const Point3& p) const;
+	double	distance_denormaled(const Point3& p) const;
+	void	normalize();	
+	
 	
 	Vector3		n;
 	double		ndotp;	
@@ -482,6 +485,24 @@ inline	double Plane3::squared_distance(const Point3& p) const
 	double num = n.dot(Vector3(p)) - ndotp;
 	return num * num / (n.dot(n));
 }
+
+inline double Plane3::distance_denormaled(const Point3& p) const
+{
+	return n.dot(Vector3(p)) - ndotp;
+}
+
+inline void Plane3::normalize()
+{
+	double dlen = sqrt(n.squared_length());
+	if (dlen != 0.0)
+	{
+		dlen = 1.0 / dlen;
+		ndotp *= dlen;
+		n.normalize();
+	}
+}
+
+
 
 inline	Point3	Bezier3::midpoint(double t) const
 {

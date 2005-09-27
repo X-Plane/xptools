@@ -127,7 +127,7 @@ struct	Segment2 {
 	double	squared_length(void) const { return (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y); }
 	Point2	midpoint(double s=0.5) const { if (s==0.0) return p1; if (s==1.0) return p2; double ms = 1.0 - s; return Point2(p1.x * ms + p2.x * s,p1.y * ms + p2.y * s); }
 	Point2	projection(const Point2& pt) const;
-	double	squared_distance(const Point2& p) const;
+//	double	squared_distance(const Point2& p) const;
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
 	bool	on_right_side(const Point2& p) const { return Vector2(p1, p2).right_turn(Vector2(p1, p)); }
@@ -176,6 +176,7 @@ struct	Line2 {
 	Line2(const Point2& p1, const Point2& p2) : a(p1.y - p2.y), b(p2.x - p1.x), c((p2.y - p1.y) * p1.x - (p2.x - p1.x) * p1.y) { }
 	Line2(const Point2& p, const Vector2& v) : a(-v.dy), b(v.dx), c(v.dy * p.x - v.dx * p.y) { }
 	Line2(const Line2& l) : a(l.a), b(l.b), c(l.c) { }
+	Line2(double ia, double ib, double ic) : a(ia), b(ib), c(ic) { }
 	explicit Line2(const Segment2& s) : a(s.p1.y - s.p2.y), b(s.p2.x - s.p1.x), c((s.p2.y - s.p1.y) * s.p1.x - (s.p2.x - s.p1.x) * s.p1.y) { }
 	
 	Line2& operator=(const Line2& rhs) { a = rhs.a; b = rhs.b; c = rhs.c; return *this; }
@@ -184,6 +185,8 @@ struct	Line2 {
 	
 	bool intersect(const Line2& l, Point2& p) const;
 	double squared_distance(const Point2& p) const;
+	double distance_denormaled(const Point2& p) const;
+	void normalize();	
 	
 	bool	on_left_side(const Point2& p) const { return (a * p.x + b * p.y + c) > 0; }
 	bool	on_right_side(const Point2& p) const { return (a * p.x + b * p.y + c) < 0; }
@@ -364,12 +367,14 @@ inline Point2	Segment2::projection(const Point2& pt) const
 	return p1 + Vector2(p1,p2).projection(Vector2(p1,pt));
 }
 
+/*
 inline double	Segment2::squared_distance(const Point2& p) const 
 {
 	// TODO - would we get more efficiency from (1) calculating the line L that supports P and then
 	// (2) appling the line distance formula?
 	return Segment2(p, projection(p)).squared_length(); 
 }
+*/
 
 // Determines if this point is within the scope of the segment.
 // We assume colinear-ness...really it checks to see if we're 
@@ -493,6 +498,27 @@ inline 	double Line2::squared_distance(const Point2& p) const
 	return num * num / (a * a + b * b);
 }
 
+// DENORMALIZED DISTANCE: this is the distance from the line where the normal side of the line
+// is positive, the other is negative, and the units are funny unless a^2 + b^2 == 1.0.
+inline double Line2::distance_denormaled(const Point2& p) const
+{
+	return a * p.x + b * p.y + c;
+}
+
+inline void Line2::normalize()
+{
+	double dlen = sqrt(a * a + b * b);
+	if (dlen != 0.0)
+	{
+		dlen = 1.0 / dlen;
+		a *= dlen;
+		b *= dlen;
+		c *= dlen;
+		
+		if (a == 0.0) b = b > 0 ? 1.0 : -1.0 ;
+		if (b == 0.0) a = a > 0 ? 1.0 : -1.0 ;
+	}
+}
 
 inline	Point2	Midpoint2(const Point2& p1, const Point2& p2)	{ return Point2((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5); }
 
