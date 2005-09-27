@@ -27,6 +27,8 @@
 
 EnumColorTable				gEnumColors;
 ColorBandTable				gColorBands;
+set<int>					gEnumDEMs;	
+
 
 
 NaturalTerrainTable			gNaturalTerrainTable;
@@ -106,6 +108,13 @@ bool	ReadEnumBand(const vector<string>& tokens, void * ref)
 
 }
 
+bool	ReadEnumDEM(const vector<string>& tokens, void * ref)
+{
+	int	dem;
+	if (TokenizeLine(tokens, " e", &dem) != 2) return false;
+	gEnumDEMs.insert(dem);
+	return true;
+}
 
 bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
@@ -132,7 +141,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	
 	int						auto_vary;
 	
-	if (TokenizeLine(tokens, " eeeffffffffiffffffffffffffisifsfssefff",
+	if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsfssefff",
 		&info.terrain,
 		&info.landuse,
 		&info.climate,
@@ -159,6 +168,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		&info.urban_radial_max,
 		&info.urban_trans_min,
 		&info.urban_trans_max,
+		&info.urban_square,
 
 		&info.lat_min,
 		&info.lat_max,
@@ -180,7 +190,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		&info.map_rgb[0],
 		&info.map_rgb[1],
 		&info.map_rgb[2]
-		) != 39) return false;
+		) != 40) return false;
 		
 	if (info.elev_min > info.elev_max)	return false;
 	if (info.slope_min > info.slope_max)	return false;
@@ -306,6 +316,7 @@ void	LoadDEMTables(void)
 {
 	gEnumColors.clear();
 	gColorBands.clear();
+	gEnumDEMs.clear();
 	gNaturalTerrainTable.clear();
 	gNaturalTerrainLandUseIndex.clear();
 	gNaturalTerrainIndex.clear();
@@ -316,6 +327,7 @@ void	LoadDEMTables(void)
 	
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
+	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
 	RegisterLineHandler("BEACH", ReadBeachInfo, NULL);
 	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
@@ -349,6 +361,7 @@ int	FindNaturalTerrain(
 				float	urban_density,
 				float	urban_radial,
 				float	urban_trans,
+				int		urban_square,
 				float	lat,
 				int		variant)
 {
@@ -381,6 +394,7 @@ int	FindNaturalTerrain(
 		if (rec.urban_density_min == rec.urban_density_max || urban_density == NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
+		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
 		if (!rec.near_water || water)
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (rec.variant == 0 || variant == 0 || rec.variant == variant)
@@ -412,6 +426,7 @@ int	FindNaturalTerrain(
 		if (rec.urban_density_min == rec.urban_density_max || urban_density == NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
+		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
 		if (!rec.near_water || water)
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (rec.variant == 0 || variant == 0 || rec.variant == variant)		
