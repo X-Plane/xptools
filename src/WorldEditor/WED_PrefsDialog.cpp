@@ -9,6 +9,7 @@
 #include "MeshAlgs.h"
 #include "DEMAlgs.h"
 #include "DEMTables.h"
+#include "WED_ProcessingCmds.h"
 
 #define PREFS_FILE	"WorldEditor.prf"
 
@@ -18,12 +19,14 @@ static	int				sPrefsTab = 0;
 static	int				sTest1 = 0;
 static	int				sTest2 = 0;
 
-WED_Prefs	gWedPrefs = { 0, 0 };
+WED_Prefs	gWedPrefs = { 0 };
 
 #define	TAG_MAX_MOUNTAINS 1001
 #define TAG_CLIFF_HEIGHT  1002
 #define TAG_FOWLER_LITTLE 1003
+#define TAG_COMMAND_PREFS 1004
 
+static void RestoreDefaultProcessing(XPWidgetID);
 static void DoFowlerLittle(XPWidgetID);
 void	WED_ShowPrefsDialog(void)
 {
@@ -32,11 +35,23 @@ void	WED_ShowPrefsDialog(void)
 		sPrefsDialog = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "Preferences", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
 				XP_COLUMN,
-					XP_TABS, "General;View;Mesh;DEMs", &sPrefsTab,
-						XP_COLUMN,
-							XP_ROW, XP_CHECKBOX, "Hydro-Correct Maps", &gWedPrefs.hydro_correct, XP_END,
-							XP_ROW, XP_CHECKBOX, "Simplify Coastlines", &gWedPrefs.hydro_simplify, XP_END,
-							XP_ROW, XP_CHECKBOX, "Match Borders", &gMeshPrefs.border_match, XP_END,
+					XP_TABS, "Processing;View;Mesh;DEMs", &sPrefsTab,
+						XP_COLUMN, XP_TAG, TAG_COMMAND_PREFS,
+							XP_ROW, XP_CHECKBOX,"Upsample Environment", 		&gProcessingCmdPrefs.do_upsample_environment, 	XP_END,
+							XP_ROW, XP_CHECKBOX,"Calculate Terrain Slope", 		&gProcessingCmdPrefs.do_calc_slope, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Hydro-Correct", 				&gProcessingCmdPrefs.do_hydro_correct, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Simplify Coastlines", 			&gProcessingCmdPrefs.do_hydro_simplify, 		XP_END,
+							XP_ROW, XP_CHECKBOX,"Calculate Derived Raster Data",&gProcessingCmdPrefs.do_derive_dems, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Add Urban Roads",				&gProcessingCmdPrefs.do_add_urban_roads, 		XP_END,
+							XP_ROW, XP_CHECKBOX,"Pick Road Types", 				&gProcessingCmdPrefs.do_build_roads, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Process Airports", 			&gProcessingCmdPrefs.do_airports, 				XP_END,
+							XP_ROW, XP_CHECKBOX,"Do Zoning", 					&gProcessingCmdPrefs.do_zoning, 				XP_END,
+							XP_ROW, XP_CHECKBOX,"Create Hi Res Mesh", 			&gProcessingCmdPrefs.do_triangulate, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Apply Terrain To Mesh", 		&gProcessingCmdPrefs.do_assign_landuse, 		XP_END,
+							XP_ROW, XP_CHECKBOX,"Instantiate Forests",	 		&gProcessingCmdPrefs.remove_duplicate_objs, 	XP_END,
+							XP_ROW, XP_CHECKBOX,"Remove Duplicate Features", 	&gProcessingCmdPrefs.build_3d_forests, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Instantiate Face Objects", 	&gProcessingCmdPrefs.place_buildings, 			XP_END,
+							XP_ROW, XP_BUTTON_ACTION, "Restore Default Processing Options", RestoreDefaultProcessing, XP_END,
 						XP_END,
 						XP_COLUMN,
 							XP_ROW, XP_CAPTION, "Sun Azimuth", XP_EDIT_FLOAT, 6, 6, 0, &sShadingAzi, XP_END,
@@ -48,9 +63,11 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CAPTION, "Max Error:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.max_error, XP_END,
 							XP_ROW, XP_CHECKBOX, "Use Fowler-Little", &gMeshPrefs.fowler_little, XP_NOTIFY, DoFowlerLittle, XP_TAG, TAG_FOWLER_LITTLE, XP_END,
 							XP_ROW, XP_CAPTION, "Change Tex Length", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.rep_switch_m, XP_END,
+							XP_ROW, XP_CHECKBOX, "Match Borders", &gMeshPrefs.border_match, XP_END,
 						XP_END,
 						XP_COLUMN,
 							XP_ROW, XP_CAPTION, "Local Area Search:", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
+							XP_ROW, XP_CAPTION, "Temperature Elevation Calibration:", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.temp_percentile, XP_END,
 						XP_END,
 					XP_END,
 					XP_ROW, XP_BUTTON_CANCEL, "Cancel", XP_BUTTON_OK, "OK", XP_END,
@@ -211,3 +228,32 @@ void	WED_SavePrefs(void)
 	SaveIniSectionMap(path.c_str(), prefs);
 }
 
+
+
+static void RestoreDefaultProcessing(XPWidgetID)
+{
+	ProcessingPrefs_t temp = gProcessingCmdPrefs;
+
+	ProcessingPrefs_t	defs = {
+	/*		do_upsample_environment	*/			1,
+	/*		do_calc_slope			*/			1,
+	/*		do_hydro_correct		*/			0,
+	/*		do_hydro_simplify		*/			0,
+	/*		do_derive_dems			*/			1,
+	/*		do_add_urban_roads		*/			0,
+	/*		do_build_roads			*/			1,
+	/*		do_airports				*/			1,
+	/*		do_zoning				*/			1,
+	/*		do_triangulate			*/			1,
+	/*		do_assign_landuse		*/			1,
+	/*		remove_duplicate_objs	*/			0,
+	/*		place_buildings			*/			0,
+	/*		build_3d_forests		*/			0 };	
+
+	gProcessingCmdPrefs = defs;
+	
+	XPDataToItem(sPrefsDialog, 	TAG_COMMAND_PREFS);
+	
+	gProcessingCmdPrefs = temp;
+	
+}

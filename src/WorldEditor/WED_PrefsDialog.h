@@ -2,8 +2,7 @@
 #define WED_PREFSDIALOG_H
 
 struct	WED_Prefs {
-	int		hydro_correct;
-	int		hydro_simplify;
+	int		dummy;
 };
 
 extern WED_Prefs	gWedPrefs;	
