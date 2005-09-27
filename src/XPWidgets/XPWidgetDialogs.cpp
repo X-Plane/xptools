@@ -1233,14 +1233,14 @@ void			XPDataFromItem(XPWidgetID dialog, int tag)
 {
 	XPWidgetID who = XPFindWidgetByTag(dialog, tag);
 	if (who)
-		XPSendMessageToWidget(who, xpMsg_DataFromDialog, xpMode_Direct, 0, 0);		
+		XPSendMessageToWidget(who, xpMsg_DataFromDialog, xpMode_Recursive, 0, 0);		
 }
 
 void			XPDataToItem(XPWidgetID dialog, int tag)
 {
 	XPWidgetID who = XPFindWidgetByTag(dialog, tag);
 	if (who)
-		XPSendMessageToWidget(who, xpMsg_DataToDialog, xpMode_Direct, 0, 0);		
+		XPSendMessageToWidget(who, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);		
 }
 
 void			XPEnableByTag(XPWidgetID dialog, int tag, int enable)
