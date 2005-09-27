@@ -35,7 +35,7 @@
 #include <math.h>
 #include "AptIO.h"
 
-extern DEMPrefs_t	gDemPrefs = { 4 };
+extern DEMPrefs_t	gDemPrefs = { 4, 0.5 };
 
 struct	SnowLineInfo_t {
 	float	lat;
@@ -62,8 +62,8 @@ static const SnowLineInfo_t kSnowLineInfo[] = {
 
 
 // Spread is approx URBAN_KERN_SIZE / 2 KM
-#define 	URBAN_DENSE_KERN_SIZE	19
-#define 	URBAN_RADIAL_KERN_SIZE	5
+#define 	URBAN_DENSE_KERN_SIZE	7	// Tried 17 before
+#define 	URBAN_RADIAL_KERN_SIZE	33
 #define 	URBAN_TRANS_KERN_SIZE	5
 
 static float	sUrbanDenseSpreaderKernel[URBAN_DENSE_KERN_SIZE * URBAN_DENSE_KERN_SIZE];
@@ -498,24 +498,14 @@ static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point2& whe
 // a national forest.  (I really can't think of a good solution for this...USGS thermal returns are
 // lousy at distinguishing a small suburban town (population 5000-10000) from the deep woods, and apparently
 // neither is the transportation network. :-(
-static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioDensity, DEMGeo& ioCentrality, DEMGeo& ioTransport)
+static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 {
-	DEMGeo	roads(ioDensity.mWidth, ioDensity.mHeight);
-	roads.mNorth = ioDensity.mNorth;
-	roads.mSouth = ioDensity.mSouth;
-	roads.mEast = ioDensity.mEast;
-	roads.mWest = ioDensity.mWest;
-	float our_value, h;
 	int xp, yp;
 	float	max_road_density_vecs = 0.0;
-	ioCentrality = 0.0;
+
 	for (yp = 0; yp < ioTransport.mHeight; ++yp)
 	for (xp = 0; xp < ioTransport.mWidth ; ++xp)
 		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_usgs_INLAND_WATER || ioTransport(xp, yp) == lu_usgs_SEA_WATER) ? 1.0 : 0.0;
-
-	for (yp = 0; yp < ioCentrality.mHeight; ++yp)
-	for (xp = 0; xp < ioCentrality.mWidth ; ++xp)
-		ioCentrality(xp, yp) = (ioCentrality(xp, yp) == lu_usgs_URBAN_SQUARE || ioCentrality(xp, yp) == lu_usgs_URBAN_IRREGULAR) ? 0.5 : 0.0;
 
 	PolyRasterizer	rasterizer;
 	SetupWaterRasterizer(inMap, ioTransport, rasterizer);
@@ -542,11 +532,9 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioDensity, DEMGeo& io
 	{
 		if (iter->mDominant && !iter->mSegments.empty())
 		{
-			int tsx, tsy, tdx, tdy, csx, csy, cdx, cdy;
+			int tsx, tsy, tdx, tdy;
 			ioTransport.xy_nearest(iter->source()->point().x,iter->source()->point().y, tsx, tsy);
 			ioTransport.xy_nearest(iter->target()->point().x,iter->target()->point().y, tdx, tdy);
-			ioCentrality.xy_nearest(iter->source()->point().x,iter->source()->point().y, csx, csy);
-			ioCentrality.xy_nearest(iter->target()->point().x,iter->target()->point().y, cdx, cdy);
 			
 			for (GISNetworkSegmentVector::const_iterator seg = iter->mSegments.begin(); seg != iter->mSegments.end(); ++seg)
 			{
@@ -562,9 +550,6 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioDensity, DEMGeo& io
 				case road_PrimaryUnsepRail:
 				case road_PrimarySep:
 				case road_PrimarySepRail:
-					ioCentrality(csx, csy) = 1.0;
-					ioCentrality(cdx, cdy) = 1.0;
-					// INTENTIONAL FALL-THROUGH!
 				case train_Generic:
 				case train_Spur:
 					ioTransport(tsx, tsy) = max(ioTransport(tsx, tsy), 0.5f);
@@ -572,54 +557,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioDensity, DEMGeo& io
 					break;
 				}
 			}
-			if (iter->source()->degree() > 2)
-			{
-				our_value = GetRoadDensity(iter);
-				if (our_value >= 0.0)
-				{
-					h = roads.xy_nearest(
-								iter->source()->point().x,
-								iter->source()->point().y,
-								xp, yp);
-					if (h != NO_DATA)
-					{
-						roads(xp,yp) = h + our_value;
-						max_road_density_vecs = max(max_road_density_vecs, h + our_value);
-					}
-				}
-			}
-			if (iter->target()->degree() > 2)
-			{
-				our_value = GetRoadDensity(iter);				
-				if (our_value >= 0.0)
-				{
-					h = roads.xy_nearest(
-								iter->target()->point().x,
-								iter->target()->point().y,
-								xp, yp);
-					if (h != NO_DATA)
-					{
-						roads(xp,yp) = h + our_value;
-						max_road_density_vecs = max(max_road_density_vecs, h + our_value);
-					}
-				}
-			}
 		}
-	}
-	
-//	printf("PARAMETER: max_road_defs %f\n", max_road_density_vecs);
-//	if (max_road_density_vecs != 0.0) max_road_density_vecs = 1 / max_road_density_vecs;
-	max_road_density_vecs = 1.0 / 25.0;	// Standardized value!
-
-#define LOCAL_WEIGHT_RATIO 0.5
-
-	for (yp = 0; yp < ioDensity.mHeight; ++yp)
-	for (xp = 0; xp < ioDensity.mWidth ; ++xp)
-	{
-		float	local_normalized = 1.0 - pow(0.1,roads(xp,yp) * max_road_density_vecs);
-		float	global_normalized = ioDensity(xp,yp);
-		ioDensity(xp,yp) = global_normalized * (1.0-LOCAL_WEIGHT_RATIO) + local_normalized * LOCAL_WEIGHT_RATIO;
-
 	}
 }
 
@@ -764,6 +702,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	DEMGeo&		climate		 = ioDEMs[dem_Climate];
 	DEMGeo&		rainfall	 = ioDEMs[dem_Rainfall];
 	DEMGeo&		biomass		 = ioDEMs[dem_Biomass];
+	DEMGeo&		temp_msl	 = ioDEMs[dem_TemperatureSeaLevel];
 	DEMGeo		elevation_reduced, elevation_general;
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.0);
@@ -787,17 +726,28 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	for (x = 0; x < temperature_deviation.mWidth; ++x)
 	{
 		real_temp = temperature_deviation(x,y);
-		expected = elevation_general.value_linear(temperature_deviation.x_to_lon(x),temperature_deviation.y_to_lat(y)) * kStdLapseRate;
+
+		map<float, int>	histo;
+		int				samples;
+		int				xp = elevation.lon_to_x(temperature_deviation.x_to_lon(x));
+		int				yp = elevation.lat_to_y(temperature_deviation.y_to_lat(y));
+		samples = DEMMakeHistogram(elevation, histo, xp-300, yp-300, xp+300,yp+300);
+		expected = HistogramGetPercentile(histo, samples, gDemPrefs.temp_percentile) * kStdLapseRate;
+		
+//		expected = elevation_general.value_linear(temperature_deviation.x_to_lon(x),temperature_deviation.y_to_lat(y)) * kStdLapseRate;
 		temperature_deviation(x,y) = real_temp - expected;
 	}	
 	
 	// Now we can convert elevation to temperature.
 	DEMGeo	derived_temperature(elevation_reduced);
+	temp_msl.resize(elevation_reduced.mWidth,elevation_reduced.mHeight);
+	temp_msl.copy_geo(derived_temperature);
 	for (y = 0; y < derived_temperature.mHeight; ++y)
 	for (x = 0; x < derived_temperature.mWidth; ++x)
 	{
 		expected = derived_temperature(x,y) * kStdLapseRate;
-		derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));			
+		derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
+		temp_msl(x,y) = temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
 	}
 	
 	/*************** STEP 2 - INTERPOLATE OTHER CONTINUOUS PARAMs ***************/
@@ -915,18 +865,20 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	const DEMGeo&		slope = 	ioDEMs[dem_Slope];
 	const DEMGeo&		slopeHeading = ioDEMs[dem_SlopeHeading];
 	const DEMGeo&		rainfall = 	ioDEMs[dem_Rainfall];
+		  DEMGeo&		urbanSquare =	ioDEMs[dem_UrbanSquare];
 	
 	DEMGeo elevation_reduced;
 	DownsampleDEM(elevation, elevation_reduced, 6);	
 	DEMGeo	landuseBig;
 	UpsampleDEM(landuse, landuseBig, 2);
 		  
-	DEMGeo	urban(landuseBig);
-	DEMGeo	values(landuseBig);
-//	DEMGeo	nudeColor(landuseBig);
+	DEMGeo	urban(landuse);
+	DEMGeo	values(landuse);
+//	DEMGeo	nudeColor(landuse);
 //	DEMGeo	vegetation(elevation_reduced);
 	DEMGeo	urbanRadial(landuse);
 	DEMGeo	urbanTrans(landuse);
+	urbanSquare = landuse;
 
 	urban.mNorth = landuseBig.mNorth;
 	urban.mSouth = landuseBig.mSouth;
@@ -942,9 +894,11 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	if (inProg) inProg(0, 1, "Calculating Derived Raster Data", 0.0);
 
 	CalculateFilter(URBAN_DENSE_KERN_SIZE, sUrbanDenseSpreaderKernel, demFilter_Spread, true);
-	CalculateFilter(URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel, demFilter_Spread, true);
+	CalculateFilter(URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel, demFilter_Linear, false);
 	CalculateFilter(URBAN_TRANS_KERN_SIZE, sUrbanTransSpreaderKernel, demFilter_Spread, true);
 
+	double	radial_max = 0.0;
+	
 	{
 		DEMGeo	urbanTemp(urban);
 		for (y = 0; y < urban.mHeight;++y)
@@ -952,15 +906,29 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		{
 			urbanTemp(x,y) = (urban(x,y) == lu_usgs_URBAN_IRREGULAR || urban(x,y) == lu_usgs_URBAN_SQUARE) ? 1 : 0;
 		}
+		
+		
 		for (y = 0; y < urban.mHeight;++y)
 		for (x = 0; x < urban.mWidth; ++x)
 		{
-			urban(x,y) = /*std::min((float) 1.0, */ urbanTemp.kernelN(x,y, URBAN_DENSE_KERN_SIZE, sUrbanDenseSpreaderKernel); //);
+			urban(x,y) 		= urbanTemp.kernelN(x,y, URBAN_DENSE_KERN_SIZE , sUrbanDenseSpreaderKernel);
+			double local 	= urbanTemp.kernelN(x,y, URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel);
+			urbanRadial(x,y) = local;
+			radial_max = max(local, radial_max);
 		}
 	}
 
+	if (radial_max > 0.0) urbanRadial *= (1.0 / radial_max);
+
+	for (y = 0; y < urban.mHeight;++y)
+	for (x = 0; x < urban.mWidth; ++x)
+	{
+		urban(x,y) = max(0.0f, min(1.0f, urban(x,y)));
+		urbanRadial(x,y) = max(0.0f, min(1.0f, urbanRadial(x,y)));
+	}
+
 	if (inMap.number_of_halfedges() > 0)
-		BuildRoadDensityDEM(inMap, urban, urbanRadial, urbanTrans);
+		BuildRoadDensityDEM(inMap, urbanTrans);
 
 	CalcPropertyValues(values, elevation_reduced, inMap);
 
@@ -979,16 +947,29 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		
 	}
 	
-	urbanRadial.filter_self(URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel);
 	urbanTrans.filter_self(URBAN_TRANS_KERN_SIZE, sUrbanTransSpreaderKernel);
 	
 	for (y = 0; y < urbanTrans.mHeight; ++y)
 	for (x = 0; x < urbanTrans.mWidth; ++x)
 		urbanTrans(x,y) = max(0.0f, min(urbanTrans(x,y), 1.0f));
 
-	for (y = 0; y < urbanRadial.mHeight; ++y)
-	for (x = 0; x < urbanRadial.mWidth; ++x)
-		urbanRadial(x,y) = max(0.0f, min(urbanRadial(x,y), 1.0f));
+	for (y = 0; y < urbanSquare.mHeight; ++y)
+	for (x = 0; x < urbanSquare.mWidth; ++x)
+	{
+		float e = urbanSquare.get(x,y);
+		if (e != NO_DATA && e != lu_usgs_URBAN_SQUARE  && e != lu_usgs_URBAN_IRREGULAR)
+			urbanSquare(x,y) = NO_DATA;
+	}
+
+	SpreadDEMValues(urbanSquare);
+
+	for (y = 0; y < urbanSquare.mHeight; ++y)
+	for (x = 0; x < urbanSquare.mWidth; ++x)
+	{
+		float e = urbanSquare.get(x,y);
+		if (e == lu_usgs_URBAN_SQUARE)		urbanSquare(x,y) = 1.0;
+		else if (e == lu_usgs_URBAN_IRREGULAR)	urbanSquare(x,y) = 2.0;
+	}
 
 	/********************************************************************************************************
 	 * CALCULATE VEGETATION DENSITY
@@ -1492,4 +1473,33 @@ void	FFTMakeDEM(const vector<DEMGeo>& inFFT, DEMGeo& outDEM)
 		
 		outDEM(x,y) = e;
 	}
+}
+
+int		DEMMakeHistogram(const DEMGeo& inDEM, map<float, int>& histo, int x1, int y1, int x2, int y2)
+{
+	int ctr = 0, x, y;
+	histo.clear();
+	for (y = y1; y < y2; ++y)
+	for (x = x1; x < x2; ++x)
+	{
+		float h = inDEM.get(x,y);
+		if (h != NO_DATA)
+		{
+			histo[h]++;
+			ctr++;
+		}
+	}
+	return ctr;
+}
+
+float	HistogramGetPercentile(const map<float, int>& histo, int total_samples, float percentile)
+{
+	int ctr = 0;
+	for (map<float, int>::const_iterator iter = histo.begin(); iter != histo.end(); ++iter)
+	{
+		ctr += iter->second;
+		if ((float) ctr / (float) total_samples >= percentile)
+			return iter->first;
+	}
+	return NO_DATA;
 }
