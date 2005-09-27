@@ -246,10 +246,10 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					sprintf(buf, "mean=%f min=%f max=%f mode=%f (%d) std dev = %f, 70%% range = [%f..%f], rangemean=%f", mean, minv, maxv, mode, mode_count, devsq, minv_lim, maxv_lim, sum);
 				}
 				DoUserAlert(buf);
-				for (iter = hist.begin(); iter != hist.end(); ++iter)
-				{
-					printf("   %10f %d %f\n", iter->first, iter->second, (float) iter->second / (float) n);
-				}
+//				for (iter = hist.begin(); iter != hist.end(); ++iter)
+//				{
+//					printf("   %10f %d %f\n", iter->first, iter->second, (float) iter->second / (float) n);
+//				}
 				
 			}
 			break;
@@ -319,8 +319,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 							}
 							for (int m = 0; m < pts.size(); ++m)
 							{
-								gMeshLines.push_back(pts.side(m).p1);
-								gMeshLines.push_back(pts.side(m).p2);
+								gMeshLines.push_back(pair<Point2,Point3>(pts.side(m).p1, Point3(0.8, 0.3, 0.1)));
+								gMeshLines.push_back(pair<Point2,Point3>(pts.side(m).p2, Point3(0.8, 0.3, 0.1)));
 							}
 						}
 					}					
