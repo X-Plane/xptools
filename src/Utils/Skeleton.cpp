@@ -3,6 +3,7 @@
 #include "CompGeomDefs3.h"
 #include "MapDefs.h"
 #include "XESConstants.h"
+#include "MapAlgs.h"
 #include "AssertUtils.h"
 
 /*
@@ -96,10 +97,12 @@
 
 */
 
-#if !DEV
-nuke
-#endif
+#define GRAPHIC_LOGGING DEV
+#define LOG_SKELETONS DEV
+
+#if GRAPHIC_LOGGING
 #include "WED_Globals.h"
+#endif
 
 #if DEV
 static	Bbox2	sVertexLimit;
@@ -116,9 +119,10 @@ struct	SK_Edge;
 struct	SK_Polygon;
 struct	SK_Event;
 typedef multimap<double, SK_Event *>		EventMap;
-static bool	SK_SafeIntersect(const Plane3& plane1, const Plane3& plane2, const Point3& common_corner, double t, Point3& cross);
-static bool	SK_SafeIntersect2(const Plane3& plane1, const Plane3& plane2, const Plane3& plane3, const Point3& common_corner, Point3& cross);
-static bool	SK_SafeIntersect3(const Plane3& plane1, const Plane3& plane2, const Plane3& plane3, const Point3& common_corner1, const Point3& common_corner2, Point3& cross);
+static bool	SK_SafeIntersect(SK_Edge * plane1, SK_Edge * plane2, const Point3& common_corner, double t, Point3& cross);
+static bool	SK_SafeIntersect(SK_Edge * plane1, SK_Edge * plane2, const Point3& common_corner, Line3& cross);
+static bool	SK_SafeIntersect2(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner, Point3& cross);
+static bool	SK_SafeIntersect3(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner1, const Point3& common_corner2, Point3& cross);
 static void	SK_DestroyEventsForEdge(SK_Edge * the_edge, EventMap& ioMap, bool inReflex);
 
 
@@ -159,7 +163,7 @@ struct	SK_Edge {
 struct	SK_Vertex {
 
 	Point2		location;		// This is the original location of the vertex as its base time.
-	bool		is_reflex;		// True if this is a reflex vertex.
+//	bool		is_reflex;		// True if this is a reflex vertex.
 	double		time_base;		// Time of creation
 	
 	SK_Edge * 	prev;
@@ -167,9 +171,18 @@ struct	SK_Vertex {
 	SK_Polygon * owner;
 	
 	void GetLocationAtTime(Point3& p, double t) const { 
-		if (!SK_SafeIntersect(prev->supporting_plane, next->supporting_plane, Point3(location.x, location.y, 0), t, p))
+		if (!SK_SafeIntersect(prev, next, Point3(location.x, location.y, 0), t, p))
 			AssertPrintf("Failed intersection.");
 	 }
+
+	bool	IsReflex(void) const { 
+		Vector2 prev_seg = Vector2(prev->supporting_plane.n.dx,prev->supporting_plane.n.dy).perpendicular_cw();
+		Vector2 next_seg = Vector2(next->supporting_plane.n.dx,next->supporting_plane.n.dy).perpendicular_cw();
+		
+//		Vector2	prev_seg(prev->ends.p1, prev->ends.p2);
+//		Vector2	next_seg(next->ends.p1, next->ends.p2);
+		return prev_seg.right_turn(next_seg);
+	}
 	
 #if DEV
 	~SK_Vertex() { prev = DELETED_EDGE; next = DELETED_EDGE; owner = DELETED_POLYGON; }
@@ -181,6 +194,8 @@ struct	SK_Polygon {
 	SK_Polygon *		parent;
 	set<SK_Polygon *>	children;
 	SK_Edge *			ccb;
+	
+	int	num_sides(void) const { if (!ccb) return 0; SK_Edge * iter = ccb, * stop = ccb; int ctr = 0; do { ++ctr; iter=iter->next->next; } while (iter != stop); return ctr;}
 	
 #if DEV
 	~SK_Polygon() { ccb = DELETED_EDGE; parent = DELETED_POLYGON; }
@@ -214,61 +229,113 @@ struct	SK_Event {
 /***************************************************************************************************
  * POLYGON UTILITY ROUTINES
  ***************************************************************************************************/
-#define COPLANAR_CHECK 0.999
 
-// Save intersection:
-// Normally we find a vertex's evolution by crossing the two planes that embed their sides with
-// a horizontal plane T = k for time K.  But....if the two sides are parallel, we don't get an
-// intersection.  This routine special-cases that particular case.
-bool	SK_SafeIntersect(const Plane3& plane1, const Plane3& plane2, const Point3& common_corner, double t, Point3& cross)
+void SK_NormalizeProjection(Plane3& p)
 {
-	Plane3	time_plane(Point3(0,0,t), Vector3(0,0,1));		
-
-	Vector2	p1_dir(plane1.n.dx, plane1.n.dy);
-	Vector2	p2_dir(plane2.n.dx, plane2.n.dy);
-	
-	p1_dir.normalize();
-	p2_dir.normalize();
-
-	if (p1_dir.dot(p2_dir) > COPLANAR_CHECK)
+	Vector2	shadow(p.n.dx, p.n.dy);
+	double len = sqrt(shadow.squared_length());
+	if (len != 0.0)
 	{
-		// Special case - planes are coplanar.  We create a crossing plane and go from there.
-		
-		// This vector is roughly normal to both planes, along the ground.
-		Vector2	av_dir(p1_dir.dx + p2_dir.dx, p1_dir.dy + p2_dir.dy);
-		av_dir.normalize();
-		
-		// This is a plane that cuts the two edges in half...the point we are looking for is roughly along here.
-		Plane3	cut_plane(common_corner, Vector3(av_dir.dy, -av_dir.dx, 0.0));
-		
-		// Now things get a bit NASTY: conceivably the two adjacent sides might have DIFFERing slope.  This is a discontinuity and
-		// has no good solution.  For now: le hack!
-		
-		Segment3	s;
-		
-		if (time_plane.intersect(plane1, cut_plane, s.p1))
-		if (time_plane.intersect(plane2, cut_plane, s.p2))
-		{
-			cross = s.midpoint();
-			return true;
-		}
-		return false;		
-	
-	} else {
-	
-		// Default case - just do a 3-plane cross	
-		return time_plane.intersect(plane1, plane2, cross);	
+		len = 1.0 / len;
+		shadow.normalize();	// utilize perfect correction to 1.0 for h/v vectors
+		p.n.dx = shadow.dx;
+		p.n.dy = shadow.dy;
+		p.n.dz *= len;
+		p.ndotp *= len;
 	}
 }
 
-bool	SK_SafeIntersect2(const Plane3& plane1, const Plane3& plane2, const Plane3& plane3, const Point3& common_corner, Point3& cross)
-{
-	Vector2	p1_dir(plane1.n.dx, plane1.n.dy);
-	Vector2	p2_dir(plane2.n.dx, plane2.n.dy);
-	
-	p1_dir.normalize();
-	p2_dir.normalize();
+#define COPLANAR_CHECK 0.999
 
+
+bool	SK_CloserToLine(const Line2& line1, const Line2& line2, const Point2& split, const Point2& p)
+{
+	double d1 = line1.distance_denormaled(p);
+	double d2 = line2.distance_denormaled(p);
+	
+	if (line1.a * line2.a + line1.b * line2.b > COPLANAR_CHECK)
+	{
+		Vector2	to_pt(split, p);
+		Vector2	nrmls(line1.a + line2.a, line1.b + line2.b);
+		if (nrmls.right_turn(to_pt))
+			return false;
+		else
+			return true;
+	
+	} else {
+	
+		if ((line1.a * line2.b - line1.b * line2.a) < 0.0)
+			return d2 <= d1;
+		else
+			return d1 <= d2;	
+			
+	}
+}
+
+
+// First of all, ORDERED comparison.
+// It turns out that the intersection of 2 or 3 planes depends oon the order of args to the math
+// routine!! This is because the result is a sum of stuff and the summation causes rounding errors,
+// whose magnitude depends on who gets rounded first.
+//
+// We need to make sure that given certain inputs we ALWAYS return the same result.  To solve this, we
+// order the input planes by their byte-wise partial-weak-ordering, so we always compare the same way
+// no matter what the input args are.  (The input order tends to depend on the current skeleton topology
+// which changes over time!)  We use mem compare because address compares fail due to cloned edges, who
+// have the same plane but new vertices.
+inline bool	SK_FixedMemIsLess(unsigned const char * c1, unsigned const char * c2, unsigned int len)
+{
+	while (len)
+	{
+		if (*c1 < *c2)	return true;
+		if (*c1 > *c2) 	return false;
+		++c1, ++c2, --len;
+	}
+	return false;
+}
+
+inline bool SK_PlaneIsLess(const Plane3& p1, const Plane3& p2)
+{
+	return SK_FixedMemIsLess((unsigned char *) &p1, (unsigned char *) &p2, sizeof(Plane3));
+}
+
+bool	SK_OrderedIntersect(const Plane3& p1, const Plane3& p2, const Plane3& p3, Point3& cross)
+{
+	if (SK_PlaneIsLess(p1, p2) && SK_PlaneIsLess(p1, p3))
+	{
+		if (SK_PlaneIsLess(p2, p3))	return p1.intersect(p2, p3, cross);
+		else						return p1.intersect(p3, p2, cross);
+	}
+	else if (SK_PlaneIsLess(p2, p3))
+	{
+		if (SK_PlaneIsLess(p1, p3))	return p2.intersect(p1, p3, cross);
+									return p2.intersect(p3, p1, cross);
+	}
+	else
+	{
+		if (SK_PlaneIsLess(p1, p2)) 	return p3.intersect(p1, p2, cross);
+		else							return p3.intersect(p2, p1, cross);
+	}
+}
+
+bool	SK_OrderedIntersect(const Plane3& p1, const Plane3& p2, Line3& cross)
+{
+	if (SK_PlaneIsLess(p1, p2))	return p1.intersect(p2, cross);
+	else						return p2.intersect(p1, cross);
+}
+
+ 
+// Second we have safe comparisons.  Besides being ordered, these detect the case where the intersected planes
+// are coplanar facing the same way, and generate a simple bisector plane to solve the problem.  In other words,
+// this allows us to know that the bisector of two colinear line segments is the perpedicular. 
+ 
+bool	SK_SafeIntersect(SK_Edge * plane1, SK_Edge * plane2, const Point3& common_corner, double t, Point3& cross)
+{
+	Plane3	time_plane(Point3(0,0,t), Vector3(0,0,1));		
+
+	Vector2	p1_dir(plane1->supporting_plane.n.dx, plane1->supporting_plane.n.dy);
+	Vector2	p2_dir(plane2->supporting_plane.n.dx, plane2->supporting_plane.n.dy);
+	
 	if (p1_dir.dot(p2_dir) > COPLANAR_CHECK)
 	{
 		// Special case - planes are coplanar.  We create a crossing plane and go from there.
@@ -285,8 +352,8 @@ bool	SK_SafeIntersect2(const Plane3& plane1, const Plane3& plane2, const Plane3&
 		
 		Segment3	s;
 		
-		if (plane3.intersect(plane1, cut_plane, s.p1))
-		if (plane3.intersect(plane2, cut_plane, s.p2))
+		if (SK_OrderedIntersect(plane1->supporting_plane, time_plane, cut_plane, s.p1))
+		if (SK_OrderedIntersect(plane2->supporting_plane, time_plane, cut_plane, s.p2))
 		{
 			cross = s.midpoint();
 			return true;
@@ -296,20 +363,80 @@ bool	SK_SafeIntersect2(const Plane3& plane1, const Plane3& plane2, const Plane3&
 	} else {
 	
 		// Default case - just do a 3-plane cross	
-		return plane3.intersect(plane1, plane2, cross);	
+		return SK_OrderedIntersect(plane1->supporting_plane, plane2->supporting_plane, time_plane, cross);	
+	}
+}
+
+bool	SK_SafeIntersect(SK_Edge * plane1, SK_Edge * plane2, const Point3& common_corner, Line3& cross)
+{
+	Vector2	p1_dir(plane1->supporting_plane.n.dx, plane1->supporting_plane.n.dy);
+	Vector2	p2_dir(plane2->supporting_plane.n.dx, plane2->supporting_plane.n.dy);
+	
+	if (p1_dir.dot(p2_dir) > COPLANAR_CHECK)
+	{
+		// Special case - planes are coplanar.  We create a crossing plane and go from there.
+		
+		// This vector is roughly normal to both planes, along the ground.
+		Vector2	av_dir(p1_dir.dx + p2_dir.dx, p1_dir.dy + p2_dir.dy);
+		av_dir.normalize();
+		
+		// This is a plane that cuts the two edges in half...the point we are looking for is roughly along here.
+		cross = Line3(common_corner, Vector3(av_dir.dx, av_dir.dy, 0));
+		return true;
+	
+	} else {
+	
+		// Default case - just do a 3-plane cross	
+		return SK_OrderedIntersect(plane1->supporting_plane, plane2->supporting_plane, cross);	
+	}
+}
+
+bool	SK_SafeIntersect2(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner, Point3& cross)
+{
+	Vector2	p1_dir(plane1->supporting_plane.n.dx, plane1->supporting_plane.n.dy);
+	Vector2	p2_dir(plane2->supporting_plane.n.dx, plane2->supporting_plane.n.dy);
+	Vector2	p3_dir(plane3->supporting_plane.n.dx, plane3->supporting_plane.n.dy);
+
+	if (p1_dir.dot(p3_dir) > COPLANAR_CHECK)	return false;
+	if (p2_dir.dot(p3_dir) > COPLANAR_CHECK)	return false;
+	
+	if (p1_dir.dot(p2_dir) > COPLANAR_CHECK)
+	{
+		// Special case - planes are coplanar.  We create a crossing plane and go from there.
+		
+		// This vector is roughly normal to both planes, along the ground.
+		Vector2	av_dir(p1_dir.dx + p2_dir.dx, p1_dir.dy + p2_dir.dy);
+		av_dir.normalize();
+		
+		// This is a plane that cuts the two edges in half...the point we are looking for is roughly along here.
+		Plane3	cut_plane(common_corner, Vector3(av_dir.dy, -av_dir.dx, 0.0));
+		
+		// Now things get a bit NASTY: conceivably the two adjacent sides might have DIFFERing slope.  This is a discontinuity and
+		// has no good solution.  For now: le hack!
+		
+		Segment3	s;
+		
+		if (SK_OrderedIntersect(plane1->supporting_plane, plane3->supporting_plane, cut_plane, s.p1))
+		if (SK_OrderedIntersect(plane2->supporting_plane, plane3->supporting_plane, cut_plane, s.p2))
+		{
+			cross = s.midpoint();
+			return true;
+		}
+		return false;		
+	
+	} else {
+	
+		// Default case - just do a 3-plane cross	
+		return SK_OrderedIntersect(plane1->supporting_plane, plane2->supporting_plane, plane3->supporting_plane, cross);	
 	}	
 }
 
-bool	SK_SafeIntersect3(const Plane3& plane1, const Plane3& plane2, const Plane3& plane3, const Point3& common_corner1, const Point3& common_corner2, Point3& cross)
+bool	SK_SafeIntersect3(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner1, const Point3& common_corner2, Point3& cross)
 {
-	Vector2	p1_dir(plane1.n.dx, plane1.n.dy);
-	Vector2	p2_dir(plane2.n.dx, plane2.n.dy);
-	Vector2	p3_dir(plane3.n.dx, plane3.n.dy);
+	Vector2	p1_dir(plane1->supporting_plane.n.dx, plane1->supporting_plane.n.dy);
+	Vector2	p2_dir(plane2->supporting_plane.n.dx, plane2->supporting_plane.n.dy);
+	Vector2	p3_dir(plane3->supporting_plane.n.dx, plane3->supporting_plane.n.dy);
 	
-	p1_dir.normalize();
-	p2_dir.normalize();
-	p3_dir.normalize();
-
 	bool	flat_left = p1_dir.dot(p2_dir) > COPLANAR_CHECK;
 	bool	flat_right = p2_dir.dot(p3_dir) > COPLANAR_CHECK;
 
@@ -331,8 +458,8 @@ bool	SK_SafeIntersect3(const Plane3& plane1, const Plane3& plane2, const Plane3&
 		
 		Segment3	s;
 		
-		if (plane3.intersect(plane1, cut_plane, s.p1))
-		if (plane3.intersect(plane2, cut_plane, s.p2))
+		if (SK_OrderedIntersect(plane1->supporting_plane, plane3->supporting_plane, cut_plane, s.p1))
+		if (SK_OrderedIntersect(plane2->supporting_plane, plane3->supporting_plane, cut_plane, s.p2))
 		{
 			cross = s.midpoint();
 			return true;
@@ -356,8 +483,8 @@ bool	SK_SafeIntersect3(const Plane3& plane1, const Plane3& plane2, const Plane3&
 		
 		Segment3	s;
 		
-		if (plane1.intersect(plane2, cut_plane, s.p1))
-		if (plane1.intersect(plane3, cut_plane, s.p2))
+		if (SK_OrderedIntersect(plane1->supporting_plane, plane2->supporting_plane, cut_plane, s.p1))
+		if (SK_OrderedIntersect(plane1->supporting_plane, plane3->supporting_plane, cut_plane, s.p2))
 		{
 			cross = s.midpoint();
 			return true;
@@ -367,13 +494,14 @@ bool	SK_SafeIntersect3(const Plane3& plane1, const Plane3& plane2, const Plane3&
 	} else {
 	
 		// Default case - just do a 3-plane cross	
-		return plane3.intersect(plane1, plane2, cross);	
+		return SK_OrderedIntersect(plane1->supporting_plane, plane2->supporting_plane, plane3->supporting_plane, cross);	
 	}
 }
 
 
 bool	SK_ReflexEventPossible(SK_Event * inEvent)
 {
+
 	// The idea here is to evaluate this event to see if it is actually possible.
 	// WE may have reflex interference between spatially far-apart but colinear parts of the
 	// triangle.  So we need to evaluate our current topology.
@@ -383,45 +511,62 @@ bool	SK_ReflexEventPossible(SK_Event * inEvent)
 	SK_Vertex * v_next = e_this->next;
 	SK_Edge * e_prev = e_this->prev->prev;
 	SK_Edge * e_next = e_this->next->next;
-	
-	// If topologically we're no longer reflex, bail.
-	if (e_prev == inEvent->e1 || e_next == inEvent->e1 || e_prev == inEvent->e2 || e_next == inEvent->e2) return false;
-
-	// HACK CITY: our geometry is NOT precise enough to detect reflex events that happen near T = 0 where a vertex interferes
-	// with itself.  But this is NEVER a reflex event, so special-case this out.  I'm so evil.
-
 	SK_Vertex * v_reflex = inEvent->e1->next;
-	DebugAssert(v_reflex->is_reflex);
-	if (v_reflex->location == v_prev->location || v_reflex->location == v_next->location)
-		return false;
-	
-	Point3	p_one_left, p_zero_left(e_this->ends.p1.x, e_this->ends.p1.y, 0);
-	Point3	p_one_right, p_zero_right(e_this->ends.p2.x, e_this->ends.p2.y, 0);
 
-	// Speculation: if we can't find out when our prev or next vertex exists in time, we must have a side that is 
-	// 180 dgrees opposite us, e.g. a pinch.  In this case NO event should hit us because we collapse!	
-	if (!SK_SafeIntersect(e_prev->supporting_plane, e_this->supporting_plane, p_zero_left, inEvent->cross.z, p_one_left))
-		return false;
-//		AssertPrintf("Safe interect failed.\n");
-	if (!SK_SafeIntersect(e_this->supporting_plane, e_next->supporting_plane, p_zero_right, inEvent->cross.z, p_one_right))
-		return false;
-//		AssertPrintf("Safe interect failed.\n");
+	// TOPOLOGICAL TEST - we disqualify reflex events where the edge is adjacent to one of the segments of the reflex
+	// vertex.  Why?  Well, this is a reflex and a bisector event!  We let the bisector code handle it.  We want less
+	// reflex events - they're more expensive to handle and risk multiple simultaneous reflex events if we leave 'em 
+	// around.
+
+#if !DEV
+revisit this
+	why do we need this in?  imagine a bisector event where: the sides are actually CLOSING in (e.g. the u-turn is more than 180
+	degrees.  Make one side an antenna...poof!  this isn't' a bisector event because both are reflexes and the intersection point will be in space.
+	Solution - this config defines that there be a reflex event corresponding to it (from the antenna) that cleans it up.
+#endif
+	// If topologically we're really a bisector event, bail.
+//	if (e_prev == inEvent->e1 || e_next == inEvent->e1 || e_prev == inEvent->e2 || e_next == inEvent->e2) return false;
+
+	// DISASSEMBLY TEST - if the edges making up the reflex vector no longer connect, well, something happened that makes us
+	// no longer a reflex event!  Bal.
+	if (inEvent->e1->next != inEvent->e2->prev)	return false;
+
+	// NOT-SO-REFLEX TEST.  If we're actually not pointing like a reflex vector, perhaps due to some strange reassembly,
+	// well that's damn surprising but it's clear that we don't want to run the event.
+// HACK: shouldn't we just know this!?!  If our input sides made us reflex when we started, how can it change if we haven't 
+// been disassembled?
+//	DebugAssert(v_reflex->IsReflex());
+	if (!v_reflex->IsReflex())	return false;
+
+	// LOVE-THY-NEIGHBOR TEST: If we share a vertex with the edge we're hitting, that's a very bad sign; generally it means that 
+	// our reflex vertex  has a neighbor that it thinks it hits at a time really close to 0.  Do not allow this!
+	if (inEvent->e1->ends.p2 == e_this->ends.p1 ||
+		inEvent->e1->ends.p2 == e_this->ends.p2 ||
+		inEvent->e2->ends.p1 == e_this->ends.p1 ||
+		inEvent->e2->ends.p1 == e_this->ends.p2)			return false;
+
+
+	// SPATIAL FILTER: Now comes the real work...find lines that are the projection of the bisectors of the vertices adjacent to the
+	// edge we split; this defines the area where the edge is legitimate.  If we're not in this area bail.
+	// How we do this: well the bisector is the line of equidistance between the two base supporting lines that we are bisecting.
+	// So: take the signed euclidian distance from each line.  If we are closer to the split edge than either
+	// side edges, we must be inside the bisectors.
 	
-	Vector3	move_left(p_zero_left, p_one_left);
-	Vector3	move_right(p_zero_right, p_one_right);
-	Vector3	move_left_flat(move_left);
-	Vector3 move_right_flat(move_right);
-	move_left_flat.dz = 0.0;
-	move_right_flat.dz = 0.0;
+	// More details: we normalize the supporting lines that are built by taking the supporting plane's Ax+By+Cz+D=0
+	// and substituting for Z=0.  By normalizing it, we can calculate the signed distance without a square route.
+	// (Okay, the normal op has a square route, so this isn't perfect.)
 	
-	Vector3	prev_normal = move_left_flat.cross(move_left);
-	Vector3	next_normal = move_right.cross(move_right_flat);
+
+	Line2	base_line_this(e_this->supporting_plane.n.dx,e_this->supporting_plane.n.dy, -e_this->supporting_plane.ndotp);
+	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
+	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
 	
-	Plane3	prev_plane(p_zero_left, prev_normal);
-	Plane3	next_plane(p_zero_right, next_normal);
-	
-	return prev_plane.on_normal_side(inEvent->cross) &&
-		   next_plane.on_normal_side(inEvent->cross);
+	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
+
+	bool	closer_prev = !SK_CloserToLine(base_line_prev, base_line_this, e_this->ends.p1, cross_flat);
+	bool	closer_next = SK_CloserToLine(base_line_this, base_line_next, e_this->ends.p2, cross_flat);
+
+	return closer_prev && closer_next;
 }
 
 bool	SK_BisectorEventPossible(SK_Event * inEvent)
@@ -438,37 +583,63 @@ bool	SK_BisectorEventPossible(SK_Event * inEvent)
 	SK_Edge * e_prevprev = e_this->prev->prev->prev->prev;
 	SK_Edge * e_nextnext = e_this->next->next->next->next;
 
+	// TRIANGLE TEST - all bisector events from within a triangle are true, always!  I mean, dude, 
+	// how can they not be?
+
 	if (e_next == e_prevprev) return true;
 	if (e_prev == e_nextnext) return true;
 
+	// LINE TEST - we don't ever expect to have a single line (2-edge) loop...just be sure lest chaos
+	// break out.
 	DebugAssert(v_prev != v_next);
 	if (e_next == e_prev) return false;
 	
-	Point3	p_one_left, p_zero_left(e_prev->ends.p1.x, e_prev->ends.p1.y, 0);
-	Point3	p_one_right, p_zero_right(e_next->ends.p2.x, e_next->ends.p2.y, 0);
+//	return true;
+/*	
+	Fernando says: no spatial cutoff filter is needed for bisector events - if the adjacent bisector cut us
+	off, there would be another bisector event with an earlier time!
+	
+	// SPATIAL FILTER - see above for notes
+	
+	Point3	p_zero_left(e_prev->ends.p1.x, e_prev->ends.p1.y, 0);
+	Point3	p_zero_right(e_next->ends.p2.x, e_next->ends.p2.y, 0);
 
-	// Speculation: if we can't find out when our prev or next vertex exists in time, we must have a side that is 
-	// 180 dgrees opposite us, e.g. a pinch.  In this case NO event should hit us because we collapse!	
-	if (!SK_SafeIntersect(e_prevprev->supporting_plane, e_prev->supporting_plane, p_zero_left, inEvent->cross.z, p_one_left))
-		return false;
-	if (!SK_SafeIntersect(e_next->supporting_plane, e_nextnext->supporting_plane, p_zero_right, inEvent->cross.z, p_one_right))
-		return false;
+	Line3	left_travel, right_travel;
+
+	if (!SK_SafeIntersect(e_prev->prev->prev,e_prev,p_zero_left,left_travel))
+		AssertPrintf("Safe Intersect Failed.");
+	if (!SK_SafeIntersect(e_next,e_next->next->next,p_zero_right,right_travel))
+		AssertPrintf("Safe Intersect Failed.");
+
+	if (left_travel.v.dz < 0.0)		left_travel.v = -left_travel.v;
+	if (right_travel.v.dz < 0.0)	right_travel.v = -right_travel.v;
+
+	Line2	left_travel_flat(e_prev->prev->location,Vector2(left_travel.v.dx,left_travel.v.dy));
+	Line2	right_travel_flat(e_next->next->location,Vector2(right_travel.v.dx,right_travel.v.dy));
+	Point2	cross_flat(inEvent->cross.x, inEvent->cross.y);
+		
+	bool	on_prev = left_travel_flat.on_right_side(cross_flat);
+	bool	on_next = !right_travel_flat.on_right_side(cross_flat);
 	
-	Vector3	move_left(p_zero_left, p_one_left);
-	Vector3	move_right(p_zero_right, p_one_right);
-	Vector3	move_left_flat(move_left);
-	Vector3 move_right_flat(move_right);
-	move_left_flat.dz = 0.0;
-	move_right_flat.dz = 0.0;
+	return on_prev  && on_next;
+*/	
+
+	// BEn says: try anyway for now
+	#if !DEV 
+	Revisit this - we need to get all of our on-edge stuff right!
+	#endif
+
+	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
+	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
+	Line2	base_line_prevprev(e_prev->prev->prev->supporting_plane.n.dx,e_prev->prev->prev->supporting_plane.n.dy, -e_prev->prev->prev->supporting_plane.ndotp);
+	Line2	base_line_nextnext(e_next->next->next->supporting_plane.n.dx,e_next->next->next->supporting_plane.n.dy, -e_next->next->next->supporting_plane.ndotp);
 	
-	Vector3	prev_normal = move_left_flat.cross(move_left);
-	Vector3	next_normal = move_right.cross(move_right_flat);
-	
-	Plane3	prev_plane(p_zero_left, prev_normal);
-	Plane3	next_plane(p_zero_right, next_normal);
-	
-	return prev_plane.on_normal_side(inEvent->cross) &&
-		   next_plane.on_normal_side(inEvent->cross);
+	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
+
+	bool	closer_prev = !SK_CloserToLine(base_line_prevprev, base_line_prev, e_prev->ends.p1, cross_flat);
+	bool	closer_next = SK_CloserToLine(base_line_next, base_line_nextnext, e_next->ends.p2, cross_flat);
+
+	return closer_prev && closer_next;
 }
 
 
@@ -525,7 +696,7 @@ static SK_Vertex * SK_SplitEdge(SK_Edge * e0, const Point2& loc, double now)
 
 	nv->location = loc;
 	nv->time_base = now;
-	nv->is_reflex = false;
+//	nv->is_reflex = false;
 
 	e1->inset_width = e0->inset_width;
 	e1->supporting_plane = e0->supporting_plane;
@@ -602,6 +773,7 @@ static SK_Polygon *	SK_PolygonCreate(
 		// Now cross them to get our normal.
 		Vector3	plane_normal(inset_amount.cross(along_poly));		
 		ne->supporting_plane = Plane3(Point3(seg.p1.x, seg.p1.y, 0.0), plane_normal);
+		SK_NormalizeProjection(ne->supporting_plane);
 		last = ne;
 		
 		nv->owner = child;
@@ -668,7 +840,9 @@ static void SK_InsetPolyIntoPmwx(SK_Polygon * poly, GISFace * parent, Pmwx& theM
 			iter = iter->next->next;
 		} while (iter != stop);
 		
-		GISFace * me = theMap.insert_ring(parent, ring);
+		ring.erase(unique(ring.begin(), ring.end()), ring.end());
+		
+		GISFace * me = SafeInsertRing(&theMap, parent, ring);
 		
 		for (set<SK_Polygon *>::iterator c = poly->children.begin(); c != poly->children.end(); ++c)
 			SK_InsetPolyIntoPmwx(*c, me, theMap);
@@ -776,7 +950,7 @@ static void SK_PolygonSplitAntennas(SK_Polygon * ioPolygon)
 		do {
 			if (iter->prev->prev->location == iter->next->next->location)
 			{
-				iter->is_reflex = true;
+//				iter->is_reflex = true;
 				double	d_prev = iter->prev->inset_width;
 				double	d_next = iter->next->inset_width;
 				
@@ -799,6 +973,7 @@ static void SK_PolygonSplitAntennas(SK_Polygon * ioPolygon)
 				Vector3	inset_amount(inset_flat.dx, inset_flat.dy, 1.0);
 				Vector3	plane_normal(inset_amount.cross(along_poly));		
 				ne->supporting_plane = Plane3(Point3(iter->location.x, iter->location.y, 0.0), plane_normal);
+				SK_NormalizeProjection(ne->supporting_plane);
 				ne->ends.p1 = ne->ends.p2 = iter->location;
 					
 				vc->next = iter->next;
@@ -808,7 +983,7 @@ static void SK_PolygonSplitAntennas(SK_Polygon * ioPolygon)
 				iter->next->prev = vc;
 				iter->next = ne;
 				iter = vc;
-				vc->is_reflex = true;			
+//				vc->is_reflex = true;			
 			}
 		
 			iter = iter->next->next;
@@ -833,12 +1008,9 @@ static void SK_PolygonMitreReflexVertices(SK_Polygon * poly)
 			{
 				if (v1.right_turn(v2))
 				{
-					v1.normalize();
-					v2.normalize();
-					
 					if (v1.dot(v2) < -0.5)
 					{
-						DebugAssert(iter->is_reflex);
+						DebugAssert(iter->IsReflex());
 						double	d_prev = iter->prev->inset_width;
 						double	d_next = iter->next->inset_width;
 						
@@ -861,7 +1033,8 @@ static void SK_PolygonMitreReflexVertices(SK_Polygon * poly)
 						Vector3	inset_amount(inset_flat.dx, inset_flat.dy, 1.0);
 						Vector3	plane_normal(inset_amount.cross(along_poly));		
 						ne->supporting_plane = Plane3(Point3(iter->location.x, iter->location.y, 0.0), plane_normal);
-
+						SK_NormalizeProjection(ne->supporting_plane);
+	
 						ne->ends.p1 = ne->ends.p2 = iter->location;
 
 						vc->next = iter->next;
@@ -871,7 +1044,7 @@ static void SK_PolygonMitreReflexVertices(SK_Polygon * poly)
 						iter->next->prev = vc;
 						iter->next = ne;
 						iter = vc;
-						vc->is_reflex = true;								
+//						vc->is_reflex = true;								
 					}
 				}
 			}
@@ -893,8 +1066,12 @@ static void SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
 		iter = stop = poly->ccb->next;
 		do {
 			Point3		i;
-			if (!SK_SafeIntersect(iter->prev->supporting_plane,iter->next->supporting_plane, Point3(iter->location.x, iter->location.y, 0), advance_time, i))
+			if (!SK_SafeIntersect(iter->prev,iter->next, Point3(iter->location.x, iter->location.y, 0), advance_time, i))
+#if DEV
+				i = Point3(iter->location.x, iter->location.y, advance_time);
+#else			
 				AssertPrintf("Time intercept failed.\n");
+#endif				
 			else
 				iter->location = Point2(i.x, i.y);
 			iter->time_base = advance_time;
@@ -935,6 +1112,7 @@ static void SK_RemoveEmptyPolygons(SK_Polygon * who, EventMap& ioMap)
 	}
 }
 
+#if 0
 /* Evaluate all vertices and mark reflex vertices. */
 static void SK_PolygonMarkReflexVertices(SK_Polygon * poly)
 {
@@ -962,6 +1140,7 @@ static void SK_PolygonMarkReflexVertices(SK_Polygon * poly)
 		} while (iter != stop);		
 	}
 }
+#endif
 
 
 /***************************************************************************************************
@@ -981,13 +1160,14 @@ static SK_Event * SK_CheckCreateEvent(SK_Edge * a, SK_Edge * b, SK_Edge * c, dou
 	
 	Point3	cross, loc_ab(b->prev->location.x, b->prev->location.y, 0), loc_bc(b->next->location.x, b->next->location.y, 0);
 	
-	if (( is_reflex && SK_SafeIntersect2(a->supporting_plane, b->supporting_plane, c->supporting_plane, loc_ab, cross)) ||
-		(!is_reflex && SK_SafeIntersect3(a->supporting_plane, b->supporting_plane, c->supporting_plane, loc_ab, loc_bc, cross)))
+	if (( is_reflex && SK_SafeIntersect2(a, b, c, loc_ab, cross)) ||
+		(!is_reflex && SK_SafeIntersect3(a, b, c, loc_ab, loc_bc, cross)))
 	{
-		if (cross.z > time_min)
+		if (cross.z > 0.0)
+		if (cross.z >= time_min || !is_reflex)
 		if (cross.z <= 1.0)
 		// Reflex filter: for non-reflex events, at least one event must not be reflex.  This is because we know that two reflexes will be "diverging".
-		if (is_reflex || !b->prev->is_reflex || !b->next->is_reflex)
+		if (is_reflex || !b->prev->IsReflex() || !b->next->IsReflex())
 		{
 			SK_Event * e = new SK_Event;
 			
@@ -1002,17 +1182,11 @@ static SK_Event * SK_CheckCreateEvent(SK_Edge * a, SK_Edge * b, SK_Edge * c, dou
 			c->events.insert(e);
 			
 			e->self_ref = ioMap.insert(EventMap::value_type(cross.z, e));
-#if !DEV
-nuke
-#endif			
-			gMeshPoints.push_back(Point2(cross.x, cross.y));
-			if (is_reflex)
-			{
-				gMeshLines.push_back(Point2(c->prev->location.x, c->prev->location.y));
-				gMeshLines.push_back(Point2(c->next->location.x, c->next->location.y));
-			}
 			return e;
 		}
+#if LOG_SKELETONS
+		if (cross.z > 0.0 && cross.z < time_min && !is_reflex) printf("MISSED ADDING %s - Time = %lf, bisector cross = %lf\n", is_reflex ? "REFLEX" : "BISECTOR", time_min, cross.z);
+#endif		
 	}
 	return NULL;
 }
@@ -1098,7 +1272,7 @@ static void SK_CreateReflexEventsForPolygon(SK_Polygon * poly, SK_Polygon * worl
 	{
 		iter = stop = poly->ccb->next;
 		do {
-			if (iter->is_reflex)
+			if (iter->IsReflex())
 				SK_CreateReflexEventsForVertexAndPolygon(world, iter, min_time, ioMap);
 			iter = iter->next->next;
 		} while (iter != stop);
@@ -1121,11 +1295,14 @@ bool	SK_InsetPolygon(
 					int						inTerrainOut,
 					int						steps)
 {
-#if !DEV
-delete
+#if DEV 
+	try {
 #endif
+
+#if GRAPHIC_LOGGING
 	gMeshPoints.clear();
 	gMeshLines.clear();
+#endif
 
 #if DEV
 	{
@@ -1145,11 +1322,8 @@ delete
 	// Do one-time prep: split antennas, mitre sharp corners and then find any
 	// reflex vertices.
 	SK_PolygonSplitAntennas(world);
-//	SK_PolygonMitreReflexVertices(world);
-#if !DEV
-fix
-#endif
-	SK_PolygonMarkReflexVertices(world);
+	SK_PolygonMitreReflexVertices(world);
+//	SK_PolygonMarkReflexVertices(world);
 
 #if DEV	
 		DebugValidatePoly(world);
@@ -1162,256 +1336,317 @@ fix
 	SK_CreateVertexEventsForPolygon(world, 0.0, events);
 	SK_CreateReflexEventsForPolygon(world, world, 0.0, events);
 
+#if LOG_SKELETONS
+	printf("Starting events...%d events total\n", events.size());
+#endif	
 	double base_time = 0.0;
 	while (!events.empty() && (base_time = events.begin()->first) <= 1.0 && --steps)
 	{
-#if DEV
-		DebugValidateEventMap(events);
+#if GRAPHIC_LOGGING
+		gMeshPoints.clear();
 #endif	
-		SK_Event * evt = events.begin()->second;
+		pair<EventMap::iterator, EventMap::iterator> possible_events = events.equal_range(base_time);
+
+		SK_Event * evt = NULL;
 		bool made_change = false;
-#if DEV
-				
-		gMeshLines.clear();
-		gMeshLines.push_back(evt->e1->prev->location);
-		gMeshLines.push_back(evt->e1->next->location);
-		gMeshLines.push_back(evt->e2->prev->location);
-		gMeshLines.push_back(evt->e2->next->location);
-		gMeshLines.push_back(evt->e3->prev->location);
-		gMeshLines.push_back(evt->e3->next->location);
 		
+		for (EventMap::iterator eventIter = possible_events.first; eventIter != possible_events.second; ++eventIter)
+		{
+			if (eventIter->second->reflex_event)
+			if (SK_ReflexEventPossible(eventIter->second))
+			{
+				evt = eventIter->second;
+				break;
+			}
+			if (!eventIter->second->reflex_event)
+			if (SK_BisectorEventPossible(eventIter->second))
+			{
+				evt = eventIter->second;
+				break;
+			}
+		}
+
+#if GRAPHIC_LOGGING
+		if (evt)
+		{
+			gMeshLines.clear();
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e1->ends.p1,Point3(0.7,0.3,0.2)));
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e1->ends.p2,Point3(0.7,0.3,0.2)));
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e2->ends.p1,Point3(0.7,0.3,0.2)));
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e2->ends.p2,Point3(0.7,0.3,0.2)));
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e3->ends.p1,Point3(0.3,0.3,0.7)));
+			gMeshLines.push_back(pair<Point2,Point3>(evt->e3->ends.p2,Point3(0.3,0.3,0.7)));
+
+//			gMeshLines.push_back(evt->e1->prev->location);
+//			gMeshLines.push_back(evt->e1->next->location);
+//			gMeshLines.push_back(evt->e2->prev->location);
+//			gMeshLines.push_back(evt->e2->next->location);
+//			gMeshLines.push_back(evt->e3->prev->location);
+//			gMeshLines.push_back(evt->e3->next->location);
+		}		
 
 #endif
-		if (evt->reflex_event)
-		{
-			if (!SK_ReflexEventPossible(evt))
-			{
-				SK_DestroyEvent(evt, events);
-				
-			} else {
 
-				////////////////////////////////////////////
-
-				Point3 our_cross = evt->cross;		
-				EventMap::iterator evtIter = events.begin();
-				++evtIter;
-				while (evtIter != events.end() && evtIter->first == base_time)
-				{
-					if (our_cross == evtIter->second->cross)
-					if (evtIter->second->reflex_event && SK_ReflexEventPossible(evtIter->second))
-						AssertPrintf("We do not yet handle multiple simultaneous vertex events!");
-					if (our_cross == evtIter->second->cross)
-					if (!evtIter->second->reflex_event && SK_BisectorEventPossible(evtIter->second))
-						AssertPrintf("Unexpected bisector+reflex collision!");
-					++evtIter;
-				}
-
-				////////////////////////////////////////////
-				
 		
-				// The third edge is split by the reflex vertex of the first two.
-
-				SK_Vertex * nv = SK_SplitEdge(evt->e3, Point2(evt->cross.x, evt->cross.y), evt->cross.z);
-				SK_Vertex * ov = evt->e1->next;
-				
-				SK_Edge * el = nv->prev;
-				SK_Edge * er = nv->next;
-				
-				SK_Edge * vl = evt->e1;
-				SK_Edge * vr = evt->e2;
-				
-				SK_Polygon * eo = el->owner;
-				SK_Polygon * vo = vl->owner;
-				
-				DebugAssert(el->next->next == er);
-				DebugAssert(er->prev->prev == el);
-				DebugAssert(vl->next->next == vr);
-				DebugAssert(vr->prev->prev == vl);
-				DebugAssert(ov->prev == vl);
-				DebugAssert(ov->next == vr);
-				
-				// TOPOLOGICAL UPDATE
-				
-				if (eo == vo)
-				{
-					// TOPOLOGICAL SPLIT CASE - Since we have ony polygon, the reflex vertex servers it into two.
-					// In this case we repatch the vertices first.
-					
-					swap(ov->next->prev, nv->next->prev);
-					swap(ov->next, nv->next);
-
-					SK_Polygon * op = eo;
-					SK_Polygon * np = new SK_Polygon;
-					op->ccb = vl;
-					np->ccb = vr;
-					np->parent = op->parent;
-					np->parent->children.insert(np);
-					
-					SK_Edge * iter, * stop;
-					iter = stop = np->ccb;
-					do {
-						iter->owner = np;
-						iter->next->owner = np;
-						iter = iter->next->next;
-					} while (iter != stop);
-					
-					// MIGRATE CHILDREN
-					
-					set<SK_Polygon *>	moveTo;
-					for (set<SK_Polygon *>::iterator c = op->children.begin(); c != op->children.end(); ++c)
-					{
-						if (SK_PointInRing(np->ccb, (*c)->ccb->next, base_time))
-							moveTo.insert(*c);
-					}
-					for (set<SK_Polygon *>::iterator m = moveTo.begin(); m != moveTo.end(); ++m)
-					{
-						DebugAssert((*m)->parent == op);
-						np->children.insert(*m);
-						(*m)->parent = np;
-						op->children.erase(*m);
-					}
-						
-				} else {
-				
-					// TOPOLOGICAL MERGE CASE - Since we have two different polygons, some kind of merge is happening.
-					
-					// CASE 1 - edge is part of a child of reflex vertice's polygon
-					if (eo->parent == vo)
-					{
-						SK_CombinePolys(vo, eo);
-					} 
-					// CASE 2 - reflex vertex is a child of edge's polygon
-					else if (vo->parent == eo)
-					{
-						SK_CombinePolys(eo, vo);
-					}
-					// CASE 3 - both polygons are sibblings.
-					else if (vo->parent == eo->parent)
-					{
-						SK_CombinePolys(eo, vo);
-					} 
-					else 			
-					{
-						AssertPrintf("We have a topolgoical merge event but the topology is not recognized.");
-					}
-					
-					// Only now do we update the structure - preserving the rings was useful before.
-					swap(ov->next->prev, nv->next->prev);
-					swap(ov->next, nv->next);
-					
-				}
-							
-				// EVENT UPDATING
-				// We need to go through and clone reflex events that reference EL to also reference ER.
-				// Later on SK_ReflexEventPossible will filter one out.  This makes sense; when we have two
-				// parallel edges they both make reflex events, one of which is bogus.
-				
-				// Another migration is needed:
-				// For any events that have EL as the "second" event in the reflex vertex,
-				// we need to migrate to ER.
-				
-
-				set<SK_Event *>	clones;
-				EventMap::iterator nextEvt = events.begin();
-				++nextEvt;
-				for (; nextEvt != events.end(); ++nextEvt)
-				{
-					if (nextEvt->second->reflex_event && nextEvt->second->e3 == el)
-						clones.insert(nextEvt->second);
-					
-					if (nextEvt->second->reflex_event && nextEvt->second->e1 == el)
-					{
-						el->events.erase(nextEvt->second);
-						nextEvt->second->e1 = er;
-						er->events.insert(nextEvt->second);
-					}
-				}
-				
-				for (set<SK_Event *>::iterator citer = clones.begin(); citer != clones.end(); ++citer)
-				{
-					SK_Event * clone = new SK_Event(**citer);
-					clone->e3 = er;
-					clone->e1->events.insert(clone);
-					clone->e2->events.insert(clone);
-					clone->e3->events.insert(clone);
-					clone->self_ref = events.insert(EventMap::value_type(clone->cross.z, clone));
-				}
-				
-#if DEV
-				DebugValidateEventMap(events);
+		if (evt == NULL)
+		{
+#if GRAPHIC_LOGGING
+			gMeshLines.clear();
+#endif			
+			while(!events.empty() && events.begin()->first == base_time)
+			{
+				evt = events.begin()->second;
+#if GRAPHIC_LOGGING
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e1->ends.p1,Point3(0.7,0.3,0.2)));
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e1->ends.p2,Point3(0.7,0.3,0.2)));
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e2->ends.p1,Point3(0.7,0.3,0.2)));
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e2->ends.p2,Point3(0.7,0.3,0.2)));
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e3->ends.p1,Point3(0.3,0.3,0.7)));
+				gMeshLines.push_back(pair<Point2,Point3>(evt->e3->ends.p2,Point3(0.3,0.3,0.7)));
+				gMeshPoints.push_back(pair<Point2,Point3>(Point2(evt->cross.x,evt->cross.y), Point3(1.0, 0.0, 0.0)));
 #endif				
-				
-				// We also need to dump vertex events that reference EL and rebuild then for EL and ER.
-				// Same goes for all sides actually!
-				
-				SK_DestroyEventsForEdge(el, events, false);
-				DebugValidateEventMap(events);
-				SK_DestroyEventsForEdge(er, events, false);
-				DebugValidateEventMap(events);
-				SK_DestroyEventsForEdge(vl, events, false);
-				DebugValidateEventMap(events);
-				SK_DestroyEventsForEdge(vr, events, false);
-				DebugValidateEventMap(events);
-				
-				SK_CheckCreateEvent(el->prev->prev->prev->prev, el->prev->prev, el, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(el->prev->prev, el, vr, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(el, vr, vr->next->next, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(vr, vr->next->next, vr->next->next->next->next, base_time, false, events);
-				DebugValidateEventMap(events);
-
-				SK_CheckCreateEvent(vl->prev->prev->prev->prev, vl->prev->prev, vl, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(vl->prev->prev, vl, er, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(vl, er, er->next->next, base_time, false, events);
-				DebugValidateEventMap(events);
-				SK_CheckCreateEvent(er, er->next->next, er->next->next->next->next, base_time, false, events);
-				DebugValidateEventMap(events);
-
-				
+#if LOG_SKELETONS
+				printf("Trashing %s vertex at time %lf - none in this time are possible, xon = %lf,%lf.\n", evt->reflex_event ? "reflex" : "bisector", base_time, evt->cross.x, evt->cross.y);
+#endif
 				SK_DestroyEvent(evt, events);
-				DebugValidateEventMap(events);
-				
-				made_change = true;
 			}
+		}
+		
+		else if (evt->reflex_event)
+		{
+#if LOG_SKELETONS
+			printf("Executed reflect event, passed eval.t = %lf.\n", base_time);
+#endif
+#if GRAPHIC_LOGGING
+			gMeshPoints.push_back(pair<Point2,Point3>(Point2(evt->cross.x,evt->cross.y), Point3(1.0, 1.0, 1.0)));
+#endif
+			////////////////////////////////////////////
+
+			Point3 our_cross = evt->cross;		
+			EventMap::iterator evtIter = events.begin();
+			++evtIter;
+			while (evtIter != events.end() && evtIter->first == base_time)
+			{
+//				if (our_cross == evtIter->second->cross)
+//				if (evtIter->second->reflex_event && SK_ReflexEventPossible(evtIter->second))
+//					AssertPrintf("We do not yet handle multiple simultaneous vertex events!");
+
+// I think this case works...
+//				if (our_cross == evtIter->second->cross)
+//				if (!evtIter->second->reflex_event && SK_BisectorEventPossible(evtIter->second))
+//					AssertPrintf("Unexpected bisector+reflex collision!");
+				++evtIter;
+			}
+
+			////////////////////////////////////////////
+			
+	
+			// The third edge is split by the reflex vertex of the first two.
+
+			SK_Vertex * nv = SK_SplitEdge(evt->e3, Point2(evt->cross.x, evt->cross.y), evt->cross.z);
+			SK_Vertex * ov = evt->e1->next;
+			
+			// Update old vertex pos - this is used for clamping and must be maintained properly.
+			ov->location = Point2(evt->cross.x, evt->cross.y);
+			
+			
+			SK_Edge * el = nv->prev;
+			SK_Edge * er = nv->next;
+			
+			SK_Edge * vl = evt->e1;
+			SK_Edge * vr = evt->e2;
+			
+			SK_Polygon * eo = el->owner;
+			SK_Polygon * vo = vl->owner;
+			
+			DebugAssert(el->next->next == er);
+			DebugAssert(er->prev->prev == el);
+			DebugAssert(vl->next->next == vr);
+			DebugAssert(vr->prev->prev == vl);
+			DebugAssert(ov->prev == vl);
+			DebugAssert(ov->next == vr);
+			
+			// TOPOLOGICAL UPDATE
+			
+			if (eo == vo)
+			{
+				// TOPOLOGICAL SPLIT CASE - Since we have ony polygon, the reflex vertex servers it into two.
+				// In this case we repatch the vertices first.
+				
+				swap(ov->next->prev, nv->next->prev);
+				swap(ov->next, nv->next);
+
+				SK_Polygon * op = eo;
+				SK_Polygon * np = new SK_Polygon;
+				op->ccb = vl;
+				np->ccb = vr;
+				np->parent = op->parent;
+				np->parent->children.insert(np);
+				
+				SK_Edge * iter, * stop;
+				iter = stop = np->ccb;
+				do {
+					iter->owner = np;
+					iter->next->owner = np;
+					iter = iter->next->next;
+				} while (iter != stop);
+				
+				// MIGRATE CHILDREN
+				
+				set<SK_Polygon *>	moveTo;
+				for (set<SK_Polygon *>::iterator c = op->children.begin(); c != op->children.end(); ++c)
+				{
+					if (SK_PointInRing(np->ccb, (*c)->ccb->next, base_time))
+						moveTo.insert(*c);
+				}
+				for (set<SK_Polygon *>::iterator m = moveTo.begin(); m != moveTo.end(); ++m)
+				{
+					DebugAssert((*m)->parent == op);
+					np->children.insert(*m);
+					(*m)->parent = np;
+					op->children.erase(*m);
+				}
+					
+			} else {
+			
+				// TOPOLOGICAL MERGE CASE - Since we have two different polygons, some kind of merge is happening.
+				
+				// CASE 1 - edge is part of a child of reflex vertice's polygon
+				if (eo->parent == vo)
+				{
+					SK_CombinePolys(vo, eo);
+				} 
+				// CASE 2 - reflex vertex is a child of edge's polygon
+				else if (vo->parent == eo)
+				{
+					SK_CombinePolys(eo, vo);
+				}
+				// CASE 3 - both polygons are sibblings.
+				else if (vo->parent == eo->parent)
+				{
+					SK_CombinePolys(eo, vo);
+				} 
+				else 			
+				{
+					AssertPrintf("We have a topolgoical merge event but the topology is not recognized.");
+				}
+				
+				// Only now do we update the structure - preserving the rings was useful before.
+				swap(ov->next->prev, nv->next->prev);
+				swap(ov->next, nv->next);
+				
+			}
+						
+			// EVENT UPDATING
+			// We need to go through and clone reflex events that reference EL to also reference ER.
+			// Later on SK_ReflexEventPossible will filter one out.  This makes sense; when we have two
+			// parallel edges they both make reflex events, one of which is bogus.
+			
+			// Another migration is needed:
+			// For any events that have EL as the "second" event in the reflex vertex,
+			// we need to migrate to ER.
+			
+
+			set<SK_Event *>	clones;
+			EventMap::iterator nextEvt = events.begin();
+			++nextEvt;
+			for (; nextEvt != events.end(); ++nextEvt)
+			{
+				if (nextEvt->second->reflex_event && nextEvt->second->e3 == el)
+					clones.insert(nextEvt->second);
+				
+				if (nextEvt->second->reflex_event && nextEvt->second->e1 == el)
+				{
+					el->events.erase(nextEvt->second);
+					nextEvt->second->e1 = er;
+					er->events.insert(nextEvt->second);
+				}
+			}
+			
+			for (set<SK_Event *>::iterator citer = clones.begin(); citer != clones.end(); ++citer)
+			{
+				SK_Event * clone = new SK_Event(**citer);
+				clone->e3 = er;
+				clone->e1->events.insert(clone);
+				clone->e2->events.insert(clone);
+				clone->e3->events.insert(clone);
+				clone->self_ref = events.insert(EventMap::value_type(clone->cross.z, clone));
+			}
+			
+#if DEV
+			DebugValidateEventMap(events);
+#endif				
+			
+			// We also need to dump vertex events that reference EL and rebuild then for EL and ER.
+			// Same goes for all sides actually!
+			
+			SK_DestroyEventsForEdge(el, events, false);
+//				DebugValidateEventMap(events);
+			SK_DestroyEventsForEdge(er, events, false);
+//				DebugValidateEventMap(events);
+			SK_DestroyEventsForEdge(vl, events, false);
+//				DebugValidateEventMap(events);
+			SK_DestroyEventsForEdge(vr, events, false);
+//				DebugValidateEventMap(events);
+			
+			SK_CheckCreateEvent(el->prev->prev->prev->prev, el->prev->prev, el, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(el->prev->prev, el, el->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(vr->prev->prev, vr, vr->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(vr, vr->next->next, vr->next->next->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+
+			SK_CheckCreateEvent(vl->prev->prev->prev->prev, vl->prev->prev, vl, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(vl->prev->prev, vl, vl->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(er->prev->prev, er, er->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+			SK_CheckCreateEvent(er, er->next->next, er->next->next->next->next, base_time, false, events);
+//				DebugValidateEventMap(events);
+
+			
+			SK_DestroyEvent(evt, events);
+//				DebugValidateEventMap(events);
+			
+			made_change = true;
 
 		} else {
-		
-			if (!SK_BisectorEventPossible(evt))
-			{
-				SK_DestroyEvent(evt, events);
-			} else {
-				
-				// Middle edge is being deleted.
-				
-				SK_Edge * dead = evt->e2;
-				SK_Edge * prev = evt->e1;
-				SK_Edge * next = evt->e3;
-				
-				DebugAssert(dead->prev->prev == prev);
-				DebugAssert(dead->next->next == next);
-				
-				// Wipe out ALL events for this edge, reflex or otherwise.
-				SK_DestroyEventsForEdge(dead, events, true);
-				SK_DestroyEventsForEdge(dead, events, false);
-				
-				prev->next = dead->next;
-				dead->next->prev = prev;
-				
-				if (dead->owner->ccb == dead)
-					dead->owner->ccb = next;
-				
-				delete dead->prev;
-				delete dead;
-				
-				SK_CheckCreateEvent(prev->prev->prev, prev, next, base_time, false, events);
-				SK_CheckCreateEvent(prev, next, next->next->next, base_time, false, events);
-				
-				made_change = true;
-			}
+
+#if LOG_SKELETONS
+			printf("Executed bisector event, t = %lf.\n", base_time);			
+#endif	
+#if GRAPHIC_LOGGING
+			gMeshPoints.push_back(pair<Point2,Point3>(Point2(evt->cross.x,evt->cross.y), Point3(1.0, 1.0, 1.0)));
+#endif			
+			// Middle edge is being deleted.
+			
+			SK_Edge * dead = evt->e2;
+			SK_Edge * prev = evt->e1;
+			SK_Edge * next = evt->e3;
+			
+			DebugAssert(dead->prev->prev == prev);
+			DebugAssert(dead->next->next == next);
+			
+			// Wipe out ALL events for this edge, reflex or otherwise.
+			SK_DestroyEventsForEdge(dead, events, true);
+			SK_DestroyEventsForEdge(dead, events, false);
+			
+			prev->next = dead->next;
+			dead->next->prev = prev;
+			
+			if (dead->owner->ccb == dead)
+				dead->owner->ccb = next;
+			
+			delete dead->prev;
+			delete dead;
+			
+			SK_CheckCreateEvent(prev->prev->prev, prev, next, base_time, false, events);
+			SK_CheckCreateEvent(prev, next, next->next->next, base_time, false, events);
+			
+			made_change = true;
 		}
 			
 
@@ -1426,28 +1661,32 @@ fix
 #if DEV	
 			DebugValidatePoly(world);
 			DebugValidateEventMap(events);
-#endif		
-		} else {
-#if DEV		
-			gMeshLines.clear();
 #endif
 		}
 		
-#if DEV
-		gMeshPoints.clear();
-		for (EventMap::iterator eiter = events.begin(); eiter != events.end(); ++eiter)
-		{
-			gMeshPoints.push_back(Point2(eiter->second->cross.x,eiter->second->cross.y));
-		}
-#endif			
-
 	}		
+
+#if GRAPHIC_LOGGING
+	for (EventMap::iterator eiter = events.begin(); eiter != events.end(); ++eiter)
+	{
+		if (eiter->second->reflex_event)
+			gMeshPoints.push_back(pair<Point2,Point3>(Point2(eiter->second->cross.x,eiter->second->cross.y), Point3(0.2, 0.2, 0.8)));
+		else
+			gMeshPoints.push_back(pair<Point2,Point3>(Point2(eiter->second->cross.x,eiter->second->cross.y), Point3(0.2, 0.8, 0.2)));
+	}
+#endif			
 
 	if (events.empty())
 		SK_AdvanceVertices(world, 1.0);
 	else
-		SK_AdvanceVertices(world, base_time);
+ 		SK_AdvanceVertices(world, base_time);
 
+#if LOG_SKELETONS 		
+ 	for (set<SK_Polygon *>::iterator i = world->children.begin(); i != world->children.end(); ++i)
+ 	{
+ 		printf("Poly has %d sides.\n", (*i)->num_sides());
+ 	}
+#endif 	
 	
 	SK_PolygonToPmwx(world, outMap);
 	for (Pmwx::Face_iterator face = outMap.faces_begin(); face != outMap.faces_end(); ++face)
@@ -1466,6 +1705,11 @@ fix
 	SK_PolygonDestroy(world);
 	
 	return steps != -1;
+#if DEV 
+	} catch (...) {
+		return false;
+	}
+#endif
 }
 
 
