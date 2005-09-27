@@ -51,8 +51,10 @@
 	TOKEN(dem_UrbanPropertyValue)	//	Human settlement density
 	TOKEN(dem_UrbanRadial)			//	DEM of urban radial stuff
 	TOKEN(dem_UrbanTransport)		//	DEM of possible transportation stuff
+	TOKEN(dem_UrbanSquare)			//	Boolean DEM - is it square?
 //	TOKEN(dem_VegetationDensity)	//	Vegetation density ratio
 
+	TOKEN(dem_TemperatureSeaLevel)	//	Average Temperature Data corrected for height
 
 	TOKEN(dem_HydroDirection)		// Direction of rainfall per DEM point
 	TOKEN(dem_HydroQuantity)		// Quantity of water transit per DEM point
