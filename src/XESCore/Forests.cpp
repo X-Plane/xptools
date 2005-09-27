@@ -4,6 +4,7 @@
 #include "MapAlgs.h"
 #include "AssertUtils.h"
 #include "DEMTables.h"
+#include "CompGeomUtils.h"
 #include "Skeleton.h"
 
 #define DEBUG_SHOW_MAP_MERGE_FAIL 0
@@ -122,6 +123,8 @@ void GenerateForests(
 	float	total;
 	int		ctr;
 
+	int		total_good = 0, total_bad = 0;
+
 	if (inProg && inProg(0, 2, "Indexing mesh", 0.0)) return;
 
 		Pmwx::Ccb_halfedge_circulator	iter, stop;
@@ -229,153 +232,161 @@ void GenerateForests(
 					else
 						(*ee)->mTransition = 30.0;
 
-					InsetPmwx(baseMap, baseFace);
-//					if (!SK_InsetPolygon(face, baseMap, terrain_ForestPark, terrain_Water, 2000))
-//						throw 1;
-					
-					SimplifyMap(baseMap);
-					RemoveUnboundedWater(baseMap);
-					DebugAssert(baseMap.is_valid());
-					
-					int forest_type_ctr = 0;
-					for (set<int>::iterator fiter = forest_types.begin(); fiter != forest_types.end(); ++fiter, ++forest_type_ctr)
+//					InsetPmwx(baseMap, baseFace);
+					if (!SK_InsetPolygon(baseFace, baseMap, terrain_ForestPark, terrain_Water, 2000))
+						++total_bad;
+					else
 					{
-						/************************************************************************************
-						 * BURN IN ONE FOREST TYPE
-						 ************************************************************************************/
-						// Burn in triangles that match this forest type.
+						++total_good;
+					
+						SimplifyMap(baseMap);
+						RemoveUnboundedWater(baseMap);
+						DebugAssert(baseMap.is_valid());
 						
-							Pmwx					forestMap;
-							set<GISHalfedge *>		inForest;
-							map<Point2, GISVertex *, lesser_y_then_x> 			pt_index;
-							map<Point2, GISVertex *, lesser_y_then_x>::iterator i1, i2;
-
-						int ctr = 0;
-						int num_total = 0;
-						int num_slow = 0;
-
-						multimap<double, pair<Point2, Point2> >	sides;
-				
-						for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
-						if (tri_forest_type(*tri) == *fiter)
-						for (int s = 0; s < 3; ++s)
+						int forest_type_ctr = 0;
+						for (set<int>::iterator fiter = forest_types.begin(); fiter != forest_types.end(); ++fiter, ++forest_type_ctr)
 						{
-							if (tri_forest_type((*tri)->neighbor(s)) != *fiter ||
-								forest_tris.count((*tri)->neighbor(s)) == 0)
-							{
-								FastKernel::Point_2 dp1 = (*tri)->vertex(CDT::ccw(s))->point();
-								FastKernel::Point_2 dp2 = (*tri)->vertex(CDT:: cw(s))->point();
-								Point2 p1(dp1.x(), dp1.y());
-								Point2 p2(dp2.x(), dp2.y());
-								sides.insert(multimap<double, pair<Point2, Point2> >::value_type(min(p1.x,p2.x), pair<Point2, Point2>(p1, p2)));
-							}
-						}
-						
-						for (multimap<double, pair<Point2, Point2> >::iterator s = sides.begin(); s != sides.end(); ++s)
-						{
-							Point2 p1 = s->second.first;
-							Point2 p2 = s->second.second;
-							{
+							/************************************************************************************
+							 * BURN IN ONE FOREST TYPE
+							 ************************************************************************************/
+							// Burn in triangles that match this forest type.
+							
+								Pmwx					forestMap;
+								set<GISHalfedge *>		inForest;
+								map<Point2, GISVertex *, lesser_y_then_x> 			pt_index;
+								map<Point2, GISVertex *, lesser_y_then_x>::iterator i1, i2;
 
-								GISHalfedge * nh;
-								i1 = pt_index.find(p1);
-								i2 = pt_index.find(p2);
-								if (i1 != pt_index.end())
+							int ctr = 0;
+							int num_total = 0;
+							int num_slow = 0;
+
+							multimap<double, pair<Point2, Point2> >	sides;
+					
+							for (set<CDT::Face_handle>::iterator tri = forest_tris.begin(); tri != forest_tris.end(); ++tri)
+							if (tri_forest_type(*tri) == *fiter)
+							for (int s = 0; s < 3; ++s)
+							{
+								if (tri_forest_type((*tri)->neighbor(s)) != *fiter ||
+									forest_tris.count((*tri)->neighbor(s)) == 0)
 								{
-									if (i2 != pt_index.end())
-									{
-										/* CASE 1 - Both points already in. */
-										nh = forestMap.nox_insert_edge_between_vertices(i1->second, i2->second);
-									} 
-									else
-									{
-										/* Case 2 - Point 1 in, point 2 new. */
-										nh = forestMap.nox_insert_edge_from_vertex(i1->second, p2);
-										pt_index[p2] = nh->target();
-									}
-								} 
-								else
-								{
-									if (i2 != pt_index.end())
-									{
-										/* Case 3 - Point 1 new, point 2 in. */
-										nh = forestMap.nox_insert_edge_from_vertex(i2->second, p1)->twin();
-										pt_index[p1] = nh->source();
-									} 
-									else
-									{
-										/* Case 4 - both points new. */
-										nh = forestMap.nox_insert_edge_in_hole(p1, p2);
-										++num_slow;
-										pt_index[p1] = nh->source();
-										pt_index[p2] = nh->target();
-									}
+									FastKernel::Point_2 dp1 = (*tri)->vertex(CDT::ccw(s))->point();
+									FastKernel::Point_2 dp2 = (*tri)->vertex(CDT:: cw(s))->point();
+									Point2 p1(dp1.x(), dp1.y());
+									Point2 p2(dp2.x(), dp2.y());
+									sides.insert(multimap<double, pair<Point2, Point2> >::value_type(min(p1.x,p2.x), pair<Point2, Point2>(p1, p2)));
 								}
-
-								inForest.insert(nh);
-								++num_total;
-								
 							}
-						}
-						DebugAssert(forestMap.is_valid());
-//						printf("Slow inserts: %d. total inserts: %d.  total halfedges: %d.  Total faces: %d.\n",
-//							num_slow, num_total, forestMap.number_of_halfedges(), forestMap.number_of_faces());
+							
+							for (multimap<double, pair<Point2, Point2> >::iterator s = sides.begin(); s != sides.end(); ++s)
+							{
+								Point2 p1 = s->second.first;
+								Point2 p2 = s->second.second;
+								{
 
-						for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
-						{
-							f->mTerrainType = terrain_Natural;
-							f->mAreaFeature.mFeatType = NO_VALUE;
-						}
+									GISHalfedge * nh;
+									i1 = pt_index.find(p1);
+									i2 = pt_index.find(p2);
+									if (i1 != pt_index.end())
+									{
+										if (i2 != pt_index.end())
+										{
+											/* CASE 1 - Both points already in. */
+											nh = forestMap.nox_insert_edge_between_vertices(i1->second, i2->second);
+										} 
+										else
+										{
+											/* Case 2 - Point 1 in, point 2 new. */
+											nh = forestMap.nox_insert_edge_from_vertex(i1->second, p2);
+											pt_index[p2] = nh->target();
+										}
+									} 
+									else
+									{
+										if (i2 != pt_index.end())
+										{
+											/* Case 3 - Point 1 new, point 2 in. */
+											nh = forestMap.nox_insert_edge_from_vertex(i2->second, p1)->twin();
+											pt_index[p1] = nh->source();
+										} 
+										else
+										{
+											/* Case 4 - both points new. */
+											nh = forestMap.nox_insert_edge_in_hole(p1, p2);
+											++num_slow;
+											pt_index[p1] = nh->source();
+											pt_index[p2] = nh->target();
+										}
+									}
 
-						for (set<GISHalfedge *>::iterator e = inForest.begin(); e != inForest.end(); ++e)
-						{
-							DebugAssert(!(*e)->face()->is_unbounded());
-							(*e)->face()->mAreaFeature.mFeatType = terrain_ForestPark;
-							(*e)->face()->mTerrainType = terrain_Natural;
-						}
+									inForest.insert(nh);
+									++num_total;
+									
+								}
+							}
+							DebugAssert(forestMap.is_valid());
+	//						printf("Slow inserts: %d. total inserts: %d.  total halfedges: %d.  Total faces: %d.\n",
+	//							num_slow, num_total, forestMap.number_of_halfedges(), forestMap.number_of_faces());
 
-						Pmwx	baseClone(baseMap);
-#if DEBUG_SHOW_MAP_MERGE_FAIL					
-						try {
-#endif						
-							TopoIntegrateMaps(&forestMap, &baseClone);
-//							if (DEBUG_FOREST_TREE_MAPS_CTR == forest_type_ctr)
-//								throw forest_type_ctr;
-							MergeMaps(forestMap, baseClone, true, NULL, true);
-#if DEBUG_SHOW_MAP_MERGE_FAIL							
-						} catch (...) {
-							if (ConfirmMessage("Would you like to see the forest map or original road map?",
-											"Forest", "Roads"))
-								gMap = forestMap;
-							else
-								gMap = baseClone;
-							gFaceSelection.clear();
-							gEdgeSelection.clear();
-							gVertexSelection.clear();
-							WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);							
-							return;
-						}
-#endif						
-						SimplifyMap(forestMap);
-						
-						for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
-						if (f->mTerrainType == terrain_ForestPark)
-						if (f->mAreaFeature.mFeatType == terrain_ForestPark)
-						if (!f->is_unbounded())
-						{
-							GISPolyObjPlacement_t	placement;
-							placement.mRepType = *fiter;
-							iter = stop = f->outer_ccb();
-							do {
-								placement.mShape.push_back(iter->target()->point());
-								++iter;
-								forest_pt_count++;
-							} while (iter != stop);
-							placement.mLocation = placement.mShape.centroid();
-							placement.mHeight = 255.0;
-							placement.mDerived = false;
-							face->mPolyObjs.push_back(placement);					
-							forest_poly_count++;
+							for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
+							{
+								f->mTerrainType = terrain_Natural;
+								f->mAreaFeature.mFeatType = NO_VALUE;
+							}
+
+							for (set<GISHalfedge *>::iterator e = inForest.begin(); e != inForest.end(); ++e)
+							{
+								DebugAssert(!(*e)->face()->is_unbounded());
+								(*e)->face()->mAreaFeature.mFeatType = terrain_ForestPark;
+								(*e)->face()->mTerrainType = terrain_Natural;
+							}
+
+							Pmwx	baseClone(baseMap);
+	#if DEBUG_SHOW_MAP_MERGE_FAIL					
+							try {
+	#endif						
+								TopoIntegrateMaps(&forestMap, &baseClone);
+	//							if (DEBUG_FOREST_TREE_MAPS_CTR == forest_type_ctr)
+	//								throw forest_type_ctr;
+								MergeMaps(forestMap, baseClone, true, NULL, true);
+	#if DEBUG_SHOW_MAP_MERGE_FAIL							
+							} catch (...) {
+								if (ConfirmMessage("Would you like to see the forest map or original road map?",
+												"Forest", "Roads"))
+									gMap = forestMap;
+								else
+									gMap = baseClone;
+								gFaceSelection.clear();
+								gEdgeSelection.clear();
+								gVertexSelection.clear();
+								WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);							
+								return;
+							}
+	#endif						
+							SimplifyMap(forestMap);
+							
+							for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
+							if (f->mTerrainType == terrain_ForestPark)
+							if (f->mAreaFeature.mFeatType == terrain_ForestPark)
+							if (!f->is_unbounded())
+							{
+								GISPolyObjPlacement_t	placement;
+								placement.mRepType = *fiter;
+								iter = stop = f->outer_ccb();
+								do {
+									placement.mShape.push_back(iter->target()->point());
+									++iter;
+									forest_pt_count++;
+								} while (iter != stop);
+								
+//								Polygon2	temp(placement.mShape);
+//								InsetPolygon2(temp, NULL, 30.0 * MTR_TO_NM * NM_TO_DEG_LAT, true, placement.mShape, NULL, NULL);
+								
+								placement.mLocation = placement.mShape.centroid();
+								placement.mHeight = 255.0;
+								placement.mDerived = false;
+								face->mPolyObjs.push_back(placement);					
+								forest_poly_count++;
+							}
 						}
 					}
 				}
@@ -393,5 +404,6 @@ void GenerateForests(
 
 	printf("Indexed Tris: %d, Hashed tris = %d, Processed Tris = %d, Processed GT Polys = %d, Hash ops = %d\n", indexed_tris, hashed_tris, processed_tris, processed_gt, hash_fetches);
 	printf("Total forest polys = %d, total forest pts = %d\n", forest_poly_count, forest_pt_count);
+	printf("Insets: %d good, %d bad, %d total.\n", total_good, total_bad, total_good + total_bad);
 	
 }
