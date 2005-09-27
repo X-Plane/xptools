@@ -28,6 +28,7 @@
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 #include "AptDefs.h"
+#include "CompGeomDefs3.h"
 
 extern Pmwx					gMap;
 extern DEMGeoMap			gDem;
@@ -37,9 +38,9 @@ extern DEMGeoMap			gDem;
 //extern CDT				gTriangulationLo;
 extern CDT					gTriangulationHi;
 
-extern vector<Point2>		gMeshPoints;
-extern vector<Point2>		gMeshLines;
-extern int					gLayer;
+extern vector<pair<Point2,Point3> >		gMeshPoints;
+extern vector<pair<Point2,Point3> >		gMeshLines;
+//extern int					gLayer;
 
 extern string				gFilePath;
 extern bool					gDirty;

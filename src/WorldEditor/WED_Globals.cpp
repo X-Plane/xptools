@@ -31,9 +31,9 @@ DEMGeoMap			gDem;
 //CDT					gTriangulationLo;
 CDT					gTriangulationHi;
 
-vector<Point2>		gMeshPoints;
-vector<Point2>		gMeshLines;
-int					gLayer = NO_DATA;
+vector<pair<Point2,Point3> >		gMeshPoints;
+vector<pair<Point2,Point3> >		gMeshLines;
+//int					gLayer = NO_DATA;
 
 string				gFilePath;
 bool				gDirty = false;
