@@ -42,7 +42,8 @@ struct	DEMColorBand_t {
 typedef map<float, DEMColorBand_t>	ColorBandMap;
 typedef hash_map<int, ColorBandMap>	ColorBandTable;
 extern ColorBandTable				gColorBands;
-	
+
+extern set<int>						gEnumDEMs;	
 
 enum {
 	proj_Down,
@@ -80,6 +81,7 @@ struct	NaturalTerrainInfo_t {
 	float			urban_radial_max;
 	float			urban_trans_min;
 	float			urban_trans_max;
+	int				urban_square;
 	
 	float			lat_min;
 	float			lat_max;
@@ -128,6 +130,7 @@ int		FindNaturalTerrain(
 				float	urban_density,
 				float	urban_radial,
 				float	urban_trans,
+				int		urban_square,	// use 1=square, 2=irregulra NO_DATA
 				float	lat,			// use NO_DATA!
 				int		variant);		// use 0
 
