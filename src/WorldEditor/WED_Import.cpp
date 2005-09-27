@@ -61,6 +61,8 @@ enum {
 	import_Div,
 	import_USGSNatural,
 	import_IDA,
+	import_GeoTIFF,
+	import_DTED,
 	import_Div2,
 	import_Raw8,
 	import_Raw16LE,
@@ -71,8 +73,8 @@ enum {
 	import_RawFloatBE
 };
 static const char * kTitles = 
-	"PNG;BMP;TIFF/GeoTIFF;"
-	"-;USGS Natural DEM;IDA;"
+	"PNG;BMP;TIFF;"
+	"-;USGS Natural DEM;IDA;GeoTiff;DTED;"
 	"-;8-Bit Raw;16-Bit Raw (IBM);32-Bit Raw (IBM);Floating Point Raw(IBM);16-Bit Raw (Mac);32-Bit Raw (Mac);Floating Point Raw(Mac)";
 
 static	int	kImportLayers[] = {
@@ -118,6 +120,7 @@ const int WED_IMPORT_NORTH = 1008;
 const int WED_IMPORT_SOUTH = 1009;
 const int WED_IMPORT_EAST = 1010;
 const int WED_IMPORT_WEST = 1011;
+const int WED_IMPORT_MAP = 1012;
 
 void	WED_ShowImportDialog(void)
 {
@@ -168,7 +171,7 @@ void	WED_ShowImportDialog(void)
 					XP_ROW,						
 						XP_CAPTION, "East:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.east, XP_TAG, WED_IMPORT_EAST,
 						XP_CAPTION, "North:", XP_EDIT_FLOAT, 15, 6, 1, &sImportState.north, XP_TAG, WED_IMPORT_NORTH,
-						XP_BUTTON_ACTION, "Map", DimsFromMap,
+						XP_BUTTON_ACTION, "Map", DimsFromMap, XP_TAG, WED_IMPORT_MAP,
 					XP_END,
 					XP_ROW, XP_BUTTON_OK, "Import", XP_END,
 				XP_END,
@@ -221,10 +224,42 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 		
 		if (sImportState.format == import_USGSNatural)
 		{
+			theDem = &gDem[target_layer];		
+			if (!ExtractUSGSNaturalFile(*theDem, fileBuf))
+			{
+				DoUserAlert("Unable to read USGS Natural file.");
+				return;
+			}
 		}
 		
 		if (sImportState.format == import_IDA)
 		{
+			theDem = &gDem[target_layer];		
+			if (!ExtractIDAFile(*theDem, fileBuf))
+			{
+				DoUserAlert("Unable to read IDA file.");
+				return;
+			}
+		}
+
+		if (sImportState.format == import_GeoTIFF)
+		{
+			theDem = &gDem[target_layer];		
+			if (!ExtractGeoTiff(*theDem, fileBuf))
+			{
+				DoUserAlert("Unable to read GeoTIFF file.");
+				return;
+			}
+		}
+		
+		if (sImportState.format == import_DTED)
+		{
+			theDem = &gDem[target_layer];		
+			if (!ExtractDTED(*theDem, fileBuf))
+			{
+				DoUserAlert("Unable to read DTED file.");
+				return;
+			}
 		}
 		
 		if (sImportState.format == import_Raw8 ||
@@ -316,11 +351,13 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 		if (!sImportForwardMap.empty())
 			TranslateDEMForward(*theDem, sImportForwardMap);	
 		
-		
-		theDem->mWest = sImportState.west;
-		theDem->mEast = sImportState.east;
-		theDem->mSouth = sImportState.south;
-		theDem->mNorth = sImportState.north;
+		if (sImportState.format != import_DTED && sImportState.format != import_USGSNatural && sImportState.format != import_GeoTIFF)
+		{
+			theDem->mWest = sImportState.west;
+			theDem->mEast = sImportState.east;
+			theDem->mSouth = sImportState.south;
+			theDem->mNorth = sImportState.north;
+		}
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange,(void*) target_layer);
 	}
 }
@@ -339,13 +376,18 @@ void ImportEnable(XPWidgetID)
 	XPDataFromItem(sImport, WED_IMPORT_RESCALE);
 	XPDataFromItem(sImport, WED_IMPORT_FORMAT);
 	bool is_raw = sImportState.format >= import_Raw8;
-
+	bool has_geo = sImportState.format == import_DTED || sImportState.format == import_USGSNatural || sImportState.format == import_GeoTIFF;
 	XPEnableByTag(sImport, WED_IMPORT_SCALE, sImportState.rescale);
 	XPEnableByTag(sImport, WED_IMPORT_OFFSET, sImportState.rescale);
 	XPEnableByTag(sImport, WED_IMPORT_BYTE_OFFSET, is_raw);
 	XPEnableByTag(sImport, WED_IMPORT_BYTE_WIDTH, is_raw);
 	XPEnableByTag(sImport, WED_IMPORT_BYTE_HEIGHT, is_raw);
-	
+
+	XPEnableByTag(sImport, WED_IMPORT_NORTH, !has_geo);
+	XPEnableByTag(sImport, WED_IMPORT_SOUTH, !has_geo);
+	XPEnableByTag(sImport, WED_IMPORT_EAST , !has_geo);
+	XPEnableByTag(sImport, WED_IMPORT_WEST , !has_geo);
+	XPEnableByTag(sImport, WED_IMPORT_MAP  , !has_geo);
 }
 
 static	void	LoadCLUT(XPWidgetID inID)
