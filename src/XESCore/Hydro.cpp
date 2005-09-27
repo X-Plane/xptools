@@ -1317,8 +1317,8 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 		// Now nuke anyone we got rid of and recalc face sizes.		
 		for (set<GISHalfedge *>::iterator nuke_e = nuke_he.begin(); nuke_e != nuke_he.end(); ++nuke_e)
 		{
-			gMeshLines.push_back((*nuke_e)->source()->point());
-			gMeshLines.push_back((*nuke_e)->target()->point());
+//			gMeshLines.push_back((*nuke_e)->source()->point());
+//			gMeshLines.push_back((*nuke_e)->target()->point());
 			
 			GISFace * a = (*nuke_e)->face();
 			GISFace * b = (*nuke_e)->twin()->face();
@@ -1365,10 +1365,10 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge)
 				edge = ioMap.split_edge(edge, Segment2(edge->source()->point(),edge->target()->point()).midpoint())->next();
 			}
 			
+			if (edge->next() == stop) last_loop = true;
+			
 			if (!first_split || edge->next() != stop)
 				ioMap.split_edge(edge->next(), Segment2(edge->next()->source()->point(),edge->next()->target()->point()).midpoint());
-			else
-				last_loop = true;
 
 			Point2				cross_pt;
 			Pmwx::Locate_type	cross_type;
@@ -1443,9 +1443,13 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 	if (!f->is_unbounded())
 	if (f->IsWater())
 		water.insert(f);			
+		
+	PROGRESS_START(func, 0, 1, "Smoothing coastlines");
+	int ctr = 0;
 	
-	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i)
+	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
+		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
 		set<GISHalfedge *>	e;
 		e.insert((*i)->outer_ccb());
 		for (Pmwx::Holes_iterator h = (*i)->holes_begin(); h != (*i)->holes_end(); ++h)
@@ -1456,4 +1460,5 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 			SimplifyWaterCCB(ioMap,*ee);
 		}
 	}
+	PROGRESS_DONE(func, 0, 1, "Smoothing coastlines");
 }
