@@ -518,12 +518,10 @@ bool	SK_ReflexEventPossible(SK_Event * inEvent)
 	// reflex events - they're more expensive to handle and risk multiple simultaneous reflex events if we leave 'em 
 	// around.
 
-#if !DEV
-revisit this
-	why do we need this in?  imagine a bisector event where: the sides are actually CLOSING in (e.g. the u-turn is more than 180
-	degrees.  Make one side an antenna...poof!  this isn't' a bisector event because both are reflexes and the intersection point will be in space.
-	Solution - this config defines that there be a reflex event corresponding to it (from the antenna) that cleans it up.
-#endif
+//	why do we need this in?  imagine a bisector event where: the sides are actually CLOSING in (e.g. the u-turn is more than 180
+//	degrees.  Make one side an antenna...poof!  this isn't' a bisector event because both are reflexes and the intersection point will be in space.
+//	Solution - this config defines that there be a reflex event corresponding to it (from the antenna) that cleans it up.
+
 	// If topologically we're really a bisector event, bail.
 //	if (e_prev == inEvent->e1 || e_next == inEvent->e1 || e_prev == inEvent->e2 || e_next == inEvent->e2) return false;
 
@@ -625,9 +623,7 @@ bool	SK_BisectorEventPossible(SK_Event * inEvent)
 */	
 
 	// BEn says: try anyway for now
-	#if !DEV 
-	Revisit this - we need to get all of our on-edge stuff right!
-	#endif
+//	TODO Revisit this - we need to get all of our on-edge stuff right!
 
 	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
 	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
