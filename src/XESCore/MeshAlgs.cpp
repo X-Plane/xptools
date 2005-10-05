@@ -1757,6 +1757,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	DEMGeo&	inRelElev(inDEMs[dem_RelativeElevation]);
 	DEMGeo&	inRelElevRange(inDEMs[dem_ElevationRange]);
 	DEMGeo&	inTemp(inDEMs[dem_Temperature]);
+	DEMGeo&	inTempRng(inDEMs[dem_TemperatureRange]);
 	DEMGeo&	inRain(inDEMs[dem_Rainfall]);
 	DEMGeo& inUrbanDensity(inDEMs[dem_UrbanDensity]);
 	DEMGeo& inUrbanRadial(inDEMs[dem_UrbanRadial]);
@@ -1826,6 +1827,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	tm3 = inTemp.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
 				float	tm = SAFE_AVERAGE(tm1, tm2, tm3);	// Could be safe max.
 
+				float	tmr1 = inTempRng.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
+				float	tmr2 = inTempRng.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
+				float	tmr3 = inTempRng.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	tmr = SAFE_AVERAGE(tmr1, tmr2, tmr3);	// Could be safe max.
+
 				float	rn1 = inRain.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
 				float	rn2 = inRain.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
 				float	rn3 = inRain.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
@@ -1882,7 +1888,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int x_variant = fabs(center_x /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int y_variant = fabs(center_y /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int variant = ((x_variant + y_variant * 2) % 4) + 1;
-				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, rn, near_water, sh, re, er, uden, urad, utrn, usq, center_y, variant);
+				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh, re, er, uden, urad, utrn, usq, center_y, variant);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				

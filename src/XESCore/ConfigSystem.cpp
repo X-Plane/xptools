@@ -70,11 +70,22 @@ bool TokenizeFunc(const char * s, const char * e, void * ref)
 	return true;
 }
 
+static bool HandleInclude(const vector<string>& args, void * ref)
+{
+	if (args.size() < 2) return false;
+	return LoadConfigFile(args[1].c_str());
+}
+
+
 bool	RegisterLineHandler(
 					const char * 			inToken, 
 					ProcessConfigString_f 	inHandler, 
 					void * 					inRef)
 {
+	if (sHandlerTable.empty())
+	{
+		sHandlerTable.insert(HandlerMap::value_type("INCLUDE", HandlerEntry(HandleInclude, NULL)));
+	}
 	string	token(inToken);
 	if (sHandlerTable.find(inToken) != sHandlerTable.end())
 		return false;
@@ -114,7 +125,7 @@ bool	LoadConfigFile(const char * inFilename)
 		while (!TextScanner_IsDone(scanner))
 		{
 			vector<string>	tokens;
-			TextScanner_TokenizeLine(scanner, " \t", "\r\n#", -1, TokenizeFunc, &tokens);
+			TextScanner_TokenizeLine(scanner, " \t", "\r\n#\"", -1, TokenizeFunc, &tokens);
 			if (!tokens.empty())
 			{
 				HandlerMap::iterator h = sHandlerTable.find(tokens[0]);

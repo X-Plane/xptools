@@ -66,6 +66,8 @@ struct	NaturalTerrainInfo_t {
 	float			slope_max;
 	float			temp_min;
 	float			temp_max;
+	float			temp_rng_min;
+	float			temp_rng_max;
 	float			rain_min;
 	float			rain_max;
 	int				near_water;
@@ -122,6 +124,7 @@ int		FindNaturalTerrain(
 				float 	slope,
 				float	slope_tri,
 				float	temp,
+				float	temp_rng,
 				float	rain,
 				int		water,
 				float	slopeheading,
@@ -193,6 +196,7 @@ bool	IsForestType(int inType);
 
 extern	string	gNaturalTerrainFile;
 extern	string	gLanduseTransFile;
+extern string	gReplacementClimate;
 
 void	LoadDEMTables(void);
 void	CheckDEMRuleCoverage(void);

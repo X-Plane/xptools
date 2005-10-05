@@ -47,6 +47,7 @@ void	UpsampleDEM(const DEMGeo& inDem, DEMGeo& outSmaller, int ratio);
 void	InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& outBigger);
 void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM);
 void	SpreadDEMValues(DEMGeo& ioDem);
+void	SpreadDEMValuesTotal(DEMGeo& ioDem);
 void	SpreadDEMValues(DEMGeo& ioDem, int dist, int x1, int y1, int x2, int y2);
 void	UpsampleFromParamLinear(DEMGeo& masterOrig, DEMGeo& masterDeriv, DEMGeo& slaveOrig, DEMGeo& slaveDeriv);
 int		BinaryDEMFromEnum(DEMGeo& dem, float value, float inAccept, float inFail);

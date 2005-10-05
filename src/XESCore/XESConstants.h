@@ -23,6 +23,9 @@
 #ifndef XESCONSTANTS_H
 #define XESCONSTANTS_H
 
+// Std lapse rate is 2 degrees C colder per 1000 feet higher, or per 304.8 meters.
+const float 	kStdLapseRate = -2.0 / 304.8;
+
 #define NM_TO_MTR			1852.0
 #define MTR_TO_NM			0.00054
 #define FT_TO_MTR			0.3048

@@ -34,6 +34,8 @@
 #include "WED_Globals.h"
 #include <math.h>
 #include "AptIO.h"
+#include "MemFileUtils.h"
+#include "XESIO.h"
 
 extern DEMPrefs_t	gDemPrefs = { 4, 0.5 };
 
@@ -74,8 +76,6 @@ static float	sUrbanTransSpreaderKernel[URBAN_TRANS_KERN_SIZE * URBAN_TRANS_KERN_
 float	local_deltas_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 };
 float	local_deltas_y[9] = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
 
-// Std lapse rate is 2 degrees C colder per 1000 feet higher, or per 304.8 meters.
-const float 	kStdLapseRate = -2.0 / 304.8;
 
 inline	bool	non_integral(float f) { return (f != NO_DATA && f != 0.0 && f != 1.0); }
 
@@ -118,6 +118,43 @@ void	SpreadDEMValues(DEMGeo& ioDem)
 	}
 	ioDem.swap(temp);
 }
+
+void	SpreadDEMValuesTotal(DEMGeo& ioDem)
+{
+	// Note: we can't do this in place because what will happen is values will be smeared
+	// - let's say we have a whole row of no value.  the left most coord is resolved first
+	// and will be closest as we go right on the row.  Since we want to smear inward, we
+	// find the nearest value from the old dem, copy to a new dem and then swap.
+	DEMGeo	temp(ioDem);
+	for (int y = 0; y < ioDem.mHeight; ++y)
+	for (int x = 0; x < ioDem.mWidth; ++x)
+	{
+		float	h =  temp(x,y);
+		if (h == NO_DATA)	
+		{
+			for (int r = 1; r <= max(ioDem.mWidth, ioDem.mHeight); ++r)			
+			{
+				for (int rd = 1; rd <= r; ++rd)
+				{
+					h = ioDem.get(x-r,y-rd);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x-r,y+rd);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x+r,y-rd);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x+r,y+rd);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x-rd,y-r);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x+rd,y-r);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x-rd,y-r);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x+rd,y-r);	if (h != NO_DATA) goto foo;
+				}
+			}
+		}
+
+foo:		
+		if (h != NO_DATA)
+			temp(x,y) = h;
+	}
+	ioDem.swap(temp);
+}
+
 
 /*
  * Same idea as above but lcoalized.
@@ -688,17 +725,57 @@ void RasterizePolyGreen(Pmwx::Face_const_handle face, DEMGeo& landuse, bool tree
  */
 void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 {
+	if (!gReplacementClimate.empty())
+	{
+		string	fname = FindConfigFile(gReplacementClimate.c_str());
+		if (!fname.empty())
+		{
+			MFMemFile *	fi = MemFile_Open(fname.c_str());
+			if (fi)
+			{
+				Pmwx dmap;
+				CDT	dcdt;
+				DEMGeoMap new_dems;
+				AptVector	dapt;
+				ReadXESFile(fi, dmap, dcdt, new_dems, dapt, inProg);
+
+				double west = ioDEMs[dem_Elevation ].mWest ;
+				double east = ioDEMs[dem_Elevation ].mSouth;
+				double south = ioDEMs[dem_Elevation].mEast ;
+				double north = ioDEMs[dem_Elevation].mNorth;
+		
+				for (DEMGeoMap::iterator dem_iter = new_dems.begin();
+					dem_iter != new_dems.end(); ++dem_iter)
+				{
+					if (dem_iter->first != dem_Elevation)
+					{
+						DEMGeo& target(ioDEMs[dem_iter->first]);
+						dem_iter->second.subset(target, 
+								 dem_iter->second.x_lower(west ),
+								 dem_iter->second.y_lower(east ),
+								 dem_iter->second.x_upper(south),
+								 dem_iter->second.y_upper(north));
+					}
+				}				
+				
+				MemFile_Close(fi);
+			}
+		}		
+	}
 	int x, y, c;
 	float real_temp, expected;
 	// Envrionmental resampling: 
 	if (ioDEMs.find(dem_Elevation) == ioDEMs.end())				return;
-	if (ioDEMs.find(dem_Temperature) == ioDEMs.end())			return;
+	if (ioDEMs.find(dem_Temperature) == ioDEMs.end() && 
+		ioDEMs.find(dem_TemperatureSeaLevel) == ioDEMs.end())	return;
 	if (ioDEMs.find(dem_Climate) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Rainfall) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Biomass) == ioDEMs.end())				return;
 		
+	bool	has_sealevel = 	ioDEMs.find(dem_TemperatureSeaLevel) != ioDEMs.end();
+		
 	DEMGeo&		elevation	 = ioDEMs[dem_Elevation];
-	DEMGeo&		temperature	 = ioDEMs[dem_Temperature];
+	DEMGeo&		temperature	 = ioDEMs[has_sealevel ? dem_TemperatureSeaLevel : dem_Temperature];
 	DEMGeo&		climate		 = ioDEMs[dem_Climate];
 	DEMGeo&		rainfall	 = ioDEMs[dem_Rainfall];
 	DEMGeo&		biomass		 = ioDEMs[dem_Biomass];
@@ -721,45 +798,61 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	// We need to interperate temperature based on standard lapse rate!
 	// So we build a temperature deviation map - this is how much more the local
 	// temperature is than the std lapse rate.
-	DEMGeo		temperature_deviation(temperature);
-	for (y = 0; y < temperature_deviation.mHeight; ++y)
-	for (x = 0; x < temperature_deviation.mWidth; ++x)
+	
+	if (has_sealevel)
 	{
-		real_temp = temperature_deviation(x,y);
+		DEMGeo	derived_temperature(elevation_reduced);
+		for (y = 0; y < derived_temperature.mHeight; ++y)
+		for (x = 0; x < derived_temperature.mWidth ; ++x)
+			derived_temperature(x,y) = derived_temperature(x,y) * kStdLapseRate + temperature.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));
 
-		map<float, int>	histo;
-		int				samples;
-		int				xp = elevation.lon_to_x(temperature_deviation.x_to_lon(x));
-		int				yp = elevation.lat_to_y(temperature_deviation.y_to_lat(y));
-		samples = DEMMakeHistogram(elevation, histo, xp-300, yp-300, xp+300,yp+300);
-		expected = HistogramGetPercentile(histo, samples, gDemPrefs.temp_percentile) * kStdLapseRate;
+		ioDEMs[dem_Temperature].swap(derived_temperature);		
 		
-//		expected = elevation_general.value_linear(temperature_deviation.x_to_lon(x),temperature_deviation.y_to_lat(y)) * kStdLapseRate;
-		temperature_deviation(x,y) = real_temp - expected;
-	}	
-	
-	// Now we can convert elevation to temperature.
-	DEMGeo	derived_temperature(elevation_reduced);
-	temp_msl.resize(elevation_reduced.mWidth,elevation_reduced.mHeight);
-	temp_msl.copy_geo(derived_temperature);
-	for (y = 0; y < derived_temperature.mHeight; ++y)
-	for (x = 0; x < derived_temperature.mWidth; ++x)
-	{
-		expected = derived_temperature(x,y) * kStdLapseRate;
-		derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
-		temp_msl(x,y) = temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
+	} else {
+		
+		DEMGeo		temperature_deviation(temperature);
+		for (y = 0; y < temperature_deviation.mHeight; ++y)
+		for (x = 0; x < temperature_deviation.mWidth; ++x)
+		{
+			real_temp = temperature_deviation(x,y);
+
+			map<float, int>	histo;
+			int				samples;
+			int				xp = elevation.lon_to_x(temperature_deviation.x_to_lon(x));
+			int				yp = elevation.lat_to_y(temperature_deviation.y_to_lat(y));
+			samples = DEMMakeHistogram(elevation, histo, xp-300, yp-300, xp+300,yp+300);
+			expected = HistogramGetPercentile(histo, samples, gDemPrefs.temp_percentile) * kStdLapseRate;
+			
+	//		expected = elevation_general.value_linear(temperature_deviation.x_to_lon(x),temperature_deviation.y_to_lat(y)) * kStdLapseRate;
+			temperature_deviation(x,y) = real_temp - expected;
+		}	
+		
+		// Now we can convert elevation to temperature.
+		DEMGeo	derived_temperature(elevation_reduced);
+		temp_msl.resize(elevation_reduced.mWidth,elevation_reduced.mHeight);
+		temp_msl.copy_geo(derived_temperature);
+		for (y = 0; y < derived_temperature.mHeight; ++y)
+		for (x = 0; x < derived_temperature.mWidth; ++x)
+		{
+			expected = derived_temperature(x,y) * kStdLapseRate;
+			derived_temperature(x,y) = expected + temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
+			temp_msl(x,y) = temperature_deviation.value_linear(derived_temperature.x_to_lon(x), derived_temperature.y_to_lat(y));	
+		}
+		temperature.swap(derived_temperature);		
 	}
-	
+		
 	/*************** STEP 2 - INTERPOLATE OTHER CONTINUOUS PARAMs ***************/
 	
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.3);
+
+	DEMGeo	final_temperature(ioDEMs[dem_Temperature]);
 	
 	// Other continuous parameters are easy - we just do an upsample based on the apparent
 	// relationship to temperature.  See comments from UpsampleFromParamLinear on whether
 	// this is really a good idea in practice or not.
 	DEMGeo	derived_rainfall, derived_biomass;
-	UpsampleFromParamLinear(temperature, derived_temperature, biomass, derived_biomass);
-//	UpsampleFromParamLinear(temperature, derived_temperature, rainfall, derived_rainfall);
+//	UpsampleFromParamLinear(temperature, final_temperature, biomass, derived_biomass);
+	UpsampleFromParamLinear(temperature, final_temperature, rainfall, derived_rainfall);
 
 	/*************** STEP 3 - INTERPOLATE CLIMATE! ***************/
 
@@ -785,12 +878,12 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		climates_orig[c] = climate;
 		has_climate[c] = BinaryDEMFromEnum(climates_orig[c], climate_enums[c], 1.0, 0.0) > 0;
 		if (has_climate[c])
-			UpsampleFromParamLinear(temperature, derived_temperature, climates_orig[c], climates_deriv[c]);
+			UpsampleFromParamLinear(temperature, final_temperature, climates_orig[c], climates_deriv[c]);
 	}
 	
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.7);	
 	
-	DEMGeo	derived_climate(derived_temperature);
+	DEMGeo	derived_climate(final_temperature);
 	for (y = 0; y < derived_climate.mHeight;++y)
 	for (x = 0; x < derived_climate.mWidth; ++x)
 	{
@@ -812,7 +905,6 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.9);
 
-	temperature.swap(derived_temperature);
 //	temperature.swap(temperature_deviation);
 //	elevation.swap(elevation_general);
 	climate.swap(derived_climate);

@@ -188,6 +188,7 @@ struct	DEMGeo {
 						 int& maxx, int& maxy, float& maxh);
 
 	void	filter_self(int dim, float * k);
+	void	filter_self_normalize(int dim, float * k);
 
 };
 
@@ -721,7 +722,7 @@ inline double	DEMGeo::x_dist_to_m(int inX) const
 {
 	double	d = (double) inX / (double) mWidth;
 	d *= (mEast - mWest);
-	d *= (DEG_TO_MTR_LAT * cos(mSouth * DEG_TO_RAD));
+	d *= (DEG_TO_MTR_LAT * cos((mSouth+mNorth) * 0.5 * DEG_TO_RAD));
 	return d;
 }
 

@@ -589,6 +589,15 @@ void	DEMGeo::filter_self(int dim, float * k)
 	}
 }
 
+void	DEMGeo::filter_self_normalize(int dim, float * k)
+{
+	DEMGeo	temp(*this);
+	for (int x = 0; x < temp.mWidth; ++x)
+	for (int y = 0; y < temp.mHeight;++y)
+	{
+		(*this)(x,y) = temp.kernelN_Normalize(x,y,dim,k);
+	}
+}
 
 
 /*

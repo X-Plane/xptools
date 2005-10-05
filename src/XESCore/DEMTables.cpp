@@ -44,6 +44,7 @@ static set<int>		sForests;
 
 string	gNaturalTerrainFile = "natural_terrain.txt";
 string	gLanduseTransFile	= "landuse_translate.txt";
+string	gReplacementClimate;
 
 inline double cosdeg(double deg)
 {
@@ -141,60 +142,113 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	
 	int						auto_vary;
 	
-	if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsfssefff",
-		&info.terrain,
-		&info.landuse,
-		&info.climate,
-		&info.elev_min,
-		&info.elev_max,
-		&info.slope_min,
-		&info.slope_max,
+	info.climate = NO_VALUE;
+	info.urban_density_min = info.urban_density_max = 0.0;
+	info.urban_radial_min = info.urban_radial_max = 0.0;
+	info.urban_trans_min = info.urban_trans_max = 0.0;
+	info.urban_square = 0;
+	info.map_rgb[0] = info.map_rgb[1] = info.map_rgb[2] = 0.5;
+	
+	if (tokens[0] == "STERRAIN")
+	{
+		if (TokenizeLine(tokens, " eeffffffffiffffffffffisifsfssefff",
+			&info.terrain,
+			&info.landuse,			
+			&info.elev_min,
+			&info.elev_max,
+			&info.slope_min,
+			&info.slope_max,
 
-		&info.temp_min,
-		&info.temp_max,
-		&info.rain_min,
-		&info.rain_max,
-		&info.near_water,
-		&info.slope_heading_min,
-		&info.slope_heading_max,
-		&info.rel_elev_min,
-		&info.rel_elev_max,
-		&info.elev_range_min,
-		&info.elev_range_max,
+			&info.temp_min,
+			&info.temp_max,
+			&info.rain_min,
+			&info.rain_max,
+			&info.near_water,
+			
+			&info.slope_heading_min,
+			&info.slope_heading_max,
+			&info.rel_elev_min,
+			&info.rel_elev_max,
+			&info.elev_range_min,
+			&info.elev_range_max,
+			&info.temp_rng_min,
+			&info.temp_rng_max,
 
-		&info.urban_density_min,
-		&info.urban_density_max,
-		&info.urban_radial_min,
-		&info.urban_radial_max,
-		&info.urban_trans_min,
-		&info.urban_trans_max,
-		&info.urban_square,
+			&info.lat_min,
+			&info.lat_max,
+			&auto_vary,
 
-		&info.lat_min,
-		&info.lat_max,
-		&auto_vary,
-
-		&name,
-		&info.layer,
-		&info.xon_dist,
-		&info.base_tex,
-//		&info.comp_tex,
-		&info.base_res,
-//		&info.comp_res,
-//		&info.base_alpha_invert,
-//		&info.comp_alpha_invert,
-		&proj,
-		&info.border_tex,
-		&info.forest_type,
-//		&info.forest_ratio,
-		&info.map_rgb[0],
-		&info.map_rgb[1],
-		&info.map_rgb[2]
-		) != 40) return false;
+			&name,
+			&info.layer,
+			&info.xon_dist,
+			&info.base_tex,
+			&info.base_res,
+			&proj,
+			&info.border_tex,
+			&info.forest_type,
+			&info.map_rgb[0],
+			&info.map_rgb[1],
+			&info.map_rgb[2]
+			) < 31) return false;	
+	} else {
 		
+		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsfssefff",
+			&info.terrain,
+			&info.landuse,
+			&info.climate,
+			&info.elev_min,
+			&info.elev_max,
+			&info.slope_min,
+			&info.slope_max,
+
+			&info.temp_min,
+			&info.temp_max,
+			&info.temp_rng_min,
+			&info.temp_rng_max,
+			&info.rain_min,
+			&info.rain_max,
+			&info.near_water,
+			&info.slope_heading_min,
+			&info.slope_heading_max,
+			&info.rel_elev_min,
+			&info.rel_elev_max,
+			&info.elev_range_min,
+			&info.elev_range_max,
+
+			&info.urban_density_min,
+			&info.urban_density_max,
+			&info.urban_radial_min,
+			&info.urban_radial_max,
+			&info.urban_trans_min,
+			&info.urban_trans_max,
+			&info.urban_square,
+
+			&info.lat_min,
+			&info.lat_max,
+			&auto_vary,
+
+			&name,
+			&info.layer,
+			&info.xon_dist,
+			&info.base_tex,
+	//		&info.comp_tex,
+			&info.base_res,
+	//		&info.comp_res,
+	//		&info.base_alpha_invert,
+	//		&info.comp_alpha_invert,
+			&proj,
+			&info.border_tex,
+			&info.forest_type,
+	//		&info.forest_ratio,
+			&info.map_rgb[0],
+			&info.map_rgb[1],
+			&info.map_rgb[2]
+			) != 42) return false;
+	}	
 	if (info.elev_min > info.elev_max)	return false;
 	if (info.slope_min > info.slope_max)	return false;
 	if (info.temp_min > info.temp_max)	return false;
+	if (info.temp_rng_min > info.temp_rng_max)	return false;
 	if (info.rain_min > info.rain_max)	return false;
 	if (info.slope_heading_min > info.slope_heading_max)	return false;
 	if (info.rel_elev_min > info.rel_elev_max)	return false;
@@ -202,7 +256,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.urban_density_min > info.urban_density_max)	return false;
 	if (info.urban_radial_min > info.urban_radial_max)	return false;
 	if (info.urban_trans_min > info.urban_trans_max)	return false;
+	if (info.urban_square < 0 || info.urban_square > 2)	return false;
 	if (info.lat_min > info.lat_max)					return false;
+	if (auto_vary != 0 && auto_vary != 1) 	return false;
 	
 	info.map_rgb[0] /= 255.0;
 	info.map_rgb[1] /= 255.0;
@@ -225,6 +281,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
 
+	string::size_type nstart = info.base_tex.find_last_of("\\/:");
+	if (nstart == info.base_tex.npos)	nstart = 0; else nstart++;
+	if (info.base_tex.size()-nstart > 31)
+		printf("WARNING: base tex %s too long.\n", info.base_tex.c_str());
+
 	if (auto_vary)
 	{
 		for (int rep = 1; rep <= 4; ++rep)
@@ -234,7 +295,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 			string rep_name = name;
 			rep_name += ('0' + rep);
-			if (!LowerCheckName(rep_name)) return false;
+			LowerCheckName(rep_name);
 			info.name = LookupTokenCreate(rep_name.c_str());	
 			
 			int rn = gNaturalTerrainTable.size();
@@ -249,7 +310,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		
 		info.variant = 0;
 		
-		if (!LowerCheckName(name)) return false;
+		LowerCheckName(name);
 		info.name = LookupTokenCreate(name.c_str());	
 		
 		int rn = gNaturalTerrainTable.size();
@@ -330,6 +391,7 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
 	RegisterLineHandler("BEACH", ReadBeachInfo, NULL);
 	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
+	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
 //	RegisterLineHandler("MTERRAIN", ReadManTerrainInfo, NULL);
@@ -353,6 +415,7 @@ int	FindNaturalTerrain(
 				float 	slope,
 				float 	slope_tri,
 				float	temp,
+				float	temp_rng,
 				float	rain,
 				int		water,
 				float	slopeheading,
@@ -387,6 +450,7 @@ int	FindNaturalTerrain(
 		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
 		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
+		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
 		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
 		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
@@ -419,6 +483,7 @@ int	FindNaturalTerrain(
 		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
 		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
+		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
 		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
 		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
@@ -482,14 +547,10 @@ void ValidateNaturalTerrain(void)
 		ref = canonical[gNaturalTerrainTable[n].name];
 		if (ref != n)
 		{
-			if (gNaturalTerrainTable[n].layer    		  != gNaturalTerrainTable[ref].layer    		)	printf("ERROR: land use lines %d and %d - terrain 'layer    		' does not match.\n", ref, n);
-			if (gNaturalTerrainTable[n].xon_dist 		  != gNaturalTerrainTable[ref].xon_dist 		)	printf("ERROR: land use lines %d and %d - terrain 'xon_dist 		' does not match.\n", ref, n);
-			if (gNaturalTerrainTable[n].base_tex    	  != gNaturalTerrainTable[ref].base_tex    	 	)	printf("ERROR: land use lines %d and %d - terrain 'base_tex    	 	' does not match.\n", ref, n);
-//			if (gNaturalTerrainTable[n].comp_tex		  != gNaturalTerrainTable[ref].comp_tex		 	)	printf("ERROR: land use lines %d and %d - terrain 'comp_tex		 	' does not match.\n", ref, n);
-			if (gNaturalTerrainTable[n].base_res		  != gNaturalTerrainTable[ref].base_res		 	)	printf("ERROR: land use lines %d and %d - terrain 'base_res		 	' does not match.\n", ref, n);
-//			if (gNaturalTerrainTable[n].comp_res 		  != gNaturalTerrainTable[ref].comp_res 		)	printf("ERROR: land use lines %d and %d - terrain 'comp_res 		' does not match.\n", ref, n);
-//			if (gNaturalTerrainTable[n].base_alpha_invert != gNaturalTerrainTable[ref].base_alpha_invert)	printf("ERROR: land use lines %d and %d - terrain 'base_alpha_invert' does not match.\n", ref, n);
-//			if (gNaturalTerrainTable[n].comp_alpha_invert != gNaturalTerrainTable[ref].comp_alpha_invert)	printf("ERROR: land use lines %d and %d - terrain 'comp_alpha_invert' does not match.\n", ref, n);
+			if (gNaturalTerrainTable[n].layer    		  != gNaturalTerrainTable[ref].layer    		)	printf("ERROR: land use lines %d and %d - terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].layer,gNaturalTerrainTable[ref].layer);
+			if (gNaturalTerrainTable[n].xon_dist 		  != gNaturalTerrainTable[ref].xon_dist 		)	printf("ERROR: land use lines %d and %d - terrain 'xon_dist' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].xon_dist,gNaturalTerrainTable[ref].xon_dist);
+			if (gNaturalTerrainTable[n].base_tex    	  != gNaturalTerrainTable[ref].base_tex    	 	)	printf("ERROR: land use lines %d and %d - terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_tex.c_str(),gNaturalTerrainTable[ref].base_tex.c_str());
+			if (gNaturalTerrainTable[n].base_res		  != gNaturalTerrainTable[ref].base_res		 	)	printf("ERROR: land use lines %d and %d - terrain 'base_res' does not match.  name = %s, layers = %d vs %d\n", ref, n, FetchTokenString(gNaturalTerrainTable[n].name), gNaturalTerrainTable[n].base_res,gNaturalTerrainTable[ref].base_res);
 		}
 	}	
 }
