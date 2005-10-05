@@ -35,26 +35,32 @@
 #include "WED_Selection.h"
 #include "WED_Progress.h"
 #include "MeshAlgs.h"
+#include "DEMAlgs.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
 #include "PlatformUtils.h"
 #include "WED_Globals.h"
 #include "WED_SpreadsheetWizard.h"
 
+#define	kMaxDegChangePerSample	0.125
+
 enum {
 	specCmd_Screenshot,
 	specCmd_CreateTerrainPackage,
 	specCmd_UpdateTerrainPackage,
-//	specCmd_TranslateLanduse,
 	specCmd_Div1,
 	specCmd_Wizard,
 	specCmd_CountBorders,
 	specCmd_ClimateRange,
 	specCmd_ReloadConfigFiles,
+	specCmd_TempMSL,
+	specCmd_FixMSL,
 	specCmd_Div2,
 	specCmd_FaceHeight,
+	specCmd_ObjHeight,
 	specCmd_MeshErr,
 	specCmd_PreviewSHP,
+	specCmd_KillObjs,
 	specCmd_Count
 };
 
@@ -62,16 +68,19 @@ const char *	kSpecCmdNames [] = {
 	"Take Screenshot...",
 	"Create Terrain Package...",
 	"Update Terrain Package...",
-//	"Translate Landuse...",
 	"-",
 	"Spreadsheet Wizard...",
 	"Count Mesh and Border Triangles...",
 	"Show Climate Ranges...",
 	"Reload Configuration Files",
+	"Create Sea Level Temperatures...",
+	"Filter Sea Level Temperatures...",
 	"-",
 	"Show Height of Selected Faces...",
+	"Show Height of Objs in Selected Faces...",
 	"Measure Error in Triangulation...",
 	"Preview Shape File",
+	"Kill Features Without Heights in Selected Faces",
 	0
 };
 
@@ -87,6 +96,10 @@ static	const char	kCmdKeys [] = {
 	0,		0,
 	0,		0,
 	0,		0,
+	0,		0,
+	0,		0,
+	0,		0,
+	0,		0,
 	0,		0
 };
 
@@ -94,6 +107,12 @@ static	XPLMMenuID	sSpecMenu = NULL;
 
 static	void	WED_HandleSpecMenuCmd(void *, void * i);
 static	void 	DoScreenshot(void);
+
+struct FeatureHasNoHeight {
+	bool operator()(const GISPointFeature_t& x) const {
+		return x.mParams.find(pf_Height) == x.mParams.end();
+	}
+};
 
 
 void	RegisterSpecialCommands(void)
@@ -136,30 +155,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				DoScreenshot();
 			}
 			break;
-/*		case specCmd_TranslateLanduse:
-			{
-				char buf[1024];
-				buf[0] = 0;
-				if (GetFilePathFromUser(getFile_Open, "Pleaes pick a translation file", "Translate", 6, buf))
-				{
-					RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
-					gTransTable.clear();
-					if (LoadConfigFile(buf))
-					{
-						DEMGeo& lu = gDem[dem_LandUse];
-						for (int y = 0; y < lu.mHeight; ++y)
-						for (int x = 0; x < lu.mWidth; ++x)
-						{
-							int luv = lu.get(x,y);
-							if (gTransTable.count(luv))
-								lu(x,y) = gTransTable[luv];
-						}
-						WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);						
-					} else
-						DoUserAlert("Unable to parse translation file.");
-				}
-			}
-			break;*/
+
 		case specCmd_CreateTerrainPackage:
 		case specCmd_UpdateTerrainPackage:
 			{
@@ -170,6 +166,26 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf)) return;
 				if (cmd != specCmd_UpdateTerrainPackage) strcat(buf, DIR_STR);
 				CreateTerrainPackage(buf, true);
+			}
+			break;
+		case specCmd_ObjHeight:
+			{
+				map<int, map<float, int> >	histo;
+				for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+				for (GISPointFeatureVector::iterator p = (*f)->mPointFeatures.begin(); p != (*f)->mPointFeatures.end(); ++p)
+				if (p->mParams.count(pf_Height))
+				{
+					int h = p->mParams[pf_Height];
+					h /= 10;
+					h *= 10;
+					histo[p->mFeatType][h]++;
+				}
+				for (map<int, map<float, int> >::iterator feat = histo.begin(); feat != histo.end(); ++feat)
+				{
+					printf("Feature: %s\n", FetchTokenString(feat->first));
+					for (map<float, int>::iterator h = feat->second.begin(); h != feat->second.end(); ++h)
+						printf("   h=%5lf count = %d\n", h->first, h->second);
+				}
 			}
 			break;
 		case specCmd_FaceHeight:
@@ -329,6 +345,78 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				SHPClose(file);
 			}
 			break;
+		case specCmd_KillObjs:
+			{
+				for (set<GISFace*>::iterator face = gFaceSelection.begin(); face != gFaceSelection.end(); ++face)
+				{
+					(*face)->mPointFeatures.erase(remove_if((*face)->mPointFeatures.begin(), (*face)->mPointFeatures.end(), FeatureHasNoHeight()), (*face)->mPointFeatures.end());
+				}				
+			}
+			break;
+		case specCmd_TempMSL:
+			{
+				gDem[dem_TemperatureSeaLevel] = gDem[dem_Temperature];
+				DEMGeo& temp(gDem[dem_TemperatureSeaLevel]);
+				const DEMGeo& elev(gDem[dem_Elevation]);
+				
+				if (elev.mWidth == temp.mWidth && elev.mHeight == temp.mHeight)
+				{
+					for (int y = 0; y < temp.mHeight; ++y)
+					for (int x = 0; x < temp.mWidth ; ++x)
+					{
+						float e = elev(x,y);
+						if (temp(x,y) != NO_DATA && e != NO_DATA)
+							temp(x,y) -= e * kStdLapseRate;
+					}
+				} else {
+				
+					for (int y = 0; y < temp.mHeight; ++y)
+					for (int x = 0; x < temp.mWidth ; ++x)
+					{
+						float e = elev.value_linear(temp.x_to_lon(x), temp.y_to_lat(y));
+						if (temp(x,y) != NO_DATA && e != NO_DATA)
+							temp(x,y) -= e * kStdLapseRate;
+					}
+				}
+				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			}
+			break;
+		case specCmd_FixMSL:
+			{
+/*
+				vector<DEMGeo> fft;
+				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
+				DEMGeo  msl2(msl);
+				SpreadDEMValuesTotal(msl2);
+				DEMMakeFFT(msl2, fft);
+				float clamp_v = kMaxDegChangePerSample;
+				for (int n = 0; n < fft.size(); ++n)
+				{
+					for (int y = 0; y < fft[n].mHeight; ++y)
+					for (int x = 0; x < fft[n].mWidth; ++x)
+						fft[n](x,y) = MIN_NODATA(clamp_v, fft[n](x,y));
+					clamp_v *= 2.0;
+				}
+				FFTMakeDEM(fft,msl2);
+				for (int y= 0; y < msl.mHeight; ++y)
+				for (int x= 0; x < msl.mWidth ; ++x)
+				if (msl.get(x,y) != NO_DATA)
+					msl(x,y) = msl2(x,y);
+*/
+				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
+				
+				float k[25];
+
+				CalculateFilter(5, k, demFilter_Spread, false);
+				DEMGeo	msl2(msl);
+				msl.filter_self_normalize(5, k);
+				for (int y = 0; y < msl.mHeight; ++y)
+				for (int x = 0; x < msl.mWidth ; ++x)
+				if (msl2.get(x,y) == NO_DATA)
+					msl(x,y) = NO_DATA;				
+			}
+			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			break;
 		case specCmd_ReloadConfigFiles:
 			WED_ProgressFunc(0, 1, "Reloading config files...", 0.0);
 			LoadDEMTables();
@@ -362,15 +450,17 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_ClimateRange:
 			{
 				DEMGeo& temp(gDem[dem_Temperature]);
+				DEMGeo& temps(gDem[dem_TemperatureSeaLevel]);
 				DEMGeo& rain(gDem[dem_Rainfall]);
 				DEMGeo& elev(gDem[dem_Elevation]);
 				DEMGeo& lu(gDem[dem_LandUse]);
 				DEMGeo&	old_lu(gDem[dem_OrigLandUse]);
 				
 				set<int>	lus, olus;
-				float tmin, tmax, rmin, rmax, emin, emax;
+				float tmin, tmax, rmin, rmax, emin, emax, tsmin, tsmax;
 				int x, y;
 				tmin = tmax = temp.get(0,0);
+				tsmin = tsmax = temps.get(0,0);
 				rmin = rmax = rain.get(0,0);
 				emin = emax = elev.get(0,0);
 				
@@ -379,6 +469,13 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				{
 					tmin = MIN_NODATA(tmin, temp.get(x,y));
 					tmax = MAX_NODATA(tmax, temp.get(x,y));
+				}
+
+				for (y = 0; y < temps.mHeight; ++y)
+				for (x = 0; x < temps.mWidth; ++x)
+				{
+					tsmin = MIN_NODATA(tsmin, temps.get(x,y));
+					tsmax = MAX_NODATA(tsmax, temps.get(x,y));
 				}
 
 				for (y = 0; y < rain.mHeight; ++y)
@@ -404,8 +501,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					olus.insert(old_lu.get(x,y));
 		
 				char buf[1024];
-				sprintf(buf,"Temp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.",
-						tmin, tmax, rmin, rmax, emin, emax, olus.size(), lus.size());
+				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.",
+						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, olus.size(), lus.size());
 				DoUserAlert(buf);
 				set<int>::iterator iter;
 				printf("--------OLD LANDUSES---------\n");

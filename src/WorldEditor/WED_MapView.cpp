@@ -86,33 +86,23 @@ struct	DEMViewInfo_t {
 static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
-//{		dem_Elevation,			"Elevation (Shaded Relief)"		,	dem_Shaded,					true,	false,	"MSL=%fm "		},
-{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"LU=%s "		},
+{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
 {		dem_Rainfall,			"Rainfall"						,	dem_Rainfall,				true,	false,	"Rain=%fmm "	},
 {		dem_Temperature,		"Temperature"					,	dem_Temperature,			true,	false,	"Temp=%fC "		},
-{		dem_TemperatureSeaLevel,"Sea Level Temperature"			,	dem_Temperature,			true,	false,	"Temp=%fC "		},
+{		dem_TemperatureSeaLevel,"Sea Level Temperature"			,	dem_TemperatureSeaLevel,	true,	false,	"SL Temp=%fC "	},
 {		dem_TemperatureRange,	"Temperature Range"				,	dem_TemperatureRange,		true,	false,	"TempR=%fC "	},
-//{		dem_TerrainPhenomena,	"Terrain Phenomena"				,	dem_Enum,					false,	true,	"Ter=%s "		},
-//{		dem_2dVegePhenomena,	"2d Vegetation Phenomena"		,	dem_Enum,					false,	true,	"2d=%s "		},
-//{		dem_3dVegePhenomena,	"3d Vegetation Phenomena"		,	dem_Enum,					false,	true,	"3d=%s "		},
-//{		dem_VegetationDensity,	"Vegetation Density"			,	dem_Strata,					true,	false,	"2d=%f "		},
-//{		dem_3dVegiDensity,   	"3d Vegetation Density"			,	dem_Strata,					true,	false,	"3d=%f "		},
 {		dem_UrbanDensity,		"Urban Density"					,	dem_UrbanDensity,			true,	false,	"Density=%f "	},
 {		dem_UrbanPropertyValue,	"Property Values"				,	dem_UrbanPropertyValue,		true,	false,	"$$=%f "		},
-{		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Ratio=%f "	},
-{		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Ratio=%f "		},
-{		dem_UrbanSquare,		"Urban Square"					,	dem_UrbanSquare,			true,	false,	"Square=%f "		},
-
-//{		dem_TerrainType,		"X-Plane Terrain"				,	dem_Enum,					false,	true,	"T=%s "			},
+{		dem_UrbanRadial,		"Urban Radial"					,	dem_UrbanRadial,			true,	false,	"Urban Rad=%f "	},
+{		dem_UrbanTransport,		"Urban Transport"				,	dem_UrbanTransport,			true,	false,	"Urban Trns=%f "},
+{		dem_UrbanSquare,		"Urban Square"					,	dem_UrbanSquare,			true,	false,	"Square=%f "	},
 {		dem_Slope,				"Slope"							,	dem_Slope,					true,	false,	"A=%f "			},
 {		dem_SlopeHeading,		"Slope Heading"					,	dem_SlopeHeading,			true,	false,	"H=%f "			},
-{		dem_RelativeElevation,	"Relative Elevation"			,	dem_RelativeElevation,		true,	false,	"H=%f "			},
-{		dem_ElevationRange,		"Elevation Range"				,	dem_ElevationRange,			true,	false,	"H=%fm "		},
-//{		dem_HydroBiasX,			"Hydro X Adjust"				,	dem_Strata,					true,	false,	"%fm "			},
-//{		dem_HydroBiasY,			"Hydro Y Adjust"				,	dem_StrataDrainage,			true,	false,	"%fm "			},
+{		dem_RelativeElevation,	"Relative Elevation"			,	dem_RelativeElevation,		true,	false,	"Rel MSL=%f "	},
+{		dem_ElevationRange,		"Elevation Range"				,	dem_ElevationRange,			true,	false,	"MSL Rnge=%fm "	},
 {		dem_HydroDirection,		"Hydro Flow Direction"			,	dem_Enum,					false,	true,	"%s "			},
 {		dem_HydroQuantity,		"Hydro Flow Quantity"			,	dem_HydroQuantity,			true,	false,	"%fm "			},
 {		dem_HydroElevation,		"Hydro Elevation"				,	dem_Elevation,				false,	false,	"%fm "			},
@@ -204,7 +194,7 @@ int			sShowShading = 1;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
-static int			sShowDEMData[DEMChoiceCount-1] = { 0 };
+static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 0, 0, 0, 0, 1, 1, 1, 0 };
 
 
 //static	int			sShowMeshBorders = 1;
@@ -944,23 +934,26 @@ put in  color enums?
 				k -= (h+1);
 			}
 			else if (sShowDEMData[n-1] || n == sDEMType)
-			{			
-				float hh = gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
-				
-				// HACK city - for certain DEMs, do the trig on the fly.
-				
-				if (kDEMs[n].dem == dem_Slope)
-					hh = RAD_TO_DEG * acos(1.0 - hh);
-				else if (kDEMs[n].dem == dem_SlopeHeading)
-					hh = RAD_TO_DEG * acos(hh);
-				
-				if (kDEMs[n].is_enum)
-					sprintf(buf,kDEMs[n].format_string,FetchTokenString(hh));
-				else
-					sprintf(buf,kDEMs[n].format_string,hh);
-				XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
-				XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
-				k -= (h+1);				
+			{	
+				if (gDem.count(	kDEMs[n].dem ))
+				{	
+					float hh = gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
+					
+					// HACK city - for certain DEMs, do the trig on the fly.
+					
+					if (kDEMs[n].dem == dem_Slope)
+						hh = RAD_TO_DEG * acos(1.0 - hh);
+					else if (kDEMs[n].dem == dem_SlopeHeading)
+						hh = RAD_TO_DEG * acos(hh);
+					
+					if (kDEMs[n].is_enum)
+						sprintf(buf,kDEMs[n].format_string,FetchTokenString(hh));
+					else
+						sprintf(buf,kDEMs[n].format_string,hh);
+					XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
+					XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
+					k -= (h+1);				
+				}
 			}
 		}
 	}	
@@ -971,6 +964,13 @@ put in  color enums?
 
 	XPLMDrawTranslucentDarkBox(r-gLanduseTransFile.size() * w - 20, t - 50 + h, r - 15, t - 50 - 1);
 	XPLMDrawString(white, r - gLanduseTransFile.size() * w - 20, t - 50, gLanduseTransFile.c_str(), NULL, xplmFont_Basic);
+
+	XPLMDrawTranslucentDarkBox(r-gNaturalTerrainFile.size() * w - 20, t - 30 + h, r - 15, t - 30 - 1);
+	XPLMDrawString(white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str(), NULL, xplmFont_Basic);
+
+	XPLMDrawTranslucentDarkBox(r-gReplacementClimate.size() * w - 20, t - 70 + h, r - 15, t - 70 - 1);
+	XPLMDrawString(white, r - gReplacementClimate.size() * w - 20, t - 70, gReplacementClimate.c_str(), NULL, xplmFont_Basic);
+	
 	
 	char	buf[50];
 	int	x, y;

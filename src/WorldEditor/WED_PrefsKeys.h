@@ -26,6 +26,7 @@ PREFS_KEY_INT	("PROCESSING", "BORDER_MATCH", gMeshPrefs.border_match)
 
 PREFS_KEY_STR	("PROCESSING", "TERRAIN_SPREADSHEET", gNaturalTerrainFile)
 PREFS_KEY_STR	("PROCESSING", "LANDUSE_FILE", gLanduseTransFile)
+PREFS_KEY_STR	("PROCESSING", "REPLACE_CLIMATE", gReplacementClimate)
 
 PREFS_KEY_INT	("PROCESSING", "DO_UPSAMPLE_ENVIRONMENT"	,gProcessingCmdPrefs.do_upsample_environment)
 PREFS_KEY_INT	("PROCESSING", "DO_CALC_SLOPE"				,gProcessingCmdPrefs.do_calc_slope)

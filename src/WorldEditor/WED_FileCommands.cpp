@@ -50,6 +50,7 @@ enum {
 	fileCmd_OpenApt,
 	fileCmd_OpenSpreadsheet,
 	fileCmd_OpenLandUse,
+	fileCmd_OpenClimateXES,
 	fileCmd_Sep1,
 	fileCmd_Save,
 	fileCmd_SaveAs,
@@ -68,6 +69,7 @@ const char *	kFileCmdNames [] = {
 	"Open Airport...",
 	"Open Spreadsheet...",
 	"Open LandUse Translation...",
+	"Pick Climate XES...",
 	"-",
 	"Save",
 	"Save As...",
@@ -85,6 +87,7 @@ static	const char	kCmdKeys [] = {
 	'O',	xplm_ControlFlag,
 	0,		0,
 	'O',	xplm_ControlFlag + xplm_OptionAltFlag,
+	0,		0,
 	0,		0,
 	0,		0,
 	'S',	xplm_ControlFlag,
@@ -186,6 +189,19 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				else
 					gLanduseTransFile = (p+strlen("config")+1);
 				LoadDEMTables();
+			}
+			break;
+		
+		case fileCmd_OpenClimateXES:
+			{
+				char	buf[1024];
+				buf[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a climate file", "Open", 8, buf)) { gReplacementClimate.clear(); return; }
+				char * p = strstr(buf, "config");
+				if (p == NULL)
+					DoUserAlert("You can only pick a climate file from the config folder.");
+				else
+					gReplacementClimate = (p+strlen("config")+1);
 			}
 			break;
 			

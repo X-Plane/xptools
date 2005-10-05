@@ -80,6 +80,7 @@ static const char * kTitles =
 static	int	kImportLayers[] = {
 	dem_Elevation,
 	dem_Temperature,
+	dem_TemperatureSeaLevel,
 	dem_TemperatureRange,
 	dem_Rainfall,
 	dem_Biomass,				
@@ -95,6 +96,7 @@ static	int	kImportLayers[] = {
 static	const char * kImportLayerTitles = 
 	"dem_Elevation;"
 	"dem_Temperature;"
+	"dem_TemperatureSeaLevel;"
 	"dem_TemperatureRange;"
 	"dem_Rainfall;"
 	"dem_Biomass;"				

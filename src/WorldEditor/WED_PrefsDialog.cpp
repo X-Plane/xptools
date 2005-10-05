@@ -144,7 +144,10 @@ static bool LoadIniSectionMap(const char * inFileName, IniSectionMap& outMap)
 			} else {
 				if (sec)
 				{
-					(*sec)[tok[0]] = tok[1];
+					if (tok.size() > 1)
+						(*sec)[tok[0]] = tok[1];
+					else
+						(*sec)[tok[0]] = string();
 				}
 			}
 		}
