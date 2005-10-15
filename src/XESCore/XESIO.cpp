@@ -76,13 +76,13 @@ void	WriteXESFile(
 				
 void	ReadXESFile(
 				MFMemFile *		inFile,
-				Pmwx&			inMap,
-				CDT&			inMesh,
-				DEMGeoMap&		inDEM,
-				AptVector&		inApts,
+				Pmwx *			inMap,
+				CDT *			inMesh,
+				DEMGeoMap *		inDEM,
+				AptVector *		inApts,
 				ProgressFunc	inFunc)
 {
-	inApts.clear();
+	if (inApts) inApts->clear();
 	
 	XAtomContainer	container;
 	container.begin = (char *) MemFile_GetBegin(inFile);
@@ -99,8 +99,11 @@ void	ReadXESFile(
 	
 	vector<int>	dems;
 	
-	ReadMap(container, inMap, inFunc, kMapID, conversionMap);
-	ReadMesh(container, inMesh, kMeshID, conversionMap, inFunc);
+	if (inMap)
+	ReadMap(container, *inMap, inFunc, kMapID, conversionMap);
+	
+	if (inMesh)
+	ReadMesh(container, *inMesh, kMeshID, conversionMap, inFunc);
 	
 	if (container.GetNthAtomOfID(kDemDirID, 0, demDirAtom))
 	{
@@ -115,12 +118,14 @@ void	ReadXESFile(
 		}
 	}
 	
+	if (inApts)
 	if (container.GetNthAtomOfID(kAptID, 0, aptAtom))
 	{
 		aptAtom.GetContents(aptAtomData);
-		ReadAptFileMem(aptAtomData.begin, aptAtomData.end, inApts);
+		ReadAptFileMem(aptAtomData.begin, aptAtomData.end, *inApts);
 	}
 	
+	if (inDEM)
 	for (int i = 0; i < dems.size(); ++i)
 	{	
 		if (container.GetNthAtomOfID(dems[i], 0, demAtom))
@@ -132,7 +137,7 @@ void	ReadXESFile(
 			int demID = conversionMap[dems[i]];
 			if (demID == dem_LandUse || demID == dem_Climate)	// || demID == dem_NudeColor)
 				RemapEnumDEM(aDem, conversionMap);	
-			inDEM.insert(DEMGeoMap::value_type(demID, aDem));
+			inDEM->insert(DEMGeoMap::value_type(demID, aDem));
 		}
 	}
 }

@@ -37,7 +37,7 @@
 #include "MemFileUtils.h"
 #include "XESIO.h"
 
-extern DEMPrefs_t	gDemPrefs = { 4, 0.5 };
+extern DEMPrefs_t	gDemPrefs = { 4, 0.5, 1.0 };
 
 struct	SnowLineInfo_t {
 	float	lat;
@@ -285,7 +285,7 @@ void	UpsampleDEM(const DEMGeo& ioDem, DEMGeo& bigger, int ratio)
 void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
 {
 	bigger.resize((inDEM.mWidth-1)*2+1, (inDEM.mHeight-1)*2+1);
-	bigger.copy_geo(inDEM);
+	bigger.copy_geo_from(inDEM);
 
 	int x, y, n;
 	float 	e;
@@ -328,7 +328,7 @@ void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
 void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM)
 {
 	outDEM.resize(inDEM.mWidth, inDEM.mHeight);
-	outDEM.copy_geo(inDEM);
+	outDEM.copy_geo_from(inDEM);
 		static int x_dir[4] = { 0, 1, 0, -1 };
 		static int y_dir[4] = { 1, 0, -1, 0 };
 	for (int y = 0; y < inDEM.mHeight; ++y)
@@ -350,6 +350,57 @@ void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM)
 	}
 }
 
+#if !DEV
+document this
+#endif
+
+void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo& derived, int xmult, int ymult)
+{
+	derived.resize((base.mWidth-1)*xmult+1,(base.mHeight-1)*ymult+1);
+	derived.copy_geo_from(base);
+	
+	for (int yiz = 0; yiz < base.mHeight-1; ++yiz)
+	for (int xiz = 0; xiz < base.mWidth-1; ++xiz)
+	{
+		for (int dy = 0; dy <= ymult; ++dy)
+		for (int dx = 0; dx <= xmult; ++dx)
+		{
+			float dx_fac = (float) dx / (float) xmult;
+			float dy_fac = (float) dy / (float) ymult;
+			
+			double q1 = 	 dx_fac  * 		dy_fac;
+			double q2 = (1.0-dx_fac) * 		dy_fac;
+			double q3 = 	 dx_fac  * (1.0-dy_fac);
+			double q4 = (1.0-dx_fac) * (1.0-dy_fac);
+			
+			float v1 = base.get(xiz+1, yiz+1);
+			float v2 = base.get(xiz  , yiz+1);
+			float v3 = base.get(xiz+1, yiz  );
+			float v4 = base.get(xiz  , yiz  );
+			
+			float v_linear = q1 * v1 +
+					  		 q2 * v2 +
+					  		 q3 * v3 +
+					  		 q4 * v4;
+
+			float x_weird = (0.5 - fabs(dx_fac - 0.5)) * 2.0;
+			float y_weird = (0.5 - fabs(dy_fac - 0.5)) * 2.0;
+			float weird_mix = min(x_weird, y_weird) * gDemPrefs.rain_disturb;
+			
+			float weird_ratio = variant_source.value_linear(derived.x_to_lon(xiz * xmult + dx),
+															derived.y_to_lat(yiz * ymult + dy));
+			weird_ratio = min(max(weird_ratio, 0.0f), 1.0f);
+			float max_ever = max(max(v1,v2),max(v3,v4));
+			float min_ever = min(min(v1,v2),min(v3,v4));
+			
+			float v_weird = min_ever + weird_ratio * (max_ever - min_ever);
+
+			derived(xiz * xmult + dx, yiz * ymult + dy) = 
+				v_linear * (1.0 - weird_mix) +
+				v_weird  *        weird_mix;
+		}
+	}	
+}
 
 /*
  * UpsampleFromParamLinear
@@ -733,11 +784,8 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 			MFMemFile *	fi = MemFile_Open(fname.c_str());
 			if (fi)
 			{
-				Pmwx dmap;
-				CDT	dcdt;
 				DEMGeoMap new_dems;
-				AptVector	dapt;
-				ReadXESFile(fi, dmap, dcdt, new_dems, dapt, inProg);
+				ReadXESFile(fi, NULL, NULL, &new_dems, NULL, inProg);
 
 				double west = ioDEMs[dem_Elevation ].mWest ;
 				double east = ioDEMs[dem_Elevation ].mSouth;
@@ -830,7 +878,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 		// Now we can convert elevation to temperature.
 		DEMGeo	derived_temperature(elevation_reduced);
 		temp_msl.resize(elevation_reduced.mWidth,elevation_reduced.mHeight);
-		temp_msl.copy_geo(derived_temperature);
+		temp_msl.copy_geo_from(derived_temperature);
 		for (y = 0; y < derived_temperature.mHeight; ++y)
 		for (x = 0; x < derived_temperature.mWidth; ++x)
 		{
@@ -852,7 +900,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	// this is really a good idea in practice or not.
 	DEMGeo	derived_rainfall, derived_biomass;
 //	UpsampleFromParamLinear(temperature, final_temperature, biomass, derived_biomass);
-	UpsampleFromParamLinear(temperature, final_temperature, rainfall, derived_rainfall);
+	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], rainfall, derived_rainfall, 60, 60);
 
 	/*************** STEP 3 - INTERPOLATE CLIMATE! ***************/
 
@@ -908,7 +956,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 //	temperature.swap(temperature_deviation);
 //	elevation.swap(elevation_general);
 	climate.swap(derived_climate);
-//	rainfall.swap(derived_rainfall);
+	rainfall.swap(derived_rainfall);
 	biomass.swap(derived_biomass);
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 1.0);
@@ -1501,8 +1549,8 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 
 static	void	FFTSplit(const DEMGeo& inSrc, DEMGeo& equiv, DEMGeo& reduc, int n)
 {
-	reduc.copy_geo(inSrc);
-	equiv.copy_geo(inSrc);
+	reduc.copy_geo_from(inSrc);
+	equiv.copy_geo_from(inSrc);
 	equiv.resize(inSrc.mWidth, inSrc.mHeight);
 	reduc.resize(inSrc.mWidth, inSrc.mHeight);
 
@@ -1594,4 +1642,33 @@ float	HistogramGetPercentile(const map<float, int>& histo, int total_samples, fl
 			return iter->first;
 	}
 	return NO_DATA;
+}
+
+void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
+{
+	dst.resize(src.mWidth, src.mHeight);
+	dst.copy_geo_from(src);
+	for (int y = 0; y < src.mHeight; ++y)
+	for (int x = 0; x < src.mWidth ; ++x)
+	{
+		int e = src.get(x,y);
+		if (e != NO_DATA)
+		{
+			float en[8];
+			en[0] = src.get(x-1,y-1);
+			en[1] = src.get(x-1,y  );
+			en[2] = src.get(x-1,y+1);
+			en[3] = src.get(x  ,y+1);
+			en[4] = src.get(x+1,y+1);
+			en[5] = src.get(x+1,y  );
+			en[6] = src.get(x+1,y-1);
+			en[7] = src.get(x  ,y-1);			
+			float dif = 0;
+			for (int k = 0; k < 8; ++k)
+			if (en[k] != NO_DATA)
+				dif = max(dif, fabs(en[k]-e));
+			dst(x,y)=dif;
+		} else
+			dst(x,y) = 0.0;
+	}
 }

@@ -53,10 +53,10 @@ void	WriteXESFile(
 				
 void	ReadXESFile(
 				MFMemFile *		inFile,
-				Pmwx&			inMap,
-				CDT&			inCDt,
-				DEMGeoMap&		inDEM,
-				AptVector&		inApts,
-				ProgressFunc	inFunc);
+				Pmwx *			inMap,		// Can be NULL
+				CDT *			inCDt,		// Can be NULL
+				DEMGeoMap *		inDEM,		// Can be NULL
+				AptVector *		inApts,		// Can be NULL
+				ProgressFunc	inFunc);	// Can be NULL
 				
 #endif

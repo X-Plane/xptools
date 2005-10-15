@@ -6,6 +6,7 @@
 #include "DEMTables.h"
 #include "CompGeomUtils.h"
 #include "Skeleton.h"
+#include "ObjPlacement.h"
 
 #define DEBUG_SHOW_MAP_MERGE_FAIL 0
 #define DEBUG_SELECT_BAD_FACE 0
@@ -22,7 +23,26 @@
 
 inline	int	tri_forest_type(CDT::Face_handle f)
 {
-	return gNaturalTerrainTable[gNaturalTerrainIndex[f->info().terrain_specific]].forest_type;
+	// WHAT's THE IDEA?
+	// Return the top terrain type's forest type - visually we want to match the guy who is topmost.
+	// BUT if ANY terrain has no forest, return no forest.  This way we will never put trees over a potentially
+	// incompatible bitmap, EVEN if the Italians decide to put the forest type on top for visual reasons.
+
+	int forest_type = gNaturalTerrainTable[gNaturalTerrainIndex[f->info().terrain_specific]].forest_type;
+	int forest_terrain = f->info().terrain_specific;
+	if (forest_type == NO_VALUE) return NO_VALUE;
+	
+	for (set<int>::iterator border = f->info().terrain_border.begin(); border != f->info().terrain_border.end(); ++border)
+	{
+		int border_forest = gNaturalTerrainTable[gNaturalTerrainIndex[forest_terrain]].forest_type;
+		if (border_forest == NO_VALUE) return NO_VALUE;
+		if (LowerPriorityNaturalTerrain(forest_terrain, *border))
+		{
+			forest_terrain = *border;
+			forest_type = border_forest;
+		}
+	}
+	return forest_type;
 }
 
 
@@ -206,41 +226,25 @@ void GenerateForests(
 				if (!forest_types.empty())
 				{
 					// Generate the "GT polygon base map".
-					Pmwx				baseMap(*face);
-//					Pmwx				baseMap;
-					GISFace *			baseFace;
-					
-					for (Pmwx::Face_iterator f = baseMap.faces_begin(); f != baseMap.faces_end(); ++f)
-					{			
-						f->mTerrainType = terrain_Natural;
-						f->mAreaFeature.mFeatType = NO_VALUE;
-					}
-					
-					baseFace = (*baseMap.unbounded_face()->holes_begin())->twin()->face();
-					baseFace->mTerrainType = terrain_ForestPark;
-					baseFace->mAreaFeature.mFeatType = NO_VALUE;
 
-					SimplifyMap(baseMap);
-					DebugAssert(baseMap.is_valid());
+					ComplexPolygon2			orig_bounds;
+					ComplexPolygonWeight	inset_dist;
+					vector<ComplexPolygon2>	new_bounds;
 					
-					set<GISHalfedge *> e;
-//					FindEdgesForFace(face, e);
-					FindEdgesForFace(baseFace, e);
-					for (set<GISHalfedge *>::iterator ee = e.begin(); ee != e.end(); ++ee)
-					if ((*ee)->twin()->face()->is_unbounded())
-						(*ee)->mTransition = 30.0;
-					else
-						(*ee)->mTransition = 30.0;
-
-//					InsetPmwx(baseMap, baseFace);
-					if (!SK_InsetPolygon(baseFace, baseMap, terrain_ForestPark, terrain_Water, 2000))
+					FaceToComplexPolygon(face, orig_bounds, &inset_dist, GetInsetForEdgeDegs);
+					if (!SK_InsetPolygon(orig_bounds, inset_dist, new_bounds, 20000))
 						++total_bad;
 					else
 					{
 						++total_good;
 					
-						SimplifyMap(baseMap);
-						RemoveUnboundedWater(baseMap);
+						Pmwx				baseMap;
+						
+						for (vector<ComplexPolygon2>::iterator poly = new_bounds.begin(); poly != new_bounds.end(); ++poly)
+						{
+							ComplexPolygonToPmwx(*poly, baseMap, terrain_ForestPark, terrain_Water);
+						}
+					
 						DebugAssert(baseMap.is_valid());
 						
 						int forest_type_ctr = 0;
@@ -371,17 +375,9 @@ void GenerateForests(
 							{
 								GISPolyObjPlacement_t	placement;
 								placement.mRepType = *fiter;
-								iter = stop = f->outer_ccb();
-								do {
-									placement.mShape.push_back(iter->target()->point());
-									++iter;
-									forest_pt_count++;
-								} while (iter != stop);
+								FaceToComplexPolygon(f, placement.mShape, NULL, NULL);
 								
-//								Polygon2	temp(placement.mShape);
-//								InsetPolygon2(temp, NULL, 30.0 * MTR_TO_NM * NM_TO_DEG_LAT, true, placement.mShape, NULL, NULL);
-								
-								placement.mLocation = placement.mShape.centroid();
+								placement.mLocation = placement.mShape[0].centroid();
 								placement.mHeight = 255.0;
 								placement.mDerived = false;
 								face->mPolyObjs.push_back(placement);					

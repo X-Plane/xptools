@@ -23,29 +23,33 @@
 #ifndef OBJTABLES_H
 #define OBJTABLES_H
 
+/*
+ *	HOW DOES THIS WORK?
+ *
+ *	We have one record for an object of fac.  BUT for objects with var-height, the spreadsheet lists the range and the objs are generated on load-in.
+ *	Thus the spreadsheet really contains like 20 radio towers.
+ *
+ */
+
+enum {
+	rep_Obj,
+	rep_Fac
+};
+
 struct	RepInfo_t {
 
 	// RULEZ
 	int		feature;
-	int		landuse;
-	int		climate;
 	int		terrain;
-	int		zoning;
 	
-	float	elev_min;
-	float	elev_max;
 	float	temp_min;
 	float	temp_max;
+	float	rain_min;
+	float	rain_max;
 	float	slope_min;
 	float	slope_max;
-	float	relelev_min;
-	float	relelev_max;
-	float	elevrange_min;
-	float	elevrange_max;
 	float	urban_dense_min;
 	float	urban_dense_max;
-	float	urban_prop_min;
-	float	urban_prop_max;
 	float	urban_radial_min;
 	float	urban_radial_max;
 	float	urban_trans_min;
@@ -56,20 +60,16 @@ struct	RepInfo_t {
 	int		max_num;
 
 	// OBJECT
+	int		obj_type;	
 	int		obj_name;
-	float	obj_width;
-	float	obj_depth;
-	
-	// Facade		
-	int		fac_allow;
-	float	fac_swall_min;
-	float	fac_swall_max;
-	float	fac_lwall_min;
-	float	fac_lwall_max;
-	float	fac_area_min;
-	float	fac_area_max;
-	float	fac_agl_min;
-	float	fac_agl_max;
+
+	// Dims
+	float	width_min;
+	float	width_max;
+	float	depth_min;
+	float	depth_max;
+	float	height_min;
+	float	height_max;
 };
 typedef	vector<RepInfo_t>							RepTable;	
 
@@ -90,20 +90,6 @@ struct	FeatureInfo {
 typedef hash_map<int, FeatureInfo>		FeatureInfoTable;
 extern	FeatureInfoTable				gFeatures;
 
-/*
-struct	FeatureToRep_t {
-	int			rep_type;
-	float		min_urban;
-	float		max_urban;
-	float		area_density;
-	int			area_max;
-};
-typedef hash_multimap<int, FeatureToRep_t>		FeatureToRepTable;
-extern FeatureToRepTable		gFeatureToRep;
-extern set<int>					gFeatureAsFacade;
-*/
-	
-	
 void	LoadObjTables(void);
 
 // This routines returns facades that fit this profile sorted from biggest
@@ -111,28 +97,22 @@ void	LoadObjTables(void);
 int	QueryUsableFacsBySize(
 					// Rule inputs!
 					int				feature,
-					int				landuse,
-					int				climate,
 					int				terrain,
-					int				zoning,
 					
-					float			elev,
 					float			temp,
+					float			rain,
 					float			slope,
-					float			relelev,
-					float			elevrange,
 					float			urban_dense,
-					float			urban_prop,
 					float			urban_radial,
 					float			urban_trans,
 					
-					// Criteria
-					float			inArea,
-					float			inShortSideLen,
-					float			inLongSideLen,					
-					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
-					int *			outResults,
+					float			inWidth,
+					float			inDepth,
+					float			inHeightMin,
+					float			inHeightMax,
 					
+					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
+					int *			outResults,					
 					int				inMaxResults);
 
 // This routine returns objects that fit this profile sorted from biggest
@@ -141,26 +121,20 @@ int	QueryUsableFacsBySize(
 int QueryUsableObjsBySize(
 					// Rule inputs!
 					int				feature,
-					int				landuse,
-					int				climate,
 					int				terrain,
-					int				zoning,
 					
-					float			elev,
 					float			temp,
+					float			rain,
 					float			slope,
-					float			relelev,
-					float			elevrange,
 					float			urban_dense,
-					float			urban_prop,
 					float			urban_radial,
 					float			urban_trans,
 					
-					// Criteria
-					float			inAreaMin,
-					float			inAreaMax,
-					float			inMaxWidth,
-					float			inMaxDepth,
+					float			inWidth,
+					float			inDepth,
+					float			inHeightMin,
+					float			inHeightMax,	// If min = max, we want an exact height!
+					
 					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int *			outResults,
 					

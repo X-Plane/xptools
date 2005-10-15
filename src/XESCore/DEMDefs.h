@@ -132,7 +132,7 @@ struct	DEMGeo {
 	void	derez(int);
 	void	overlay(const DEMGeo& onTop);					// Overlay - requires 1:1 layout
 	void	overlay(const DEMGeo& onTop, int dx, int dy);	// Overlay - requires onTop <= main
-	void	copy_geo(const DEMGeo& rhs);
+	void	copy_geo_from(const DEMGeo& rhs);
 	
 	// Access to the data points by discrete address
 	inline float&	operator()(int, int);

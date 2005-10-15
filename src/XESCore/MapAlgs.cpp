@@ -157,6 +157,72 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 	}
 }
 
+void	CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge))
+{
+	if (road_types != NULL) DebugAssert(weight_func != NULL);
+	if (road_types == NULL) DebugAssert(weight_func == NULL);
+	
+	outPolygon.clear();
+	if (road_types) road_types->clear();
+	
+	const GISHalfedge * iter = ccb, * stop = ccb;
+	
+	do {
+		outPolygon.push_back(iter->source()->point());
+		if (road_types)
+			road_types->push_back(weight_func(iter));		
+		iter = iter->next();
+	} while (iter != stop);
+}
+
+void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge))
+{
+	outPolygon.clear();
+	if (road_types)	road_types->clear();
+	
+	if (!face->is_unbounded())
+	{
+		outPolygon.push_back(Polygon2());
+		if (road_types) road_types->push_back(vector<double>());
+		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func);
+	}
+	
+	for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
+	{
+		outPolygon.push_back(Polygon2());
+		if (road_types) road_types->push_back(vector<double>());
+		CCBToPolygon(*hole, outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func);		
+	}
+}
+
+GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx, int inTerrain, int outTerrain)
+{
+	GISFace * outer = NULL;
+	outPmwx.clear();
+	outPmwx.unbounded_face()->mTerrainType = outTerrain;
+	for (vector<Polygon2>::const_iterator poly = inPolygons.begin(); poly != inPolygons.end(); ++poly)
+	{
+		GISFace * parent = (poly == inPolygons.begin()) ? outPmwx.unbounded_face() : outer;
+		if (poly == inPolygons.begin())
+		{
+			GISFace * new_f = SafeInsertRing(&outPmwx, parent, *poly);
+			outer = new_f;
+			new_f->mTerrainType = inTerrain;
+		
+		}
+		else
+		{
+			Polygon2	rev(*poly);
+			reverse(rev.begin(), rev.end());
+			GISFace * new_f = SafeInsertRing(&outPmwx, parent, rev);
+			new_f->mTerrainType = outTerrain;
+		}
+	}
+	return outer;
+}
+
+
+
 
 /************************************************************************************************
  * MAP EDITING

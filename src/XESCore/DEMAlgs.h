@@ -37,6 +37,7 @@ enum {
 struct	DEMPrefs_t {
 	int		local_range;
 	float	temp_percentile;
+	float	rain_disturb;
 };
 
 extern DEMPrefs_t	gDemPrefs;
@@ -60,6 +61,7 @@ void	FFTMakeDEM(const vector<DEMGeo>& inFFT, DEMGeo& outDEM);
 /* Histogram calculations */
 int		DEMMakeHistogram(const DEMGeo& inDEM, map<float, int>& histo, int x1, int y1, int x2, int y2);
 float	HistogramGetPercentile(const map<float, int>& histo, int total_samples, float percentile);
+void	DEMMakeDifferential(const DEMGeo& inSrc, DEMGeo& dst);
 
 void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg);
 void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg);

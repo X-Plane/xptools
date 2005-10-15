@@ -508,10 +508,10 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	DEMGeo	hydro_dir(elev.mWidth, elev.mHeight);
 	DEMGeo	hydro_flw(elev.mWidth, elev.mHeight);
 	DEMGeo	hydro_slp(elev.mWidth, elev.mHeight);
-	hydro_dir.copy_geo(elev);
-	hydro_flw.copy_geo(elev);
-	hydro_slp.copy_geo(elev);
-	is_river.copy_geo(elev);
+	hydro_dir.copy_geo_from(elev);
+	hydro_flw.copy_geo_from(elev);
+	hydro_slp.copy_geo_from(elev);
+	is_river.copy_geo_from(elev);
 	
 	hydro_dir = sink_Unresolved;
 	is_river = 0;
@@ -707,7 +707,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 	
 	/* STEP 1. BURN THE DEM INTO THE WORKING MAP AND DETERMINE SEALEVEL. */
 
-	workingElev.copy_geo(origElev);
+	workingElev.copy_geo_from(origElev);
 	workingElev = NO_DATA;	
 	FindEdgesForFaceSet(wetFaces, bounds);
 
@@ -835,7 +835,7 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 	const DEMGeo& elev(dems[dem_Elevation]);
 
 	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
-	new_wet.copy_geo(elev);
+	new_wet.copy_geo_from(elev);
 	new_wet = NO_DATA;
 	
 	int ctr = 0;
@@ -868,18 +868,18 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 	const DEMGeo& elev(dems[dem_Elevation]);
 
 	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
-	new_wet.copy_geo(elev);
+	new_wet.copy_geo_from(elev);
 	new_wet = NO_DATA;
 
 	DEMGeo	old_wet(elev.mWidth, elev.mHeight);
-	old_wet.copy_geo(elev);
+	old_wet.copy_geo_from(elev);
 	old_wet = NO_DATA;
 
 	DEMGeo	wetness(elev.mWidth, elev.mHeight);
-	wetness.copy_geo(elev);
+	wetness.copy_geo_from(elev);
 
 //	DEMGeo	relief(elev.mWidth, elev.mHeight);
-//	relief.copy_geo(elev);
+//	relief.copy_geo_from(elev);
 
 	/************************************************************************************
 	 * RASTERIZE SHAPE FILE FOR SRTM IDEA OF WATER BODIES
@@ -1413,19 +1413,27 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge)
 					edge = new_edge->next();
 					if (first_loop) first_split = true;
 				} else {
-					is_split = false;
 					ioMap.merge_edges(edge->next(), edge->next()->next());
-					edge = edge->twin()->next()->twin();
-					ioMap.merge_edges(edge, edge->next());
+					if (!is_split)
+					{
+						edge = edge->twin()->next()->twin();
+						ioMap.merge_edges(edge, edge->next());
+					}
+					else
+						is_split = false;
 					edge = edge->next();
 				}
 
 			} else {
 			
-				is_split = false;
 				ioMap.merge_edges(edge->next(), edge->next()->next());
-				edge = edge->twin()->next()->twin();
-				ioMap.merge_edges(edge, edge->next());
+				if (!is_split)
+				{
+					edge = edge->twin()->next()->twin();
+					ioMap.merge_edges(edge, edge->next());
+				}
+				else
+					is_split = false;
 				edge = edge->next();
 			}
 		

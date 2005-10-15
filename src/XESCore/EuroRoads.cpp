@@ -25,7 +25,7 @@ void	AddEuroRoads(
 	Pmwx	road_area;
 	
 	DEMGeo	matches(inSlope.mWidth, inSlope.mHeight);
-	matches.copy_geo(inSlope);
+	matches.copy_geo_from(inSlope);
 
 	for (y = 0; y < inSlope.mHeight; ++y)
 	for (x = 0; x < inSlope.mWidth ; ++x)

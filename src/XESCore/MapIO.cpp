@@ -159,11 +159,14 @@ void WritePolyObjPlacement(IOWriter& inWriter, const GISPolyObjPlacement_t& i)
 {
 	inWriter.WriteInt(i.mRepType);
 	inWriter.WriteInt(i.mShape.size());
-	for (Polygon2::const_iterator vv = i.mShape.begin();
-		vv != i.mShape.end(); ++vv)
+	for (vector<Polygon2>::const_iterator pr = i.mShape.begin(); pr != i.mShape.end(); ++pr)
 	{
-		inWriter.WriteDouble(CGAL::to_double(vv->x));
-		inWriter.WriteDouble(CGAL::to_double(vv->y));
+		inWriter.WriteInt(pr->size());
+		for (Polygon2::const_iterator vv = pr->begin(); vv != pr->end(); ++vv)
+		{
+			inWriter.WriteDouble(CGAL::to_double(vv->x));
+			inWriter.WriteDouble(CGAL::to_double(vv->y));
+		}
 	}
 	inWriter.WriteDouble(i.mHeight);
 	inWriter.WriteInt(i.mDerived ? 1 : 0);
@@ -173,14 +176,19 @@ void ReadPolyObjPlacement(IOReader& inReader, GISPolyObjPlacement_t& obj, const 
 {
 	inReader.ReadInt(obj.mRepType);
 	obj.mRepType = c[obj.mRepType];
-	int	ptcount;
-	inReader.ReadInt(ptcount);
-	while(ptcount--)
+	int	ptcount, rcount;
+	inReader.ReadInt(rcount);
+	while(rcount--)
 	{
-		double	x,y;
-		inReader.ReadDouble(x);
-		inReader.ReadDouble(y);
-		obj.mShape.push_back(Point2(x,y));
+		obj.mShape.push_back(Polygon2());
+		inReader.ReadInt(ptcount);
+		while(ptcount--)
+		{
+			double	x,y;
+			inReader.ReadDouble(x);
+			inReader.ReadDouble(y);
+			obj.mShape.back().push_back(Point2(x,y));
+		}
 	}
 	inReader.ReadDouble(obj.mHeight);
 	int derived;

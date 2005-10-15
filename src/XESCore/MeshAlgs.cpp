@@ -1554,7 +1554,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != NO_DATA);
 	
 	DEMGeo	deriv(orig.mWidth, orig.mHeight);
-	deriv.copy_geo(orig);
+	deriv.copy_geo_from(orig);
 	deriv = NO_DATA;
 
 	DEMGeo	outline(deriv);
@@ -1891,6 +1891,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh, re, er, uden, urad, utrn, usq, center_y, variant);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
+				if (terrain == gNaturalTerrainTable.back().name)
+				{
+					printf("Hit any rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
+						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh, center_y);
+				}
 				
 				tri->info().terrain_specific = terrain;
 

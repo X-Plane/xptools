@@ -93,6 +93,13 @@ void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
  */
 void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces); 
 
+#if !DEV
+doc these
+#endif
+
+void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge));
+void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge));
+GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx, int inTerrain, int outTerain);
 
 /************************************************************************************************
  * MAP EDITING

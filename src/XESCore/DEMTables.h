@@ -196,7 +196,8 @@ bool	IsForestType(int inType);
 
 extern	string	gNaturalTerrainFile;
 extern	string	gLanduseTransFile;
-extern string	gReplacementClimate;
+extern	string	gReplacementClimate;
+extern 	string	gReplacementRoads;
 
 void	LoadDEMTables(void);
 void	CheckDEMRuleCoverage(void);

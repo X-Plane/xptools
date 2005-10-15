@@ -303,7 +303,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	
 	if (dems)
 	{
-		transport_src.copy_geo(transport);
+		transport_src.copy_geo_from(transport);
 		transport_src = 1.0;
 	}
 	
@@ -333,7 +333,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 			working = NO_DATA;
 			if (ClipDEMToFaceSet(simple_faces, elevation, working, x1, y1, x2, y2))
 			{
-				working.copy_geo(elevation);
+				working.copy_geo_from(elevation);
 				--x1;
 				--y1;
 				++x2;

@@ -27,8 +27,11 @@ class	GISFace;
 class	DEMGeoMap;
 class	CDT;
 class	Pmwx;
-
+class	GISHalfedge;
 #include "ProgressUtils.h"
+
+double	GetInsetForEdgeMeters(const GISHalfedge * inEdge);
+double	GetInsetForEdgeDegs(const GISHalfedge * inEdge);
 
 void	RemoveDuplicates(
 							GISFace * 			inFace);

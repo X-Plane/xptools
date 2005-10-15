@@ -48,12 +48,13 @@
 #include "WED_Assert.h"
 #include "PlatformUtils.h"
 #include "Forests.h"
+#include "DEMTables.h"
 
 #include "ObjPlacement.h"
 
 extern ProcessingPrefs_t	gProcessingCmdPrefs = {
-	/*		do_upsample_environment	*/			1,
 	/*		do_calc_slope			*/			1,
+	/*		do_upsample_environment	*/			1,
 	/*		do_hydro_correct		*/			0,
 	/*		do_hydro_simplify		*/			0,
 	/*		do_derive_dems			*/			1,
@@ -69,8 +70,8 @@ extern ProcessingPrefs_t	gProcessingCmdPrefs = {
 
 
 enum {
-	procCmd_UpsampleEnviro,
 	procCmd_CalcSlope,
+	procCmd_UpsampleEnviro,
 	procCmd_HydroCorrect,
 	procCmd_HydroSimplfiy,
 	procCmd_DeriveDEMs,
@@ -93,8 +94,8 @@ enum {
 };
 
 const char *	kProcCmdNames [] = {
-	"Upsample Environment",
 	"Calculate Terrain Slope",
+	"Upsample Environment",
 	"Hydro-Correct",
 	"Simplify Coastlines",
 	"Calculate Derived Raster Data",
@@ -218,16 +219,14 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			{
 				char	path[1024];
 				path[0] = 0;
-				if (GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open for roads", "Open", 8, path))
+				if (!gReplacementRoads.empty())
 				{
-					MFMemFile * fi = MemFile_Open(path);
+					string path = FindConfigFile(gReplacementRoads.c_str());
+					MFMemFile * fi = MemFile_Open(path.c_str());
 					if (fi)
 					{
 						Pmwx		overMap;
-						CDT			overTri;
-						DEMGeoMap	overDem;
-						AptVector	overApt;
-						ReadXESFile(fi, overMap, overTri, overDem, overApt, WED_ProgressFunc);
+						ReadXESFile(fi, &overMap, NULL, NULL, NULL, WED_ProgressFunc);
 
                         Point2 master1, master2, slave1, slave2;
                         CalcBoundingBox(gMap, master1, master2);
@@ -303,8 +302,8 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoProcessing:		
-			if (gProcessingCmdPrefs.do_upsample_environment		)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_UpsampleEnviro );
 			if (gProcessingCmdPrefs.do_calc_slope				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_CalcSlope	   );
+			if (gProcessingCmdPrefs.do_upsample_environment		)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_UpsampleEnviro );
 			if (gProcessingCmdPrefs.do_hydro_correct			)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_HydroCorrect   );
 			if (gProcessingCmdPrefs.do_hydro_simplify			)	WED_HandleProcMenuCmd(NULL, (void *)		procCmd_HydroSimplfiy  );
 			if (gProcessingCmdPrefs.do_derive_dems				)	WED_HandleProcMenuCmd(NULL, (void *) 		procCmd_DeriveDEMs     );
@@ -385,8 +384,8 @@ void WED_UpdateProcCmds(void)
 		}
 	}
 	
-	XPLMEnableMenuItem(sProcessMenu, procCmd_UpsampleEnviro, 	has_enviro);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_CalcSlope,			has_elev);
+	XPLMEnableMenuItem(sProcessMenu, procCmd_UpsampleEnviro, 	has_enviro);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroCorrect,		has_lu && has_slope && has_enviro_hi);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroSimplfiy,		has_lu && has_slope && has_enviro_hi);	
 	XPLMEnableMenuItem(sProcessMenu, procCmd_DeriveDEMs,		has_lu && has_slope && has_enviro_hi);
@@ -403,8 +402,8 @@ void WED_UpdateProcCmds(void)
 	XPLMEnableMenuItem(sProcessMenu, procCmd_ExportDSFNew,		has_roads && has_deriv_raster && has_enviro_hi && has_enviro/* && has_tri_lo*/ && has_tri_hi && mesh_set);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_ExportDSFExisting, has_roads && has_deriv_raster && has_enviro_hi && has_enviro/* && has_tri_lo*/ && has_tri_hi && mesh_set);
 
-	XPLMCheckMenuItem(sProcessMenu, procCmd_UpsampleEnviro, 	has_enviro_hi ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sProcessMenu, procCmd_CalcSlope,			has_slope ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+	XPLMCheckMenuItem(sProcessMenu, procCmd_UpsampleEnviro, 	has_enviro_hi ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sProcessMenu, procCmd_DeriveDEMs,			has_deriv_raster ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sProcessMenu, procCmd_BuildRoads,			(has_roads && has_deriv_raster) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sProcessMenu, procCmd_DoZoning,			has_zoning ? xplm_Menu_Checked : xplm_Menu_Unchecked);

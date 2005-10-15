@@ -45,6 +45,7 @@ static set<int>		sForests;
 string	gNaturalTerrainFile = "natural_terrain.txt";
 string	gLanduseTransFile	= "landuse_translate.txt";
 string	gReplacementClimate;
+string 	gReplacementRoads;
 
 inline double cosdeg(double deg)
 {
@@ -148,6 +149,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.urban_trans_min = info.urban_trans_max = 0.0;
 	info.urban_square = 0;
 	info.map_rgb[0] = info.map_rgb[1] = info.map_rgb[2] = 0.5;
+	info.temp_rng_min = info.temp_rng_max = 0.0;
 	
 	if (tokens[0] == "STERRAIN")
 	{
@@ -190,6 +192,62 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[1],
 			&info.map_rgb[2]
 			) < 31) return false;	
+	} else 	if (tokens[0] == "MTERRAIN") {
+
+		
+		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsfssefff",
+			&info.terrain,
+			&info.landuse,
+			&info.climate,
+			&info.elev_min,
+			&info.elev_max,
+			&info.slope_min,
+			&info.slope_max,
+
+			&info.temp_min,
+			&info.temp_max,
+//			&info.temp_rng_min,
+//			&info.temp_rng_max,
+			&info.rain_min,
+			&info.rain_max,
+			&info.near_water,
+			&info.slope_heading_min,
+			&info.slope_heading_max,
+			&info.rel_elev_min,
+			&info.rel_elev_max,
+			&info.elev_range_min,
+			&info.elev_range_max,
+
+			&info.urban_density_min,
+			&info.urban_density_max,
+			&info.urban_radial_min,
+			&info.urban_radial_max,
+			&info.urban_trans_min,
+			&info.urban_trans_max,
+			&info.urban_square,
+
+			&info.lat_min,
+			&info.lat_max,
+			&auto_vary,
+
+			&name,
+			&info.layer,
+			&info.xon_dist,
+			&info.base_tex,
+	//		&info.comp_tex,
+			&info.base_res,
+	//		&info.comp_res,
+	//		&info.base_alpha_invert,
+	//		&info.comp_alpha_invert,
+			&proj,
+			&info.border_tex,
+			&info.forest_type,
+	//		&info.forest_ratio,
+			&info.map_rgb[0],
+			&info.map_rgb[1],
+			&info.map_rgb[2]
+			) != 40) return false;
+	
 	} else {
 		
 		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsfssefff",
@@ -392,6 +450,7 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("BEACH", ReadBeachInfo, NULL);
 	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
+	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
 //	RegisterLineHandler("MTERRAIN", ReadManTerrainInfo, NULL);
@@ -444,6 +503,7 @@ int	FindNaturalTerrain(
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
 		
 		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
+//		float slope_to_use = slope_tri;
 
 		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
 		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)
@@ -477,6 +537,7 @@ int	FindNaturalTerrain(
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
 
 		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
+//		float slope_to_use = slope_tri;
 
 		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
 		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)

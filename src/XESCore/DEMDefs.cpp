@@ -272,7 +272,7 @@ void DEMGeo::overlay(const DEMGeo& rhs, int dx, int dy)
 	}
 }
 
-void	DEMGeo::copy_geo(const DEMGeo& rhs)
+void	DEMGeo::copy_geo_from(const DEMGeo& rhs)
 {
 	mNorth = rhs.mNorth;
 	mSouth = rhs.mSouth;
@@ -621,8 +621,8 @@ void	DEMGeo_ReduceMinMax(
 	outMax.mEast = inMax.mEast;
 	outMax.mWest = inMax.mWest;
 	
-	outMin.resize(inMin.mWidth / 2 + 1, inMin.mHeight / 2 + 1);
-	outMax.resize(inMax.mWidth / 2 + 1, inMax.mHeight / 2 + 1);
+	outMin.resize((inMin.mWidth-1) / 2 + 1, (inMin.mHeight-1) / 2 + 1);
+	outMax.resize((inMax.mWidth-1) / 2 + 1, (inMax.mHeight-1) / 2 + 1);
 	
 	int x, y;
 	float e1, e2, e3, e4;

@@ -192,15 +192,15 @@ static	void	RotateAndOffset(Polygon2& ioPolygon, const Vector2& offset, float he
 	
 static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 {
-	Polygon2	poly(inPlacement.mShape);
-	CoordTranslator	trans;
-	CreateTranslatorForPolygon(poly, trans);
-	for (int n = 0; n < poly.size(); ++n)
+	vector<Polygon2>	poly(inPlacement.mShape);
+	CoordTranslator		trans;
+	CreateTranslatorForPolygon(poly[0], trans);
+	for (int n = 0; n < poly[0].size(); ++n)
 	{
-		poly[n] = trans.Forward(poly[n]);
+		poly[0][n] = trans.Forward(poly[0][n]);
 	}
 
-	double area = poly.area();
+	double area = poly[0].area();
 	if (area < 0) {
 		printf("Rejecting polygon - area less than zero.\n");
 		return false;
@@ -210,8 +210,8 @@ static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 		return false;
 	}
 	
-	for (int n = 0; n < poly.size(); ++n)
-	if (poly.side(n).squared_length() > 1000000.0)
+	for (int n = 0; n < poly[0].size(); ++n)
+	if (poly[0].side(n).squared_length() > 1000000.0)
 	{
 		printf("Rejecting polygon - side longer than 1 km.\n");
 		return false;
@@ -546,12 +546,13 @@ bool	ProcessOneLot(
 			Polygon2	facade;
 			InsetPolygon2(lot, NULL, RandRange(2.0,4.0), true, facade, NULL, NULL);
 			GISPolyObjPlacement_t	place;
+			place.mShape.push_back(Polygon2());
 			for (i = 0; i < facade.size(); ++i)
 			{
-				place.mShape.push_back(coords.Reverse(facade[i]));
+				place.mShape.back().push_back(coords.Reverse(facade[i]));
 			}
 			place.mRepType = gRepTable[query].obj_name;
-			place.mLocation = place.mShape[0];
+			place.mLocation = place.mShape[0].centroid();
 			place.mHeight = (required_agl == -1) ? RandRangeBias(gRepTable[query].fac_agl_min, gRepTable[query].fac_agl_max, urban_dense, 0.5) : required_agl;
 			place.mDerived = require_feat != NO_VALUE;
 			if (SanityCheck(place))
@@ -933,8 +934,7 @@ void	InstantiateGTPolygon(
 	{
 		polyObjLocalV[0].clear();
 
-		for (Polygon2::iterator vert = polyObj->mShape.begin();
-			vert != polyObj->mShape.end(); ++vert)
+		for (Polygon2::iterator vert = polyObj->mShape[0].begin(); vert != polyObj->mShape[0].end(); ++vert)
 		{
 			polyObjLocalV[0].push_back(mapping.Forward(*vert));
 		}
@@ -1069,10 +1069,11 @@ void	InstantiateGTPolygon(
 				{
 					++feat_raster_ok;
 					GISPolyObjPlacement_t	rep;
+					rep.mShape.push_back(Polygon2());
 					rep.mRepType = info.obj_name;
 					for (int n = 0; n < polyObjLocalV[0].size(); ++n)
 					{
-						rep.mShape.push_back(mapping.Reverse(polyObjLocalV[0][n]));
+						rep.mShape.back().push_back(mapping.Reverse(polyObjLocalV[0][n]));
 					}
 					if (i->mParams.find(pf_Height) != i->mParams.end())						
 						rep.mHeight = i->mParams[pf_Height];
@@ -1474,3 +1475,23 @@ void	InstantiateGTPolygonAll(
 	}
 	PROGRESS_DONE(inProg, 0, 1, "Instantiating Face Objects...")
 }
+
+double	GetInsetForEdgeMeters(const GISHalfedge * inEdge)
+{
+	bool is_edge_of_map = inEdge->face()->is_unbounded() || inEdge->twin()->face()->is_unbounded();
+	bool is_coast = inEdge->face()->IsWater() != inEdge->twin()->face()->IsWater();
+	const GISHalfedge * dom = inEdge->mDominant ? inEdge : inEdge->twin();
+	int best_road = WidestRoadTypeForSegment(dom->mSegments);
+	
+	double width = (is_coast && !is_edge_of_map) ? 30.0 : 5.0;
+	if (best_road != NO_VALUE)
+		width = max(width, gNetEntities[best_road].width + gNetEntities[best_road].pad + 2.0);
+	return width;
+}
+
+double	GetInsetForEdgeDegs(const GISHalfedge * inEdge)
+{
+	return GetInsetForEdgeMeters(inEdge) * MTR_TO_NM * NM_TO_DEG_LAT;
+}
+
+

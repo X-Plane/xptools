@@ -354,6 +354,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		GISObjPlacementVector::iterator			pointObj;
 		GISPolyObjPlacementVector::iterator		polyObj;
 		Polygon2::iterator						polyPt;
+		vector<Polygon2>::iterator				polyRing;
 
 		void *			writer;
 		DSFCallbacks_t	cbs;
@@ -992,7 +993,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		for (polyObj = pf->mPolyObjs.begin(); polyObj != pf->mPolyObjs.end(); ++polyObj)
 		{
 			bool	 broken = false;
-			for (polyPt = polyObj->mShape.begin(); polyPt != polyObj->mShape.end(); ++polyPt)
+			for (polyRing = polyObj->mShape.begin(); polyRing != polyObj->mShape.end(); ++polyRing)
+			for (polyPt = polyRing->begin(); polyPt != polyRing->end(); ++polyPt)
 			{
 				if (polyPt->x < inLanduse.mWest ||
 					polyPt->x > inLanduse.mEast ||
@@ -1011,15 +1013,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					facades[polyObj->mRepType],
 					polyObj->mHeight, 2,
 					writer);
-			cbs.BeginPolygonWinding_f(writer);					
-			for (polyPt = polyObj->mShape.begin(); polyPt != polyObj->mShape.end(); ++polyPt)
+			for (polyRing = polyObj->mShape.begin(); polyRing != polyObj->mShape.end(); ++polyRing)
 			{
-				coords2[0] = polyPt->x;
-				coords2[1] = polyPt->y;
-				cbs.AddPolygonPoint_f(coords2, writer);
-				
+				cbs.BeginPolygonWinding_f(writer);					
+				for (polyPt = polyRing->begin(); polyPt != polyRing->end(); ++polyPt)
+				{
+					coords2[0] = polyPt->x;
+					coords2[1] = polyPt->y;
+					cbs.AddPolygonPoint_f(coords2, writer);
+					
+				}
+				cbs.EndPolygonWinding_f(writer);
 			}
-			cbs.EndPolygonWinding_f(writer);
 			cbs.EndPolygon_f(writer);
 			++total_polys;
 		}

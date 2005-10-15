@@ -105,11 +105,11 @@ typedef vector<GISObjPlacement_t>	GISObjPlacementVector;
  * A single placement of a prototype by its polygon and height.
  * Derived info is saved just like a normal object. */
 struct	GISPolyObjPlacement_t {
-	int				mRepType;
-	Polygon2		mShape;
-	Point2			mLocation;	// Nominal center - used primarily for debugging!
-	double			mHeight;
-	bool			mDerived;
+	int					mRepType;
+	vector<Polygon2>	mShape;
+	Point2				mLocation;	// Nominal center - used primarily for debugging!
+	double				mHeight;
+	bool				mDerived;
 };
 typedef vector<GISPolyObjPlacement_t>	GISPolyObjPlacementVector;	
 

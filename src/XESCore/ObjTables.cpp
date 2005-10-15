@@ -41,52 +41,99 @@ int								gRepUsageTotal = 0;
 bool	ReadRepLine(const vector<string>& tokens, void * ref)
 {
 	RepInfo_t	info;
-	if (TokenizeLine(tokens, " eeeeefffffffffffffffffffieffiffffffff",
-			&info.feature,
-			&info.landuse,
-			&info.climate,
-			&info.terrain,
-			&info.zoning,			
-			&info.elev_min,
-			&info.elev_max,
-			&info.temp_min,
-			&info.temp_max,
-			&info.slope_min,
-			&info.slope_max,
-			&info.relelev_min,
-			&info.relelev_max,
-			&info.elevrange_min,
-			&info.elevrange_max,
-			&info.urban_dense_min,
-			&info.urban_dense_max,
-			&info.urban_prop_min,
-			&info.urban_prop_max,
-			&info.urban_radial_min,
-			&info.urban_radial_max,
-			&info.urban_trans_min,
-			&info.urban_trans_max,
+	int row_num;
+	if (tokens[0] == "OBJ_PROP")
+	{
+		if (TokenizeLine(tokens, " eefffffffffffffiefff",
+			&info.feature, &info.terrain,
 
-			&info.freq,
-			&info.max_num,
-
-			&info.obj_name,
-			&info.obj_width,
-			&info.obj_depth,
-
-			&info.fac_allow,
-			&info.fac_swall_min,
-			&info.fac_swall_max,
-			&info.fac_lwall_min,
-			&info.fac_lwall_max,
-			&info.fac_area_min,
-			&info.fac_area_max,
-			&info.fac_agl_min,
-			&info.fac_agl_max) != 38)
-				return false;
+			&info.temp_min, &info.temp_max, 
+			&info.rain_min, &info.rain_max, 
+			&info.slope_min, &info.slope_max,
 			
-	int row_num = gRepTable.size();
-	gRepTable.push_back(info);
+			&info.urban_dense_min, &info.urban_dense_max,
+			&info.urban_radial_min, &info.urban_radial_max,
+			&info.urban_trans_min, &info.urban_trans_max,
+			
+			&info.freq, &info.max_num,
+			&info.obj_name,
+			&info.width_min, 
+			&info.depth_min, 
+			&info.height_min) != 21) return false;
+		
+		info.obj_type = rep_Obj;
+		info.width_max = info.width_min;
+		info.depth_max = info.depth_min;
+		info.height_max = info.height_min;
+		row_num = gRepTable.size();
+		gRepTable.push_back(info);
+	}
+	else if (tokens[0] == "OBS_PROP")
+	{
+		string base_name;
+		int		height_min, height_max;
+		if (TokenizeLine(tokens, " eefffffffffffffisffii",
+			&info.feature, &info.terrain,
+
+			&info.temp_min, &info.temp_max, 
+			&info.rain_min, &info.rain_max, 
+			&info.slope_min, &info.slope_max,
+			
+			&info.urban_dense_min, &info.urban_dense_max,
+			&info.urban_radial_min, &info.urban_radial_max,
+			&info.urban_trans_min, &info.urban_trans_max,
+			
+			&info.freq, &info.max_num,
+			&base_name,
+			&info.width_min, 
+			&info.depth_min, 
+			&height_min, &height_max) != 22) return false;
+		
+		info.obj_type = rep_Obj;
+		info.width_max = info.width_min;
+		info.depth_max = info.depth_min;
+		
+		if (height_min % 10) printf("WARNING: object %s min height %d not multiple of 10 meters.\n", base_path.c_str(), height_min);
+		if (height_max % 10) printf("WARNING: object %s max height %d not multiple of 10 meters.\n", base_path.c_str(), height_max);
+		
+		for (int h = height_min; h <= height_max; h += 10)
+		{
+			info.height_max = info.height_min = h;
+			char	obj_name[256];
+			sprintf(obj_name("%s%d", base_path.c_str(), h);
+			info.obj_name = LookupTokenCreate(obj_name);
+			row_num = gRepTable.size();
+			gRepTable.push_back(info);
+		}
+	}
+	else 
+	{
+		if (TokenizeLine(tokens, " eefffffffffffffieffffff",
+			&info.feature, &info.terrain,
+
+			&info.temp_min, &info.temp_max, 
+			&info.rain_min, &info.rain_max, 
+			&info.slope_min, &info.slope_max,
+			
+			&info.urban_dense_min, &info.urban_dense_max,
+			&info.urban_radial_min, &info.urban_radial_max,
+			&info.urban_trans_min, &info.urban_trans_max,
+			
+			&info.freq, &info.max_num,
+			&info.obj_name,
+			&info.width_min, &info.width_max, 
+			&info.depth_min, &info.depth_max, 
+			&info.height_min, &info.height_max) != 24) return false;
+		
+		info.obj_type = rep_Fac;	
+		row_num = gRepTable.size();
+		gRepTable.push_back(info);
+	}
 	
+			
+
+	// WE NEED TO REVISIT THIS GUY	
+	- this is a back index of the actual obj name to its row nubmer for getting more info!
 	if (gRepFeatureIndex.count(info.obj_name) > 0)
 	{
 		RepInfo_t& master(gRepTable[gRepFeatureIndex[info.obj_name]]);
