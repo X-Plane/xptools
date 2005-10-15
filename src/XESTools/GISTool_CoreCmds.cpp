@@ -187,7 +187,7 @@ static int DoLoad(const vector<const char *>& args)
 	MFMemFile * load = MemFile_Open(args[0]);
 	if (load)
 	{
-		ReadXESFile(load, gMap, gTriangulationHi, gDem, gApts, gProgress);
+		ReadXESFile(load, &gMap, &gTriangulationHi, &gDem, &gApts, gProgress);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(load);
 	} else {
@@ -209,10 +209,7 @@ static int DoOverlay(const vector<const char *>& args)
 	Pmwx		theMap;
 	if (load)
 	{
-		DEMGeoMap	dems;
-		AptVector	apts;
-		CDT			theMesh;
-		ReadXESFile(load, theMap, theMesh, dems, apts, gProgress);
+		ReadXESFile(load, &theMap, NULL, NULL, NULL, gProgress);
 		MemFile_Close(load);
 				
 	} else {
@@ -243,7 +240,10 @@ static int DoOverlay(const vector<const char *>& args)
 
 static int DoSave(const vector<const char *>& args)
 {
-	int nland = 0;
+#if !DEV
+hello
+#endif
+	int nland = 1; // SHOULD BE ZERO
 	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		if (!f->IsWater())
