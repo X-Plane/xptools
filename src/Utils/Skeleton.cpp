@@ -1,9 +1,7 @@
 #include "Skeleton.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
-#include "MapDefs.h"
 #include "XESConstants.h"
-#include "MapAlgs.h"
 #include "AssertUtils.h"
 
 /*
@@ -498,145 +496,9 @@ bool	SK_SafeIntersect3(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, con
 	}
 }
 
-
-bool	SK_ReflexEventPossible(SK_Event * inEvent)
-{
-
-	// The idea here is to evaluate this event to see if it is actually possible.
-	// WE may have reflex interference between spatially far-apart but colinear parts of the
-	// triangle.  So we need to evaluate our current topology.
-	
-	SK_Edge * e_this = inEvent->e3;	
-	SK_Vertex * v_prev = e_this->prev;
-	SK_Vertex * v_next = e_this->next;
-	SK_Edge * e_prev = e_this->prev->prev;
-	SK_Edge * e_next = e_this->next->next;
-	SK_Vertex * v_reflex = inEvent->e1->next;
-
-	// TOPOLOGICAL TEST - we disqualify reflex events where the edge is adjacent to one of the segments of the reflex
-	// vertex.  Why?  Well, this is a reflex and a bisector event!  We let the bisector code handle it.  We want less
-	// reflex events - they're more expensive to handle and risk multiple simultaneous reflex events if we leave 'em 
-	// around.
-
-//	why do we need this in?  imagine a bisector event where: the sides are actually CLOSING in (e.g. the u-turn is more than 180
-//	degrees.  Make one side an antenna...poof!  this isn't' a bisector event because both are reflexes and the intersection point will be in space.
-//	Solution - this config defines that there be a reflex event corresponding to it (from the antenna) that cleans it up.
-
-	// If topologically we're really a bisector event, bail.
-//	if (e_prev == inEvent->e1 || e_next == inEvent->e1 || e_prev == inEvent->e2 || e_next == inEvent->e2) return false;
-
-	// DISASSEMBLY TEST - if the edges making up the reflex vector no longer connect, well, something happened that makes us
-	// no longer a reflex event!  Bal.
-	if (inEvent->e1->next != inEvent->e2->prev)	return false;
-
-	// NOT-SO-REFLEX TEST.  If we're actually not pointing like a reflex vector, perhaps due to some strange reassembly,
-	// well that's damn surprising but it's clear that we don't want to run the event.
-// HACK: shouldn't we just know this!?!  If our input sides made us reflex when we started, how can it change if we haven't 
-// been disassembled?
-//	DebugAssert(v_reflex->IsReflex());
-	if (!v_reflex->IsReflex())	return false;
-
-	// LOVE-THY-NEIGHBOR TEST: If we share a vertex with the edge we're hitting, that's a very bad sign; generally it means that 
-	// our reflex vertex  has a neighbor that it thinks it hits at a time really close to 0.  Do not allow this!
-	if (inEvent->e1->ends.p2 == e_this->ends.p1 ||
-		inEvent->e1->ends.p2 == e_this->ends.p2 ||
-		inEvent->e2->ends.p1 == e_this->ends.p1 ||
-		inEvent->e2->ends.p1 == e_this->ends.p2)			return false;
+#pragma mark -
 
 
-	// SPATIAL FILTER: Now comes the real work...find lines that are the projection of the bisectors of the vertices adjacent to the
-	// edge we split; this defines the area where the edge is legitimate.  If we're not in this area bail.
-	// How we do this: well the bisector is the line of equidistance between the two base supporting lines that we are bisecting.
-	// So: take the signed euclidian distance from each line.  If we are closer to the split edge than either
-	// side edges, we must be inside the bisectors.
-	
-	// More details: we normalize the supporting lines that are built by taking the supporting plane's Ax+By+Cz+D=0
-	// and substituting for Z=0.  By normalizing it, we can calculate the signed distance without a square route.
-	// (Okay, the normal op has a square route, so this isn't perfect.)
-	
-
-	Line2	base_line_this(e_this->supporting_plane.n.dx,e_this->supporting_plane.n.dy, -e_this->supporting_plane.ndotp);
-	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
-	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
-	
-	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
-
-	bool	closer_prev = !SK_CloserToLine(base_line_prev, base_line_this, e_this->ends.p1, cross_flat);
-	bool	closer_next = SK_CloserToLine(base_line_this, base_line_next, e_this->ends.p2, cross_flat);
-
-	return closer_prev && closer_next;
-}
-
-bool	SK_BisectorEventPossible(SK_Event * inEvent)
-{
-	// The idea here is to evaluate this event to see if it is actually possible.
-	// WE may have reflex interference between spatially far-apart but colinear parts of the
-	// triangle.  So we need to evaluate our current topology.
-	
-	SK_Edge * e_this = inEvent->e2;	
-	SK_Vertex * v_prev = e_this->prev->prev->prev;
-	SK_Vertex * v_next = e_this->next->next->next;
-	SK_Edge * e_prev = e_this->prev->prev;
-	SK_Edge * e_next = e_this->next->next;
-	SK_Edge * e_prevprev = e_this->prev->prev->prev->prev;
-	SK_Edge * e_nextnext = e_this->next->next->next->next;
-
-	// TRIANGLE TEST - all bisector events from within a triangle are true, always!  I mean, dude, 
-	// how can they not be?
-
-	if (e_next == e_prevprev) return true;
-	if (e_prev == e_nextnext) return true;
-
-	// LINE TEST - we don't ever expect to have a single line (2-edge) loop...just be sure lest chaos
-	// break out.
-	DebugAssert(v_prev != v_next);
-	if (e_next == e_prev) return false;
-	
-//	return true;
-/*	
-	Fernando says: no spatial cutoff filter is needed for bisector events - if the adjacent bisector cut us
-	off, there would be another bisector event with an earlier time!
-	
-	// SPATIAL FILTER - see above for notes
-	
-	Point3	p_zero_left(e_prev->ends.p1.x, e_prev->ends.p1.y, 0);
-	Point3	p_zero_right(e_next->ends.p2.x, e_next->ends.p2.y, 0);
-
-	Line3	left_travel, right_travel;
-
-	if (!SK_SafeIntersect(e_prev->prev->prev,e_prev,p_zero_left,left_travel))
-		AssertPrintf("Safe Intersect Failed.");
-	if (!SK_SafeIntersect(e_next,e_next->next->next,p_zero_right,right_travel))
-		AssertPrintf("Safe Intersect Failed.");
-
-	if (left_travel.v.dz < 0.0)		left_travel.v = -left_travel.v;
-	if (right_travel.v.dz < 0.0)	right_travel.v = -right_travel.v;
-
-	Line2	left_travel_flat(e_prev->prev->location,Vector2(left_travel.v.dx,left_travel.v.dy));
-	Line2	right_travel_flat(e_next->next->location,Vector2(right_travel.v.dx,right_travel.v.dy));
-	Point2	cross_flat(inEvent->cross.x, inEvent->cross.y);
-		
-	bool	on_prev = left_travel_flat.on_right_side(cross_flat);
-	bool	on_next = !right_travel_flat.on_right_side(cross_flat);
-	
-	return on_prev  && on_next;
-*/	
-
-	// BEn says: try anyway for now
-//	TODO Revisit this - we need to get all of our on-edge stuff right!
-
-	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
-	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
-	Line2	base_line_prevprev(e_prev->prev->prev->supporting_plane.n.dx,e_prev->prev->prev->supporting_plane.n.dy, -e_prev->prev->prev->supporting_plane.ndotp);
-	Line2	base_line_nextnext(e_next->next->next->supporting_plane.n.dx,e_next->next->next->supporting_plane.n.dy, -e_next->next->next->supporting_plane.ndotp);
-	
-	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
-
-	bool	closer_prev = !SK_CloserToLine(base_line_prevprev, base_line_prev, e_prev->ends.p1, cross_flat);
-	bool	closer_next = SK_CloserToLine(base_line_next, base_line_nextnext, e_next->ends.p2, cross_flat);
-
-	return closer_prev && closer_next;
-}
 
 
 bool	SK_PointInRing(SK_Edge * ring, SK_Vertex * inVert, double time)
@@ -721,6 +583,8 @@ static void SK_CombinePolys(SK_Polygon * live, SK_Polygon * die)
 	delete die;
 }
 
+#pragma mark -
+
 static SK_Polygon *	SK_PolygonCreate(
 							SK_Polygon *			parent,
 							const Polygon2& 		inPolygon, 
@@ -787,70 +651,59 @@ static SK_Polygon *	SK_PolygonCreate(
 	return child;
 }
 
-static SK_Polygon * SK_PolygonCreateFromFace(SK_Polygon * parent, GISFace * face)
+static SK_Polygon * SK_PolygonCreateComplex(SK_Polygon * parent, const ComplexPolygon2& inPoly, const ComplexPolygonWeight& weights)
 {
-	DebugAssert(!face->is_unbounded());
-	DebugAssert(parent != NULL);
-	Polygon2 poly;
-	vector<double>	insets;
-	
-	Pmwx::Ccb_halfedge_circulator circ, stop;
-	stop = circ = face->outer_ccb();
-	do {
-		poly.push_back(circ->source()->point());
-		insets.push_back((double) circ->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR));
-		++circ;
-	} while (stop != circ);
-	
-	SK_Polygon * ret = SK_PolygonCreate(parent, poly, &*insets.begin());
-	
-	for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+	SK_Polygon * ret = NULL;
+	for (int n = 0; n < inPoly.size(); ++n)
 	{
-		poly.clear();
-		insets.clear();
-		stop = circ = *hole;
-		do {
-			poly.push_back(circ->source()->point());
-			insets.push_back((double) circ->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR));
-			++circ;
-		} while (stop != circ);
-		
-		SK_PolygonCreate(ret, poly, &*insets.begin());		
+		SK_Polygon * npoly = SK_PolygonCreate(n == 0 ? parent : ret, inPoly[n], &*weights[n].begin());
+		if (n == 0) ret = npoly;		
 	}
 	
-	return ret;	
+	return ret;
 }
 
-static void SK_InsetPolyIntoPmwx(SK_Polygon * poly, GISFace * parent, Pmwx& theMap)
+static void SK_InsetPolyIntoComplexPolygonList(SK_Polygon * world, vector<ComplexPolygon2>& outPolys)
 {
-	if (!poly->children.empty())
-		Assert(poly->ccb != NULL);
+	outPolys.clear();
 	
-	if (poly->ccb)
+	outPolys.reserve(world->children.size());
+	
+	for (set<SK_Polygon *>::iterator outers = world->children.begin(); outers != world->children.end(); ++outers)
 	{
+		Assert((*outers)->ccb != NULL);
+		outPolys.push_back(ComplexPolygon2());
+
+		ComplexPolygon2& outerResult(outPolys.back());
+		
+		outerResult.reserve((*outers)->children.size() + 1);
+
+		outerResult.push_back(Polygon2());
+		
+		Polygon2& ccb(outerResult.back());
+
 		SK_Vertex * iter, * stop;
-		iter = stop = poly->ccb->next;
-		Polygon2 ring;
+		iter = stop = (*outers)->ccb->next;
 		do {
-			ring.push_back(iter->location);
+			ccb.push_back(iter->location);
 			iter = iter->next->next;
 		} while (iter != stop);
-		
-		ring.erase(unique(ring.begin(), ring.end()), ring.end());
-		
-		GISFace * me = SafeInsertRing(&theMap, parent, ring);
-		
-		for (set<SK_Polygon *>::iterator c = poly->children.begin(); c != poly->children.end(); ++c)
-			SK_InsetPolyIntoPmwx(*c, me, theMap);
-	}
-}
 
-static void SK_PolygonToPmwx(SK_Polygon * world, Pmwx& outMap)
-{
-	DebugAssert(world->ccb == NULL);
-	outMap.clear();
-	for (set<SK_Polygon *>::iterator c = world->children.begin(); c != world->children.end(); ++c)
-		SK_InsetPolyIntoPmwx(*c, outMap.unbounded_face(), outMap);
+		for (set<SK_Polygon *>::iterator holes = (*outers)->children.begin(); holes != (*outers)->children.end(); ++holes)
+		{
+			DebugAssert((*holes)->children.empty());
+			Assert((*holes)->ccb != NULL);
+			outerResult.push_back(Polygon2());
+			Polygon2& hole(outerResult.back());
+			iter = stop = (*holes)->ccb->next;
+			do {
+				hole.push_back(iter->location);
+				iter = iter->next->next;
+			} while (iter != stop);
+			
+		}
+		
+	}
 }
 
 static void SK_PolygonDestroy(SK_Polygon * ioPolygon)
@@ -1108,41 +961,151 @@ static void SK_RemoveEmptyPolygons(SK_Polygon * who, EventMap& ioMap)
 	}
 }
 
-#if 0
-/* Evaluate all vertices and mark reflex vertices. */
-static void SK_PolygonMarkReflexVertices(SK_Polygon * poly)
-{
-	for (set<SK_Polygon *>::iterator c = poly->children.begin(); c != poly->children.end(); ++c)
-		SK_PolygonMarkReflexVertices(*c);
-	
-	if (poly->ccb)
-	{
-		SK_Vertex * iter, * stop;
-		iter = stop = poly->ccb->next;
-		do {
-			iter->is_reflex = false;
-			
-			Vector2	v1(iter->prev->supporting_plane.n.dy, -iter->prev->supporting_plane.n.dx);
-			Vector2	v2(iter->next->supporting_plane.n.dy, -iter->next->supporting_plane.n.dx);
-			if ((v1.dx != 0.0 || v1.dy != 0.0) && (v2.dx != 0.0 || v2.dy != 0.0))
-			{
-				if (v1.right_turn(v2))
-				{
-					iter->is_reflex = true;
-				}
-			}
-			
-			iter = iter->next->next;
-		} while (iter != stop);		
-	}
-}
-#endif
-
 
 /***************************************************************************************************
  * INTERSECTION CALCULATIONS
  ***************************************************************************************************/
 #pragma mark -
+
+bool	SK_ReflexEventPossible(SK_Event * inEvent)
+{
+
+	// The idea here is to evaluate this event to see if it is actually possible.
+	// WE may have reflex interference between spatially far-apart but colinear parts of the
+	// triangle.  So we need to evaluate our current topology.
+	
+	SK_Edge * e_this = inEvent->e3;	
+	SK_Vertex * v_prev = e_this->prev;
+	SK_Vertex * v_next = e_this->next;
+	SK_Edge * e_prev = e_this->prev->prev;
+	SK_Edge * e_next = e_this->next->next;
+	SK_Vertex * v_reflex = inEvent->e1->next;
+
+	// TOPOLOGICAL TEST - we disqualify reflex events where the edge is adjacent to one of the segments of the reflex
+	// vertex.  Why?  Well, this is a reflex and a bisector event!  We let the bisector code handle it.  We want less
+	// reflex events - they're more expensive to handle and risk multiple simultaneous reflex events if we leave 'em 
+	// around.
+
+//	why do we need this in?  imagine a bisector event where: the sides are actually CLOSING in (e.g. the u-turn is more than 180
+//	degrees.  Make one side an antenna...poof!  this isn't' a bisector event because both are reflexes and the intersection point will be in space.
+//	Solution - this config defines that there be a reflex event corresponding to it (from the antenna) that cleans it up.
+
+	// If topologically we're really a bisector event, bail.
+//	if (e_prev == inEvent->e1 || e_next == inEvent->e1 || e_prev == inEvent->e2 || e_next == inEvent->e2) return false;
+
+	// DISASSEMBLY TEST - if the edges making up the reflex vector no longer connect, well, something happened that makes us
+	// no longer a reflex event!  Bal.
+	if (inEvent->e1->next != inEvent->e2->prev)	return false;
+
+	// NOT-SO-REFLEX TEST.  If we're actually not pointing like a reflex vector, perhaps due to some strange reassembly,
+	// well that's damn surprising but it's clear that we don't want to run the event.
+// HACK: shouldn't we just know this!?!  If our input sides made us reflex when we started, how can it change if we haven't 
+// been disassembled?
+//	DebugAssert(v_reflex->IsReflex());
+	if (!v_reflex->IsReflex())	return false;
+
+	// LOVE-THY-NEIGHBOR TEST: If we share a vertex with the edge we're hitting, that's a very bad sign; generally it means that 
+	// our reflex vertex  has a neighbor that it thinks it hits at a time really close to 0.  Do not allow this!
+	if (inEvent->e1->ends.p2 == e_this->ends.p1 ||
+		inEvent->e1->ends.p2 == e_this->ends.p2 ||
+		inEvent->e2->ends.p1 == e_this->ends.p1 ||
+		inEvent->e2->ends.p1 == e_this->ends.p2)			return false;
+
+
+	// SPATIAL FILTER: Now comes the real work...find lines that are the projection of the bisectors of the vertices adjacent to the
+	// edge we split; this defines the area where the edge is legitimate.  If we're not in this area bail.
+	// How we do this: well the bisector is the line of equidistance between the two base supporting lines that we are bisecting.
+	// So: take the signed euclidian distance from each line.  If we are closer to the split edge than either
+	// side edges, we must be inside the bisectors.
+	
+	// More details: we normalize the supporting lines that are built by taking the supporting plane's Ax+By+Cz+D=0
+	// and substituting for Z=0.  By normalizing it, we can calculate the signed distance without a square route.
+	// (Okay, the normal op has a square route, so this isn't perfect.)
+	
+
+	Line2	base_line_this(e_this->supporting_plane.n.dx,e_this->supporting_plane.n.dy, -e_this->supporting_plane.ndotp);
+	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
+	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
+	
+	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
+
+	bool	closer_prev = !SK_CloserToLine(base_line_prev, base_line_this, e_this->ends.p1, cross_flat);
+	bool	closer_next = SK_CloserToLine(base_line_this, base_line_next, e_this->ends.p2, cross_flat);
+
+	return closer_prev && closer_next;
+}
+
+bool	SK_BisectorEventPossible(SK_Event * inEvent)
+{
+	// The idea here is to evaluate this event to see if it is actually possible.
+	// WE may have reflex interference between spatially far-apart but colinear parts of the
+	// triangle.  So we need to evaluate our current topology.
+	
+	SK_Edge * e_this = inEvent->e2;	
+	SK_Vertex * v_prev = e_this->prev->prev->prev;
+	SK_Vertex * v_next = e_this->next->next->next;
+	SK_Edge * e_prev = e_this->prev->prev;
+	SK_Edge * e_next = e_this->next->next;
+	SK_Edge * e_prevprev = e_this->prev->prev->prev->prev;
+	SK_Edge * e_nextnext = e_this->next->next->next->next;
+
+	// TRIANGLE TEST - all bisector events from within a triangle are true, always!  I mean, dude, 
+	// how can they not be?
+
+	if (e_next == e_prevprev) return true;
+	if (e_prev == e_nextnext) return true;
+
+	// LINE TEST - we don't ever expect to have a single line (2-edge) loop...just be sure lest chaos
+	// break out.
+	DebugAssert(v_prev != v_next);
+	if (e_next == e_prev) return false;
+	
+//	return true;
+/*	
+	Fernando says: no spatial cutoff filter is needed for bisector events - if the adjacent bisector cut us
+	off, there would be another bisector event with an earlier time!
+	
+	// SPATIAL FILTER - see above for notes
+	
+	Point3	p_zero_left(e_prev->ends.p1.x, e_prev->ends.p1.y, 0);
+	Point3	p_zero_right(e_next->ends.p2.x, e_next->ends.p2.y, 0);
+
+	Line3	left_travel, right_travel;
+
+	if (!SK_SafeIntersect(e_prev->prev->prev,e_prev,p_zero_left,left_travel))
+		AssertPrintf("Safe Intersect Failed.");
+	if (!SK_SafeIntersect(e_next,e_next->next->next,p_zero_right,right_travel))
+		AssertPrintf("Safe Intersect Failed.");
+
+	if (left_travel.v.dz < 0.0)		left_travel.v = -left_travel.v;
+	if (right_travel.v.dz < 0.0)	right_travel.v = -right_travel.v;
+
+	Line2	left_travel_flat(e_prev->prev->location,Vector2(left_travel.v.dx,left_travel.v.dy));
+	Line2	right_travel_flat(e_next->next->location,Vector2(right_travel.v.dx,right_travel.v.dy));
+	Point2	cross_flat(inEvent->cross.x, inEvent->cross.y);
+		
+	bool	on_prev = left_travel_flat.on_right_side(cross_flat);
+	bool	on_next = !right_travel_flat.on_right_side(cross_flat);
+	
+	return on_prev  && on_next;
+*/	
+
+	// BEn says: try anyway for now
+//	TODO Revisit this - we need to get all of our on-edge stuff right!
+
+	Line2	base_line_prev(e_prev->supporting_plane.n.dx,e_prev->supporting_plane.n.dy, -e_prev->supporting_plane.ndotp);
+	Line2	base_line_next(e_next->supporting_plane.n.dx,e_next->supporting_plane.n.dy, -e_next->supporting_plane.ndotp);
+	Line2	base_line_prevprev(e_prev->prev->prev->supporting_plane.n.dx,e_prev->prev->prev->supporting_plane.n.dy, -e_prev->prev->prev->supporting_plane.ndotp);
+	Line2	base_line_nextnext(e_next->next->next->supporting_plane.n.dx,e_next->next->next->supporting_plane.n.dy, -e_next->next->next->supporting_plane.ndotp);
+	
+	Point2 cross_flat(inEvent->cross.x, inEvent->cross.y);
+
+	bool	closer_prev = !SK_CloserToLine(base_line_prevprev, base_line_prev, e_prev->ends.p1, cross_flat);
+	bool	closer_next = SK_CloserToLine(base_line_next, base_line_nextnext, e_next->ends.p2, cross_flat);
+
+	return closer_prev && closer_next;
+}
+
 
 /* This routine checks for an event at or after the time and creates it, queueing it as needed. */
 static SK_Event * SK_CheckCreateEvent(SK_Edge * a, SK_Edge * b, SK_Edge * c, double time_min, bool is_reflex, EventMap& ioMap)
@@ -1285,11 +1248,10 @@ static void SK_CreateReflexEventsForPolygon(SK_Polygon * poly, SK_Polygon * worl
 
 
 bool	SK_InsetPolygon(
-					GISFace *				inPolygon,
-					Pmwx&					outMap,
-					int						inTerrainIn,
-					int						inTerrainOut,
-					int						steps)
+					const ComplexPolygon2&		inPolygon,
+					const ComplexPolygonWeight&	inWeight,
+					vector<ComplexPolygon2>&	outHoles,
+					int							steps)	// -1 or step limit!
 {
 #if DEV 
 	try {
@@ -1302,24 +1264,20 @@ bool	SK_InsetPolygon(
 
 #if DEV
 	{
-		sVertexLimit = inPolygon->outer_ccb()->target()->point();
-		Pmwx::Ccb_halfedge_circulator ec, es ;
-		es = ec = inPolygon->outer_ccb();
-		do {
-			sVertexLimit += ec->target()->point();
-			++ec;
-		} while (ec != es);
+		sVertexLimit = inPolygon[0][0];
+		for (int n = 0; n < inPolygon.size(); ++n)
+		for (int m = 0; m < inPolygon[n].size(); ++m)
+			sVertexLimit += inPolygon[n][m];
 	}
 #endif
 
 	SK_Polygon *	world = SK_PolygonCreate(NULL, Polygon2(), NULL);
-	SK_Polygon *	poly = SK_PolygonCreateFromFace(world, inPolygon);
+	SK_Polygon * 	poly = SK_PolygonCreateComplex(world, inPolygon, inWeight);
 
 	// Do one-time prep: split antennas, mitre sharp corners and then find any
 	// reflex vertices.
 	SK_PolygonSplitAntennas(world);
 	SK_PolygonMitreReflexVertices(world);
-//	SK_PolygonMarkReflexVertices(world);
 
 #if DEV	
 		DebugValidatePoly(world);
@@ -1681,21 +1639,17 @@ bool	SK_InsetPolygon(
  	for (set<SK_Polygon *>::iterator i = world->children.begin(); i != world->children.end(); ++i)
  	{
  		printf("Poly has %d sides.\n", (*i)->num_sides());
+ 		for (set<SK_Polygon *>::iterator j = (*i)->children.begin(); j != (*i)->children.end(); ++j)
+	 		printf("   Hole has %d sides.\n", (*j)->num_sides());
  	}
 #endif 	
 	
-	SK_PolygonToPmwx(world, outMap);
-	for (Pmwx::Face_iterator face = outMap.faces_begin(); face != outMap.faces_end(); ++face)
-	{
-		if (face->is_unbounded())
-			face->mTerrainType = inTerrainOut;
-		else
-			face->mTerrainType = (face->outer_ccb()->twin()->face()->is_unbounded()) ? inTerrainIn : inTerrainOut;
-	}
-
+	
+	
+	SK_InsetPolyIntoComplexPolygonList(world, outHoles);
 
 #if DEV	
-		DebugValidatePoly(world);
+	DebugValidatePoly(world);
 #endif		
 
 	SK_PolygonDestroy(world);

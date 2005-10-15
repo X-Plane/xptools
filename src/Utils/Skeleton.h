@@ -4,13 +4,16 @@
 #include <vector>
 
 class	GISFace;
-class	Pmwx;
+class	Polygon2;
+
+typedef	vector<Polygon2>		ComplexPolygon2;
+typedef vector<double>			PolygonWeight;
+typedef vector<PolygonWeight>	ComplexPolygonWeight;
 
 bool	SK_InsetPolygon(
-					GISFace *				inFace,
-					Pmwx&					outMap,
-					int						inTerrainIn,
-					int						inTerrainOut,
-					int						inSteps);
+					const ComplexPolygon2&		inPolygon,
+					const ComplexPolygonWeight&	inWeight,
+					vector<ComplexPolygon2>&	outHoles,
+					int							inSteps);	// -1 or step limit!
 
 #endif
