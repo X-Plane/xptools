@@ -666,17 +666,20 @@ void	DrawMapBucketed(
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
 			glColor4f(shade, shade, (*fi)->mPolyObjs[j].mDerived ? 1.0 : 0.0, 1.0);
-			glBegin(GL_LINE_LOOP);
 
 			for (int k = 0; k < (*fi)->mPolyObjs[j].mShape.size(); ++k)
 			{
-				double	x1 = (*fi)->mPolyObjs[j].mShape[k].x;
-				double	y1 = (*fi)->mPolyObjs[j].mShape[k].y;				
-//				x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
-//				y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-				glVertex2f(x1, y1);			
+				glBegin(GL_LINE_LOOP);
+				for (int l = 0; l < (*fi)->mPolyObjs[j].mShape[k].size(); ++l)
+				{
+					double	x1 = (*fi)->mPolyObjs[j].mShape[k][l].x;
+					double	y1 = (*fi)->mPolyObjs[j].mShape[k][l].y;				
+	//				x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
+	//				y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
+					glVertex2f(x1, y1);			
+				}
+				glEnd();
 			}
-			glEnd();
 		}		
 	}
 #endif

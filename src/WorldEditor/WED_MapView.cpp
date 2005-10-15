@@ -194,7 +194,7 @@ int			sShowShading = 1;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
-static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 0, 0, 0, 0, 1, 1, 1, 0 };
+static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0 };
 
 
 //static	int			sShowMeshBorders = 1;
@@ -970,7 +970,9 @@ put in  color enums?
 
 	XPLMDrawTranslucentDarkBox(r-gReplacementClimate.size() * w - 20, t - 70 + h, r - 15, t - 70 - 1);
 	XPLMDrawString(white, r - gReplacementClimate.size() * w - 20, t - 70, gReplacementClimate.c_str(), NULL, xplmFont_Basic);
-	
+
+	XPLMDrawTranslucentDarkBox(r-gReplacementRoads.size() * w - 20, t - 90 + h, r - 15, t - 90 - 1);
+	XPLMDrawString(white, r - gReplacementRoads.size() * w - 20, t - 90, gReplacementRoads.c_str(), NULL, xplmFont_Basic);
 	
 	char	buf[50];
 	int	x, y;

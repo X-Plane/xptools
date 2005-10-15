@@ -55,6 +55,7 @@ enum {
 	specCmd_ReloadConfigFiles,
 	specCmd_TempMSL,
 	specCmd_FixMSL,
+	specCmd_FixRain,
 	specCmd_Div2,
 	specCmd_FaceHeight,
 	specCmd_ObjHeight,
@@ -75,6 +76,7 @@ const char *	kSpecCmdNames [] = {
 	"Reload Configuration Files",
 	"Create Sea Level Temperatures...",
 	"Filter Sea Level Temperatures...",
+	"Filter Rain Fall...",
 	"-",
 	"Show Height of Selected Faces...",
 	"Show Height of Objs in Selected Faces...",
@@ -91,6 +93,7 @@ static	const char	kCmdKeys [] = {
 	0,		0,
 	0,		0,
 //	0,		0,
+	0,		0,
 	0,		0,
 	0,		0,
 	0,		0,
@@ -383,26 +386,6 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_FixMSL:
 			{
-/*
-				vector<DEMGeo> fft;
-				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
-				DEMGeo  msl2(msl);
-				SpreadDEMValuesTotal(msl2);
-				DEMMakeFFT(msl2, fft);
-				float clamp_v = kMaxDegChangePerSample;
-				for (int n = 0; n < fft.size(); ++n)
-				{
-					for (int y = 0; y < fft[n].mHeight; ++y)
-					for (int x = 0; x < fft[n].mWidth; ++x)
-						fft[n](x,y) = MIN_NODATA(clamp_v, fft[n](x,y));
-					clamp_v *= 2.0;
-				}
-				FFTMakeDEM(fft,msl2);
-				for (int y= 0; y < msl.mHeight; ++y)
-				for (int x= 0; x < msl.mWidth ; ++x)
-				if (msl.get(x,y) != NO_DATA)
-					msl(x,y) = msl2(x,y);
-*/
 				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
 				
 				float k[25];
@@ -414,6 +397,22 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (int x = 0; x < msl.mWidth ; ++x)
 				if (msl2.get(x,y) == NO_DATA)
 					msl(x,y) = NO_DATA;				
+			}
+			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			break;
+		case specCmd_FixRain:
+			{
+				DEMGeo& rain(gDem[dem_Rainfall]);
+				
+				float k[25];
+				//Sergio sez: not too much rain smoothing - for reasons that only the master can understand! ;-)
+				CalculateFilter(3, k, demFilter_Spread, false);
+				DEMGeo	rain2(rain);
+				rain.filter_self_normalize(3, k);
+				for (int y = 0; y < rain.mHeight; ++y)
+				for (int x = 0; x < rain.mWidth ; ++x)
+				if (rain2.get(x,y) == NO_DATA)
+					rain(x,y) = NO_DATA;				
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
@@ -455,6 +454,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				DEMGeo& elev(gDem[dem_Elevation]);
 				DEMGeo& lu(gDem[dem_LandUse]);
 				DEMGeo&	old_lu(gDem[dem_OrigLandUse]);
+				DEMGeo	rain_diff, temp_diff;
+				DEMMakeDifferential(temps, temp_diff);
+				DEMMakeDifferential(rain, rain_diff);
 				
 				set<int>	lus, olus;
 				float tmin, tmax, rmin, rmax, emin, emax, tsmin, tsmax;
@@ -463,6 +465,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				tsmin = tsmax = temps.get(0,0);
 				rmin = rmax = rain.get(0,0);
 				emin = emax = elev.get(0,0);
+				
+				float rain_max_dif = 0.0, temp_max_dif = 0.0;
 				
 				for (y = 0; y < temp.mHeight; ++y)
 				for (x = 0; x < temp.mWidth; ++x)
@@ -476,6 +480,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				{
 					tsmin = MIN_NODATA(tsmin, temps.get(x,y));
 					tsmax = MAX_NODATA(tsmax, temps.get(x,y));
+					
+					temp_max_dif = MAX_NODATA(temp_max_dif, temp_diff.get(x,y));
 				}
 
 				for (y = 0; y < rain.mHeight; ++y)
@@ -483,6 +489,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				{
 					rmin = MIN_NODATA(rmin, rain.get(x,y));
 					rmax = MAX_NODATA(rmax, rain.get(x,y));
+
+					rain_max_dif = MAX_NODATA(rain_max_dif, rain_diff.get(x,y));
 				}
 				
 				for (y = 0; y < elev.mHeight; ++y)
@@ -501,8 +509,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					olus.insert(old_lu.get(x,y));
 		
 				char buf[1024];
-				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.",
-						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, olus.size(), lus.size());
+				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d old landuses, %d new landuses.  Max temp change = %f, Max rain dif = %f",
+						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, olus.size(), lus.size(), temp_max_dif, rain_max_dif);
 				DoUserAlert(buf);
 				set<int>::iterator iter;
 				printf("--------OLD LANDUSES---------\n");
@@ -511,6 +519,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				printf("--------NEW LANDUSES---------\n");
 				for (iter = lus.begin(); iter != lus.end(); ++iter)
 					printf("%4d %s\n", *iter, FetchTokenString(*iter));
+				rain.swap(rain_diff);
+				temp.swap(temp_diff);
 			}
 			break;
 		}

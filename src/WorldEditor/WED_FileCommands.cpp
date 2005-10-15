@@ -51,6 +51,7 @@ enum {
 	fileCmd_OpenSpreadsheet,
 	fileCmd_OpenLandUse,
 	fileCmd_OpenClimateXES,
+	fileCmd_OpenRoadXES,
 	fileCmd_Sep1,
 	fileCmd_Save,
 	fileCmd_SaveAs,
@@ -70,6 +71,7 @@ const char *	kFileCmdNames [] = {
 	"Open Spreadsheet...",
 	"Open LandUse Translation...",
 	"Pick Climate XES...",
+	"Pick Road XES...",
 	"-",
 	"Save",
 	"Save As...",
@@ -87,6 +89,7 @@ static	const char	kCmdKeys [] = {
 	'O',	xplm_ControlFlag,
 	0,		0,
 	'O',	xplm_ControlFlag + xplm_OptionAltFlag,
+	0,		0,
 	0,		0,
 	0,		0,
 	0,		0,
@@ -202,6 +205,19 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 					DoUserAlert("You can only pick a climate file from the config folder.");
 				else
 					gReplacementClimate = (p+strlen("config")+1);
+			}
+			break;
+
+		case fileCmd_OpenRoadXES:
+			{
+				char	buf[1024];
+				buf[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a road file", "Open", 8, buf)) { gReplacementRoads.clear(); return; }
+				char * p = strstr(buf, "config");
+				if (p == NULL)
+					DoUserAlert("You can only pick a climate file from the config folder.");
+				else
+					gReplacementRoads = (p+strlen("config")+1);
 			}
 			break;
 			
@@ -322,7 +338,7 @@ bool	WED_FileOpen(const string& inPath)
 		gVertexSelection.clear();
 		gPointFeatureSelection.clear();
 
-		ReadXESFile(memFile, gMap, gTriangulationHi, gDem, gApts, WED_ProgressFunc);
+		ReadXESFile(memFile, &gMap, &gTriangulationHi, &gDem, &gApts, WED_ProgressFunc);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(memFile);
 	} else

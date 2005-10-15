@@ -25,11 +25,13 @@
 #include "WED_MapZoomer.h"
 #include "WED_Globals.h"
 #include "WED_Selection.h"
+#include "WED_Progress.h"
 
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
 #include "ParamDefs.h"
 #include "AptIO.h"
+#include "XESIO.h"
 
 #include "GISUtils.h"
 #include "MapAlgs.h"
@@ -40,7 +42,10 @@
 #include "PlatformUtils.h"
 
 #include "XPLMGraphics.h"
+#include "MemFileUtils.h"
 #include "Hydro.h"
+
+#include "ObjPlacement.h"
 
 const	int kPointClickSlop = 4;
 
@@ -210,7 +215,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 	
 int		WED_SelectionTool::GetNumButtons(void)
 {
-	return 7;
+	return 9;
 }
 
 void	WED_SelectionTool::GetNthButtonName(int n, string& s)
@@ -223,6 +228,8 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	case 4: s=  "Next"; break;
 	case 5: s=  "Simplify Water"; break;
 	case 6: s=  "Simplify pmwx"; break;
+	case 7: s=	"Gut Area"; break;
+	case 8: s=	"Insert Map"; break;
 	}
 }
 
@@ -273,48 +280,28 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				if (the_face->is_unbounded()) continue;
 				if (the_face->mTerrainType == terrain_Water) continue;
 				
-				Pmwx	temp;
-				set<GISHalfedge *> e;
-				FindEdgesForFace(the_face, e);
-				for (set<GISHalfedge *>::iterator ee = e.begin(); ee != e.end(); ++ee)
-					(*ee)->mTransition = 30.0;
-			
+				ComplexPolygon2			orig;
+				ComplexPolygonWeight 	insets;
+				vector<ComplexPolygon2>	inset;
+				
+				FaceToComplexPolygon(the_face, orig, &insets, GetInsetForEdgeDegs);
+
 				try {
-					SK_InsetPolygon(the_face, temp, terrain_Natural, terrain_Water, gStopPt);
+					SK_InsetPolygon(orig, insets, inset, gStopPt);
 				} catch(...) {
 					fail.insert(the_face);
 				}
 
-				for (Pmwx::Face_iterator fc = temp.faces_begin(); fc != temp.faces_end(); ++fc)
-				if (!fc->is_unbounded())
-				if (fc->mTerrainType != terrain_Water)
-				{			
+				for (vector<ComplexPolygon2>::iterator inner = inset.begin(); inner != inset.end(); ++inner)
+				{
 					GISPolyObjPlacement_t	obj;
 					obj.mRepType = NO_VALUE;
 					obj.mDerived = true;
 					obj.mHeight = 1.0;
 
-					Pmwx::Ccb_halfedge_circulator circ, stop;
-					circ = stop = fc->outer_ccb();
-					do {
-						obj.mShape.push_back(circ->target()->point());
-						++circ;
-					} while (circ != stop);
-					obj.mLocation = obj.mShape.centroid();
+					obj.mShape = *inner;
+					obj.mLocation = obj.mShape[0].centroid();
 					(the_face)->mPolyObjs.push_back(obj);
-					
-					for (Pmwx::Holes_iterator hole = fc->holes_begin(); hole != fc->holes_end(); ++hole)
-					{
-						Pmwx::Ccb_halfedge_circulator circ, stop;
-						obj.mShape.clear();
-						circ = stop = *hole;
-						do {
-							obj.mShape.push_back(circ->target()->point());
-							++circ;
-						} while (circ != stop);
-						obj.mLocation = obj.mShape.centroid();
-						(the_face)->mPolyObjs.push_back(obj);
-					}
 				}
 			}
 			
@@ -349,6 +336,85 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		break;
 	case 6:
 		SimplifyMap(gMap);
+		gEdgeSelection.clear();
+		gFaceSelection.clear();
+		gVertexSelection.clear();
+		break;
+	case 7:
+		{
+			set<GISFace *> kill_f;
+			int ctr;
+			
+			PROGRESS_START(WED_ProgressFunc, 0, 3, "Accumulating Faces")
+			ctr = 0;
+			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
+			{
+				PROGRESS_CHECK(WED_ProgressFunc, 0, 3, "Accumulating Faces", ctr, gFaceSelection.size(), gFaceSelection.size() / 200)
+				kill_f.insert(*fsel);
+			}	
+			PROGRESS_DONE(WED_ProgressFunc, 0, 3, "Accumulating Faces")
+
+			PROGRESS_START(WED_ProgressFunc, 1, 3, "Accumulating Edges")
+			set<GISHalfedge *> kill_e;			
+			ctr = 0;
+			for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
+			if (e->mDominant)
+			{
+				PROGRESS_CHECK(WED_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gMap.number_of_halfedges(), gMap.number_of_halfedges() / 200)
+				if (kill_f.count(e->face()) &&
+					kill_f.count(e->twin()->face()))
+				kill_e.insert(e);
+			}
+			PROGRESS_DONE(WED_ProgressFunc, 1, 3, "Accumulating Edges")
+
+			ctr = 0;
+			PROGRESS_START(WED_ProgressFunc, 2, 3, "Deleting Edges")
+			for (set<GISHalfedge *>::iterator kill = kill_e.begin(); kill != kill_e.end(); ++kill, ++ctr)
+			{
+				PROGRESS_CHECK(WED_ProgressFunc, 2, 3, "Deleting Edges", ctr, kill_e.size(), kill_e.size() / 200)
+				gMap.remove_edge(*kill);
+			}			
+			PROGRESS_DONE(WED_ProgressFunc, 2, 3, "Deleting Edges")
+		}		
+		gEdgeSelection.clear();
+		gFaceSelection.clear();
+		gVertexSelection.clear();
+		break;
+	case 8:
+		{
+			char	path[1024];
+			path[0] = 0;
+			if (gFaceSelection.size() == 1)
+			if (GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open for roads", "Open", 8, path))
+			{
+				MFMemFile * fi = MemFile_Open(path);
+				if (fi)
+				{
+					Pmwx		overMap;
+					ReadXESFile(fi, &overMap, NULL, NULL, NULL, WED_ProgressFunc);
+
+                    Point2 master1, master2, slave1, slave2;
+                    CalcBoundingBox(gMap, master1, master2);
+                    CalcBoundingBox(overMap, slave1, slave2);
+                    
+                    Vector2 delta(slave1, master1);
+
+                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                    	overMap.UnindexVertex(i);
+
+                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                        i->point() += delta;
+
+                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
+                    	overMap.ReindexVertex(i);
+					
+					SwapFace(gMap, overMap, *gFaceSelection.begin(), WED_ProgressFunc);
+					
+					WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+					MemFile_Close(fi);
+				}					
+			}
+		}
 		gEdgeSelection.clear();
 		gFaceSelection.clear();
 		gVertexSelection.clear();

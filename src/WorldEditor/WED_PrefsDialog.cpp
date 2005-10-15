@@ -37,8 +37,8 @@ void	WED_ShowPrefsDialog(void)
 				XP_COLUMN,
 					XP_TABS, "Processing;View;Mesh;DEMs", &sPrefsTab,
 						XP_COLUMN, XP_TAG, TAG_COMMAND_PREFS,
-							XP_ROW, XP_CHECKBOX,"Upsample Environment", 		&gProcessingCmdPrefs.do_upsample_environment, 	XP_END,
 							XP_ROW, XP_CHECKBOX,"Calculate Terrain Slope", 		&gProcessingCmdPrefs.do_calc_slope, 			XP_END,
+							XP_ROW, XP_CHECKBOX,"Upsample Environment", 		&gProcessingCmdPrefs.do_upsample_environment, 	XP_END,
 							XP_ROW, XP_CHECKBOX,"Hydro-Correct", 				&gProcessingCmdPrefs.do_hydro_correct, 			XP_END,
 							XP_ROW, XP_CHECKBOX,"Simplify Coastlines", 			&gProcessingCmdPrefs.do_hydro_simplify, 		XP_END,
 							XP_ROW, XP_CHECKBOX,"Calculate Derived Raster Data",&gProcessingCmdPrefs.do_derive_dems, 			XP_END,
@@ -66,8 +66,9 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CHECKBOX, "Match Borders", &gMeshPrefs.border_match, XP_END,
 						XP_END,
 						XP_COLUMN,
-							XP_ROW, XP_CAPTION, "Local Area Search:", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
-							XP_ROW, XP_CAPTION, "Temperature Elevation Calibration:", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.temp_percentile, XP_END,
+							XP_ROW, XP_CAPTION, "Local Area Search(1-8):", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
+							XP_ROW, XP_CAPTION, "Temperature Elevation Calibration(0-1):", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.temp_percentile, XP_END,
+							XP_ROW, XP_CAPTION, "Rain Variation(0-1):", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.rain_disturb, XP_END,
 						XP_END,
 					XP_END,
 					XP_ROW, XP_BUTTON_CANCEL, "Cancel", XP_BUTTON_OK, "OK", XP_END,
@@ -238,8 +239,8 @@ static void RestoreDefaultProcessing(XPWidgetID)
 	ProcessingPrefs_t temp = gProcessingCmdPrefs;
 
 	ProcessingPrefs_t	defs = {
-	/*		do_upsample_environment	*/			1,
 	/*		do_calc_slope			*/			1,
+	/*		do_upsample_environment	*/			1,
 	/*		do_hydro_correct		*/			0,
 	/*		do_hydro_simplify		*/			0,
 	/*		do_derive_dems			*/			1,
