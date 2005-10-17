@@ -778,7 +778,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 {
 	if (!gReplacementClimate.empty())
 	{
-		string	fname = FindConfigFile(gReplacementClimate.c_str());
+		string	fname = gReplacementClimate;
 		if (!fname.empty())
 		{
 			MFMemFile *	fi = MemFile_Open(fname.c_str());

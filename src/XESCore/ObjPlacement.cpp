@@ -301,8 +301,8 @@ static bool FetchObjectBoundaryByRep(int tp, Polygon2 * outPoly, float scale, fl
 	RepFeatureIndex::iterator i = gRepFeatureIndex.find(tp);
 	if (i == gRepFeatureIndex.end()) return false;
 	int index = i->second;
-	float width = gRepTable[index].obj_width;
-	float depth = gRepTable[index].obj_depth;
+	float width = gRepTable[index].width_min;
+	float depth = gRepTable[index].depth_min;
 	width *= scale;
 	depth *= scale;
 	if (outWidth) *outWidth = width;
@@ -529,15 +529,15 @@ bool	ProcessOneLot(
 	// First see if we want to build a building here!  If we have a
 	// feature we always do of course.
 	if ((FORCE_MAX_DENSITY && max_road_density > 0.0) || require_feat != NO_VALUE || RollDice(max_road_density))
-	{
+	{	
 		choices = QueryUsableFacsBySize(
 											require_feat,
-											landuse, climate, terrain, zoning,
-											elev, temp, slope, relelev, elevrange,
-											urban_dense, urban_prop, urban_radial, urban_trans,
-											lot.area(),
+											terrain,
+											temp, slope, 500,
+											urban_dense, urban_radial, urban_trans,
 											min_side,
 											max_side,
+											0, 1000,
 											(require_feat == NO_VALUE),	// obey freqs if we're not a feature
 											&query, 1);
 					
@@ -553,7 +553,7 @@ bool	ProcessOneLot(
 			}
 			place.mRepType = gRepTable[query].obj_name;
 			place.mLocation = place.mShape[0].centroid();
-			place.mHeight = (required_agl == -1) ? RandRangeBias(gRepTable[query].fac_agl_min, gRepTable[query].fac_agl_max, urban_dense, 0.5) : required_agl;
+			place.mHeight = (required_agl == -1) ? RandRangeBias(gRepTable[query].height_min, gRepTable[query].height_max, urban_dense, 0.5) : required_agl;
 			place.mDerived = require_feat != NO_VALUE;
 			if (SanityCheck(place))
 				owner->mPolyObjs.push_back(place);
@@ -578,15 +578,15 @@ bool	ProcessOneLot(
 				&width, &depth);
 		
 		float area = lot.area();
+		
 		choices = QueryUsableObjsBySize(
 											require_feat,
-											landuse, climate, terrain, zoning,
-											elev, temp, slope, relelev, elevrange,
-											urban_dense, urban_prop, urban_radial, urban_trans,
-											area * MIN_OBJ_EFFICIENCY,
-											area,
+											terrain, 
+											elev, temp, 0,
+											urban_dense, urban_radial, urban_trans,
 											width,
 											depth,
+											0, 0,
 											(require_feat == NO_VALUE),	// obey freqs if we're not a feature
 											&query, 1);					
 		if (choices)
@@ -1052,10 +1052,10 @@ void	InstantiateGTPolygon(
 		float urban_trans	= dems[dem_UrbanTransport].value_linear(i->mLocation.x, i->mLocation.y);
 		int		require_feat = i->mFeatType;
 
-		result = no_poly_gen ? 0 : QueryUsableFacsBySize(require_feat, landuse, climate, terrain, zoning,
-									elev, temp, slope, relelev, elevrange,
-									urban_dense, urban_prop, urban_radial, urban_trans,
-									poly_area, shortest_seg, longest_seg, false, query, 1);
+		result = no_poly_gen ? 0 : QueryUsableFacsBySize(require_feat, terrain, 
+									elev, slope, 0,
+									urban_dense, urban_radial, urban_trans,
+									shortest_seg, longest_seg, 0, 0, false, query, 1);
 		bool	got_it = false;
 
 		for (int ri = 0; ri < result; ++ri)
@@ -1078,7 +1078,7 @@ void	InstantiateGTPolygon(
 					if (i->mParams.find(pf_Height) != i->mParams.end())						
 						rep.mHeight = i->mParams[pf_Height];
 					else
-						rep.mHeight = RandRange(info.fac_agl_min,info.fac_agl_max);
+						rep.mHeight = RandRange(info.height_min,info.height_max);
 					rep.mDerived = true;
 					if (SanityCheck(rep))
 						inFace->mPolyObjs.push_back(rep);
@@ -1096,10 +1096,10 @@ void	InstantiateGTPolygon(
 		// OPTIMIZE: we don't know how big of a space we have, but if we fail on a small object, bigger ones are NOT going to work.
 		// (But wait, do we go biggest to smalllest or smallest to biggest here?)
 
-		result = got_it ? 0 : QueryUsableObjsBySize(require_feat, landuse, climate, terrain, zoning,
-									elev, temp, slope, relelev, elevrange,
-									urban_dense, urban_prop, urban_radial, urban_trans,
-									0, poly_area, -1.0, -1.0, false, query, 1);
+		result = got_it ? 0 : QueryUsableObjsBySize(require_feat, terrain, 
+									temp, slope, 0, 
+									urban_dense, urban_radial, urban_trans,
+									-1.0, -1.0, 0, 0, false, query, 1);
 
 		if (!got_it)
 		for (int ri = 0; ri < result; ++ri)
@@ -1108,10 +1108,10 @@ void	InstantiateGTPolygon(
 
 			polyObjLocalV.resize(1);
 			polyObjLocalV[0].resize(4);
-			polyObjLocalV[0][0].x = -info.obj_width * 0.5 / scale;		polyObjLocalV[0][0].y = -info.obj_depth * 0.5 / scale;
-			polyObjLocalV[0][1].x = -info.obj_width * 0.5 / scale;		polyObjLocalV[0][1].y =  info.obj_depth * 0.5 / scale;
-			polyObjLocalV[0][2].x =  info.obj_width * 0.5 / scale;		polyObjLocalV[0][2].y =  info.obj_depth * 0.5 / scale;
-			polyObjLocalV[0][3].x =  info.obj_width * 0.5 / scale;		polyObjLocalV[0][3].y = -info.obj_depth * 0.5 / scale;
+			polyObjLocalV[0][0].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][0].y = -info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][1].x = -info.width_min * 0.5 / scale;		polyObjLocalV[0][1].y =  info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][2].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][2].y =  info.depth_min * 0.5 / scale;
+			polyObjLocalV[0][3].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y = -info.depth_min * 0.5 / scale;
 				
 			++feat_raster_try;
 			Point2	trial = i->mLocation;
@@ -1231,10 +1231,10 @@ void	InstantiateGTPolygon(
 								int types[500];
 								float widths[500];
 								float depths[500];
-								result = QueryUsableObjsBySize(NO_VALUE, landuse, climate, terrain, zoning,
-													elev, temp, slope, relelev, elevrange,
-													urban_dense, urban_prop, urban_radial, urban_trans,
-													area_min, area_max, -1.0, -1.0, true, query, 500);
+								result = QueryUsableObjsBySize(NO_VALUE, terrain,
+													temp, slope, 0,
+													urban_dense, urban_radial, urban_trans,
+													-1.0, -1.0, 0, 0, true, query, 500);
 													
 								// We try to have some smarts about not rasterizing objects multiple times 
 								// when we already know the results - a few floating point compares is a LOT faster than rasterization.
@@ -1248,8 +1248,8 @@ void	InstantiateGTPolygon(
 //								for (BinaryIterator on(result); on(); ++on)
 								for (int on = result-1; on >= 0; --on)
 								{
-									widths[on] = gRepTable[query[on]].obj_width;
-									depths[on] = gRepTable[query[on]].obj_depth;
+									widths[on] = gRepTable[query[on]].width_min;
+									depths[on] = gRepTable[query[on]].depth_min;
 									types [on] = gRepTable[query[on]].obj_name;
 									// Fast bail fail case - skip any object bigger than our smallest failure.
 									if (widths[on] >= failed_width && depths[on] >= failed_depth) 

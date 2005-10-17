@@ -638,8 +638,8 @@ void	DrawMapBucketed(
 			double	y1 = (*fi)->mObjs[j].mLocation.y;
 			double r = (*fi)->mObjs[j].mHeading;
 			
-			double	w = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].obj_width;
-			double	h = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].obj_depth;
+			double	w = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].width_min;
+			double	h = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->mObjs[j].mRepType]].depth_min;
 
 			float x_scale = /*(screenWidth / mapWidth) */ 1.0 /  (DEG_TO_MTR_LAT * cos (y1 * DEG_TO_RAD));
 			float y_scale = /*(screenHeight / mapHeight) */ 1.0 /  (DEG_TO_MTR_LAT   );

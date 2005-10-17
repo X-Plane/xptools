@@ -142,13 +142,13 @@ int		FindNaturalTerrain(
  ************************************************************************/
 
 
-typedef pair<int, int>										TerrainTypeTuple;
-struct	HashTerrianTuple {
-	std::size_t operator()(const TerrainTypeTuple& key) const {
-		return key.first ^ (key.second << 13); }
-};	
-typedef hash_map<TerrainTypeTuple, int, HashTerrianTuple>	TerrainPromoteTable;
-extern	TerrainPromoteTable									gTerrainPromoteTable;
+//typedef pair<int, int>										TerrainTypeTuple;
+//struct	HashTerrianTuple {
+//	std::size_t operator()(const TerrainTypeTuple& key) const {
+//		return key.first ^ (key.second << 13); }
+//};	
+//typedef hash_map<TerrainTypeTuple, int, HashTerrianTuple>	TerrainPromoteTable;
+//extern	TerrainPromoteTable									gTerrainPromoteTable;
 
 
 /************************************************************************

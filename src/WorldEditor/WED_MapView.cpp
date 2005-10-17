@@ -205,6 +205,13 @@ void	WED_MapView_HandleDEMMenuCommand(void *, void *);
 void	WED_MapView_HandleDEMDataMenuCommand(void *, void *);
 void	WED_MapView_UpdateCommandStatus(void);
 
+inline const char * QuickToFile(const string& s)
+{
+	string::size_type p = s.find_last_of("\\/:");
+	if (p != s.npos)		return s.c_str() + p;
+	else				return s.c_str();
+}
+
 void	SetupNormalShading(void)
 {
 	double	nrm_z    = sin(sShadingDecl * DEG_TO_RAD);
@@ -958,9 +965,10 @@ put in  color enums?
 		}
 	}	
 	
+	const char * nat = QuickToFile(gNaturalTerrainFile);
 	
-	XPLMDrawTranslucentDarkBox(r-gNaturalTerrainFile.size() * w - 20, t - 30 + h, r - 15, t - 30 - 1);
-	XPLMDrawString(white, r - gNaturalTerrainFile.size() * w - 20, t - 30, gNaturalTerrainFile.c_str(), NULL, xplmFont_Basic);
+	XPLMDrawTranslucentDarkBox(r-strlen(nat) * w - 20, t - 30 + h, r - 15, t - 30 - 1);
+	XPLMDrawString(white, r - strlen(nat) * w - 20, t - 30, nat, NULL, xplmFont_Basic);
 
 	XPLMDrawTranslucentDarkBox(r-gLanduseTransFile.size() * w - 20, t - 50 + h, r - 15, t - 50 - 1);
 	XPLMDrawString(white, r - gLanduseTransFile.size() * w - 20, t - 50, gLanduseTransFile.c_str(), NULL, xplmFont_Basic);

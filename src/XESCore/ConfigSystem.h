@@ -46,6 +46,7 @@ string	FindConfigFile(const char * inFileName);
 // (1) an I/O error occurs, (2) one of the line handlers returns false, indicating
 // a line error, or (3) an unknown parsing token is found.
 bool	LoadConfigFile(const char * inFilename);
+bool	LoadConfigFileFullPath(const char * inFilename);
 
 // Same as above, except the config file is only loaded the first time
 // this is called.  This is useful for lazy on-demand loading of prefs files.

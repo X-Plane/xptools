@@ -172,11 +172,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a spreadsheet", "Open", 6, buf)) return;
-				char * p = strstr(buf, "config");
-				if (p == NULL)
-					DoUserAlert("You can only pick a spreadsheet from the config folder.");
-				else
-					gNaturalTerrainFile = (p+strlen("config")+1);
+				gNaturalTerrainFile = buf;
 				LoadDEMTables();
 			}
 			break;
@@ -186,11 +182,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a landuse translaion file", "Open", 7, buf)) return;
-				char * p = strstr(buf, "config");
-				if (p == NULL)
-					DoUserAlert("You can only pick a spreadsheet from the config folder.");
-				else
-					gLanduseTransFile = (p+strlen("config")+1);
+				gLanduseTransFile = buf;
 				LoadDEMTables();
 			}
 			break;
@@ -200,11 +192,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a climate file", "Open", 8, buf)) { gReplacementClimate.clear(); return; }
-				char * p = strstr(buf, "config");
-				if (p == NULL)
-					DoUserAlert("You can only pick a climate file from the config folder.");
-				else
-					gReplacementClimate = (p+strlen("config")+1);
+				gReplacementClimate = buf;
 			}
 			break;
 
@@ -213,11 +201,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a road file", "Open", 8, buf)) { gReplacementRoads.clear(); return; }
-				char * p = strstr(buf, "config");
-				if (p == NULL)
-					DoUserAlert("You can only pick a climate file from the config folder.");
-				else
-					gReplacementRoads = (p+strlen("config")+1);
+				gReplacementRoads = buf;
 			}
 			break;
 			

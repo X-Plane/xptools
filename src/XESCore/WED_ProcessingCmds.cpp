@@ -221,7 +221,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				path[0] = 0;
 				if (!gReplacementRoads.empty())
 				{
-					string path = FindConfigFile(gReplacementRoads.c_str());
+					string path = gReplacementRoads;
 					MFMemFile * fi = MemFile_Open(path.c_str());
 					if (fi)
 					{

@@ -93,14 +93,14 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 		info.width_max = info.width_min;
 		info.depth_max = info.depth_min;
 		
-		if (height_min % 10) printf("WARNING: object %s min height %d not multiple of 10 meters.\n", base_path.c_str(), height_min);
-		if (height_max % 10) printf("WARNING: object %s max height %d not multiple of 10 meters.\n", base_path.c_str(), height_max);
+		if (height_min % 10) printf("WARNING: object %s min height %d not multiple of 10 meters.\n", base_name.c_str(), height_min);
+		if (height_max % 10) printf("WARNING: object %s max height %d not multiple of 10 meters.\n", base_name.c_str(), height_max);
 		
 		for (int h = height_min; h <= height_max; h += 10)
 		{
 			info.height_max = info.height_min = h;
 			char	obj_name[256];
-			sprintf(obj_name("%s%d", base_path.c_str(), h);
+			sprintf(obj_name,"%s%d", base_name.c_str(), h);
 			info.obj_name = LookupTokenCreate(obj_name);
 			row_num = gRepTable.size();
 			gRepTable.push_back(info);
@@ -133,33 +133,26 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			
 
 	// WE NEED TO REVISIT THIS GUY	
-	- this is a back index of the actual obj name to its row nubmer for getting more info!
 	if (gRepFeatureIndex.count(info.obj_name) > 0)
 	{
 		RepInfo_t& master(gRepTable[gRepFeatureIndex[info.obj_name]]);
 		if (master.freq      != info.freq		)	printf("WARNING: inconsistent frequency for object %s\n", FetchTokenString(info.obj_name));
 		if (master.max_num   != info.max_num	)	printf("WARNING: inconsistent max num for object %s\n", FetchTokenString(info.obj_name));
-		if (master.obj_width != info.obj_width	)	printf("WARNING: inconsistent width for object %s\n", FetchTokenString(info.obj_name));
-		if (master.obj_depth != info.obj_depth	)	printf("WARNING: inconsistent depth for object %s\n", FetchTokenString(info.obj_name));
-		if (master.fac_allow != info.fac_allow	)	printf("WARNING: inconsistent facade flag for object %s\n", FetchTokenString(info.obj_name));
-		if (master.fac_allow && info.fac_allow)
-		{
-			if (master.fac_swall_min != info.fac_swall_min	)	printf("WARNING: inconsistent swall min for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_swall_max != info.fac_swall_max	)	printf("WARNING: inconsistent swall max for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_lwall_min != info.fac_lwall_min	)	printf("WARNING: inconsistent lwall min for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_lwall_max != info.fac_lwall_max	)	printf("WARNING: inconsistent lwall max for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_area_min != info.fac_area_min	)	printf("WARNING: inconsistent area min for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_area_max != info.fac_area_max	)	printf("WARNING: inconsistent area max for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_agl_min != info.fac_agl_min		)	printf("WARNING: inconsistent agl min for facade %s\n", FetchTokenString(info.obj_name));
-			if (master.fac_agl_max != info.fac_agl_max		)	printf("WARNING: inconsistent agl max for facade %s\n", FetchTokenString(info.obj_name));
-		}
+		if (master.width_min != info.width_min	)	printf("WARNING: inconsistent width for object %s\n", FetchTokenString(info.obj_name));
+		if (master.width_max != info.width_max	)	printf("WARNING: inconsistent width for object %s\n", FetchTokenString(info.obj_name));
+		if (master.height_min != info.height_min	)	printf("WARNING: inconsistent height for object %s\n", FetchTokenString(info.obj_name));
+		if (master.height_max != info.height_max	)	printf("WARNING: inconsistent height for object %s\n", FetchTokenString(info.obj_name));
+		if (master.depth_min != info.depth_min	)	printf("WARNING: inconsistent depth for object %s\n", FetchTokenString(info.obj_name));
+		if (master.depth_max != info.depth_max	)	printf("WARNING: inconsistent depth for object %s\n", FetchTokenString(info.obj_name));
+
+		if (master.obj_type != info.obj_type	)	printf("WARNING: inconsistent type for object %s\n", FetchTokenString(info.obj_name));
 	} else
 		gRepFeatureIndex[info.obj_name] = row_num;
 
-	if (info.fac_allow)
-		gFacadeAreaIndex.insert(RepAreaIndex::value_type(info.fac_area_min, row_num));
+//	if (info.fac_allow)
+//		gFacadeAreaIndex.insert(RepAreaIndex::value_type(info.fac_area_min, row_num));
 
-	gObjectAreaIndex.insert(RepAreaIndex::value_type(info.obj_width * info.obj_depth, row_num));
+//	gObjectAreaIndex.insert(RepAreaIndex::value_type(info.obj_width * info.obj_depth, row_num));
 	
 	if (info.feature != NO_VALUE)
 		sKnownFeatures.insert(info.feature);
@@ -224,71 +217,51 @@ void	LoadObjTables(void)
 int	QueryUsableFacsBySize(
 					// Rule inputs!
 					int				feature,
-					int				landuse,
-					int				climate,
 					int				terrain,
-					int				zoning,
 					
-					float			elev,
 					float			temp,
+					float			rain,
 					float			slope,
-					float			relelev,
-					float			elevrange,
 					float			urban_dense,
-					float			urban_prop,
 					float			urban_radial,
 					float			urban_trans,
 					
-					// Criteria
-					float			inArea,
-					float			inShortSideLen,
-					float			inLongSideLen,					
-					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
-					int *			outResults,
+					float			inWidth,
+					float			inDepth,
+					float			inHeightMin,
+					float			inHeightMax,
 					
+					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
+					int *			outResults,					
 					int				inMaxResults)
 {
 	int 						ret = 0;	
-	RepAreaIndex::iterator		recordIter, startIter;
-	
-	// These facades are sorted by minimum area, e.g. we fit in a block no smaller than X.
-	// So we can start part way down the list skipping items that we're too small to consider.
-	// (For example, the top of the list is an 'airport' - 99% of the time there's no way
-	// our little block will be big enough to put one down.  Fast skip past it in LogN time.)
-	// We use lower bound - that means we will be before ANY values that are smaller than us.
-	// So all of the blocks that could be smaller than us come first.
-	startIter = gFacadeAreaIndex.lower_bound(inArea);
-	
-	for (recordIter = startIter; recordIter != gFacadeAreaIndex.end(); ++ recordIter)
+	for (int row = 0; row < gRepTable.size(); ++row)
 	{
-		int row = recordIter->second;
 		RepInfo_t& rec = gRepTable[row];
 		
 		// Evaluate this choice
+		if (rec.obj_type == rep_Fac)
 		if ((rec.max_num == 0 || rec.max_num > gRepUsage[rec.obj_name]) &&
 			(rec.freq == 0.0 || (rec.freq * (float) gRepUsageTotal >= gRepUsage[rec.obj_name])) &&
 			
 			// Enum rules
 			(rec.feature == feature) &&
-			(rec.landuse == NO_VALUE || rec.landuse == landuse) &&
-			(rec.climate == NO_VALUE || rec.climate == climate) &&
 			(rec.terrain == NO_VALUE || rec.terrain == terrain) &&
-			(rec.zoning  == NO_VALUE || rec.zoning  == zoning ) &&
 			// Range Rules
-			RANGE_RULE(elev) &&
 			RANGE_RULE(temp) &&
 			RANGE_RULE(slope) &&
-			RANGE_RULE(relelev) &&
-			RANGE_RULE(elevrange) &&
+			RANGE_RULE(rain) &&
 			RANGE_RULE(urban_dense) &&
-			RANGE_RULE(urban_prop) &&
 			RANGE_RULE(urban_radial) &&
 			RANGE_RULE(urban_trans) &&
-			// Facade params
-			rec.fac_area_min <= inArea &&
-			rec.fac_area_max >= inArea &&
-			rec.fac_swall_min <= inShortSideLen && inShortSideLen <= rec.fac_swall_max &&
-			rec.fac_lwall_min <= inLongSideLen && inLongSideLen <= rec.fac_lwall_max)
+		
+			(inWidth >= rec.width_min && inWidth <= rec.width_max) &&
+			(inDepth >= rec.depth_min && inWidth <= rec.depth_max) &&
+#if !DEV
+examine this
+#endif			
+			(inHeightMin <= rec.height_max && inHeightMax >= rec.height_min))			
 		{
 			outResults[ret] = row;
 			++ret;
@@ -303,33 +276,26 @@ int	QueryUsableFacsBySize(
 int QueryUsableObjsBySize(
 					// Rule inputs!
 					int				feature,
-					int				landuse,
-					int				climate,
 					int				terrain,
-					int				zoning,
 					
-					float			elev,
 					float			temp,
+					float			rain,
 					float			slope,
-					float			relelev,
-					float			elevrange,
 					float			urban_dense,
-					float			urban_prop,
 					float			urban_radial,
 					float			urban_trans,
 					
-					// Criteria
-					float			inAreaMin,
-					float			inAreaMax,
-					float			inMaxWidth,
-					float			inMaxDepth,
+					float			inWidth,
+					float			inDepth,
+					float			inHeightMin,
+					float			inHeightMax,	// If min = max, we want an exact height!
+					
 					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int *			outResults,
 					
 					int				inMaxResults)
 {
 	int 						ret = 0;	
-	RepAreaIndex::iterator		recordIter, startIter;
 	
 	// Objects are sorted by size.  We know by definition that an
 	// object won't fit in a block to osmsall for it.  So we use
@@ -341,37 +307,30 @@ int QueryUsableObjsBySize(
 	// is a TINY side the length that the road is wide.  But
 	// since the antenna is in the smack middle of the facade, it
 	// is conceivable that a huge object could fit there.
-	startIter = gObjectAreaIndex.lower_bound(inAreaMax);
 	
-	for (recordIter = startIter; recordIter != gObjectAreaIndex.end(); ++ recordIter)
+	for (int row = 0; row < gRepTable.size(); ++row)
 	{
-		int row = recordIter->second;
 		RepInfo_t& rec = gRepTable[row];
 		
 		// Evaluate this choice
+		if (rec.obj_type == rep_Obj)
 		if ((rec.max_num == 0 || rec.max_num > gRepUsage[rec.obj_name]) &&
 			(rec.freq == 0.0 || (rec.freq * (float) gRepUsageTotal >= gRepUsage[rec.obj_name])) &&
 			
 			// Enum rules
 			(rec.feature == feature) &&
-			(rec.landuse == NO_VALUE || rec.landuse == landuse) &&
-			(rec.climate == NO_VALUE || rec.climate == climate) &&
 			(rec.terrain == NO_VALUE || rec.terrain == terrain) &&
-			(rec.zoning  == NO_VALUE || rec.zoning  == zoning ) &&
 			// Range Rules
-			RANGE_RULE(elev) &&
-			RANGE_RULE(temp) &&
 			RANGE_RULE(slope) &&
-			RANGE_RULE(relelev) &&
-			RANGE_RULE(elevrange) &&
+			RANGE_RULE(temp) &&
+			RANGE_RULE(rain) &&
 			RANGE_RULE(urban_dense) &&
-			RANGE_RULE(urban_prop) &&
 			RANGE_RULE(urban_radial) &&
 			RANGE_RULE(urban_trans) &&
 			// Obj Rules
-			(rec.obj_width * rec.obj_depth) > inAreaMin &&
-			(inMaxWidth == -1.0 || rec.obj_width <= inMaxWidth) &&
-			(inMaxDepth == -1.0 || rec.obj_depth <= inMaxDepth))
+			(inWidth >= rec.width_min && inWidth <= rec.width_max) &&
+			(inDepth >= rec.depth_min && inDepth <= rec.depth_max) &&
+			(inHeightMin <= rec.height_max && inHeightMax >= rec.height_min))			
 		{
 			outResults[ret] = row;
 			++ret;

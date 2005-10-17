@@ -24,6 +24,9 @@
 #include "MemFileUtils.h"
 #include "EnumSystem.h"
 #include <stdarg.h>
+#include <list>
+#include "AssertUtils.h"
+using std::list;
 
 #include "PlatformUtils.h"
 #if APL && !defined(__MACH__)
@@ -34,6 +37,8 @@ typedef pair<ProcessConfigString_f, void *>			HandlerEntry;
 typedef hash_map<string, HandlerEntry>				HandlerMap;
 static HandlerMap									sHandlerTable;
 static set<string>									sLoadedFiles;
+
+static list<string>									sPathStack;
 
 #if 0
 void	TokenizeOneLine(const char * begin, const char * end, vector<string>& outTokens)
@@ -73,7 +78,10 @@ bool TokenizeFunc(const char * s, const char * e, void * ref)
 static bool HandleInclude(const vector<string>& args, void * ref)
 {
 	if (args.size() < 2) return false;
-	return LoadConfigFile(args[1].c_str());
+	
+	Assert(!sPathStack.empty());	
+	string full = sPathStack.back() + args[1];	
+	return LoadConfigFileFullPath(full.c_str());
 }
 
 
@@ -110,14 +118,24 @@ string	FindConfigFile(const char * inFilename)
 					
 bool	LoadConfigFile(const char * inFilename)
 {
+	string partial_path = FindConfigFile(inFilename);
+	return LoadConfigFileFullPath(partial_path.c_str());
+}
+
+
+bool	LoadConfigFileFullPath(const char * inFilename)
+{
 	MFMemFile *	f;
 	bool ok = false;
-	string partial_path = FindConfigFile(inFilename);
-	f = MemFile_Open(partial_path.c_str());
+	f = MemFile_Open(inFilename);
 	if (!f) {
-		printf("Unable to load config file %s\n", partial_path.c_str());
+		printf("Unable to load config file %s\n", inFilename);
 		return ok;
 	}
+	
+	string	dir(inFilename);
+	dir.erase(dir.find_last_of("\\/:")+1);	
+	sPathStack.push_back(dir);
 	
 	MFTextScanner * scanner = TextScanner_Open(f);
 	if (scanner)
@@ -138,7 +156,7 @@ bool	LoadConfigFile(const char * inFilename)
 				if (!h->second.first(tokens,h->second.second))
 				{
 					string	line(TextScanner_GetBegin(scanner), TextScanner_GetEnd(scanner));
-					printf("Parse error in line: %s\n", line.c_str());
+					printf("Parse error in file %s line: %s\n", inFilename, line.c_str());
 					goto bail;
 				}
 			}
@@ -149,6 +167,7 @@ bail:
 		TextScanner_Close(scanner);
 	}
 	MemFile_Close(f);
+	sPathStack.pop_back();	
 	return ok;
 }
 

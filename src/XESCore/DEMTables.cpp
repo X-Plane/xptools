@@ -34,7 +34,7 @@ set<int>					gEnumDEMs;
 NaturalTerrainTable			gNaturalTerrainTable;
 NaturalTerrainLandUseIndex	gNaturalTerrainLandUseIndex;
 NaturalTerrainIndex			gNaturalTerrainIndex;
-TerrainPromoteTable			gTerrainPromoteTable;
+//TerrainPromoteTable			gTerrainPromoteTable;
 //ManTerrainTable				gManTerrainTable;
 BeachInfoTable				gBeachInfoTable;
 LandUseTransTable			gLandUseTransTable;
@@ -42,8 +42,8 @@ LandUseTransTable			gLandUseTransTable;
 static	void	ValidateNaturalTerrain(void);
 static set<int>		sForests;
 
-string	gNaturalTerrainFile = "natural_terrain.txt";
-string	gLanduseTransFile	= "landuse_translate.txt";
+string	gNaturalTerrainFile;
+string	gLanduseTransFile;
 string	gReplacementClimate;
 string 	gReplacementRoads;
 
@@ -393,6 +393,7 @@ static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
 }
 
 
+/*
 bool	ReadPromoteTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	pair<int, int> key;
@@ -406,6 +407,7 @@ bool	ReadPromoteTerrainInfo(const vector<string>& tokens, void * ref)
 	gTerrainPromoteTable[key] = value;
 	return true;
 }
+*/
 
 /*
 bool	ReadManTerrainInfo(const vector<string>& tokens, void * ref)
@@ -439,7 +441,7 @@ void	LoadDEMTables(void)
 	gNaturalTerrainTable.clear();
 	gNaturalTerrainLandUseIndex.clear();
 	gNaturalTerrainIndex.clear();
-	gTerrainPromoteTable.clear();
+//	gTerrainPromoteTable.clear();
 	gBeachInfoTable.clear();
 	sForests.clear();
 	gLandUseTransTable.clear();
@@ -451,15 +453,16 @@ void	LoadDEMTables(void)
 	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
-	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
+//	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
-//	RegisterLineHandler("MTERRAIN", ReadManTerrainInfo, NULL);
+
+	if (gNaturalTerrainFile.empty())	LoadConfigFile("natural_terrain.txt");	
+	else								LoadConfigFileFullPath(gNaturalTerrainFile.c_str());
+	if (gLanduseTransFile.empty())		LoadConfigFile("landuse_translate.txt");
+	else								LoadConfigFileFullPath(gLanduseTransFile.c_str());
+
 	LoadConfigFile("enum_colors.txt");
-	LoadConfigFile(gNaturalTerrainFile.c_str());
-	LoadConfigFile("promote_terrain.txt");
-//	LoadConfigFile("man_terrain.txt");
 	LoadConfigFile("beach_terrain.txt");
-	LoadConfigFile(gLanduseTransFile.c_str());
 	
 	ValidateNaturalTerrain();
 }
