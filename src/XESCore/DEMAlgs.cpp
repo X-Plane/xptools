@@ -350,51 +350,61 @@ void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM)
 	}
 }
 
-#if !DEV
-document this
-#endif
-
+// This routine takes a low res datasource and upsamples it.  It varies within a linear interpolation block 
+// from the min to max seen in the corners based on another DEM used for 'noise' (usually relative elevation).
+// We blend to make sure we have linear interp at the edge of the linear interp block, so we get good tiling.
+// A weight factor also tunes this in and out.
 void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo& derived, int xmult, int ymult)
 {
 	derived.resize((base.mWidth-1)*xmult+1,(base.mHeight-1)*ymult+1);
 	derived.copy_geo_from(base);
 	
+	// for every 'block' to be usampled
 	for (int yiz = 0; yiz < base.mHeight-1; ++yiz)
 	for (int xiz = 0; xiz < base.mWidth-1; ++xiz)
 	{
+		// fer each point
 		for (int dy = 0; dy <= ymult; ++dy)
 		for (int dx = 0; dx <= xmult; ++dx)
 		{
 			float dx_fac = (float) dx / (float) xmult;
 			float dy_fac = (float) dy / (float) ymult;
 			
+			// This is the weights for a linear blend
 			double q1 = 	 dx_fac  * 		dy_fac;
 			double q2 = (1.0-dx_fac) * 		dy_fac;
 			double q3 = 	 dx_fac  * (1.0-dy_fac);
 			double q4 = (1.0-dx_fac) * (1.0-dy_fac);
 			
+			// Four corner values
 			float v1 = base.get(xiz+1, yiz+1);
 			float v2 = base.get(xiz  , yiz+1);
 			float v3 = base.get(xiz+1, yiz  );
 			float v4 = base.get(xiz  , yiz  );
 			
+			// clean interp
 			float v_linear = q1 * v1 +
 					  		 q2 * v2 +
 					  		 q3 * v3 +
 					  		 q4 * v4;
 
+			// Scaling factor to blend to linear at edges, blob at edge
 			float x_weird = (0.5 - fabs(dx_fac - 0.5)) * 2.0;
 			float y_weird = (0.5 - fabs(dy_fac - 0.5)) * 2.0;
 			float weird_mix = min(x_weird, y_weird) * gDemPrefs.rain_disturb;
 			
+			// This is the 'noise' ratio from the variant source
 			float weird_ratio = variant_source.value_linear(derived.x_to_lon(xiz * xmult + dx),
 															derived.y_to_lat(yiz * ymult + dy));
+			// How much to mix in this noise
 			weird_ratio = min(max(weird_ratio, 0.0f), 1.0f);
 			float max_ever = max(max(v1,v2),max(v3,v4));
 			float min_ever = min(min(v1,v2),min(v3,v4));
 			
+			// Generated weird value
 			float v_weird = min_ever + weird_ratio * (max_ever - min_ever);
 
+			// mix werid and linear
 			derived(xiz * xmult + dx, yiz * ymult + dy) = 
 				v_linear * (1.0 - weird_mix) +
 				v_weird  *        weird_mix;
