@@ -363,9 +363,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
 
-#if !DEV
-	DOCUMENT THIS!
-#endif	
+	// AUTO-VARIATION - we take one rule and make four rules with variant codes.  Later the rule-finder will generate random codes to select rules spatially.
+	// The auto-vary code is: 0 = none, 1 = vary by spatial blobs, 2 = vary by slope heading
+	// The resulting codes in the struct are: 0 - no vary, 1-4 = spatial variants (all equal), 5-8 = heading variatns (N,E,S,W)
 	if (auto_vary > 0)
 	{
 		for (int rep = 1; rep <= 4; ++rep)
