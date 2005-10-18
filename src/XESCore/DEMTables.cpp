@@ -327,7 +327,31 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
+	if (proj == "HDG")	auto_vary = 2;
 		
+	string::size_type nstart = info.base_tex.find_last_of("\\/:");
+	if (nstart == info.base_tex.npos)	nstart = 0; else nstart++;
+	if (info.base_tex.size()-nstart > 31)
+		printf("WARNING: base tex %s too long.\n", info.base_tex.c_str());
+
+	if (info.slope_min == info.slope_max &&	info.slope_min != 0.0)
+		printf("WARNING: base tex %s has slope min and max both of %f\n", name.c_str(), info.slope_min);
+
+	if (info.proj_angle != proj_Down)
+	if (info.slope_min < 30.0)
+		printf("WARNING: base tex %s is projected but min slope is %f\n", name.c_str(), info.slope_min);
+
+	if (info.proj_angle == proj_NorthSouth)
+	if (!(info.slope_heading_min == 0.0 && info.slope_heading_max == 0.0 ||
+		info.slope_heading_min == 0.0 && info.slope_heading_max == 45.0 ||
+		info.slope_heading_min == 135.0 && info.slope_heading_max == 180.0))
+		printf("WARNING: base tex %s is projected north-south but has bad headings.\n",name.c_str());
+
+	if (info.proj_angle == proj_EastWest)
+	if (!(info.slope_heading_min == 0.0 && info.slope_heading_max == 0.0 ||
+		info.slope_heading_min == 45.0 && info.slope_heading_max == 135.0))
+		printf("WARNING: base tex %s is projected east-west but has bad headings.\n",name.c_str());
+
 	// We use 1-cos notation, which keeps our order constant.	
 	info.slope_min = 1.0 - cosdeg(info.slope_min);
 	info.slope_max = 1.0 - cosdeg(info.slope_max);
@@ -339,16 +363,14 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
 
-	string::size_type nstart = info.base_tex.find_last_of("\\/:");
-	if (nstart == info.base_tex.npos)	nstart = 0; else nstart++;
-	if (info.base_tex.size()-nstart > 31)
-		printf("WARNING: base tex %s too long.\n", info.base_tex.c_str());
-
-	if (auto_vary)
+#if !DEV
+	DOCUMENT THIS!
+#endif	
+	if (auto_vary > 0)
 	{
 		for (int rep = 1; rep <= 4; ++rep)
 		{
-			info.variant = rep;
+			info.variant = rep + (auto_vary == 2 ? 4 : 0);
 			info.map_rgb[2] += ((float) rep / 80.0);
 
 			string rep_name = name;
@@ -488,7 +510,8 @@ int	FindNaturalTerrain(
 				float	urban_trans,
 				int		urban_square,
 				float	lat,
-				int		variant)
+				int		variant_blob,
+				int		variant_head)
 {
 	// OPTIMIZE - figure out what the major keys should be.
 	
@@ -524,7 +547,7 @@ int	FindNaturalTerrain(
 		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
 		if (!rec.near_water || water)
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
-		if (rec.variant == 0 || variant == 0 || rec.variant == variant)
+		if (rec.variant == 0 || variant_blob == 0 || variant_head == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		{
 			best_typed = rec_num;
 			choice_typed = rec.name;
@@ -558,7 +581,7 @@ int	FindNaturalTerrain(
 		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
 		if (!rec.near_water || water)
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
-		if (rec.variant == 0 || variant == 0 || rec.variant == variant)		
+		if (rec.variant == 0 || variant_blob == 0 || variant_head == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		{
 			best_untyped = rec_num;
 			choice_untyped = rec.name;

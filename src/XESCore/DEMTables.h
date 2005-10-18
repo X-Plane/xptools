@@ -135,7 +135,8 @@ int		FindNaturalTerrain(
 				float	urban_trans,
 				int		urban_square,	// use 1=square, 2=irregulra NO_DATA
 				float	lat,			// use NO_DATA!
-				int		variant);		// use 0
+				int		variant_blob,
+				int		variant_head);	// use 0
 
 /************************************************************************
  * ZONED TERRAIN PROMOTIONS
