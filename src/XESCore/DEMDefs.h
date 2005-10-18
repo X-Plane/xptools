@@ -162,6 +162,8 @@ struct	DEMGeo {
 	// These routines convert grid positions to lat/lon
 	inline double	x_to_lon(int inX) const;
 	inline double	y_to_lat(int inY) const;
+	inline double	x_to_lon_double(double inX) const;
+	inline double	y_to_lat_double(double inY) const;
 	inline double	lon_to_x(double inLon) const;
 	inline double	lat_to_y(double inLat) const;
 	inline double	x_dist_to_m(int inX) const;
@@ -660,6 +662,16 @@ inline double	DEMGeo::x_to_lon(int inX) const
 }
 
 inline double	DEMGeo::y_to_lat(int inY) const
+{
+	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-1));
+}
+
+inline double	DEMGeo::x_to_lon_double(double inX) const
+{
+	return mWest + ((double) inX  * (mEast - mWest) / (double) (mWidth-1));
+}
+
+inline double	DEMGeo::y_to_lat_double(double inY) const
 {
 	return mSouth + ((double) inY * (mNorth - mSouth) / (double) (mHeight-1));
 }
