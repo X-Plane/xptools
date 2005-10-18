@@ -93,12 +93,31 @@ void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
  */
 void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces); 
 
-#if !DEV
-doc these
-#endif
-
+/*
+ * CCBToPolygon
+ *
+ * Given a CCB (ring) in a map, this converts it to a simple polygon.  You can pass a weight function in which case a second array 
+ * of per-side weights (0th weight is the CCB edge passed in) are also built up.
+ *
+ */
 void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge));
+
+/*
+ * FaceToComplexPolygon
+ *
+ * Given a face, this builds a "complex" polygon (multiple rings, first is outside CCW, rest are inside CW) from each ring (the outer CCB and holes) of the polygon.
+ * Like above a weighting function is used.
+ *
+ */
 void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge));
+
+/*
+ * ComplexPolygonToPmwx
+ *
+ * Given a complex polygon (outer bounds and holes) this builds a PMWX with the same topolgoy.  InTerrain and outTerrain are terrain types assigned to space
+ * in the PMWX inside and outside the complex polygon.
+ *
+ */
 GISFace *	ComplexPolygonToPmwx(const vector<Polygon2>& inPolygons, Pmwx& outPmwx, int inTerrain, int outTerain);
 
 /************************************************************************************************
