@@ -512,7 +512,14 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 {
 	double dist_1 = gNaturalTerrainTable[gNaturalTerrainIndex[layer1]].xon_dist;
 	double dist_2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].xon_dist;
-	return min(dist_1, dist_2); // * y_normal
+	bool down1 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
+	bool down2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
+//	if (down1 != down2) return 0.0;
+//	return min(dist_1, dist_2) * y_normal;
+#if !DEV
+	are we final on this?
+#endif	
+	return max(200.0,min(dist_1, dist_2)); // * y_normal
 }
 
 
@@ -1883,12 +1890,24 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 //				float	el_tri = (el1 + el2 + el3) / 3.0;
 				
 				float	sl_tri = 1.0 - tri->info().normal[2];
+				float	flat_len = sqrt(tri->info().normal[1] * tri->info().normal[1] + tri->info().normal[0] * tri->info().normal[0]);
+				float	sh_tri = -tri->info().normal[1];
+				if (flat_len != 0.0)
+				{
+					sh_tri /= flat_len;
+					sh_tri = max(-1.0f, min(sh_tri, 1.0f));
+				}
 
 				float	patches = (gMeshPrefs.rep_switch_m == 0.0) ? 100.0 : (60.0 * NM_TO_MTR / gMeshPrefs.rep_switch_m);
 				int x_variant = fabs(center_x /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int y_variant = fabs(center_y /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
-				int variant = ((x_variant + y_variant * 2) % 4) + 1;
-				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh, re, er, uden, urad, utrn, usq, center_y, variant);
+				int variant_blob = ((x_variant + y_variant * 2) % 4) + 1;
+				int variant_head = (tri->info().normal[0] > 0.0) ? 6 : 8;
+				
+				if (sh_tri < -0.7)	variant_head = 5;
+				if (sh_tri >  0.7)	variant_head = 7;
+				
+				int terrain = FindNaturalTerrain(tri->info().terrain_general, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, center_y, variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				if (terrain == gNaturalTerrainTable.back().name)
@@ -2020,28 +2039,40 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				double	dist3 = DistPtToTri(v3, tri);
 				double	dist_max = GetXonDist(layer, border->info().terrain_specific, border->info().normal[2]);
 				
-				dist1 = max(0.0, min((dist_max-dist1)/dist_max,1.0));
-				dist2 = max(0.0, min((dist_max-dist2)/dist_max,1.0));
-				dist3 = max(0.0, min((dist_max-dist3)/dist_max,1.0));
-				
-				double	odist1 = v1->info().border_blend[layer];
-				double	odist2 = v2->info().border_blend[layer];
-				double	odist3 = v3->info().border_blend[layer];
-				
-				++tri_check;
-				if (dist1 > 0.0 || dist2 > 0.0 || dist3 > 0.0) 
+				if (dist_max > 0.0)
 				{
-					// If we're not faded out totally, record an increase.  ONLY keep 	
-					// searching if we are increasing one of the vertices.  Otherwise
-					// someone else has been over this territory who is already closer
-					// and we're just wasting our time.
-					if (dist1 > odist1) { spread = true; v1->info().border_blend[layer] = dist1; }
-					if (dist2 > odist2) { spread = true; v2->info().border_blend[layer] = dist2; }
-					if (dist3 > odist3) { spread = true; v3->info().border_blend[layer] = dist3; }
+					dist1 = max(0.0, min((dist_max-dist1)/dist_max,1.0));
+					dist2 = max(0.0, min((dist_max-dist2)/dist_max,1.0));
+					dist3 = max(0.0, min((dist_max-dist3)/dist_max,1.0));
+					
+					++tri_check;
+					if (dist1 > 0.0 || dist2 > 0.0 || dist3 > 0.0) 
+					{
+						double	odist1 = v1->info().border_blend[layer];
+						double	odist2 = v2->info().border_blend[layer];
+						double	odist3 = v3->info().border_blend[layer];
+						
+						bool has_0 = false, has_1 = false, has_2 = false;
+						if (border->neighbor(0)->info().terrain_border.count(layer) || border->neighbor(0)->info().terrain_specific == layer) { has_1 = true; has_2 = true; }
+						if (border->neighbor(1)->info().terrain_border.count(layer) || border->neighbor(1)->info().terrain_specific == layer) { has_2 = true; has_0 = true; }
+						if (border->neighbor(2)->info().terrain_border.count(layer) || border->neighbor(2)->info().terrain_specific == layer) { has_0 = true; has_1 = true; }
+						
+						if (!has_0) dist1 = 0.0;
+						if (!has_1) dist2 = 0.0;
+						if (!has_2) dist3 = 0.0;
+						
+						// If we're not faded out totally, record an increase.  ONLY keep 	
+						// searching if we are increasing one of the vertices.  Otherwise
+						// someone else has been over this territory who is already closer
+						// and we're just wasting our time.
+						if (dist1 > odist1) { spread = true; v1->info().border_blend[layer] = dist1; }
+						if (dist2 > odist2) { spread = true; v2->info().border_blend[layer] = dist2; }
+						if (dist3 > odist3) { spread = true; v3->info().border_blend[layer] = dist3; }
 
-					// HACK - does always extending the borders fix a bug?
-					border->info().terrain_border.insert(layer);
-					spread = true;
+						// HACK - does always extending the borders fix a bug?
+						border->info().terrain_border.insert(layer);
+						spread = true;
+					}
 				}
 			} else
 				spread = true;
@@ -2131,6 +2162,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	 ***********************************************************************************************/
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.75);
 
+#if !DEV
+fix this!
+#endif
+	if (0)
 	{
 		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
 		if (tri->info().terrain_general != terrain_Water)
