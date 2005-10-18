@@ -189,6 +189,22 @@ static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 	return ret;
 }
 
+static double GetTightnessBlend(CDT& inMesh, CDT::Vertex_handle v_han)
+{
+	float y_norm = 1.0;
+	CDT::Face_circulator stop, circ;
+	stop = circ = inMesh.incident_faces(v_han);
+	do {
+		if (!inMesh.is_infinite(circ))
+			y_norm = min(y_norm, circ->info().normal[2]);
+		++circ;
+	} while (stop != circ);
+	y_norm = max(0.0f, min(y_norm, 1.0f));
+	y_norm = acos(y_norm) / (PI / 2.0);
+	y_norm = max(0.0f, min(y_norm, 1.0f));
+	return y_norm;
+}
+
 // Given an edge, finds the next edge clockwise from the source vertex
 // of this edge.  (Pmwx equivalent is twin->next
 edge_wrapper edge_twin_next(const edge_wrapper& e)
@@ -794,7 +810,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						coords8[3] = f->vertex(vi)->info().normal[0];
 						coords8[4] =-f->vertex(vi)->info().normal[1];
 						coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
-						coords8[6] = 0.0;
+						coords8[6] = GetTightnessBlend(inHiresMesh, f->vertex(vi));
 						DebugAssert(!is_water);
 //						if (is_composite)
 //							coords8[7] = is_water ? GetWaterBlend(f->vertex(vi), waterType) : f->vertex(vi)->info().vege_density;

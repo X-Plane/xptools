@@ -515,11 +515,11 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 	bool down1 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
 	bool down2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
 //	if (down1 != down2) return 0.0;
-//	return min(dist_1, dist_2) * y_normal;
+	return min(dist_1, dist_2) * y_normal;
 #if !DEV
 	are we final on this?
 #endif	
-	return max(200.0,min(dist_1, dist_2)); // * y_normal
+//	return max(200.0,min(dist_1, dist_2)); // * y_normal
 }
 
 
