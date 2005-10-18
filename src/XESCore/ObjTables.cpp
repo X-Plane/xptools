@@ -78,7 +78,7 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			&info.temp_min, &info.temp_max, 
 			&info.rain_min, &info.rain_max, 
 			&info.slope_min, &info.slope_max,
-			
+		
 			&info.urban_dense_min, &info.urban_dense_max,
 			&info.urban_radial_min, &info.urban_radial_max,
 			&info.urban_trans_min, &info.urban_trans_max,
@@ -195,6 +195,8 @@ void	LoadObjTables(void)
 	gRepUsage.clear();
 
 	RegisterLineHandler("OBJ_PROP", ReadRepLine, NULL);
+	RegisterLineHandler("OBS_PROP", ReadRepLine, NULL);
+	RegisterLineHandler("FAC_PROP", ReadRepLine, NULL);
 	RegisterLineHandler("FEAT_PROP", ReadFeatureProps, NULL);	
 //	RegisterLineHandler("FEAT_2_OBJ", ReadFeatureToRep, NULL);
 	LoadConfigFile("obj_properties.txt");
