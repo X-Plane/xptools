@@ -1215,7 +1215,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer);
 	cbs.AcceptProperty_f("sim/planet", "earth", writer);
 	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9", writer);
-	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
+	cbs.AcceptProperty_f("laminar/internal_revision", "1", writer);
 	
 	/****************************************************************
 	 * WRITEOUT
