@@ -117,17 +117,26 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 
 		fprintf(ter, "COMPOSITE_BORDERS" CRLF);
 		
-		switch(gNaturalTerrainTable[n].proj_angle) {
-		case proj_Down:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
-		case proj_NorthSouth:	fprintf(ter, "PROJECT_ANGLE 0 0 1 0" CRLF);		break;
-		case proj_EastWest:		fprintf(ter, "PROJECT_ANGLE -1 0 0 90" CRLF);	break;
-		}
-		
 		switch(gNaturalTerrainTable[n].variant) {
-		case 1: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
-		case 2: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.3));	break;
-		case 3: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.7), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
-		case 4:	fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.4), (int) (gNaturalTerrainTable[n].base_res * 0.6));	break;
+		case 5:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
+		case 6:			fprintf(ter, "PROJECT_ANGLE 0 1 0 90" CRLF);		break;
+		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 180" CRLF);		break;
+		case 8:			fprintf(ter, "PROJECT_ANGLE 0 1 0 270" CRLF);		break;
+		default: 
+			{			
+				switch(gNaturalTerrainTable[n].proj_angle) {
+				case proj_Down:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
+				case proj_NorthSouth:	fprintf(ter, "PROJECT_ANGLE 0 0 1 0" CRLF);		break;
+				case proj_EastWest:		fprintf(ter, "PROJECT_ANGLE -1 0 0 90" CRLF);	break;
+				}
+				
+				switch(gNaturalTerrainTable[n].variant) {
+				case 1: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
+				case 2: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.0), (int) (gNaturalTerrainTable[n].base_res * 0.3));	break;
+				case 3: fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.7), (int) (gNaturalTerrainTable[n].base_res * 0.0));	break;
+				case 4:	fprintf(ter, "PROJECT_OFFSET %d %d" CRLF, (int) (gNaturalTerrainTable[n].base_res * 0.4), (int) (gNaturalTerrainTable[n].base_res * 0.6));	break;
+				}
+			}
 		}
 		
 		dir_path = string(FetchTokenString(gNaturalTerrainTable[n].name)) + ".ter";		
