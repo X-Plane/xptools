@@ -118,10 +118,10 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		fprintf(ter, "COMPOSITE_BORDERS" CRLF);
 		
 		switch(gNaturalTerrainTable[n].variant) {
-		case 5:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
-		case 6:			fprintf(ter, "PROJECT_ANGLE 0 1 0 90" CRLF);		break;
-		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 180" CRLF);		break;
-		case 8:			fprintf(ter, "PROJECT_ANGLE 0 1 0 270" CRLF);		break;
+		case 5:			fprintf(ter, "PROJECT_ANGLE 0 1 0 180" CRLF);		break;
+		case 6:			fprintf(ter, "PROJECT_ANGLE 0 1 0 270" CRLF);		break;
+		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
+		case 8:			fprintf(ter, "PROJECT_ANGLE 0 1 0 90" CRLF);		break;
 		default: 
 			{			
 				switch(gNaturalTerrainTable[n].proj_angle) {
