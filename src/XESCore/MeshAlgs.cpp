@@ -33,6 +33,7 @@
 #include "MapAlgs.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
+#include "GreedyMesh.h"
 
 /* Used to disable triangulation for fast preview of points. */
 #define NO_TRIANGULATE 0
@@ -516,10 +517,6 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 	bool down2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
 //	if (down1 != down2) return 0.0;
 	return min(dist_1, dist_2) * y_normal;
-#if !DEV
-	are we final on this?
-#endif	
-//	return max(200.0,min(dist_1, dist_2)); // * y_normal
 }
 
 
@@ -1566,12 +1563,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 
 	DEMGeo	outline(deriv);
 	DEMGeo	water(deriv);
+	DEMGeo	land(orig);
 	
 	int basePoints;
 	int angularPoints;
 	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.0);
 
+/*
 	if (!gMeshPrefs.fowler_little)
 	{
 		TIMER(minmax)
@@ -1624,7 +1623,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		TIMER(linear_remove)
 		deriv.remove_linear(2, gMeshPrefs.max_error);
 	}
-
+*/
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.25);
 
 	// MAKE SURE the corners are in the DEM!  
@@ -1640,6 +1639,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	{
 		TIMER(build_wet_map)
 		CopyWetPoints(orig, water, &outline, inMap);
+		for (y = 0; y < deriv.mHeight; ++y)
+		for (x = 0; x < deriv.mWidth; ++x)
+		if (water.get(x,y) != NO_DATA)
+			land(x,y) = NO_DATA;
 	}
 	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.4);
@@ -1712,8 +1715,11 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		
 	{
 		TIMER(Triangulate_Elevation)
-		
 		AddBulkPointsToMesh(deriv, outMesh, prog);
+	}
+	{
+		TIMER(Greedy_Mesh)
+		GreedyMeshBuild(outMesh, land, 5.0, gMeshPrefs.max_mountain_points, prog);
 	}	
 	
 	if (!gMatchLeft.vertices.empty())
@@ -2162,10 +2168,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	 ***********************************************************************************************/
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.75);
 
-#if !DEV
-fix this!
-#endif
-	if (0)
 	{
 		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
 		if (tri->info().terrain_general != terrain_Water)

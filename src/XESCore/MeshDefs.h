@@ -34,6 +34,8 @@
 
 typedef	CGAL::Simple_cartesian<double>						FastKernel;
 
+typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
+
 struct	MeshVertexInfo {
 	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
 	MeshVertexInfo(const MeshVertexInfo& rhs) : 
@@ -53,10 +55,11 @@ struct	MeshVertexInfo {
 	double					wave_height;			// ratio of vegetation to terrain at this vertex.
 	float					normal[3];				// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
-//	double					vege_density;			// ratio of vegetation to terrain at this vertex.
+
 };
+
 struct	MeshFaceInfo {
-	MeshFaceInfo() : terrain_general(NO_DATA), terrain_specific(NO_DATA) { }
+	MeshFaceInfo() : terrain_general(NO_DATA), terrain_specific(NO_DATA),flag(0) { }
 	MeshFaceInfo(const MeshFaceInfo& rhs) : 
 								terrain_general(rhs.terrain_general), 
 								terrain_specific(rhs.terrain_specific),
@@ -73,8 +76,15 @@ struct	MeshFaceInfo {
 								terrain_border = rhs.terrain_border; 
 								normal[0] = rhs.normal[0]; 
 								normal[1] = rhs.normal[1]; 
-								normal[2] = rhs.normal[2];								
+								normal[2] = rhs.normal[2];
 								return *this; }
+
+	int				insert_x;
+	int				insert_y;
+	float			insert_err;
+	double			plane_a;
+	double			plane_b;
+	double			plane_c;
 
 	int				terrain_general;		// General terrain type for this triangle, e.g. terrain_Natural, terrain_Water
 	int				terrain_specific;		// Specific terrain type, e.g. natural converted to a real land use. (This is a .ter enum, NOT a table index btw)
@@ -82,9 +92,7 @@ struct	MeshFaceInfo {
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
 
-//	int				border_edge[3];			// intruding landuse at our edge
-//	int				flag2;
-	
+	FaceQueue::iterator	self;					// Queue ref to self!
 };
 
 typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, FastKernel>		Vb;
@@ -92,7 +100,8 @@ typedef CGAL::Triangulation_face_base_with_info_2<MeshFaceInfo, FastKernel>			Fb
 
 
 typedef	CGAL::Constrained_triangulation_face_base_2<FastKernel, Fbi>				Fb;
-typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>					TDS;
+typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>								TDS;
+
 typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
 
 class CDT : public CDTBase { 
