@@ -34,12 +34,12 @@ class	CDT;
 class	Pmwx;
 
 struct	MeshPrefs_t {
-	int		max_mountain_points;
-	float	cliff_height;
+	int		max_points;
 	float	max_error;
-	int		fowler_little;
 	int		border_match;
-	float	rep_switch_m;
+	int		optimize_borders;
+	float	max_tri_size_m;
+	float	rep_switch_m;	
 };
 extern MeshPrefs_t	gMeshPrefs;
 

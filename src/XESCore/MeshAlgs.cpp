@@ -22,7 +22,6 @@
  */
 #include "MapDefs.h"
 #include "MeshAlgs.h"
-//#include "WED_Globals.h"
 #include "ParamDefs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
@@ -35,24 +34,13 @@
 #include "GISUtils.h"
 #include "GreedyMesh.h"
 
-/* Used to disable triangulation for fast preview of points. */
-#define NO_TRIANGULATE 0
-
-/* This defines the ratio of skip to ok points for vector rivers.  It's
-   a real pain to do a perfect computation of vital river points, and 
-   frankly it doesn't matter...every river point is DEM-wise useful and
-   for the most part the data is organized to keep adjacent rivers nearby
-   in the map.  So skipping a few produces surprisingly pleasing results 
-   for like, no work. */
-#define RIVER_SKIP 6
-#define LOW_RES_WATER_INTERVAL 40
 
 #define PROFILE_PERFORMANCE 1
 
-#define FAR_TEX_DIVISIONS 2
+#define LOW_RES_WATER_INTERVAL 40
 
-// About 80 degrees
-#define ROCK_SLOPE_CUTOFF	0.17364	
+#define NO_BORDER_SHARING 0
+
 
 #if PROFILE_PERFORMANCE
 #define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
@@ -61,17 +49,12 @@
 #endif
 
 MeshPrefs_t gMeshPrefs = { 
-				25000, 
-				100.0,
-				10.00,
-				0,
+				50000, 
+				5.0,
 				1,
+				1,
+				2000.0,
 				2000.0
-};
-
-int	kFarTextures[FAR_TEX_DIVISIONS*FAR_TEX_DIVISIONS] = {
-	terrain_VirtualOrtho00,		terrain_VirtualOrtho10,
-	terrain_VirtualOrtho01,		terrain_VirtualOrtho11
 };
 
 /* Conststraint markers - here's the deal: the way we set the water body
@@ -121,13 +104,62 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 	return true;
 }
 
+inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v)
+{
+	CDT::Vertex_circulator circ, stop;
+	circ = stop = inMesh.incident_vertices(v);
+	do {
+		if (inMesh.is_infinite(circ)) return true;
+		circ++;
+	} while (circ != stop);
+	return false;
+}
+
+#pragma mark -
 /************************************************************************************************************************
  * BORDER MATCHING
  ************************************************************************************************************************
- *
- * These data structures hold a single border...points and the edges between them, going either west to east along the top
- * or north to south along the right side.
- * 
+
+	BORDER MATCHING - THEORY
+	
+	We cannot do proper blending and transitions across DSF borders because we write one DSF at a time - we have no way
+	to go back and edit a previous DSF when we get to the next one and find a transition should have leaked across files.
+	So instead we use a master slave system...the west and south files always dominate the north and east.
+
+	The right and top borders of a DSF are MASTER borders and the left and bottom are SLAVES. 
+	
+	When we write a DSF we write out the border info for the master borders into text files - this includes both vertex
+	position along the border and texturing.
+	
+	When we write a new DSF we find our old master borders via text file and use it to conform our work.
+	
+	VERTEX MATCHING
+	
+	We write out all vertices on our master border.  For the slave border we add the MINIMUM number of points to the slave
+	border - basically just mandatory water-body edges.  We then do a nearest-fit match from the master and add any non-
+	matched master vertices to the slave.  This gives exact matchups except for mandatrory features which should be close.
+	If the water bodies are not totally discontinuous this works.  X-plane can also resolve very slight vertex discrepancies.
+	
+	TRANSITION AND LANDUSE MATCHING
+	
+ 	Each master edge vertex will contain some level of blending for each border that originates there as well as a set of
+ 	base transitions from each incident triangle.  (Each base layer can be thought of as being represented at 100%.)  When
+ 	sorted by priority this forms a total set of 'stuff' intruding from this vertex.
+ 	
+	To blend the border, we build overlays on the slave triangles incident to these borders that have the master's mix levels
+	on the incident vertices and 0 levels on the interior.
+	
+	REBASING
+	
+	There is one problem with the above scheme - if the border from above is LOWER priority than the terrain it will cover, 
+	the border will not work.  Fundamentally we can't force a border to go left to right against priority!
+	
+	So we use a trick called "rebasing".  Basically given a slave tri with a high prio ("HIGH") and a master vertex with a 
+	low prio terrain ("LOW") we set the base of the slave tri to "LOW" and add a border of type "HIGH" to the slave with 0%
+	blend on the edges and 100% in the interior.  We then also find all tris not touching the border incident to the 100% vertex
+	and blend from 100% back to 0%.
+ 
+ 
  */
 
 struct	mesh_match_vertex_t {
@@ -234,7 +266,27 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 		CDT::Point	p1 = ioBorder.vertices[n  ].buddy->point();
 		CDT::Point	p2 = ioBorder.vertices[n+1].buddy->point();
 #endif		
-		Assert(ioMesh.is_face(ioBorder.vertices[n].buddy, ioBorder.vertices[n+1].buddy, ioMesh.infinite_vertex(), ioBorder.edges[n].buddy));
+		if (!(ioMesh.is_face(ioBorder.vertices[n].buddy, ioBorder.vertices[n+1].buddy, ioMesh.infinite_vertex(), ioBorder.edges[n].buddy)))
+		{
+			CDT::Vertex_circulator	circ, stop;
+			printf("    Vert 1 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n].buddy->point().x(), ioBorder.vertices[n].buddy->point().y(), &*ioBorder.vertices[n].buddy);
+			circ = stop = ioMesh.incident_vertices(ioBorder.vertices[n].buddy);
+			do {
+				printf("    Buddy 1 vert = %lf,%lf (0x%08X)\n", circ->point().x(), circ->point().y(), &*circ);
+				++circ;
+			} while (circ != stop);
+			circ = stop = ioMesh.incident_vertices(ioBorder.vertices[n+ 1].buddy);
+			printf("    Vert 2 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n+ 1].buddy->point().x(), ioBorder.vertices[n+ 1].buddy->point().y(), &*ioBorder.vertices[n+ 1].buddy);
+			do {
+				printf("    Buddy 2 vert = %lf,%lf (0x%08X)\n", circ->point().x(), circ->point().y(), &*circ);
+				++circ;
+			} while (circ != stop);
+			AssertPrintf("Border match failure: %lf,%lf to %lf,%lf\n", 
+				ioBorder.vertices[n  ].buddy->point().x(),
+				ioBorder.vertices[n  ].buddy->point().y(),
+				ioBorder.vertices[n+1].buddy->point().x(),
+				ioBorder.vertices[n+1].buddy->point().y());
+		}
 		int idx = ioBorder.edges[n].buddy->index(ioMesh.infinite_vertex());
 		ioBorder.edges[n].buddy = ioBorder.edges[n].buddy->neighbor(idx);
 	}
@@ -242,6 +294,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
+	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
 	{
 		CDT::Vertex_handle vv = f->vertex(i);
@@ -431,9 +484,13 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 	}
 }
 
-static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT::Vertex_handle v1, CDT::Vertex_handle v2)
+// RebaseTriangle - 
+
+
+static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT::Vertex_handle v1, CDT::Vertex_handle v2, set<CDT::Vertex_handle>& ioModVertices)
 {
 	int old_base = tri->info().terrain_specific;
+
 	DebugAssert(old_base != terrain_Water);
 	tri->info().terrain_specific = new_base;	
 	if (new_base != terrain_Water)
@@ -444,37 +501,43 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 		{
 			CDT::Vertex_handle v = tri->vertex(i);
 			if (v == v1 || v == v2)
-				v->info().border_blend[old_base] = 0.0;
-			else
+				v->info().border_blend[old_base] = max(v->info().border_blend[old_base], 0.0f);
+			else {
 				v->info().border_blend[old_base] = 1.0;
+				ioModVertices.insert(v);
+			}
 		}
-		
-		if (v1 != CDT::Vertex_handle() && v2 != CDT::Vertex_handle())
-		{
-			CDT::Face_circulator stop, iter;
-			
-			CDT::Face_handle	foo;
-			int i;
-			Assert(ioMesh.is_edge(v2, v1, foo, i));
-			DebugAssert(foo == tri);
-			CDT::Vertex_handle v3 = tri->vertex(i);
-			
-			stop = iter = ioMesh.incident_faces(v3);
-			do {
-				if (!ioMesh.is_infinite(iter))
-				if (!is_border(ioMesh, iter))
-				if (LowerPriorityNaturalTerrain(new_base, iter->info().terrain_specific))
+	}
+}		
+
+// Safe-smear border: when we have a vertex involved in a border from a master file
+// then we need to make sure all incident triangles can transition out1
+void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
+{
+	if (vert->info().border_blend[layer] > 0.0)
+	{
+		CDT::Face_circulator iter, stop;
+		iter = stop = mesh.incident_faces(vert);
+		do {
+			if (!mesh.is_infinite(iter))
+			if (iter->info().terrain_specific != layer)
+			{
+				iter->info().terrain_border.insert(layer);
+				for (int n = 0; n < 3; ++n)
 				{
-					DebugAssert(iter != tri);
-					RebaseTriangle(ioMesh, iter, new_base, 
-						(iter->has_vertex(v1)) ? v1 : CDT::Vertex_handle(),
-						(iter->has_vertex(v2)) ? v2 : CDT::Vertex_handle());				
-				}
-				++iter;
-			} while (stop != iter);
-		}	
+					CDT::Vertex_handle v = iter->vertex(n);
+					v->info().border_blend[layer] = max(0.0f, v->info().border_blend[layer]);
+				}				
+			}			
+			++iter;
+		} while (iter != stop);
 	}
 }
+
+#pragma mark -
+/************************************************************************************************************************
+ * TRANSITIONS
+ ************************************************************************************************************************/
 
 inline int MAJORITY_RULES(int a, int b, int c, int d)
 {
@@ -563,7 +626,7 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 
 
 
-
+#pragma mark -
 /***************************************************************************
  * ALGORITHMS TO FIND VALUABLE POINTS IN A DEM *****************************
  ***************************************************************************
@@ -691,57 +754,7 @@ foundone:
 	}
 }
 
-/*
- * AddRiverPoints
- *
- * Given a map with marked rivers, a master DEM and a derived DEM of
- * important points, this routine will copy a few of the river points
- * into the DEM using nearest neighbor (so all DEM points falll on the grid)
- * to help get valleys into the mesh. 
- *
- */
-int	AddRiverPoints(
-			const DEMGeo& 		orig, 		// The original DEM
-			DEMGeo& 			deriv, 		// A few river points are added to this one
-			const Pmwx& 		map)		// A vector map with the rivers
-{	
-	// BAS - we do not care about being slightly outside the DEM here...points are only
-	// processed via xy_nearsest and clamped onto the DEM, and we skip a lot of river points anyway.
-	int added = 0;
-	int k = 0;
-	for (Pmwx::Halfedge_const_iterator i = map.halfedges_begin(); i != map.halfedges_end(); ++i)
-	{
-		if (i->mDominant &&
-			i->mParams.find(he_IsRiver) != i->mParams.end() &&
-			!i->face()->IsWater() &&
-			!i->twin()->face()->IsWater())
-		{
-			int x, y;
-			float h;
-			h = orig.xy_nearest(i->source()->point().x, i->source()->point().y, x, y);
-			if (h != NO_DATA)
-			{
-				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0) 
-				{   
-					++added;
-					deriv(x,y) = h;
-				}
-			}
 
-			h = orig.xy_nearest(i->target()->point().x, i->target()->point().y, x, y);
-			if (h != NO_DATA)
-			{
-				if (deriv(x,y) == NO_DATA && ((k++)%RIVER_SKIP)==0) 
-				{   
-					++added;
-					deriv(x,y) = h;
-				}
-			}
-
-		}
-	}
-	return added;
-}
 
 /*
  * AddEdgePoints
@@ -780,224 +793,6 @@ void AddEdgePoints(
 //	deriv(deriv.mWidth-1,0				) = orig(orig.mWidth-1, 0			  );
 }
 
-/* Given a DEM, simply pick out any point that has a north/south/east/west
- * neighbor of more than a certain rise.  This is useful for always getting
- * topographically interesting points.  The gap should be big, otherwise
- * we just select every single hill, which is silly. */
-int	AddExtremeVerticalPoints(const DEMGeo& orig, DEMGeo& deriv, float gap)
-{
-	int x, y, e, e1, e2, e3, e4;
-	int	total = 0, added = 0;
-	for (y = 0; y < deriv.mHeight; ++y)
-	for (x = 0; x < deriv.mWidth; ++x)
-	{
-		e = orig(x,y);
-		if (e != NO_DATA)
-		{
-			e1 = orig.get(x-1,y);
-			e2 = orig.get(x+1,y);
-			e3 = orig.get(x,y-1);
-			e4 = orig.get(x,y+1);
-			if ((e1 != NO_DATA && fabs(e - e1) > gap) ||
-				(e2 != NO_DATA && fabs(e - e2) > gap) ||
-				(e3 != NO_DATA && fabs(e - e3) > gap) ||
-				(e4 != NO_DATA && fabs(e - e4) > gap))
-			{
-				if (deriv(x,y) == NO_DATA)
-					added++;
-				total++;
-				deriv(x,y) = e;
-			}
-		}
-	}
-	return added;	
-}
-
-/* This is the damned weirdest point-selection routine of all.  If there
- * is only one change in angle across a point (e.g. from flat to vertical),
- * it's on an "edge" of a cliff or mountain.  But if there are two changes 
- * in angle, it is on a "corner" of a cliff or mountain and is very important
- * for the mesh.  This routine tries to measure such a phenomenon.
- *
- * The code is weird because previously it averaged a change in angle over
- * potentially a significant range of points.  It turns out it works best when
- * we look at only one grid point to our left, right, top and bottom.  (This
- * is with 90 meter DEMs).  Then it turns out that if the product of the slope
- * to our top and right is different enough from our bottom-left, then we need
- * this point.
- *
- * WHY does this work?  Well, generally a change in just the X or Y axis 
- * means we've got a reasonably flat gradient.  (As the one-fold change rotates
- * around, the X and Y multiplication work out to be vaguely constant.  A dot
- * product is probably more appropriate).  BUT if we have a fold in two dimensions,
- * the X-angle change and Y-angle change both get huge and our multiplier crosses
- * a threshhold and we know we have the right point.
- *
- */
-int	AddAngularDifferencePoints(
-					const DEMGeo& 		orig, 	// Original mesh	
-					DEMGeo& 			deriv, 	// Interesting points are added here
-					double 				level)	// Heuristic cutoff level
-{
-	int total = 0, added = 0;
-	int x, y;
-	for (y = 0; y < deriv.mHeight; ++y)
-	for (x = 0; x < deriv.mWidth; ++x)
-	{
-#define SAMPLE_RANGE 2
-		float h = orig(x,y);
-		if (h != NO_DATA)
-		{
-			float	height_left[SAMPLE_RANGE];
-			float	height_right[SAMPLE_RANGE];
-			float	height_top[SAMPLE_RANGE];
-			float	height_bottom[SAMPLE_RANGE];
-			height_left[0] = height_right[0] = height_top[0] = height_bottom[0] = 0.0;
-			float ct_left = 0.0, ct_right = 0.0, ct_top = 0.0, ct_bottom = 0.0;
-			for (int range = 1; range < SAMPLE_RANGE; ++range)
-			{
-				float	x_dist = orig.x_dist_to_m(range);
-				float	y_dist = orig.y_dist_to_m(range);
-				height_left[range] = orig.get(x-range,y);
-				height_right[range] = orig.get(x+range,y);
-				height_bottom[range] = orig.get(x,y-range);
-				height_top[range] = orig.get(x,y+range);
-				
-				if (height_left[range] != NO_DATA)
-				{
-					height_left[range] = h - height_left[range];
-					height_left[range] /= x_dist;
-					height_left[0] += height_left[range];
-					ct_left += 1.0;
-				}
-				if (height_right[range] != NO_DATA)
-				{
-					height_right[range] = height_right[range] - h;
-					height_right[range] /= x_dist;
-					height_right[0] += height_right[range];
-					ct_right += 1.0;
-				}
-				if (height_bottom[range] != NO_DATA)
-				{
-					height_bottom[range] = h - height_bottom[range];
-					height_bottom[range] /= y_dist;
-					height_bottom[0] += height_bottom[range];
-					ct_bottom += 1.0;
-				}
-				if (height_top[range] != NO_DATA)
-				{
-					height_top[range] = height_top[range] - h;
-					height_top[range] /= y_dist;
-					height_top[0] += height_top[range];
-					ct_top += 1.0;
-				}
-			}
-			if (ct_left != 0.0) height_left[0] /= ct_left;
-			if (ct_right != 0.0) height_right[0] /= ct_right;
-			if (ct_bottom != 0.0) height_bottom[0] /= ct_bottom;
-			if (ct_top != 0.0) height_top[0] /= ct_top;
-
-// VALUES: 0.4 = dolomites, 0.05 = NY
-
-			// This is a measure of some kind of cumulative gradient change, more or less.  It works ok.
-			if (fabs(height_top[0] * height_right[0] - height_bottom[0] * height_left[0]) > level)
-
-			// This is an attempt to combine the change on both axes and prioritize a change in both.
-//			if ((fabs(height_top[0] - height_bottom[0]) * fabs(height_right[0] - height_left[0]) > 0.02))
-			{
-				if (deriv(x,y) == NO_DATA)
-					added++;
-				total++;
-				deriv(x,y) = orig(x,y);
-			}
-		}
-	}
-	return added;
-}
-
-/*
- * FowlerLittle
- *
- * http://www.geog.ubc.ca/courses/klink/gis.notes/ncgia/u39.html#SEC39.1.1
- *
- */
-void FowlerLittle(const DEMGeo& orig, DEMGeo& deriv)
-{
-	DEMGeo	passes(orig.mWidth, orig.mHeight);
-	DEMGeo	lowest(orig.mWidth, orig.mHeight);
-	DEMGeo	highest(orig.mWidth, orig.mHeight);
-	passes = NO_DATA;
-	int x, y;
-	for (y = 1; y < (orig.mHeight-1); ++y)
-	for (x = 1; x < (orig.mWidth-1); ++x)
-	{
-		float e = orig.get(x,y);
-		bool dif[8];
-		dif[0] = orig.get(x  ,y+1) > e;
-		dif[1] = orig.get(x+1,y+1) > e;
-		dif[2] = orig.get(x+1,y  ) > e;
-		dif[3] = orig.get(x+1,y-1) > e;
-		dif[4] = orig.get(x  ,y-1) > e;
-		dif[5] = orig.get(x-1,y-1) > e;
-		dif[6] = orig.get(x-1,y  ) > e;
-		dif[7] = orig.get(x-1,y+1) > e;
-		
-		int cycles = 0;
-		for (int n = 0; n < 8; ++n)
-		if (dif[n] != dif[(n+7)%8])
-			++cycles;
-		
-		if (cycles == 0)
-			deriv(x,y) = orig(x,y);
-		if (cycles > 2)
-			passes(x,y) = 1.0;
-	}
-	for (y = 1; y < (orig.mHeight); ++y)
-	for (x = 1; x < (orig.mWidth); ++x)
-	{
-		float e[4];
-		e[0] = orig.get(x-1,y-1);
-		e[1] = orig.get(x  ,y-1);
-		e[2] = orig.get(x-1,y  );
-		e[3] = orig.get(x  ,y  );
-
-		if (e[0] < e[1] &&
-			e[0] < e[2] &&
-			e[0] < e[3])	lowest(x-1,y-1) = 1;
-		if (e[0] > e[1] &&
-			e[0] > e[2] &&
-			e[0] > e[3])	highest(x-1,y-1) = 1;
-
-		if (e[1] < e[0] &&
-			e[1] < e[2] &&
-			e[1] < e[3])	lowest(x  ,y-1) = 1;
-		if (e[1] > e[0] &&
-			e[1] > e[2] &&
-			e[1] > e[3])	highest(x  ,y-1) = 1;
-
-		if (e[2] < e[0] &&
-			e[2] < e[1] &&
-			e[2] < e[3])	lowest(x-1,y  ) = 1;
-		if (e[2] > e[0] &&
-			e[2] > e[1] &&
-			e[2] > e[3])	highest(x-1,y  ) = 1;
-
-		if (e[3] < e[0] &&
-			e[3] < e[1] &&
-			e[3] < e[2])	lowest(x  ,y  ) = 1;
-		if (e[3] > e[0] &&
-			e[3] > e[1] &&
-			e[3] > e[2])	highest(x  ,y  ) = 1;		
-	}
-
-	for (y = 0; y < (orig.mHeight); ++y)
-	for (x = 0; x < (orig.mWidth); ++x)
-	{
-		if (passes(x,y) != 0.0)
-		if (lowest(x,y) == 0.0 || highest(x,y) == 0.0)
-			deriv(x,y) = orig(x,y);
-	}	
-}
 
 static GISHalfedge * ExtendLanduseEdge(GISHalfedge * start)
 {
@@ -1189,59 +984,6 @@ void	AddWaterMeshPoints(
 	}
 }
 
-/* 
- * FindMinMaxPointsOnMesh
- *
- * This routine selects points based on local minima and maxima.  We use a sliding window (sliding
- * half a window at a time) and we keep just the minimum and maximum.  We only take these if the
- * total rise over the area is more than 5 meters.  Also, when our window is a full 30 DEM points
- * (a large window) we will allow the edges of the window to be treated as local minimums and maximums.
- * This means that if the entire window is sloped evenly, we'll take the edges and add them.  This
- * means that even on a flat hill we get points every now and then, which is desirable.
- *
- */
-int	FindMinMaxPointsOnMesh(
-			const DEMGeo& 		orig, 		// Original DEM
-			DEMGeo& 			deriv, 		// min max points are added into this
-			bool 				hires)		// True if we are hires
-{
-	int x, y, added = 0, total = 0;
-	vector<DEMGeo>	mincache, maxcache;
-	DEMGeo_BuildMinMax(orig, mincache, maxcache, 4);
-			
-	for (int window = (hires ? 10 : 30); window < 40; window += 10)
-	{
-		for (y = 0; y < (deriv.mHeight - window); y += (window / 2))
-		for (x = 0; x < (deriv.mWidth - window); x += (window / 2))
-		{
-			int minx, miny, maxx, maxy;
-			float minh, maxh;
-			float rise = DEMGeo_LocalMinMaxWithCache(orig, mincache, maxcache, x,y,x+window,y+window, minx, miny, minh, maxx, maxy, maxh,
-				window >= 30.0);
-			if (rise != NO_DATA)
-			{
-				float dist = orig.y_dist_to_m(window);
-//				if ((rise / dist) > kRatioTable[window])
-				if (rise > 5.0)
-				{
-					if (minh != NO_DATA)
-					{
-						++total;
-						if (deriv(minx, miny) == NO_DATA) ++added;
-						deriv(minx, miny) = minh;
-					}
-					if (maxh != NO_DATA)
-					{
-						deriv(maxx, maxy) = maxh;
-						++total;
-						if (deriv(maxx, maxy) == NO_DATA) ++added;
-					}
-				}
-			}
-		}
-	}	
-	return added;
-}
 
 void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
 {
@@ -1340,99 +1082,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
 	}
 }
 
-/*
- * BuildCutLinesInDEM
- *
- * This routine builds horizontal and vertical lines in a DEM via constraints.
- * Useful for cutting over on a rectangularly mapped texture.
- *
- * The DEM points that are used are removed from the mesh to keep them from getting hit multiple times.
- *
- */
-void	BuildCutLinesInDEM(
-				DEMGeo&					ioDem,
-				CDT&					outMesh,
-				int						segments)	// Number of cuts per dim, 1 means no action taken!
-{
-	CDT::Face_handle	local;
 
-	int x_interval = (ioDem.mWidth-1) / segments;
-	int y_interval = (ioDem.mHeight-1) / segments;
-	vector<CDT::Vertex_handle>	junctions;
-	junctions.resize((segments+1)*(segments+1));
-	
-	// First, there will be some crossing points - add every one of them to the triangulation.
-	int x, y, dx, dy;
-	for (y = 0; y < ioDem.mHeight; y += y_interval)
-	for (x = 0; x < ioDem.mWidth; x += x_interval)
-	{
-		float h = ioDem(x,y);
-		if (h != NO_DATA)
-		{			
-//			gMeshPoints.push_back(Point_2(ioDem.x_to_lon(x),ioDem.y_to_lat(y)));
-#if !NO_TRIANGULATE
-			CDT::Vertex_handle vv = outMesh.insert(CDT::Point(ioDem.x_to_lon(x),ioDem.y_to_lat(y)), local);
-			vv->info().height = h;
-			local = vv->face();
-#endif
-			junctions[(x / x_interval) + (y / y_interval) * (segments+1)] = vv;
-		} else
-			AssertPrintf("Needed DEM point AWOL - %d,%d.\n",x,y);
-	}
-	
-	// Next, add the vertical segments.  Run through each vertical stripe except the edges,
-	// for every horizontal one except the top.  This is each vertical band we must add.
-	for (y = y_interval; y < ioDem.mHeight; y += y_interval)
-	for (x = x_interval; x < (ioDem.mWidth-x_interval); x += x_interval)
-	{
-		CDT::Vertex_handle	v1, v2;
-		v1 = junctions[(x / x_interval) + ((y-y_interval) / y_interval) * (segments+1)];
-		for (dy = y - y_interval + 1; dy < y; ++dy)
-		{
-			float h = ioDem(x,dy);
-			if (h != NO_DATA)
-			{
-//				gMeshPoints.push_back(Point_2(ioDem.x_to_lon(x),ioDem.y_to_lat(dy)));
-	#if !NO_TRIANGULATE
-				v2 = outMesh.insert(CDT::Point(ioDem.x_to_lon(x),ioDem.y_to_lat(dy)), local);
-				v2->info().height = h;
-				local = v2->face();
-				outMesh.insert_constraint(v1, v2);
-				v2 = v1;
-	#endif				
-			} 			
-		}
-		v2 = junctions[(x / x_interval) + (y / y_interval) * (segments+1)];
-		outMesh.insert_constraint(v1, v2);
-		
-	}
-	
-	// Same thing but horizontal-like.
-	for (y = y_interval; y < (ioDem.mHeight-y_interval); y += y_interval)
-	for (x = x_interval; x < ioDem.mWidth; x += x_interval)
-	{
-		CDT::Vertex_handle	v1, v2;
-		v1 = junctions[((x-x_interval) / x_interval) + (y / y_interval) * (segments+1)];
-		for (dx = x - x_interval + 1; dx < x; ++dx)
-		{
-			float h = ioDem(dx,y);
-			if (h != NO_DATA)
-			{				
-//				gMeshPoints.push_back(Point_2(ioDem.x_to_lon(dx),ioDem.y_to_lat(y)));
-	#if !NO_TRIANGULATE
-				v2 = outMesh.insert(CDT::Point(ioDem.x_to_lon(dx),ioDem.y_to_lat(y)), local);
-				v2->info().height = h;
-				local = v2->face();
-				outMesh.insert_constraint(v1, v2);
-				v2 = v1;
-	#endif				
-			} 			
-		}		
-		v2 = junctions[(x / x_interval) + (y / y_interval) * (segments+1)];
-		outMesh.insert_constraint(v1, v2);		
-	}
-}
-				
 
 /*
  * AddBulkPointsToMesh
@@ -1459,7 +1109,6 @@ void	AddBulkPointsToMesh(
 			if (h != NO_DATA)
 			{			
 	//			gMeshPoints.push_back(Point_2(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y)));
-	#if !NO_TRIANGULATE
 				CDT::Point	p(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y));
 				CDT::Locate_type tp;
 				int vnum;
@@ -1471,7 +1120,6 @@ void	AddBulkPointsToMesh(
 					local = vv->face();	
 					++total;
 				}
-	#endif			
 				ioDEM(x,y) = NO_DATA;
 			}
 		}
@@ -1480,6 +1128,43 @@ void	AddBulkPointsToMesh(
 //	printf("Inserted %d points.\n", total);
 	if (inFunc) inFunc(1, 3, "Building Triangle Mesh", 1.0);
 }
+
+/*
+ * LimitTriSize
+ *
+ * 
+ *
+ *
+ */
+void	LimitTriSize(DEMGeo& land, DEMGeo& deriv, float tri_size, CDT& outMesh)
+{
+	int interval_x = tri_size / deriv.x_dist_to_m(1);
+	int interval_y = tri_size / deriv.y_dist_to_m(1);
+	double max_sz = tri_size * MTR_TO_NM * NM_TO_DEG_LAT;
+
+	CDT::Face_handle loc = CDT::Face_handle();
+	
+	for (int y = 0; y < deriv.mHeight;y += interval_y)
+	for (int x = 0; x < deriv.mWidth; x += interval_x)
+	{
+		float h = land.get(x,y);
+		if (h != NO_DATA)
+		{
+			CDT::Point p(land.x_to_lon(x), land.y_to_lat(y));
+//			int li;
+//			CDT::Locate_type lt;
+//			loc = outMesh.locate(p, lt, li, loc);
+//			DebugAssert(lt == CDT::VERTEX || lt == CDT::EDGE || lt == CDT::FACE);
+//			
+//			double max_y = max(max(loc->vertex(
+
+			CDT::Vertex_handle v = outMesh.insert(p, loc);
+			v->info().height = h;
+			loc = v->face();			
+		}		
+	}
+}
+
 
 /*
  * CalculateMeshNormals
@@ -1541,13 +1226,7 @@ void CalculateMeshNormals(CDT& ioMesh)
 void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc prog)
 {
 	TIMER(Total)
-//	if (prog && prog(0, 3, "Differencing", 0.0)) return;		
-
-//	Pmwx	aMap(inMap);
-//	ReduceToWaterBodies(aMap);
 	outMesh.clear();
-//	gMeshPoints.clear();
-//	gMeshLines.clear();
 	
 	int		x, y;
 	DEMGeo&	orig(inDEMs[dem_Elevation]);
@@ -1561,79 +1240,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	deriv.copy_geo_from(orig);
 	deriv = NO_DATA;
 
+	/*********************************************************************************************************************
+	 * PRECALCULATION OF MASKS
+	 *********************************************************************************************************************/
+
 	DEMGeo	outline(deriv);
 	DEMGeo	water(deriv);
 	DEMGeo	land(orig);
 	
-	int basePoints;
-	int angularPoints;
-	
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.0);
-
-/*
-	if (!gMeshPrefs.fowler_little)
-	{
-		TIMER(minmax)
-		basePoints = FindMinMaxPointsOnMesh(orig, deriv, true);
-	}
-
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.1);
-	
-	if (!gMeshPrefs.fowler_little)
-	{
-		TIMER(angdif)
-		DEMGeo	save(deriv);
-		double ramp = 0.05;
-		do {
-			angularPoints = AddAngularDifferencePoints(orig, deriv, ramp);
-			printf("Added angular points: %d (ramp: %lf)\n", angularPoints, ramp);
-			if (angularPoints > gMeshPrefs.max_mountain_points)
-			{
-				deriv = save;
-				ramp *= 2.0;
-			}
-		} while (angularPoints > gMeshPrefs.max_mountain_points);
-	}
-
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.15);
-	
-	if (!gMeshPrefs.fowler_little)
-	{
-		TIMER(extreme_v)
-		AddExtremeVerticalPoints(orig, deriv, gMeshPrefs.cliff_height);
-	}
-	
-	if (prog) prog(0, 1, "Calculating Triangle Mesh", 0.2);	
-	
-	if (!gMeshPrefs.fowler_little)
-	{
-		TIMER(River)
-		AddRiverPoints(orig, deriv, inMap);
-	}
-
-	if (gMeshPrefs.fowler_little)
-	{
-		TIMER(fowler_little)
-		FowlerLittle(orig, deriv);
-	}	
-	
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.2);
-
-	{
-		TIMER(linear_remove)
-		deriv.remove_linear(2, gMeshPrefs.max_error);
-	}
-*/
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.25);
-
-	// MAKE SURE the corners are in the DEM!  
-//	if (deriv.get(0				,0				) == NO_DATA)		deriv(0				,0				) = orig.get(0			   ,0			   );
-//	if (deriv.get(0				,deriv.mHeight-1) == NO_DATA)		deriv(0				,deriv.mHeight-1) = orig.get(0			   ,deriv.mHeight-1);
-//	if (deriv.get(deriv.mWidth-1,0				) == NO_DATA)		deriv(deriv.mWidth-1,0				) = orig.get(deriv.mWidth-1,0			   );
-//	if (deriv.get(deriv.mWidth-1,deriv.mHeight-1) == NO_DATA)		deriv(deriv.mWidth-1,deriv.mHeight-1) = orig.get(deriv.mWidth-1,deriv.mHeight-1);
-		
-
-
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.3);
 
 	{
@@ -1674,8 +1288,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 
 	vector<LanduseConstraint_t>	coastlines_markers;
 
-#if !NO_TRIANGULATE			
-	
 	{
 		TIMER(edges);
 		
@@ -1685,56 +1297,91 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		sprintf(fname_bot ,"%+03d%+04d.border.txt", (int) (deriv.mSouth - 1), (int) (deriv.mWest));
 		
 		mesh_match_t bot_junk, left_junk;
-		bool	has_left = load_match_file(fname_left, left_junk, gMatchLeft);
-		bool	has_bot  = load_match_file(fname_bot , gMatchBottom, bot_junk);
+		bool	has_left = gMeshPrefs.border_match ? load_match_file(fname_left, left_junk, gMatchLeft) : false;
+		bool	has_bot  = gMeshPrefs.border_match ? load_match_file(fname_bot , gMatchBottom, bot_junk) : false;
 		
 		AddEdgePoints(orig, deriv, 20, 1, has_left, has_bot);
 	}
 
-	/// Moved AddWaterMeshPoints down here - so we can correctly desliver the edges of the mesh!
-	{
-		TIMER(Triangulate_Coastlines)
-		AddWaterMeshPoints(inMap, orig, water, deriv, outMesh, coastlines_markers, true);
-	}
-	
-	if (prog) prog(0, 3, "Calculating Mesh Points", 0.8);
-
-
-#endif	
-
+	/*********************************************************************************************************************
+	 * TRIANGULATION
+	 *********************************************************************************************************************/
+	 
+	CDT::Vertex_handle	corner;
+	outMesh.insert(CDT::Point(orig.mWest, orig.mSouth))->info().height = orig.get(0			,0			   );
+	outMesh.insert(CDT::Point(orig.mWest, orig.mNorth))->info().height = orig.get(0			,orig.mHeight-1);
+	outMesh.insert(CDT::Point(orig.mEast, orig.mSouth))->info().height = orig.get(orig.mWidth-1,0			   );
+	outMesh.insert(CDT::Point(orig.mEast, orig.mNorth))->info().height = orig.get(orig.mWidth-1,orig.mHeight-1);
+	 
 	{
 		if (!gMatchLeft.vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
+		{
+			land(0, y) = NO_DATA;
 			deriv(0, y) = NO_DATA;
+		}
 		if (!gMatchBottom.vertices.empty())
 		for (x = 0; x < deriv.mWidth; ++x)
+		{
+			land(x, 0) = NO_DATA;
 			deriv(x, 0) = NO_DATA;
+		}
 	}
 
-	if (prog) prog(0, 3, "Calculating Mesh Points", 1.0);
-		
+	if (prog) prog(0, 3, "Calculating Mesh Points", 1.0);		
 	{
 		TIMER(Triangulate_Elevation)
 		AddBulkPointsToMesh(deriv, outMesh, prog);
 	}
+	
 	{
 		TIMER(Greedy_Mesh)
-		GreedyMeshBuild(outMesh, land, 5.0, gMeshPrefs.max_mountain_points, prog);
+		GreedyMeshBuild(outMesh, land, deriv, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
 	}	
+
+	#if !DEV
+	Doc this!
+	#endif
+	{
+		TIMER(Greedy_Mesh_LimitSize)
+		GreedyMeshBuild(outMesh, land, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
+	}
+
+
+	/// Moved AddWaterMeshPoints down here - so we can correctly desliver the edges of the mesh!
+	{
+//		TODO HERE WHAT WE ADD VIA BULK NEEDS TO MAKE IT INTO WATER MESH
 	
-	if (!gMatchLeft.vertices.empty())
-		match_border(outMesh, gMatchLeft, true);
-	if (!gMatchBottom.vertices.empty())
-		match_border(outMesh, gMatchBottom, false);
+		TIMER(Triangulate_Coastlines)
+		AddWaterMeshPoints(inMap, orig, water, deriv, outMesh, coastlines_markers, true);
+	}
+	
+	{
+		// This HAS to go after water.  Why?  Well, it can absorb existing points but the other routines dumbly add.
+		// So we MUST build all forced points (water) first.
+		if (!gMatchLeft.vertices.empty())
+			match_border(outMesh, gMatchLeft, true);
+		if (!gMatchBottom.vertices.empty())
+			match_border(outMesh, gMatchBottom, false);
+	}
+	
+	if (prog) prog(0, 3, "Calculating Mesh Points", 0.8);
+		
+	/*********************************************************************************************************************
+	 * LAND USE CALC (A LITTLE BIT)
+	 *********************************************************************************************************************/
+	
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.2);
-
 	{
 		SetWaterBodiesToWet(outMesh, coastlines_markers);	
 	}
 	
-	if (prog) prog(2, 3, "Calculating Wet Areas", 0.5);
-	
+	/*********************************************************************************************************************
+	 * CLEANUP - CALC MESH NORMALS
+	 *********************************************************************************************************************/
+
+	if (prog) prog(2, 3, "Calculating Wet Areas", 0.5);	
 	CalculateMeshNormals(outMesh);
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 1.0);
@@ -1930,22 +1577,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			}
 			
 		}
-#if 0
-	OLD LOW RES MESH USE CASE		
-		{
-			// Lores - assign a texture for orthophotos.
-			double	center_x = (tri->vertex(0)->point().x() + tri->vertex(1)->point().x() + tri->vertex(2)->point().x()) / 3.0;
-			double	center_y = (tri->vertex(0)->point().y() + tri->vertex(1)->point().y() + tri->vertex(2)->point().y()) / 3.0;
-			center_x -= landuse.mWest;
-			center_y -= landuse.mSouth;
-			center_x /= (landuse.mEast - landuse.mWest);
-			center_y /= (landuse.mNorth - landuse.mSouth);
-			center_x *= (double) FAR_TEX_DIVISIONS;
-			center_y *= (double) FAR_TEX_DIVISIONS;
-			tri->info().terrain_general = tri->info().terrain_specific = kFarTextures[((int) center_x) + ((int) center_y) * FAR_TEX_DIVISIONS];
-			tri->info().flag = 0;
-		}
-#endif		
 	}
 
 
@@ -1953,14 +1584,19 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	 * DEAL WITH INTRUSION FROM OUR MASTER SIDE
 	 ***********************************************************************************************/
 
-	// This must be POST optmize - we can go OUT OF ORDER on the borders because must have left-master/right-slave.
-	// So the optmizer will NUKE this stuff. :-(
+	// BEN SEZ - IS THIS COMMENT TRUE?
+	// ??? This must be POST optmize - we can go OUT OF ORDER on the borders because must have left-master/right-slave.
+	// ??? So the optmizer will NUKE this stuff. :-(
 
+	// First build a correlation between our border info and some real tris in the mesh.
 	if (!gMatchLeft.vertices.empty())	border_find_edge_tris(ioMesh, gMatchLeft);
 	if (!gMatchBottom.vertices.empty())	border_find_edge_tris(ioMesh, gMatchBottom);
 	int n;
 	int lowest;
-	
+
+#if !NO_BORDER_SHARING	
+
+	set<CDT::Vertex_handle>	vertices;
 	// Now we have to "rebase" our edges.  Basically it is possible that we are getting intruded from the left
 	// by a lower priority texture.  If we just use borders, that low prio tex will end up UNDER our base, and we'll
 	// never see it.  So we need to take the tex on our right side and reduce it.
@@ -1974,10 +1610,27 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			if (LowerPriorityNaturalTerrain(*bl, lowest))
 				lowest = *bl;
 		}
-		
+
 		if (lowest != gMatchLeft.edges[n].buddy->info().terrain_specific)
-			RebaseTriangle(ioMesh, gMatchLeft.edges[n].buddy, lowest, gMatchLeft.vertices[n].buddy, gMatchLeft.vertices[n+1].buddy);
+			RebaseTriangle(ioMesh, gMatchLeft.edges[n].buddy, lowest, gMatchLeft.vertices[n].buddy, gMatchLeft.vertices[n+1].buddy, vertices);
 	}
+
+/*	
+	for (n = 0; n < gMatchLeft.vertices.size(); ++n)
+	{
+		CDT::Face_circulator circ, stop;
+		circ = stop = ioMesh.incident_faces(gMatchLeft.vertices[n].buddy);
+		do {
+			if (!ioMesh.is_infinite(circ))
+			if (!is_border(circ))
+			{
+				lowest = circ->info().terrain_specific;
+				
+			}
+			++circ;
+		} while (circ != stop);
+	}
+*/	
 
 	for (n = 0; n < gMatchBottom.edges.size(); ++n)
 	{
@@ -1991,8 +1644,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		}
 		
 		if (lowest != gMatchBottom.edges[n].buddy->info().terrain_specific)
-			RebaseTriangle(ioMesh, gMatchBottom.edges[n].buddy, lowest, gMatchBottom.vertices[n].buddy, gMatchBottom.vertices[n+1].buddy);
+			RebaseTriangle(ioMesh, gMatchBottom.edges[n].buddy, lowest, gMatchBottom.vertices[n].buddy, gMatchBottom.vertices[n+1].buddy, vertices);
 	}
+#endif	
+	
 	
 
 	/***********************************************************************************************
@@ -2058,10 +1713,19 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 						double	odist2 = v2->info().border_blend[layer];
 						double	odist3 = v3->info().border_blend[layer];
 						
-						bool has_0 = false, has_1 = false, has_2 = false;
+						// Border propagation - we only want to set the levels of this border if we are are adjacent to ourselves..this way we don't set the far-side distance
+						// unless there will be another border tri to continue with.
+
+						bool has_0 = false, has_1 = false, has_2 = false;						
 						if (border->neighbor(0)->info().terrain_border.count(layer) || border->neighbor(0)->info().terrain_specific == layer) { has_1 = true; has_2 = true; }
 						if (border->neighbor(1)->info().terrain_border.count(layer) || border->neighbor(1)->info().terrain_specific == layer) { has_2 = true; has_0 = true; }
 						if (border->neighbor(2)->info().terrain_border.count(layer) || border->neighbor(2)->info().terrain_specific == layer) { has_0 = true; has_1 = true; }
+							
+						// BUT...if we're at the edge of the file, go across anyway, what the hell...
+						// Ben sez: no- try to limit cross-border madness or we get projection mismatches.
+//						if (!has_0 && IsEdgeVertex(ioMesh, v1))	has_0 = true;
+//						if (!has_1 && IsEdgeVertex(ioMesh, v2))	has_1 = true;
+//						if (!has_2 && IsEdgeVertex(ioMesh, v3))	has_2 = true;
 						
 						if (!has_0) dist1 = 0.0;
 						if (!has_1) dist2 = 0.0;
@@ -2103,7 +1767,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	/***********************************************************************************************
 	 * DEAL WITH INTRUSION FROM OUR MASTER SIDE
 	 ***********************************************************************************************/
-
+#if !NO_BORDER_SHARING
+	// First - force border blend of zero at the slaved edge, no matter how ridiculous.  We can't possibly propagate
+	// this border into a previously rendered file, so a hard stop is better than a cutoff.
 	for (n = 0; n < gMatchLeft.vertices.size(); ++n)
 	for (hash_map<int, float>::iterator blev = gMatchLeft.vertices[n].buddy->info().border_blend.begin(); blev != gMatchLeft.vertices[n].buddy->info().border_blend.end(); ++blev)
 		blev->second = 0.0;
@@ -2112,16 +1778,23 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for (hash_map<int, float>::iterator blev = gMatchBottom.vertices[n].buddy->info().border_blend.begin(); blev != gMatchBottom.vertices[n].buddy->info().border_blend.end(); ++blev)
 		blev->second = 0.0;
 
+	// Now we are going to go in and add borders on our slave edges from junk coming in on the left.  We have ALREADY
+	// "rebased" the terrain.  This means that the border on the slave side is guaranteed to be lower priority than the border
+	// on the master, so that we can make this border-extension safely.  For the base and borders on the master we just add
+	// a border on the slave - the edge blend levels are the master's blend and the interior poiont gets a blend of 0 or whatever
+	// was already there.
+	
 	for (n = 0; n < gMatchLeft.edges.size(); ++n)
 	if (gMatchLeft.edges[n].buddy->info().terrain_specific != terrain_Water)
 	{
 		// Handle the base terrain
 		if (gMatchLeft.edges[n].buddy->info().terrain_specific != gMatchLeft.edges[n].base)
 		{
-			gMatchLeft.edges[n].buddy->info().terrain_border.insert(gMatchLeft.edges[n].base);
 			AddZeroMixIfNeeded(gMatchLeft.edges[n].buddy, gMatchLeft.edges[n].base);
 			gMatchLeft.vertices[n].buddy->info().border_blend[gMatchLeft.edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchLeft.vertices[n].buddy, gMatchLeft.edges[n].base);
 			gMatchLeft.vertices[n+1].buddy->info().border_blend[gMatchLeft.edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchLeft.vertices[n+1].buddy, gMatchLeft.edges[n].base);
 		}
 		
 		// Handle any overlay layers...
@@ -2129,10 +1802,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		{
 			if (gMatchLeft.edges[n].buddy->info().terrain_specific != *bl)
 			{
-				gMatchLeft.edges[n].buddy->info().terrain_border.insert(*bl);
 				AddZeroMixIfNeeded(gMatchLeft.edges[n].buddy, *bl);
 				gMatchLeft.vertices[n].buddy->info().border_blend[*bl] = gMatchLeft.vertices[n].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchLeft.vertices[n].buddy, *bl);				
 				gMatchLeft.vertices[n+1].buddy->info().border_blend[*bl] = gMatchLeft.vertices[n+1].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchLeft.vertices[n+1].buddy, *bl);				
 			}
 		}
 	}
@@ -2143,10 +1817,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		// Handle the base terrain
 		if (gMatchBottom.edges[n].buddy->info().terrain_specific != gMatchBottom.edges[n].base)
 		{
-			gMatchBottom.edges[n].buddy->info().terrain_border.insert(gMatchBottom.edges[n].base);
 			AddZeroMixIfNeeded(gMatchBottom.edges[n].buddy, gMatchBottom.edges[n].base);
 			gMatchBottom.vertices[n].buddy->info().border_blend[gMatchBottom.edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchBottom.vertices[n].buddy, gMatchBottom.edges[n].base);							
 			gMatchBottom.vertices[n+1].buddy->info().border_blend[gMatchBottom.edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchBottom.vertices[n+1].buddy, gMatchBottom.edges[n].base);							
 		}
 		
 		// Handle any overlay layers...
@@ -2154,20 +1829,22 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		{
 			if (gMatchBottom.edges[n].buddy->info().terrain_specific != *bl)
 			{
-				gMatchBottom.edges[n].buddy->info().terrain_border.insert(*bl);
 				AddZeroMixIfNeeded(gMatchBottom.edges[n].buddy, *bl);
 				gMatchBottom.vertices[n].buddy->info().border_blend[*bl] = gMatchBottom.vertices[n].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchBottom.vertices[n].buddy, *bl);							
 				gMatchBottom.vertices[n+1].buddy->info().border_blend[*bl] = gMatchBottom.vertices[n+1].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchBottom.vertices[n+1].buddy, *bl);							
 			}
 		}
 	
 	}
-
+#endif
 	/***********************************************************************************************
 	 * OPTIMIZE BORDERS!
 	 ***********************************************************************************************/
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.75);
 
+	if (gMeshPrefs.optimize_borders)
 	{
 		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
 		if (tri->info().terrain_general != terrain_Water)
@@ -2291,8 +1968,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				CGAL::to_double(f->vertex(i)->info().height));
 			fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
+			{
 				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
-
+			}
 		} while (f->vertex(i)->point() != stop);
 
 		fprintf(border, "END\n");
@@ -2301,8 +1979,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	}
 
 	if (inProg) inProg(0, 1, "Assigning Landuses", 1.0);
-	
-	
 	
 }
 		
