@@ -21,13 +21,9 @@ static	int				sTest2 = 0;
 
 WED_Prefs	gWedPrefs = { 0 };
 
-#define	TAG_MAX_MOUNTAINS 1001
-#define TAG_CLIFF_HEIGHT  1002
-#define TAG_FOWLER_LITTLE 1003
 #define TAG_COMMAND_PREFS 1004
 
 static void RestoreDefaultProcessing(XPWidgetID);
-static void DoFowlerLittle(XPWidgetID);
 void	WED_ShowPrefsDialog(void)
 {
 	if (sPrefsDialog == NULL)
@@ -58,12 +54,12 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CAPTION, "Sun Declination", XP_EDIT_FLOAT, 6, 6, 0, &sShadingDecl, XP_END,
 						XP_END,
 						XP_COLUMN,
-							XP_ROW, XP_CAPTION, "Max Mountain Points:", XP_EDIT_INT, 15, 6, &gMeshPrefs.max_mountain_points, XP_TAG, TAG_MAX_MOUNTAINS, XP_END,
-							XP_ROW, XP_CAPTION, "Cliff Height:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.cliff_height, XP_TAG, TAG_CLIFF_HEIGHT, XP_END,
+							XP_ROW, XP_CAPTION, "Max Points:", XP_EDIT_INT, 15, 6, &gMeshPrefs.max_points, XP_END,
 							XP_ROW, XP_CAPTION, "Max Error:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.max_error, XP_END,
-							XP_ROW, XP_CHECKBOX, "Use Fowler-Little", &gMeshPrefs.fowler_little, XP_NOTIFY, DoFowlerLittle, XP_TAG, TAG_FOWLER_LITTLE, XP_END,
+							XP_ROW, XP_CAPTION, "Max Tri Size m:", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.max_tri_size_m, XP_END,
 							XP_ROW, XP_CAPTION, "Change Tex Length", XP_EDIT_FLOAT, 15, 6, 1, &gMeshPrefs.rep_switch_m, XP_END,
 							XP_ROW, XP_CHECKBOX, "Match Borders", &gMeshPrefs.border_match, XP_END,
+							XP_ROW, XP_CHECKBOX, "Optimize Transition Tris", &gMeshPrefs.optimize_borders, XP_END,
 						XP_END,
 						XP_COLUMN,
 							XP_ROW, XP_CAPTION, "Local Area Search(1-8):", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
@@ -81,16 +77,6 @@ void	WED_ShowPrefsDialog(void)
 		XPSendMessageToWidget(sPrefsDialog, xpMsg_DataToDialog, xpMode_Recursive, 0, 0);
 		XPShowWidget(sPrefsDialog);
 	}
-	DoFowlerLittle(sPrefsDialog);
-}
-
-void DoFowlerLittle(XPWidgetID)
-{
-	bool old = gMeshPrefs.fowler_little;
-	XPDataFromItem(sPrefsDialog, TAG_FOWLER_LITTLE);
-	XPEnableByTag(sPrefsDialog, TAG_MAX_MOUNTAINS, !gMeshPrefs.fowler_little);
-	XPEnableByTag(sPrefsDialog, TAG_CLIFF_HEIGHT, !gMeshPrefs.fowler_little);
-	gMeshPrefs.fowler_little = old;
 }
 
 #pragma mark -

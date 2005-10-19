@@ -1497,6 +1497,16 @@ char * WED_MapView::MonitorCaption(void)
 			n += sprintf(buf+n, "Tri:%s/%s ", FetchTokenString(tg),FetchTokenString(ts));
 		}
 
+		int slope = acos(recent->info().normal[2]) * RAD_TO_DEG;
+		float slope_head_f = recent->info().normal[1];
+
+		float flat_len = sqrt(recent->info().normal[1] * recent->info().normal[1] + recent->info().normal[0] * recent->info().normal[0]);
+		if (flat_len != 0.0)
+			slope_head_f /= flat_len;
+		int slope_head = -asin(slope_head_f) * RAD_TO_DEG + 90.0;		
+		
+		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
+
 #if DEBUG_PRINT_NORMAL
 //		PRINT NORMAL
 		n += sprintf(buf+n, "Normal: %f ", recent->info().normal[2]);
@@ -1506,10 +1516,11 @@ char * WED_MapView::MonitorCaption(void)
 //		PRINT BLENDING LAYERS
 		for (set<int>::iterator border = recent->info().terrain_border.begin(); border != recent->info().terrain_border.end(); ++ border)
 		{
-			n += sprintf(buf+n, "%s (%f,%f,%f) ", FetchTokenString(*border),
-						recent->vertex(0)->info().border_blend[*border],
-						recent->vertex(1)->info().border_blend[*border],
-						recent->vertex(2)->info().border_blend[*border]);
+			n += sprintf(buf+n, "%s ", FetchTokenString(*border));
+//			n += sprintf(buf+n, "%s (%f,%f,%f) ", FetchTokenString(*border),
+//						recent->vertex(0)->info().border_blend[*border],
+//						recent->vertex(1)->info().border_blend[*border],
+//						recent->vertex(2)->info().border_blend[*border]);
 		}
 #endif		
 	}		
