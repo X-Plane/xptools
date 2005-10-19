@@ -95,10 +95,10 @@ bool		PolyRasterizer::GetRange(int& x1, int& x2)
 		double	x1f = masters[actives[current_active_index++]].cur_x;
 		double	x2f = masters[actives[current_active_index++]].cur_x;
 
-		x1 = x1f;
-		if (x1 != x1f) ++x1;
-		x2 = x2f;
-		if (x2 != x2f) ++x2;
+		// BEN SEZ: oops - we need to use ceil here, not count on the
+		// murky ability of float->int casting.
+		x1 = ceil(x1f);
+		x2 = floor(x2f) + 1;
 		if (x1 < x2) 
 			return true;
 	}
