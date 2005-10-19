@@ -105,7 +105,7 @@ inline float ScanlineMaxError(
 					
 
 // Find err of one tri
-void	CalcOneTriError(CDT::Face_handle face)
+void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 {
 	if (sCurrentMesh->is_infinite(face))
 	{
@@ -121,6 +121,23 @@ void	CalcOneTriError(CDT::Face_handle face)
 			   sCurrentDEM->lat_to_y(face->vertex(1)->point().y()));
 	Point2	p2(sCurrentDEM->lon_to_x(face->vertex(2)->point().x()),
 			   sCurrentDEM->lat_to_y(face->vertex(2)->point().y()));
+			   
+	if (size_lim != 0.0)
+	{
+		double xmin = min(min(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
+		double xmax = max(max(face->vertex(0)->point().x(),face->vertex(1)->point().x()),face->vertex(2)->point().x());
+		double ymin = min(min(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
+		double ymax = max(max(face->vertex(0)->point().y(),face->vertex(1)->point().y()),face->vertex(2)->point().y());
+		
+		double xs = xmax - xmin;
+		double ys = ymax - ymin;
+		
+		if (xs < size_lim && ys < size_lim)
+		{
+			face->info().insert_err = 0.0;
+			return;			
+		}
+	}
 	
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(0)->point().x(),face->vertex(0)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(1)->point().x(),face->vertex(1)->point().y()), Point3(1,0,0)));
@@ -161,6 +178,11 @@ void	CalcOneTriError(CDT::Face_handle face)
 
 	double partial = p0yc-p0.y;
 	x2 += dx2 * partial;
+
+	// SPECIAL CASE: if p1 and p2 are horizontal, there is no section 2 of the tri - it has a flat top.  Do NOT miss that top scanline!
+	// Basically use floor + 1 to INCLDE the top scanline if we have a perfect match.
+	if (p1.y == p2.y)
+		y1 = floor(p1.y)+1;
 
 	if (p0.y != p1.y)
 	{
@@ -216,7 +238,7 @@ void	CalcOneTriError(CDT::Face_handle face)
 }
 
 // Init the whole mesh - all tris, calc errs, queue
-void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff)
+void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff, double size_lim)
 {
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
@@ -226,7 +248,7 @@ void	InitMesh(CDT& inCDT, DEMGeo& inDem, double err_cutoff)
 	{
 		face->info().flag = 0;
 		InitOneTri(face);
-		CalcOneTriError(face);
+		CalcOneTriError(face, size_lim);
 		if (face->info().insert_err > err_cutoff)
 		{
 			face->info().self = sBestChoices.insert(FaceQueue::value_type(face->info().insert_err, &*face));
@@ -242,17 +264,17 @@ void	DoneMesh(void)
 	sCurrentMesh = NULL;
 }
 
-void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inDem, double err_lim, int max_num, ProgressFunc func)
+void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
 	PROGRESS_START(func, 0, 1, "Building Mesh")
-	InitMesh(inCDT, inDem, err_lim);
+	InitMesh(inCDT, inAvail, err_lim, size_lim);
 
+	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
 		
 	for (int n = 0; n < max_num; ++n)
 	{
 		if (sBestChoices.empty()) break;
-//		if ((*sBestChoices.begin())->info().insert_err < err_lim)	break;
 		PROGRESS_CHECK(func, 0, 1, "Building mesh", n, max_num, max_num / 200)
 		++cnt_insert;
 		CDT::Face * the_face = (CDT::Face *) sBestChoices.begin()->second;
@@ -262,8 +284,8 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inDem, double err_lim, int max_num, Pro
 		
 		DebugAssert(!inCDT.is_infinite(face_handle));
 		
-		CDT::Point p(inDem.x_to_lon(the_face->info().insert_x),
-					  inDem.y_to_lat(the_face->info().insert_y));
+		CDT::Point p(inAvail.x_to_lon(the_face->info().insert_x),
+					  inAvail.y_to_lat(the_face->info().insert_y));
 					  
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
@@ -273,10 +295,11 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inDem, double err_lim, int max_num, Pro
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(), p.y()), Point3(1,1,1)));
 					  
-		double h = inDem.get(the_face->info().insert_x, the_face->info().insert_y);
+		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
 		DebugAssert(h != NO_DATA);
-		inDem(the_face->info().insert_x, the_face->info().insert_y) = NO_DATA;
+		outUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
+		inAvail(the_face->info().insert_x, the_face->info().insert_y) = NO_DATA;
 
 /*
 		CDT::Locate_type lt;
@@ -311,7 +334,7 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inDem, double err_lim, int max_num, Pro
 				sBestChoices.erase(circ->info().self);
 				circ->info().self = sBestChoices.end();
 			}
-			CalcOneTriError(circ);
+			CalcOneTriError(circ, size_lim);
 			if (circ->info().insert_err > err_lim)
 			{
 				circ->info().self = sBestChoices.insert(FaceQueue::value_type(circ->info().insert_err, &*circ));
