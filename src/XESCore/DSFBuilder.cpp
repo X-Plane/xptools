@@ -195,7 +195,9 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Vertex_handle v_han)
 	CDT::Face_circulator stop, circ;
 	stop = circ = inMesh.incident_faces(v_han);
 	do {
-		if (!inMesh.is_infinite(circ))
+		if (inMesh.is_infinite(circ))	// SPECIAL CASE - if we are an edge vertex, @#$@ it, call us 45 degrees - 
+			return 0.5;					// we need to match - in the future this could be improved.
+		else
 			y_norm = min(y_norm, circ->info().normal[2]);
 		++circ;
 	} while (stop != circ);
