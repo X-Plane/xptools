@@ -260,9 +260,6 @@ int	QueryUsableFacsBySize(
 		
 			(inWidth >= rec.width_min && inWidth <= rec.width_max) &&
 			(inDepth >= rec.depth_min && inWidth <= rec.depth_max) &&
-#if !DEV
-examine this
-#endif			
 			(inHeightMin <= rec.height_max && inHeightMax >= rec.height_min))			
 		{
 			outResults[ret] = row;
