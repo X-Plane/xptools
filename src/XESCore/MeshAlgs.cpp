@@ -34,7 +34,6 @@
 #include "GISUtils.h"
 #include "GreedyMesh.h"
 
-
 #define PROFILE_PERFORMANCE 1
 
 #define LOW_RES_WATER_INTERVAL 40
@@ -115,78 +114,6 @@ inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v)
 	return false;
 }
 
-#pragma mark -
-/************************************************************************************************************************
- * BORDER MATCHING
- ************************************************************************************************************************
-
-	BORDER MATCHING - THEORY
-	
-	We cannot do proper blending and transitions across DSF borders because we write one DSF at a time - we have no way
-	to go back and edit a previous DSF when we get to the next one and find a transition should have leaked across files.
-	So instead we use a master slave system...the west and south files always dominate the north and east.
-
-	The right and top borders of a DSF are MASTER borders and the left and bottom are SLAVES. 
-	
-	When we write a DSF we write out the border info for the master borders into text files - this includes both vertex
-	position along the border and texturing.
-	
-	When we write a new DSF we find our old master borders via text file and use it to conform our work.
-	
-	VERTEX MATCHING
-	
-	We write out all vertices on our master border.  For the slave border we add the MINIMUM number of points to the slave
-	border - basically just mandatory water-body edges.  We then do a nearest-fit match from the master and add any non-
-	matched master vertices to the slave.  This gives exact matchups except for mandatrory features which should be close.
-	If the water bodies are not totally discontinuous this works.  X-plane can also resolve very slight vertex discrepancies.
-	
-	TRANSITION AND LANDUSE MATCHING
-	
- 	Each master edge vertex will contain some level of blending for each border that originates there as well as a set of
- 	base transitions from each incident triangle.  (Each base layer can be thought of as being represented at 100%.)  When
- 	sorted by priority this forms a total set of 'stuff' intruding from this vertex.
- 	
-	To blend the border, we build overlays on the slave triangles incident to these borders that have the master's mix levels
-	on the incident vertices and 0 levels on the interior.
-	
-	REBASING
-	
-	There is one problem with the above scheme - if the border from above is LOWER priority than the terrain it will cover, 
-	the border will not work.  Fundamentally we can't force a border to go left to right against priority!
-	
-	So we use a trick called "rebasing".  Basically given a slave tri with a high prio ("HIGH") and a master vertex with a 
-	low prio terrain ("LOW") we set the base of the slave tri to "LOW" and add a border of type "HIGH" to the slave with 0%
-	blend on the edges and 100% in the interior.  We then also find all tris not touching the border incident to the 100% vertex
-	and blend from 100% back to 0%.
- 
- 
- */
-
-struct	mesh_match_vertex_t {
-	Point2					loc;
-	double					height;
-	hash_map<int, float>	blending;
-	CDT::Vertex_handle		buddy;
-};
-
-struct	mesh_match_edge_t {
-	int						base;
-	set<int>				borders;
-	CDT::Face_handle		buddy;
-};
-
-struct	mesh_match_t {
-	vector<mesh_match_vertex_t>	vertices;
-	vector<mesh_match_edge_t>	edges;
-};
-
-inline bool MATCH(const char * big, const char * msmall)
-{
-	return strncmp(big, msmall, strlen(msmall)) == 0;
-}
-
-static mesh_match_t gMatchBottom, gMatchLeft;
-
 inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
 	for (int n = 0; n < 3; ++n)
@@ -256,6 +183,82 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 	} while (stop != now);
 	Assert(!"Next pt not found.");
 }
+
+#pragma mark -
+/************************************************************************************************************************
+ * BORDER MATCHING
+ ************************************************************************************************************************
+
+	BORDER MATCHING - THEORY
+	
+	We cannot do proper blending and transitions across DSF borders because we write one DSF at a time - we have no way
+	to go back and edit a previous DSF when we get to the next one and find a transition should have leaked across files.
+	So instead we use a master slave system...the west and south files always dominate the north and east.
+
+	The right and top borders of a DSF are MASTER borders and the left and bottom are SLAVES. 
+	
+	When we write a DSF we write out the border info for the master borders into text files - this includes both vertex
+	position along the border and texturing.
+	
+	When we write a new DSF we find our old master borders via text file and use it to conform our work.
+	
+	VERTEX MATCHING
+	
+	We write out all vertices on our master border.  For the slave border we add the MINIMUM number of points to the slave
+	border - basically just mandatory water-body edges.  We then do a nearest-fit match from the master and add any non-
+	matched master vertices to the slave.  This gives exact matchups except for mandatrory features which should be close.
+	If the water bodies are not totally discontinuous this works.  X-plane can also resolve very slight vertex discrepancies.
+	
+	TRANSITION AND LANDUSE MATCHING
+	
+ 	Each master edge vertex will contain some level of blending for each border that originates there as well as a set of
+ 	base transitions from each incident triangle.  (Each base layer can be thought of as being represented at 100%.)  When
+ 	sorted by priority this forms a total set of 'stuff' intruding from this vertex.
+ 	
+	To blend the border, we build overlays on the slave triangles incident to these borders that have the master's mix levels
+	on the incident vertices and 0 levels on the interior.
+	
+	REBASING
+	
+	There is one problem with the above scheme - if the border from above is LOWER priority than the terrain it will cover, 
+	the border will not work.  Fundamentally we can't force a border to go left to right against priority!
+	
+	So we use a trick called "rebasing".  Basically given a slave tri with a high prio ("HIGH") and a master vertex with a 
+	low prio terrain ("LOW") we set the base of the slave tri to "LOW" and add a border of type "HIGH" to the slave with 0%
+	blend on the edges and 100% in the interior.  We then also find all tris not touching the border incident to the 100% vertex
+	and blend from 100% back to 0%.
+ 
+ 
+ */
+
+
+// This is one vertex from our master
+struct	mesh_match_vertex_t {
+	Point2					loc;			// Location in master
+	double					height;			// Height in master
+	hash_map<int, float>	blending;		// List of borders and blends in master
+	CDT::Vertex_handle		buddy;			// Vertex on slave that is matched to it
+};
+
+// This is one edge from our master
+struct	mesh_match_edge_t {
+	int						base;			// For debugging
+	set<int>				borders;		// For debugging
+	CDT::Face_handle		buddy;			// Tri in our mesh that corresponds
+};
+
+struct	mesh_match_t {
+	vector<mesh_match_vertex_t>	vertices;
+	vector<mesh_match_edge_t>	edges;
+};
+
+inline bool MATCH(const char * big, const char * msmall)
+{
+	return strncmp(big, msmall, strlen(msmall)) == 0;
+}
+
+static mesh_match_t gMatchBottom, gMatchLeft;
+
 
 static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 {
@@ -372,7 +375,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outTop, mesh_match_
 		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 		if (MATCH(buf, "END"))
 		{
-			fclose(fi);
+			fclose(fi);			
 			return true;
 		}
 		sscanf(buf, "TERRAIN %s", ter);
@@ -645,10 +648,10 @@ inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
  * This routine copies the points that are inside water bodies and copies
  * them, modifying their altitude to be at sea level.  It also copies 
  * to another DEM (if desired) points that are near the edges of the water bodies.
- * this can be a useful reference.
+ * this can be a useful reference.  We return the number of wet points.
  *
  */
-void CopyWetPoints(
+int CopyWetPoints(
 				const DEMGeo& 			orig, 		// The original DEM
 				DEMGeo& 				deriv, 		// All water points, flattened, are added to this DEM
 				DEMGeo * 				corners, 	// Near-vertices are added to this DEM
@@ -661,6 +664,8 @@ void CopyWetPoints(
 //	FILE * fi = fopen("dump.txt", "a");
 	PolyRasterizer	rasterizer;
 	SetupWaterRasterizer(map, orig, rasterizer);
+
+	int wet = 0;
 
 	for (Pmwx::Halfedge_const_iterator i = map.halfedges_begin(); i != map.halfedges_end(); ++i)
 	{
@@ -701,6 +706,7 @@ void CopyWetPoints(
 				if (e != NO_DATA)
 				{
 					deriv(x,y) = e;
+					++wet;
 //					gMeshPoints.push_back(Point2(orig.x_to_lon(x), orig.y_to_lat(y)));
 				}
 			}
@@ -709,6 +715,7 @@ void CopyWetPoints(
 		if (y >= orig.mHeight) break;
 		rasterizer.AdvanceScanline(y);
 	}
+	return wet;
 }
 
 /*
@@ -1248,15 +1255,22 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	DEMGeo	water(deriv);
 	DEMGeo	land(orig);
 	
+	double	land_ratio;
+	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.3);
 
 	{
 		TIMER(build_wet_map)
-		CopyWetPoints(orig, water, &outline, inMap);
+		int wet_pts = CopyWetPoints(orig, water, &outline, inMap);
 		for (y = 0; y < deriv.mHeight; ++y)
 		for (x = 0; x < deriv.mWidth; ++x)
 		if (water.get(x,y) != NO_DATA)
 			land(x,y) = NO_DATA;
+			
+		int total_pts = deriv.mWidth * deriv.mHeight;
+		int dry_pts = total_pts - wet_pts;
+		land_ratio = (double) dry_pts / (double) total_pts;
+		printf("Land ratio: %lf\n", land_ratio);
 	}
 	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.4);
@@ -1313,6 +1327,29 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	outMesh.insert(CDT::Point(orig.mEast, orig.mSouth))->info().height = orig.get(orig.mWidth-1,0			   );
 	outMesh.insert(CDT::Point(orig.mEast, orig.mNorth))->info().height = orig.get(orig.mWidth-1,orig.mHeight-1);
 	 
+	// This warrants some explaining.  Basically...the greedy mesh build is not allowed to put vertices in the slaved edges.
+	// But if it can't, it will furiously add them one row over in an attempt to minimize how goofy it would look if we REALLY 
+	// had no vertices there.  So...
+	
+	// We temporarily build the whole slaved edge. 
+	 
+	vector<CDT::Vertex_handle> temporary;
+	int n;
+	 
+	if (!gMatchLeft.vertices.empty()) // Because size-1 for empty is max-unsigned-int - gross.
+	for (n = 1; n < gMatchLeft.vertices.size()-1; ++n)
+	{
+		temporary.push_back(outMesh.insert(CDT::Point(gMatchLeft.vertices[n].loc.x,gMatchLeft.vertices[n].loc.y)));
+		temporary.back()->info().height = gMatchLeft.vertices[n].height;
+	}
+	if (!gMatchBottom.vertices.empty())
+	for (n = 1; n < gMatchBottom.vertices.size()-1; ++n)
+	{
+		temporary.push_back(outMesh.insert(CDT::Point(gMatchBottom.vertices[n].loc.x,gMatchBottom.vertices[n].loc.y)));
+		temporary.back()->info().height = gMatchBottom.vertices[n].height;
+	}
+		
+	// Clear out the slaved edges in the data so that we don't add them as part of our process.	 
 	{
 		if (!gMatchLeft.vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
@@ -1327,6 +1364,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 			deriv(x, 0) = NO_DATA;
 		}
 	}
+	
+	// Add any bulk points - mostly edges and water.
 
 	if (prog) prog(0, 3, "Calculating Mesh Points", 1.0);		
 	{
@@ -1334,28 +1373,36 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		AddBulkPointsToMesh(deriv, outMesh, prog);
 	}
 	
+	// Now greedy mesh build - first add pts to cover land.
 	{
 		TIMER(Greedy_Mesh)
-		GreedyMeshBuild(outMesh, land, deriv, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
+		GreedyMeshBuild(outMesh, land, deriv, gMeshPrefs.max_error, 0.0, (land_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 	}	
 
-	#if !DEV
-	Doc this!
-	#endif
+	// Another greedy mesh designed to limit triangle size.	
 	{
 		TIMER(Greedy_Mesh_LimitSize)
 		GreedyMeshBuild(outMesh, land, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 	}
 
-
-	/// Moved AddWaterMeshPoints down here - so we can correctly desliver the edges of the mesh!
+	// Now go nuke the temporary edge - we don't need it now.
+	for (n = 0; n < temporary.size(); ++n)
 	{
-//		TODO HERE WHAT WE ADD VIA BULK NEEDS TO MAKE IT INTO WATER MESH
+		DebugAssert(!outMesh.are_there_incident_constraints(temporary[n]));
+		if (!outMesh.are_there_incident_constraints(temporary[n]))
+			outMesh.remove(temporary[n]);
+	}
+	temporary.clear();
+
+	// Now that our mesh is mostly done, add the coastline vertices with constraints) - they count on the mountain pts being in so we
+	// can do anti-slivering on the fly.
+	{
 	
 		TIMER(Triangulate_Coastlines)
 		AddWaterMeshPoints(inMap, orig, water, deriv, outMesh, coastlines_markers, true);
 	}
 	
+	// Finally, add the REAL slaved edge, canibalizing any coastline points as we go.
 	{
 		// This HAS to go after water.  Why?  Well, it can absorb existing points but the other routines dumbly add.
 		// So we MUST build all forced points (water) first.
@@ -1591,9 +1638,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// First build a correlation between our border info and some real tris in the mesh.
 	if (!gMatchLeft.vertices.empty())	border_find_edge_tris(ioMesh, gMatchLeft);
 	if (!gMatchBottom.vertices.empty())	border_find_edge_tris(ioMesh, gMatchBottom);
-	int n;
 	int lowest;
-
+	int n;
 #if !NO_BORDER_SHARING	
 
 	set<CDT::Vertex_handle>	vertices;
@@ -1615,22 +1661,26 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			RebaseTriangle(ioMesh, gMatchLeft.edges[n].buddy, lowest, gMatchLeft.vertices[n].buddy, gMatchLeft.vertices[n+1].buddy, vertices);
 	}
 
-/*	
 	for (n = 0; n < gMatchLeft.vertices.size(); ++n)
 	{
 		CDT::Face_circulator circ, stop;
 		circ = stop = ioMesh.incident_faces(gMatchLeft.vertices[n].buddy);
 		do {
 			if (!ioMesh.is_infinite(circ))
-			if (!is_border(circ))
+			if (!is_border(ioMesh, circ))
 			{
 				lowest = circ->info().terrain_specific;
+				for (hash_map<int, float>::iterator bl = gMatchLeft.vertices[n].blending.begin(); bl != gMatchLeft.vertices[n].blending.end(); ++bl)				
+				if (bl->second > 0.0)
+				if (LowerPriorityNaturalTerrain(bl->first, lowest))
+					lowest = bl->first;
 				
+				if (lowest != circ->info().terrain_specific)
+					RebaseTriangle(ioMesh, circ, lowest, gMatchLeft.vertices[n].buddy, CDT::Vertex_handle(), vertices);
 			}
 			++circ;
 		} while (circ != stop);
 	}
-*/	
 
 	for (n = 0; n < gMatchBottom.edges.size(); ++n)
 	{
@@ -1646,9 +1696,43 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		if (lowest != gMatchBottom.edges[n].buddy->info().terrain_specific)
 			RebaseTriangle(ioMesh, gMatchBottom.edges[n].buddy, lowest, gMatchBottom.vertices[n].buddy, gMatchBottom.vertices[n+1].buddy, vertices);
 	}
+	
+	for (n = 0; n < gMatchBottom.vertices.size(); ++n)
+	{
+		CDT::Face_circulator circ, stop;
+		circ = stop = ioMesh.incident_faces(gMatchBottom.vertices[n].buddy);
+		do {
+			if (!ioMesh.is_infinite(circ))
+			if (!is_border(ioMesh, circ))
+			{
+				lowest = circ->info().terrain_specific;
+				for (hash_map<int, float>::iterator bl = gMatchBottom.vertices[n].blending.begin(); bl != gMatchBottom.vertices[n].blending.end(); ++bl)				
+				if (bl->second > 0.0)
+				if (LowerPriorityNaturalTerrain(bl->first, lowest))
+					lowest = bl->first;
+				
+				if (lowest != circ->info().terrain_specific)
+					RebaseTriangle(ioMesh, circ, lowest, gMatchBottom.vertices[n].buddy, CDT::Vertex_handle(), vertices);
+			}
+			++circ;
+		} while (circ != stop);
+	}
+
+	// These vertices were given partial borders by rebasing - go in and make sure that all incident triangles match them.
+	for (set<CDT::Vertex_handle>::iterator rebased_vert = vertices.begin(); rebased_vert != vertices.end(); ++rebased_vert)
+	{
+		CDT::Face_circulator circ, stop;
+		circ = stop = ioMesh.incident_faces(*rebased_vert);
+		do {
+			if (!ioMesh.is_infinite(circ))
+			for (hash_map<int, float>::iterator bl = (*rebased_vert)->info().border_blend.begin(); bl != (*rebased_vert)->info().border_blend.end(); ++bl)
+			if (bl->second > 0.0)
+				AddZeroMixIfNeeded(circ, bl->first);
+			++circ;
+		} while (circ != stop);		
+	}
+	
 #endif	
-	
-	
 
 	/***********************************************************************************************
 	 * CALCULATE BORDERS
@@ -1924,13 +2008,29 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		f = ioMesh.locate(cur, lt, i);
 		Assert(lt == CDT::VERTEX);
 		
+		CDT::Face_circulator circ, circstop;
+		
 		do {
 			fprintf(border, "VT %.12lf, %.12lf, %lf\n", 
 				CGAL::to_double(f->vertex(i)->point().x()),
 				CGAL::to_double(f->vertex(i)->point().y()),
 				CGAL::to_double(f->vertex(i)->info().height));
-			fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
+			
+			hash_map<int, float>	borders;			
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
+			if (hfi->second > 0.0)
+				borders[hfi->first] = max(borders[hfi->first], hfi->second);
+			circ = circstop = ioMesh.incident_faces(f->vertex(i));
+			do {
+				if (!ioMesh.is_infinite(circ))
+				{
+					borders[circ->info().terrain_specific] = 1.0;
+				}
+				++circ;
+			} while (circ != circstop);
+
+			fprintf(border, "VBC %d\n", borders.size());
+			for (hash_map<int, float>::iterator hfi = borders.begin(); hfi != borders.end(); ++hfi)
 				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
 
 			FindNextEast(ioMesh, f, i);
@@ -1966,11 +2066,24 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				CGAL::to_double(f->vertex(i)->point().x()),
 				CGAL::to_double(f->vertex(i)->point().y()),
 				CGAL::to_double(f->vertex(i)->info().height));
+				
+			hash_map<int, float>	borders;			
+			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
+			if (hfi->second > 0.0)
+				borders[hfi->first] = max(borders[hfi->first], hfi->second);
+			circ = circstop = ioMesh.incident_faces(f->vertex(i));
+			do {
+				if (!ioMesh.is_infinite(circ))
+				{
+					borders[circ->info().terrain_specific] = 1.0;
+				}
+				++circ;
+			} while (circ != circstop);
+				
 			fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
-			{
 				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
-			}
+
 		} while (f->vertex(i)->point() != stop);
 
 		fprintf(border, "END\n");
