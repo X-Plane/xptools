@@ -75,4 +75,6 @@ void	BuildTokenConversionMap(
 void	WriteEnumsAtomToFile(FILE * inFile, const TokenMap& inTokens, int atomID);
 void	ReadEnumsAtomFromFile(XAtomContainer& inAtomContainer, TokenMap& outTokens, int atomID);
 
+void	EnumSystemSelfCheck(void);
+
 #endif /* ENUMSYSTEM_H */

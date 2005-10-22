@@ -46,6 +46,7 @@ void InitEnumSystem()
 	gTokens.clear();
 	for (int i = 0; i < NUMBER_OF_DEFAULT_TOKENS; ++i)
 		gTokens.push_back(kDefaultTokens[i]);
+	BuildTokenReverseMap(gTokens, gReverse);
 }
 
 const char *	FetchTokenString(int x)
@@ -129,5 +130,18 @@ int				NewToken(const char * inString)
 {
 	int v = gTokens.size();
 	gTokens.push_back(inString);
+	gReverse[inString] = gTokens.size()-1;
+	
 	return v;
 }
+
+void EnumSystemSelfCheck(void)
+{
+	set<string>	dummy;
+	for (int n = 0; n < gTokens.size(); ++n)
+	{
+		Assert(dummy.count(gTokens[n]) == 0);
+		dummy.insert(gTokens[n]);
+	}	
+}
+	
