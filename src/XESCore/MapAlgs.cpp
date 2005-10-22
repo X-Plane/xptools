@@ -124,6 +124,16 @@ void	FindEdgesForFaceSet(const set<GISFace *>& inFaces, set<GISHalfedge *>& outE
 	}
 }
 
+void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces)
+{
+	outFaces.clear();
+	set<GISHalfedge *> e;
+	FindEdgesForFace(inFace, e);
+	for (set<GISHalfedge*>::iterator he = e.begin(); he != e.end(); ++he)
+	if ((*he)->twin()->face() != inFace)
+		outFaces.insert((*he)->twin()->face());
+}
+
 void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 {
 	outFaces.clear();

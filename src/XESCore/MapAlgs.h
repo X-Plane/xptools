@@ -82,6 +82,14 @@ void	FindEdgesForFaceSet(const set<GISFace *>& inFaces, set<GISHalfedge *>& outE
  * Given a face, returns all faces that are touching this face.
  *
  */
+void	FindAdjacentFaces(GISFace * inFace, set<GISFace *>& outFaces); 
+
+/*
+ * FindAdjacentWetFaces
+ *
+ * Given a face, returns all faces that are touching this face.
+ *
+ */
 void	FindAdjacentWetFaces(GISFace * inFace, set<GISFace *>& outFaces); 
 
 /*
