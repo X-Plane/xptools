@@ -37,6 +37,13 @@
 /*
 		
 	todo: 
+		Redo the frequency/do-we-place logic
+		Redo the subdivision logic
+		Try to deal with the problem of subdivision failing due to lack of efficiency!
+		-clearly objs are overlapping roads - why?  will using new inset help?
+		-clearly too many objs for the space..not so good
+		
+	
 		favor BIG objects??
 		prioritize AGL features
 		handle multiple point AGL features better!!
@@ -175,6 +182,7 @@ static void MyAntennaFunc(int n, void * ref)
 	a->insert(a->begin()+n, (*a)[n]);
 }
 
+// Rotate and offset a polygon for the purpose of placement.
 static	void	RotateAndOffset(Polygon2& ioPolygon, const Vector2& offset, float heading)
 {
 	float 	cosv = cos(heading * DEG_TO_RAD);
@@ -189,7 +197,8 @@ static	void	RotateAndOffset(Polygon2& ioPolygon, const Vector2& offset, float he
 		(*i) = p;
 	}
 }
-	
+
+// Given a poly obj, try to detect that it's gone wrong.
 static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 {
 	vector<Polygon2>	poly(inPlacement.mShape);
@@ -220,6 +229,7 @@ static bool	SanityCheck(const GISPolyObjPlacement_t& inPlacement)
 	return true;
 }
 	
+// Returns the height or -1 for any automatically.
 static int GetPossibleFeatureHeight(const GISPointFeature_t& f)
 {
 	GISParamMap::const_iterator i = f.mParams.find(pf_Height);
@@ -227,6 +237,8 @@ static int GetPossibleFeatureHeight(const GISPointFeature_t& f)
 	return i->second;
 }
 
+// Given two features, which is higher priority - prefer airport furniture most, then
+// things with AGL.
 static bool	LowerPriorityFeature(GISPointFeature_t& lhs, GISPointFeature_t& rhs)
 {
 	if (Feature_IsAirportFurniture(lhs.mFeatType) && Feature_IsAirportFurniture(rhs.mFeatType))
@@ -244,6 +256,7 @@ static bool	LowerPriorityFeature(GISPointFeature_t& lhs, GISPointFeature_t& rhs)
 	return lhs.mFeatType < rhs.mFeatType;
 }
 
+// Given a raod segment, return the widest type - this is the one we must use for insetting.
 static int	WidestRoadTypeForSegment(const GISNetworkSegmentVector& v)
 {
 	int	best_type = NO_VALUE;
@@ -259,6 +272,8 @@ static int	WidestRoadTypeForSegment(const GISNetworkSegmentVector& v)
 	return best_type;
 }
 
+// This primitive tells us if a given two edges are effectively one edge - basically
+// we're trying to ignore near-colllinear edges for subdivision
 static bool	CanSkipSegment(GISHalfedge * prev, GISHalfedge * edge)
 {
 	GISHalfedge * edge_d = edge->mDominant ? edge : edge->twin();
@@ -272,30 +287,7 @@ static bool	CanSkipSegment(GISHalfedge * prev, GISHalfedge * edge)
 	return (v1.dot(v2) > 0.99);
 }
 
-#if 0
-/*
- * GetObjsForLocGen
- *
- * Given a location, fill arrays with all possible object rep_ids that could go there, based on urban params.  Also get us
- * the object's dimensions and probability.
- *
- */
-
-static int	GetObjsForLocGen(float econ, float urban, int num_placed, float area_min, float area_max, int phenom,
-						int * outTypes, float * outProbs, float * outWidths, float * outDepths)
-{
-	int n = QueryUsableObjsBySize(econ, urban, area_min, area_max, num_placed, phenom, outTypes, 500);
-	for (int i = 0; i < n; ++i)
-	{
-		outProbs[i]  = 	gRepTable[outTypes[i]].freq;
-		outWidths[i] = 	gRepTable[outTypes[i]].obj_width;
-		outDepths[i] = 	gRepTable[outTypes[i]].obj_depth;
-		outTypes[i]  =	gRepTable[outTypes[i]].rep_type;		
-	}
-	return n;
-}
-#endif
-
+// Given an objct type, build a polygon for it.
 static bool FetchObjectBoundaryByRep(int tp, Polygon2 * outPoly, float scale, float * outWidth, float * outDepth)
 {
 	RepFeatureIndex::iterator i = gRepFeatureIndex.find(tp);
@@ -317,6 +309,7 @@ static bool FetchObjectBoundaryByRep(int tp, Polygon2 * outPoly, float scale, fl
 	return true;
 }
 
+// Given an arbitrary quad, determine the largest rectangular lot fitted to the front face.
 static void	GetLotDimensions(const Point2& p0, const Point2& p1, const Point2& p2, const Point2& p3, float * outWidth, float * outDepth)
 {
 	// Form vectors along the front (in both dirs) and sides.
@@ -481,24 +474,24 @@ bool	ProcessOneLot(
 		DebugAssert(!"Hrm....object not found on terrain mesh...");
 	}
 
-	int	landuse = dems[dem_LandUse].xy_nearest(centroid.x, centroid.y);
-	int	climate = dems[dem_Climate].xy_nearest(centroid.x, centroid.y);
-	int	zoning = owner->mTerrainType;
+//	int	landuse = dems[dem_LandUse].xy_nearest(centroid.x, centroid.y);
+//	int	climate = dems[dem_Climate].xy_nearest(centroid.x, centroid.y);
+//	int	zoning = owner->mTerrainType;
 	
-	float elev 			= dems[dem_Elevation	].value_linear(centroid.x, centroid.y);
-	float temp 			= dems[dem_Temperature	].value_linear(centroid.x, centroid.y);
-	float slope 		= dems[dem_Slope		].value_linear(centroid.x, centroid.y);
-	float relelev 		= dems[dem_RelativeElevation].value_linear(centroid.x, centroid.y);
-	float elevrange 	= dems[dem_ElevationRange].value_linear(centroid.x, centroid.y);
-	float urban_dense 	= dems[dem_UrbanDensity	].value_linear(centroid.x, centroid.y);
-	float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(centroid.x, centroid.y);
-	float urban_radial 	= dems[dem_UrbanRadial	].value_linear(centroid.x, centroid.y);
-	float urban_trans	= dems[dem_UrbanTransport].value_linear(centroid.x, centroid.y);
+//	float elev 			= dems[dem_Elevation	].value_linear(centroid.x, centroid.y);
+//	float temp 			= dems[dem_Temperature	].value_linear(centroid.x, centroid.y);
+//	float slope 		= dems[dem_Slope		].value_linear(centroid.x, centroid.y);
+//	float relelev 		= dems[dem_RelativeElevation].value_linear(centroid.x, centroid.y);
+//	float elevrange 	= dems[dem_ElevationRange].value_linear(centroid.x, centroid.y);
+//	float urban_dense 	= dems[dem_UrbanDensity	].value_linear(centroid.x, centroid.y);
+//	float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(centroid.x, centroid.y);
+//	float urban_radial 	= dems[dem_UrbanRadial	].value_linear(centroid.x, centroid.y);
+//	float urban_trans	= dems[dem_UrbanTransport].value_linear(centroid.x, centroid.y);
 
 	int		require_feat = NO_VALUE;
 	float	required_agl = -1.0;
 
-	max_road_density *= urban_dense;
+//	max_road_density *= urban_dense;
 	
 	/* Look for any features that might be in the area.  We need this to populate features! */		
 	int	features_in_area = 0;
@@ -523,6 +516,18 @@ bool	ProcessOneLot(
 			required_agl = the_feature->mParams[pf_Height];
 	}
 	
+	/* Calculate some kind of height limitations. */
+	
+	float height_max;
+	if (required_agl != -1)
+		height_max = required_agl;
+	else {
+		if (owner->mParams.count(af_Height))
+			height_max = owner->mParams[af_Height];
+		else
+			height_max = 0.0;
+	}
+	
 	/****************************************************************
 	 * FACADE PLACEMENT
 	 ****************************************************************/	
@@ -530,16 +535,13 @@ bool	ProcessOneLot(
 	// feature we always do of course.
 	if ((FORCE_MAX_DENSITY && max_road_density > 0.0) || require_feat != NO_VALUE || RollDice(max_road_density))
 	{	
-		choices = QueryUsableFacsBySize(
-											require_feat,
-											terrain,
-											temp, slope, 500,
-											urban_dense, urban_radial, urban_trans,
-											min_side,
-											max_side,
-											0, 1000,
-											(require_feat == NO_VALUE),	// obey freqs if we're not a feature
-											&query, 1);
+		choices = QueryUsableFacsBySize(				// This is facade placement for subdivision,
+								require_feat,			// with or without a feature!
+								terrain,
+								max_side,
+								min_side,
+								height_max,
+								&query, 1);
 					
 		if (choices)
 		{			
@@ -553,7 +555,7 @@ bool	ProcessOneLot(
 			}
 			place.mRepType = gRepTable[query].obj_name;
 			place.mLocation = place.mShape[0].centroid();
-			place.mHeight = (required_agl == -1) ? RandRangeBias(gRepTable[query].height_min, gRepTable[query].height_max, urban_dense, 0.5) : required_agl;
+			place.mHeight = (required_agl == -1) ? RandRange(gRepTable[query].height_min, gRepTable[query].height_max) : required_agl;
 			place.mDerived = require_feat != NO_VALUE;
 			if (SanityCheck(place))
 				owner->mPolyObjs.push_back(place);
@@ -579,31 +581,31 @@ bool	ProcessOneLot(
 		
 		float area = lot.area();
 		
-		choices = QueryUsableObjsBySize(
-											require_feat,
-											terrain, 
-											elev, temp, 0,
-											urban_dense, urban_radial, urban_trans,
-											width,
-											depth,
-											0, 0,
-											(require_feat == NO_VALUE),	// obey freqs if we're not a feature
-											&query, 1);					
+		choices = QueryUsableObjsBySize(			// This is object placement for subdivision
+								require_feat,		// whether we have a feature or not.
+								terrain, 
+								width,
+								depth,
+								height_max,
+								&query, 1);					
 		if (choices)
 		{
-			GISObjPlacement_t	obj;
-			obj.mRepType = gRepTable[query].obj_name;
-			obj.mLocation = centroid;
-			Vector2	facing(lot[s],lot[(s+1)%4]);
-			facing.normalize();
-			facing = facing.perpendicular_cw();
-			obj.mHeading = atan2(facing.dx, facing.dy) * RAD_TO_DEG;
-			obj.mDerived = require_feat != NO_VALUE;
-			owner->mObjs.push_back(obj);
-			IncrementRepUsage(gRepTable[query].obj_name);
-			return true;			
-		}
-		
+			float obj_area = gRepTable[query].width_max * gRepTable[query].depth_max;
+			if (obj_area >= (area * MIN_OBJ_EFFICIENCY))
+			{
+				GISObjPlacement_t	obj;
+				obj.mRepType = gRepTable[query].obj_name;
+				obj.mLocation = centroid;
+				Vector2	facing(lot[s],lot[(s+1)%4]);
+				facing.normalize();
+				facing = facing.perpendicular_cw();
+				obj.mHeading = atan2(facing.dx, facing.dy) * RAD_TO_DEG;
+				obj.mDerived = require_feat != NO_VALUE;
+				owner->mObjs.push_back(obj);
+				IncrementRepUsage(gRepTable[query].obj_name);
+				return true;			
+			}
+		}		
 	}
 
 	/****************************************************************
@@ -613,12 +615,12 @@ bool	ProcessOneLot(
 	// If we didn't build a building, maybe we want to just subdivide?
 	if (!leaf && (FORCE_MAX_DENSITY || !RollDice(1.0 - max_road_density))) return false;
 	
-	if (RollDice(urban_prop))
-	{
-		// Do vege
-	} else {
-		// ??
-	}
+//	if (RollDice(urban_prop))
+//	{
+//		// Do vege
+//	} else {
+//		// ??
+//	}
 	return true;
 }
 
@@ -1038,24 +1040,31 @@ void	InstantiateGTPolygon(
 			DebugAssert(!"Hrm....object not found on terrain mesh...");
 		}
 
-		int	landuse = dems[dem_LandUse].xy_nearest(i->mLocation.x, i->mLocation.y);
-		int	climate = dems[dem_Climate].xy_nearest(i->mLocation.x, i->mLocation.y);
-		int	zoning = inFace->mTerrainType;	
-		float elev 			= dems[dem_Elevation	].value_linear(i->mLocation.x, i->mLocation.y);
-		float temp 			= dems[dem_Temperature	].value_linear(i->mLocation.x, i->mLocation.y);
-		float slope 		= dems[dem_Slope		].value_linear(i->mLocation.x, i->mLocation.y);
-		float relelev 		= dems[dem_RelativeElevation].value_linear(i->mLocation.x, i->mLocation.y);
-		float elevrange 	= dems[dem_ElevationRange].value_linear(i->mLocation.x, i->mLocation.y);
-		float urban_dense 	= dems[dem_UrbanDensity	].value_linear(i->mLocation.x, i->mLocation.y);
-		float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(i->mLocation.x, i->mLocation.y);
-		float urban_radial 	= dems[dem_UrbanRadial	].value_linear(i->mLocation.x, i->mLocation.y);
-		float urban_trans	= dems[dem_UrbanTransport].value_linear(i->mLocation.x, i->mLocation.y);
-		int		require_feat = i->mFeatType;
+//		int	landuse = dems[dem_LandUse].xy_nearest(i->mLocation.x, i->mLocation.y);
+//		int	climate = dems[dem_Climate].xy_nearest(i->mLocation.x, i->mLocation.y);
+//		int	zoning = inFace->mTerrainType;	
+//		float elev 			= dems[dem_Elevation	].value_linear(i->mLocation.x, i->mLocation.y);
+//		float temp 			= dems[dem_Temperature	].value_linear(i->mLocation.x, i->mLocation.y);
+//		float slope 		= dems[dem_Slope		].value_linear(i->mLocation.x, i->mLocation.y);
+//		float relelev 		= dems[dem_RelativeElevation].value_linear(i->mLocation.x, i->mLocation.y);
+//		float elevrange 	= dems[dem_ElevationRange].value_linear(i->mLocation.x, i->mLocation.y);
+//		float urban_dense 	= dems[dem_UrbanDensity	].value_linear(i->mLocation.x, i->mLocation.y);
+//		float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(i->mLocation.x, i->mLocation.y);
+//		float urban_radial 	= dems[dem_UrbanRadial	].value_linear(i->mLocation.x, i->mLocation.y);
+//		float urban_trans	= dems[dem_UrbanTransport].value_linear(i->mLocation.x, i->mLocation.y);
 
-		result = no_poly_gen ? 0 : QueryUsableFacsBySize(require_feat, terrain, 
-									elev, slope, 0,
-									urban_dense, urban_radial, urban_trans,
-									shortest_seg, longest_seg, 0, 0, false, query, 1);
+		int		require_feat = i->mFeatType;
+		int		height_max = 0.0;
+			 if (i->mParams.count(pf_Height))		height_max = i->mParams[pf_Height];
+		else if (inFace->mParams.count(af_Height))	height_max = inFace->mParams[af_Height];
+
+		result = no_poly_gen ? 0 : QueryUsableFacsBySize(					// This is facade placement for specific point features in the
+											require_feat, 					// non-subdivision case.
+											terrain, 
+											shortest_seg, longest_seg, 
+											height_max,											
+											query, 
+											1);
 		bool	got_it = false;
 
 		for (int ri = 0; ri < result; ++ri)
@@ -1096,10 +1105,14 @@ void	InstantiateGTPolygon(
 		// OPTIMIZE: we don't know how big of a space we have, but if we fail on a small object, bigger ones are NOT going to work.
 		// (But wait, do we go biggest to smalllest or smallest to biggest here?)
 
-		result = got_it ? 0 : QueryUsableObjsBySize(require_feat, terrain, 
-									temp, slope, 0, 
-									urban_dense, urban_radial, urban_trans,
-									-1.0, -1.0, 0, 0, false, query, 1);
+		result = got_it ? 0 : QueryUsableObjsBySize(			// This is obj selection for a point feature basically in the middle of the lot.
+											require_feat, 
+											terrain, 
+											-1,					// We are placing off in the middle of the lot.  We do not know our size.
+											-1,					// Take all objs and try 'em.  (Slow!)
+											height_max,
+											query,
+											sizeof(query) / sizeof(query[0]));
 
 		if (!got_it)
 		for (int ri = 0; ri < result; ++ri)
@@ -1157,6 +1170,7 @@ void	InstantiateGTPolygon(
 	
 	if (!no_road_placement)
 	{
+		float height_lim = inFace->mParams.count(af_Height) ? inFace->mParams[af_Height] : 0;
 		polyObjLocalV.resize(1);
 		polyObjLocalV[0].resize(4);
 
@@ -1208,33 +1222,37 @@ void	InstantiateGTPolygon(
 							DebugAssert(!"Hrm....object not found on terrain mesh...");
 						}
 
-						int	landuse = dems[dem_LandUse].xy_nearest(l.x, l.y);
-						int	climate = dems[dem_Climate].xy_nearest(l.x, l.y);
-						int	zoning = inFace->mTerrainType;	
-						float elev 			= dems[dem_Elevation	].value_linear(l.x, l.y);
-						float temp 			= dems[dem_Temperature	].value_linear(l.x, l.y);
-						float slope 		= dems[dem_Slope		].value_linear(l.x, l.y);
-						float relelev 		= dems[dem_RelativeElevation].value_linear(l.x, l.y);
-						float elevrange 	= dems[dem_ElevationRange].value_linear(l.x, l.y);
-						float urban_dense 	= dems[dem_UrbanDensity	].value_linear(l.x, l.y);
-						float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(l.x, l.y);
-						float urban_radial 	= dems[dem_UrbanRadial	].value_linear(l.x, l.y);
-						float urban_trans	= dems[dem_UrbanTransport].value_linear(l.x, l.y);
+//						int	landuse = dems[dem_LandUse].xy_nearest(l.x, l.y);
+//						int	climate = dems[dem_Climate].xy_nearest(l.x, l.y);
+//						int	zoning = inFace->mTerrainType;	
+//						float elev 			= dems[dem_Elevation	].value_linear(l.x, l.y);
+//						float temp 			= dems[dem_Temperature	].value_linear(l.x, l.y);
+//						float slope 		= dems[dem_Slope		].value_linear(l.x, l.y);
+//						float relelev 		= dems[dem_RelativeElevation].value_linear(l.x, l.y);
+//						float elevrange 	= dems[dem_ElevationRange].value_linear(l.x, l.y);
+//						float urban_dense 	= dems[dem_UrbanDensity	].value_linear(l.x, l.y);
+//						float urban_prop 	= dems[dem_UrbanPropertyValue].value_linear(l.x, l.y);
+//						float urban_radial 	= dems[dem_UrbanRadial	].value_linear(l.x, l.y);
+//						float urban_trans	= dems[dem_UrbanTransport].value_linear(l.x, l.y);
 						
 						float	spacing = 10.0;
-						if (urban_dense != NO_DATA && urban_prop != NO_DATA)
+//						if (urban_dense != NO_DATA && urban_prop != NO_DATA)
 						{
-							float density = roadDensities[i][j] * urban_dense;
+							float density = FORCE_MAX_DENSITY ? 1.0 : roadDensities[i][j];
 							spacing =  10.0 * 2.0 * (pow(0.2, density));	//	was 1.5 insteaed of 10 - way too dense!  and slow!
 							if (RollDice(density))
 							{
 								int types[500];
 								float widths[500];
 								float depths[500];
-								result = QueryUsableObjsBySize(NO_VALUE, terrain,
-													temp, slope, 0,
-													urban_dense, urban_radial, urban_trans,
-													-1.0, -1.0, 0, 0, true, query, 500);
+								result = QueryUsableObjsBySize(			// This is the object selection case along a road for generated objs.
+													NO_VALUE, 			// We do know our max width but we do not know our depth.
+													terrain,													
+													len,
+													-1.0, 
+													height_lim, 
+													query, 
+													sizeof(query) / sizeof(query[0]));
 													
 								// We try to have some smarts about not rasterizing objects multiple times 
 								// when we already know the results - a few floating point compares is a LOT faster than rasterization.
@@ -1329,9 +1347,9 @@ void	InstantiateGTPolygon(
 										spacing = failed_width;
 								}
 							}
-						} else {
+						}// else {
 //							printf("Skipping forward, %lf,%lf - spacing = %f, len = %f\n", l.x, l.y, spacing, len);
-						}
+//						}
 						t += spacing / len;
 					}
 		//			gImage.Debug();			
@@ -1379,12 +1397,12 @@ void	DumpPlacementCounts(void)
 	for (multimap<int,int>::iterator i = items.begin(); i != items.end(); ++i)
 	{
 		float act_freq = (float) i->first / (float) t;
-		fprintf(fi,"%30s:%07d %5.2lf     %07d %5.2lf\n", 
+		fprintf(fi,"%30s:%07d %5.2lf\n", 
 				FetchTokenString(i->second),
 				i->first,
-				100.0 * act_freq,	
-				gRepTable[gRepFeatureIndex[i->second]].max_num,
-				100.0 * gRepTable[gRepFeatureIndex[i->second]].freq);
+				100.0 * act_freq);
+//				gRepTable[gRepFeatureIndex[i->second]].max_num,
+//				100.0 * gRepTable[gRepFeatureIndex[i->second]].freq);
 	}
 
 	fprintf(fi, "%d subdivided.\n", total_subdiv);

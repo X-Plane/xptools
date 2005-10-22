@@ -42,22 +42,22 @@ struct	RepInfo_t {
 	int		feature;
 	int		terrain;
 	
-	float	temp_min;
-	float	temp_max;
-	float	rain_min;
-	float	rain_max;
-	float	slope_min;
-	float	slope_max;
-	float	urban_dense_min;
-	float	urban_dense_max;
-	float	urban_radial_min;
-	float	urban_radial_max;
-	float	urban_trans_min;
-	float	urban_trans_max;
+//	float	temp_min;
+//	float	temp_max;
+//	float	rain_min;
+//	float	rain_max;
+//	float	slope_min;
+//	float	slope_max;
+//	float	urban_dense_min;
+//	float	urban_dense_max;
+//	float	urban_radial_min;
+//	float	urban_radial_max;
+//	float	urban_trans_min;
+//	float	urban_trans_max;
 
 	// AUTOGEN
-	float	freq;
-	int		max_num;
+//	float	freq;
+//	int		max_num;
 
 	// OBJECT
 	int		obj_type;	
@@ -71,18 +71,20 @@ struct	RepInfo_t {
 	float	height_min;
 	float	height_max;
 };
-typedef	vector<RepInfo_t>							RepTable;	
+typedef	vector<RepInfo_t>							RepTable;
+typedef hash_map<int, pair<int, int> >				RepTableTerrainIndex;
 
 typedef hash_map<int, int>							RepFeatureIndex;
 typedef multimap<float, int, greater<float> >		RepAreaIndex;
 typedef hash_map<int, int>							RepUsageTable;
 extern	RepTable		gRepTable;			// This is the actual master table
 extern	RepFeatureIndex	gRepFeatureIndex;	// This indexes based on feature type (the object enum.)
-extern	RepAreaIndex	gFacadeAreaIndex;	// This sorts facades by min area, big to small
-extern	RepAreaIndex	gObjectAreaIndex;	// This sorts objects by area, big to small
-extern	RepUsageTable	gRepUsage;			// This is a table of usages.
-extern	int				gRepUsageTotal;
 
+//extern	RepAreaIndex	gFacadeAreaIndex;	// This sorts facades by min area, big to small
+//extern	RepAreaIndex	gObjectAreaIndex;	// This sorts objects by area, big to small
+extern	RepUsageTable			gRepUsage;			// This is a table of usages.
+extern	int						gRepUsageTotal;
+extern 	RepTableTerrainIndex	gRepTableTerrainIndex;
 struct	FeatureInfo {
 	float		property_value;
 	int			terrain_type;
@@ -99,19 +101,18 @@ int	QueryUsableFacsBySize(
 					int				feature,
 					int				terrain,
 					
-					float			temp,
-					float			rain,
-					float			slope,
-					float			urban_dense,
-					float			urban_radial,
-					float			urban_trans,
+//					float			temp,
+//					float			rain,
+//					float			slope,
+//					float			urban_dense,
+//					float			urban_radial,
+//					float			urban_trans,
 					
-					float			inWidth,
-					float			inDepth,
-					float			inHeightMin,
-					float			inHeightMax,
+					float			inLongSide,
+					float			inShortSide,
+					float			inTargetHeight,
 					
-					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
+//					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int *			outResults,					
 					int				inMaxResults);
 
@@ -123,19 +124,18 @@ int QueryUsableObjsBySize(
 					int				feature,
 					int				terrain,
 					
-					float			temp,
-					float			rain,
-					float			slope,
-					float			urban_dense,
-					float			urban_radial,
-					float			urban_trans,
+//					float			temp,
+//					float			rain,
+//					float			slope,
+//					float			urban_dense,
+//					float			urban_radial,
+//					float			urban_trans,
 					
 					float			inWidth,
 					float			inDepth,
-					float			inHeightMin,
 					float			inHeightMax,	// If min = max, we want an exact height!
 					
-					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
+//					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int *			outResults,
 					
 					int				inMaxResults);
