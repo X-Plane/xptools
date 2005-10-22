@@ -86,6 +86,7 @@
 	/* POLYGONAL (AREA) FEATURE PARAMS */
 	
 	TOKEN(af_Height)
+	TOKEN(af_HeightObjs)
 
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.
