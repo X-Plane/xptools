@@ -133,7 +133,7 @@ static	const char	kCmdKeys [] = {
 	0,	0,	// divider
 	0,	0,
 	'F',xplm_ControlFlag,
-	0,	0,
+	'G',xplm_ControlFlag,
 	0,	0,	// divider
 	'P',xplm_ControlFlag,
 	0,	0,
@@ -182,7 +182,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_DoZoning:
-			ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_Slope],WED_ProgressFunc);
+			ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_Slope],gApts, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorMetaChange, NULL);
 			break;
 //		case procCmd_DoBeaches:
