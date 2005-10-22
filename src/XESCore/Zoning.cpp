@@ -26,22 +26,24 @@
 #include "MapAlgs.h"
 #include "DEMDefs.h"
 #include "DEMTables.h"
+#include "GISUtils.h"
 #include "ObjTables.h"
 #include "ParamDefs.h"
-
+#include "AptDefs.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
 
 void	ZoneManMadeAreas(
-				Pmwx& 			ioMap, 
+				Pmwx& 				ioMap, 
 				const DEMGeo& 		inLanduse, 
 				const DEMGeo& 		inSlope,
+				const AptVector&	inApts,			
 				ProgressFunc		inProg)
 {
 		Pmwx::Face_iterator face;
 		
-	PROGRESS_START(inProg, 0, 1, "Zoning terrain...")
+	PROGRESS_START(inProg, 0, 2, "Zoning terrain...")
 
 	int total = ioMap.number_of_faces() * 2;
 	int check = total / 100;
@@ -63,7 +65,7 @@ void	ZoneManMadeAreas(
 				max_height = max(max_height, feat->mParams[pf_Height]);
 			}
 		}
-		face->mParams[af_Height] = max_height;
+		face->mParams[af_HeightObjs] = max_height;
 
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
 		face->mTemp1 = NO_VALUE;
@@ -87,6 +89,62 @@ void	ZoneManMadeAreas(
 
 	}
 
-	PROGRESS_DONE(inProg, 0, 1, "Zoning terrain...")
+	PROGRESS_DONE(inProg, 0, 2, "Zoning terrain...")
+	PROGRESS_START(inProg, 1, 2, "Checking approach paths...")
 
+	ctr = 0;	
+	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
+	if (face->mTerrainType != terrain_Airport)
+	if (!face->IsWater())
+	{
+		PROGRESS_CHECK(inProg, 0, 1, "Checking approach paths...", ctr, total, check)
+		set<GISFace *>	neighbors;
+		FindAdjacentFaces(face, neighbors);
+		Polygon2 me;
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			me.push_back(circ->target()->point());
+			++circ;
+		} while (circ != stop);
+		
+		Point2	myloc = me.centroid();
+		
+		double	my_agl = face->mParams[af_HeightObjs];
+		double	max_agl = my_agl;
+		
+		for (set<GISFace *>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
+		{
+			max_agl = max(max_agl, (*niter)->mParams[af_HeightObjs] * 0.5);
+		}
+		
+		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
+		if (apt->kind_code == apt_Type_Airport)
+		if (!apt->pavements.empty())
+		{
+			Point2 midp = apt->pavements.front().ends.midpoint();
+			double dist = LonLatDistMeters(midp.x, midp.y, myloc.x, myloc.y);
+			if (dist < 15000.0)
+			for (AptPavementVector::const_iterator rwy = apt->pavements.begin(); rwy != apt->pavements.end(); ++rwy)
+			if (rwy->name != "xxx")
+			{
+				midp = rwy->ends.midpoint();
+				dist = LonLatDistMeters(midp.x, midp.y, myloc.x, myloc.y);
+				
+				Vector2	azi_rwy = Vector2(rwy->ends.p1, rwy->ends.p2);	azi_rwy.normalize();
+				Vector2 azi_me = Vector2(midp, myloc);					azi_me.normalize();
+				
+				double dot = azi_rwy.dot(azi_me);
+				
+				double gs_elev = dist / 18.0;
+				if (dot > 0.8 < dist < 700.0)
+					max_agl = min(max_agl, gs_elev);
+			}
+		}
+				
+		my_agl = max(my_agl, max_agl);
+		face->mParams[af_Height] = max_agl;
+	}
+	PROGRESS_DONE(inProg, 1, 2, "Checking approach paths...")
 }

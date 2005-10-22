@@ -24,6 +24,7 @@
 #ifndef ZONING_H
 #define ZONING_H
 
+#include "AptDefs.h"
 #include "MapDefs.h"
 #include "ProgressUtils.h"
 
@@ -40,6 +41,7 @@ void	ZoneManMadeAreas(
 				Pmwx& 				ioMap, 
 				const DEMGeo& 		inLanduse, 
 				const DEMGeo& 		inSlope,
+				const AptVector&	inApts,			
 				ProgressFunc		inProg);
 
 #endif /* ZONING_H */
