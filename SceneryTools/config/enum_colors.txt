@@ -231,14 +231,14 @@ ENUM_COLOR	drain_Dir7										AADD88
 #COLOR_BAND	dem_Rainfall	7475	10005		128,0,128		0,138,255
 
 #These are Sergio's replacement color bands.
-COLOR_BAND	dem_Rainfall	0		50			255,255,163		255,255,163
-COLOR_BAND	dem_Rainfall	50		250			251,175,92		251,175,92
-COLOR_BAND	dem_Rainfall	250		700			196,223,155		196,223,155
-COLOR_BAND	dem_Rainfall	700		1200		0,89,40			0,89,40
-COLOR_BAND	dem_Rainfall	1200	1800		170,226,255		170,226,255
-COLOR_BAND	dem_Rainfall	1800	2800		59,124,255		59,124,255
-COLOR_BAND	dem_Rainfall	2800	10005		29,0,125		29,0,125
-
+COLOR_BAND	dem_Rainfall	0		50			50,50,50		255,255,163
+COLOR_BAND	dem_Rainfall	50		250			251,175,92		255,255,0
+COLOR_BAND	dem_Rainfall	250		700			196,223,155		251,175,92		
+COLOR_BAND	dem_Rainfall	700		1200		0,89,40			196,223,155		
+COLOR_BAND	dem_Rainfall	1200	1800		170,226,255		0,89,40			
+COLOR_BAND	dem_Rainfall	1800	2800		59,124,255		170,226,255		
+COLOR_BAND	dem_Rainfall	2800	10005		29,0,125		59,124,255		
+																
 COLOR_BAND	dem_HydroQuantity	0		25			230,230,230		190,190,190
 COLOR_BAND	dem_HydroQuantity	25		75			190,190,190		150,150,150
 COLOR_BAND	dem_HydroQuantity	75		125 		150,150,150		196,112,110
@@ -267,30 +267,57 @@ COLOR_BAND	dem_Biomass			1210	2010		0,170,0			5,112,94
 COLOR_BAND	dem_Biomass			2010	2510		5,112,94		0,138,255
 COLOR_BAND	dem_Biomass			2510	3010		0,138,255		0,0,255
 
+
+COLOR_BAND	dem_Temperature		-99	-20	164,199,208	164,199,208	# ice
+COLOR_BAND	dem_Temperature		-20	-12	252,252,252	252,252,252	# Glacier
+COLOR_BAND	dem_Temperature		-12	-8	150,150,150	150,150,150	# polar desert/rock
+COLOR_BAND	dem_Temperature		-8	-6.5	170,197,159	170,197,159	# polar semidesert/rock
+COLOR_BAND	dem_Temperature		-6.5	-5.5	156,241,119	156,241,119  	# tundra_scree
+COLOR_BAND	dem_Temperature		-5.5	-4	179,185,83	179,185,83  	# tundra/wooded tundra
+COLOR_BAND	dem_Temperature		-4	0	0,89,40		0,89,40		# boreal
+COLOR_BAND	dem_Temperature		0	4	44,108,59	44,108,59	# conifer
+COLOR_BAND	dem_Temperature		4	8	23,127,18	23,127,18	# mixed
+COLOR_BAND	dem_Temperature		8	12.5	12,157,6	12,157,6	# cool broadleaf
+COLOR_BAND	dem_Temperature		12.5	15.5	0,207,24	0,207,24	# temp broadleaf
+COLOR_BAND	dem_Temperature		15.5	20	255,255,0	255,255,0	# warm broadleaf
+COLOR_BAND	dem_Temperature		20	25	247,148,28	247,148,28	# sub-tropical
+COLOR_BAND	dem_Temperature		25	99	237,27,35	237,27,35	# tropical
+
+#COLOR_BAND	dem_TemperatureSeaLevel		-99	-20	164,199,208	164,199,208	# ice
+#COLOR_BAND	dem_TemperatureSeaLevel		-20	-12	252,252,252	252,252,252	# Glacier
+#COLOR_BAND	dem_TemperatureSeaLevel		-12	-8	150,150,150	150,150,150	# polar desert/rock
+#COLOR_BAND	dem_TemperatureSeaLevel		-8	-6.5	170,197,159	170,197,159	# polar semidesert/rock
+#COLOR_BAND	dem_TemperatureSeaLevel		-6.5	-5.5	156,241,119	156,241,119  	# tundra_scree
+#COLOR_BAND	dem_TemperatureSeaLevel		-5.5	-4	179,185,83	179,185,83  	# tundra/wooded tundra
+#COLOR_BAND	dem_TemperatureSeaLevel		-4	0	0,89,40		0,89,40		# boreal
+#COLOR_BAND	dem_TemperatureSeaLevel		0	4	44,108,59	44,108,59	# conifer
+#COLOR_BAND	dem_TemperatureSeaLevel		4	8	23,127,18	23,127,18	# mixed
+#COLOR_BAND	dem_TemperatureSeaLevel		8	12.5	12,157,6	12,157,6	# cool broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		12.5	15.5	0,207,24	0,207,24	# temp broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		15.5	20	255,255,0	255,255,0	# warm broadleaf
+#COLOR_BAND	dem_TemperatureSeaLevel		20	25	247,148,28	247,148,28	# sub-tropical
+#COLOR_BAND	dem_TemperatureSeaLevel		25	99	237,27,35	237,27,35	# tropical
+
+COLOR_BAND	dem_TemperatureSeaLevel		-30	-10	255,255,255	0,0,255
+COLOR_BAND	dem_TemperatureSeaLevel		-10	0	  0,0,0     0,255,0
+COLOR_BAND	dem_TemperatureSeaLevel		0	10	0,255,0     255,255,0
+COLOR_BAND	dem_TemperatureSeaLevel		10	40	255,255,0   255,0,0
+
 #These are the original temperature color bands from the people who made the Koeppen data.
-COLOR_BAND	dem_TemperatureSeaLevel		-60		-29.5		160,160,160		192,192,192
-COLOR_BAND	dem_TemperatureSeaLevel		-29.5	-24.5		192,192,192		220,220,220
-COLOR_BAND	dem_TemperatureSeaLevel		-24.5	-14.5		220,220,220		138,200,230
-COLOR_BAND	dem_TemperatureSeaLevel		-14.5	-9.5		138,200,230		0,240,255
-COLOR_BAND	dem_TemperatureSeaLevel		-9.5	-4.5		0,240,255		138,240,145
-COLOR_BAND	dem_TemperatureSeaLevel		-4.5	0.5			138,240,145		234,255,145
-COLOR_BAND	dem_TemperatureSeaLevel		0.5		10.5		234,255,145		181,143,0
-COLOR_BAND	dem_TemperatureSeaLevel		10.5	15.5		181,143,0		255,143,0
-COLOR_BAND	dem_TemperatureSeaLevel		15.5	20.5		255,143,0		255,84,0
-COLOR_BAND	dem_TemperatureSeaLevel		20.5	30.5		255,84,0		255,0,0
-COLOR_BAND	dem_TemperatureSeaLevel		30.5	35.5		255,0,0			194,0,0
-COLOR_BAND	dem_TemperatureSeaLevel		35.5	40.0		194,0,0			97,0,0
+#COLOR_BAND	dem_TemperatureSeaLevel		-60		-29.5		160,160,160		192,192,192
+#COLOR_BAND	dem_TemperatureSeaLevel		-29.5	-24.5		192,192,192		220,220,220
+#COLOR_BAND	dem_TemperatureSeaLevel		-24.5	-14.5		220,220,220		138,200,230
+#COLOR_BAND	dem_TemperatureSeaLevel		-14.5	-9.5		138,200,230		0,240,255
+#COLOR_BAND	dem_TemperatureSeaLevel		-9.5	-4.5		0,240,255		138,240,145
+#COLOR_BAND	dem_TemperatureSeaLevel		-4.5	0.5			138,240,145		234,255,145
+#COLOR_BAND	dem_TemperatureSeaLevel		0.5		10.5		234,255,145		181,143,0
+#COLOR_BAND	dem_TemperatureSeaLevel		10.5	15.5		181,143,0		255,143,0
+#COLOR_BAND	dem_TemperatureSeaLevel		15.5	20.5		255,143,0		255,84,0
+#COLOR_BAND	dem_TemperatureSeaLevel		20.5	30.5		255,84,0		255,0,0
+#COLOR_BAND	dem_TemperatureSeaLevel		30.5	35.5		255,0,0			194,0,0
+#COLOR_BAND	dem_TemperatureSeaLevel		35.5	40.0		194,0,0			97,0,0
 
 #These are Sergio's new temperature color bands
-COLOR_BAND	dem_Temperature		-60		-20			0,174,239		0,174,239
-COLOR_BAND	dem_Temperature		-20		-10			250,250,250		250,250,250
-COLOR_BAND	dem_Temperature		-10		-8			150,150,150		150,150,150
-COLOR_BAND	dem_Temperature		-8		-5			215,225,132		215,225,132
-COLOR_BAND	dem_Temperature		-5		2			0,89,40			0,89,40
-COLOR_BAND	dem_Temperature		2		12			7,155,0			7,155,0
-COLOR_BAND	dem_Temperature		12		18			255,255,0		255,255,0
-COLOR_BAND	dem_Temperature		18		24			247,148,28		247,148,28
-COLOR_BAND	dem_Temperature		24		40			237,27,35		237,27,35
 
 COLOR_BAND	dem_TemperatureRange	0.0 	5.0 	255,255,141		237,237,135
 COLOR_BAND	dem_TemperatureRange	5.0 	10.0	237,237,135		219,219,85 

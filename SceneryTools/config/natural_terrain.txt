@@ -3,9 +3,7 @@
 #
 # LAND USE RULES
 #
-# This section describes when to use this "rule".  For any given triangle, the first
-# rule that matches based on land use, climate, elevation range, and slope, is applied.
-#
+# This section describes when to use this "rule".  For any given triangle, the first rule that matches based on land use, climate, elevation range, and slope, is applied.
 # For any rule that takes a name, use NO_VALUE to "ignore this rule" and match any triangle.
 # For any range of numbers (E.g. elevation) use 0 0 to ignore the rule.
 # For water, 1 means "require water" and 0 means "don't care".
@@ -16,189 +14,361 @@
 # ELEVATION - range of acceptable triangle center elevations in meters
 # SLOPE - range of acceptable slopes in degrees or 0 0 for any
 # TEMP - range of acceptable average temps in meters
+# RAIN - range of acceptable average rain in mm
 # WATER - 0 = don't care, 1 = use this land use only when next to water.
 # SLOPE_HEAD - slope heading, degrees from 0 (north) to 180 (south)
 # REL_ELEV - relative elevation as a fraction, 0.0 = valley, 1.0 = ridge
 # ELEV_RANGE - acceptable range of vertical rises in the area in meter
-#
+# URBAN DENSITY - Urban density ratio
+# URBAN CENTER - Urban "radial" ratio, e.g. 1.0 for center of city, 0.0 for the edge.
+# URBAN TRANS - Urban "transport" ratio e.g. higher for more access to heavy transport.
+# URBAN SQUARE - Urban "type" of cities computate from usgs landuse: 0 = don't care, 1 = square, 2 = irregular
+# LATITUDE - range of acceptable degree
+# VARIANT - to avoid the textures repetitions, 0 = don't care, 1 = do "blobs" to split the tex (don't abuse! transitions are expensive!)
+#         - variant output 4 different ter file (tex_name1.ter, tex_name2.ter, ecc) with instruction to do different offset for the same tex
+#         - edit manually each ter file if you want to use more than one tex
 #
 # TERRAIN TYPE INFO
 #
-# Each terrain must be named.  Layer is an arbitrary numbering system that defines 
-# which terrains go on top of others.  XONDIST is the distance over which a higher
-# ranked terrain sprawls onto a lower ranked one.  each name must be unique.
+# Each terrain must be named.  Layer is an arbitrary numbering system that defines which terrains go on top of others. TRANSDIST is the distance over which a higher ranked terrain sprawls onto a lower ranked one.  each name must be unique.
 #
 # 2-D TEXTURING
 #
 # This defines the bitmaps used in the 2-d texture.  Use "-" for no texture.
 #
-# to add - base res, comp res, base invert, comp invert
-# tree tex, tree invert, tree res
+# TEX RES - resolution of the texture in meters
+# PROJ - projection of the texture, DOWN, NS or EW
+# BORDER - png to control the smooth of the trasition
+#
+# FOREST - the name of an existing .for file to place 3D trees
+# COLOR - rgb value for the wed map visualization
 #
 #
 #
-########### GLOBAL RULES BY MAX 09-2005 ###########
-#
+########### GLOBAL RULES BY MAX 10-2005 ###########
 #
 #
 ########### HUMAN ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
-# airport
-NTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_apt			100	50	../tex/ice_apt.png		500	DOWN	bordershort.png		NO_VALUE	160	160	160
-NTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	400	9999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_apt		100	50	../tex/temp_apt.png		500	DOWN	bordershort.png		NO_VALUE	160	160	160
-NTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	55	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_apt			100	50	../tex/dry_apt.png		500	DOWN	bordershort.png		NO_VALUE	160	160	160
-NTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	0	55	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_apt			100	50	../tex/des_apt.png		500	DOWN	bordershort.png		NO_VALUE	160	160	160
-
-# CITY
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
+# ------------------------ AIRPORT ------------------------
+MTERRAIN    terrain_Airport	lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	0	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_sand_apt		110	50	../tex/des_sand_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	0	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_sand_apt		110	50	../tex/des_sand_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	lu_usgs_DESERT			NO_VALUE	0	0	0	0	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_apt			110	50	../tex/des_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_apt			110	50	../tex/ice_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	400	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_apt		110	50	../tex/temp_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	250	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_apt			110	50	../tex/dry_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_Airport	NO_VALUE			NO_VALUE	0	0	0	0	0	0	0	250	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_apt			110	50	../tex/des_apt.png		500	DOWN	border.png		NO_VALUE	160	160	160
+#
+#
+# ------------------------ CITY ICE ------------------------
+# generic tex for city in very low temp
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	0	25	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_city		99	100	../tex/ice_city.png		3000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	0	25	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_city		99	100	../tex/ice_city.png		3000	DOWN	border.png		NO_VALUE	100	30	100
+#
+# ------------------------ CITY NORTH IRREGULAR ------------------------
 # irregular: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.1	0.3	0	0	0.3	1	2	0	0	1	art/ter/temp_city_irr_ind	99	100	../tex/temp_city_irr_ind.png	4000	DOWN	border.png		NO_VALUE	100	50	0	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_in	99	100	../tex/temp_city_irr_in.png	4000	DOWN	border.png		NO_VALUE	100	50     30	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_out	98	100	../tex/temp_city_irr_out.png	4000	DOWN	border.png		NO_VALUE	100	50     75	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.1	0.3	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_twn	97	100	../tex/temp_city_irr_twn.png	4000	DOWN	border.png		NO_VALUE	100	50     100	
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	2	47	90	1	art/ter/north_city_irr_ind	100	100	../tex/temp_city_irr_ind.png	2000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	2	47	90	1	art/ter/north_city_irr_in	99	100	../tex/north_city_irr_in.png	3000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	2	47	90	1	art/ter/north_city_irr_out	98	100	../tex/north_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	2	47	90	1	art/ter/north_city_irr_twn	97	100	../tex/temp_city_irr_twn.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	47	90	1	art/ter/north_city_irr_out	98	100	../tex/north_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# ------------------------ CITY WET -> TEMPERATE ------------------------
+# special city terrain
+MTERRAIN    terrain_Park	NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/temp_city_park		101	50	../tex/temp_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_ForestPark	NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/temp_city_park		101	50	../tex/temp_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_GolfCourse	NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/temp_city_golf		101	50	../tex/temp_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+#
+# irregular: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	2	0	0	1	art/ter/temp_city_irr_ind	100	100	../tex/temp_city_irr_ind.png	2000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_in	99	100	../tex/temp_city_irr_in.png	2000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_out	98	100	../tex/temp_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	2	0	0	1	art/ter/temp_city_irr_twn	97	100	../tex/temp_city_irr_twn.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_city_irr_out	98	100	../tex/temp_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
 # square: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.1	0.3	0	0	0.3	1	1	0	0	1	art/ter/temp_city_sq_ind	99	100	../tex/temp_city_sq_ind.png	4000	DOWN	border.png		NO_VALUE	50	100	0	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_in		99	100	../tex/temp_city_sq_in.png	4000	DOWN	border.png		NO_VALUE	50	100     30	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_out	98	100	../tex/temp_city_sq_out.png	4000	DOWN	border.png		NO_VALUE	50	100     75	
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	0	0	0	0	0	0	0	0	0	0.1	0.3	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_twn	97	100	../tex/temp_city_sq_twn.png	4000	DOWN	border.png		NO_VALUE	50	100     100	
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	1	0	0	1	art/ter/temp_city_sq_ind	100	100	../tex/temp_city_sq_ind.png	3000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_in		99	100	../tex/temp_city_sq_in.png	3000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_out	98	100	../tex/temp_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	1	0	0	1	art/ter/temp_city_sq_twn	97	100	../tex/temp_city_sq_twn.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	0	10	-10	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_city_sq_out	98	100	../tex/temp_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
 #
-# CITY HILL
-NTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	10	25	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	1	art/ter/temp_cityhill_irr	96	100	../tex/temp_cityhill_irr.png	2000	DOWN	border.png		NO_VALUE	100	50	200
-NTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	10	25	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	1	art/ter/temp_cityhill_sq	96	100	../tex/temp_cityhill_sq.png	2000	DOWN	border.png		NO_VALUE	50	100	200
+# city hill
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	10	25	-10	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	1	art/ter/temp_cityhill_irr	96	100	../tex/temp_cityhill_irr.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	10	25	-10	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	1	art/ter/temp_cityhill_sq	96	100	../tex/temp_cityhill_sq.png	3000	DOWN	border.png		NO_VALUE	100	100	100
 #
-
+# ------------------------ CITY SEMIDRY -> DRY ------------------------
+# special city terrain
+MTERRAIN    terrain_Park	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	250	650	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/dry_city_park		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_ForestPark	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	250	650	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/dry_city_park		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_GolfCourse	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	250	650	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/dry_city_golf		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
 #
-# crops and town
-NTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cropstown_irr	94	100	../tex/temp_cropstown_irr.png	3000	DOWN	border.png		NO_VALUE	90	150	0
-NTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cropstown_sq	94	100	../tex/temp_cropstown_sq.png	3000	DOWN	border.png		NO_VALUE	90	150	0
-#																														0	
-# crops
-NTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_crops_irr		93	100	../tex/temp_crops_irr.png	3000	DOWN	border.png		NO_VALUE	90	150	0
-NTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_crops_sq		93	100	../tex/temp_crops_sq.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+# irregular: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	2	0	0	1	art/ter/dry_city_irr_ind	100	100	../tex/temp_city_irr_ind.png	2000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	2	0	0	1	art/ter/dry_city_irr_in		99	100	../tex/temp_city_irr_in.png	2000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	2	0	0	1	art/ter/dry_city_irr_out	98	100	../tex/temp_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	2	0	0	1	art/ter/dry_city_irr_twn	97	100	../tex/temp_city_irr_twn.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_city_irr_out	98	100	../tex/temp_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# square: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	1	0	0	1	art/ter/dry_city_sq_ind		100	100	../tex/temp_city_sq_ind.png	3000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	1	0	0	1	art/ter/dry_city_sq_in		99	100	../tex/temp_city_sq_in.png	3000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	1	0	0	1	art/ter/dry_city_sq_out		98	100	../tex/dry_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	1	0	0	1	art/ter/dry_city_sq_twn		97	100	../tex/temp_city_sq_twn.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	0	10	-10	999	250	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_city_sq_out		98	100	../tex/dry_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# city hill
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	10	25	-10	999	250	650	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	1	art/ter/dry_cityhill_irr	96	100	../tex/dry_crptwnhill.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	10	25	-10	999	250	650	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	1	art/ter/dry_cityhill_sq		96	100	../tex/dry_cityhill_sq.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# ------------------------ CITY DESERT ------------------------
+# special city terrain
+MTERRAIN    terrain_Park	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	0	250	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/des_city_park		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_ForestPark	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	0	250	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/des_city_park		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+MTERRAIN    terrain_GolfCourse	NO_VALUE			NO_VALUE	0	0	0	0	-10	999	0	250	0	0	0	0	0	0	0	0.1	1.0	0	0	0	0	0	0	0	0	art/ter/des_city_golf		101	50	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	160	160	160
+#
+# irregular: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	2	0	0	1	art/ter/des_city_irr_ind	100	100	../tex/des_city_irr_out.png	4000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	2	0	0	1	art/ter/des_city_irr_in		99	100	../tex/des_city_irr_in.png	4000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	2	0	0	1	art/ter/des_city_irr_out	98	100	../tex/des_city_irr_out.png	4000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	2	0	0	1	art/ter/des_city_irr_twn	97	100	../tex/des_city_irr_out.png	4000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_city_irr_out	98	100	../tex/des_city_irr_out.png	4000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# square: "ind" for industrial (near transportations) / "in" for the center of the city / "out" for the suburbs / "town" for each other
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.1	0.3	0	0	0.2	0.5	1	0	0	1	art/ter/des_city_sq_ind		100	100	../tex/temp_city_sq_ind.png	3000	DOWN	border.png		NO_VALUE	100	0	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.7	1.0	0	0	0	0	1	0	0	1	art/ter/des_city_sq_in		99	100	../tex/temp_city_sq_in.png	3000	DOWN	border.png		NO_VALUE	100	30	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.3	0.7	0	0	0	0	1	0	0	1	art/ter/des_city_sq_out		98	100	../tex/dry_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	75	100
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0.15	0.3	0	0	0	0	1	0	0	1	art/ter/des_city_sq_twn		97	100	../tex/dry_cityhill_sq.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	0	10	-10	999	0	250	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_city_sq_out		98	100	../tex/dry_city_sq_out.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+# city hill
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_IRREGULAR		NO_VALUE	0	0	10	25	-10	999	0	250	0	0	0	0	0	0	0	0	0	0	0	0	0	2	0	0	1	art/ter/des_cityhill_irr	96	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	100	100	100
+MTERRAIN    NO_VALUE		lu_usgs_URBAN_SQUARE		NO_VALUE	0	0	10	25	-10	999	0	250	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	1	art/ter/des_cityhill_sq		96	100	../tex/dry_cityhill_sq.png	3000	DOWN	border.png		NO_VALUE	100	100	100
+#
+#
+# ------------------------ CROPS & TOWN ------------------------
+# highland (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	4	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crptwn_irr	94	100	../tex/hiland_crptwn_irr.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	8	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crptwn_sq	94	100	../tex/hiland_crp_sq.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	4	14	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crptwnhill_irr	93	100	../tex/hiland_crptwnhill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	8	14	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crptwnhill_sq	93	100	../tex/hiland_crptwnhill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+# temp (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	4	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crptwn_irr		94	100	../tex/temp_city_irr_twn.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	4	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crptwn_sq		94	100	../tex/temp_city_sq_twn.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	4	14	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crptwnhill_irr	93	100	../tex/temp_cityhill_irr.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	8	14	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crptwnhill_sq	93	100	../tex/temp_cityhill_irr.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+# semidry (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	4	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crptwn_irr	94	100	../tex/dry_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	8	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crptwn_sq	94	100	../tex/temp_city_sq_twn.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	4	14	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crptwnhill_irr	93	100	../tex/dry_crptwnhill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	8	14	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crptwnhill_sq	93	100	../tex/dry_crptwnhill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+# dry (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	4	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crptwn_irr		94	100	../tex/dry_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	8	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crptwn_sq		94	100	../tex/temp_city_sq_twn.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	4	14	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crptwnhill_irr	93	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	8	14	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crptwnhill_sq	93	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+# desert (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	0	4	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crptwn_irr		94	100	../tex/des_city_irr_out.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	0	8	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crptwn_sq		94	100	../tex/des_crp_sq.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_IRR		NO_VALUE	0	0	4	14	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crptwnhill_irr	93	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_TOWN_SQ		NO_VALUE	0	0	8	14	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crptwnhill_sq	93	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+#
+#
+# ------------------------ CROPS ------------------------
+# highland (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	4	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crp_irr		92	100	../tex/temp_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	8	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crp_sq		92	100	../tex/hiland_crp_sq.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	4	14	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crphill_irr	91	100	../tex/hiland_crphill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	8	14	-15	-3	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_crphill_sq	91	100	../tex/hiland_crphill.png	3000	DOWN	border.png		NO_VALUE	90	150	0
+# temp (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	4	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crp_irr		92	100	../tex/temp_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	8	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crp_sq		92	100	../tex/temp_crp_sq.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	4	14	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crphill_irr	91	100	../tex/temp_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	8	14	-3	999	650	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_crphill_sq		91	100	../tex/temp_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+# semidry (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	4	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crp_irr		92	100	../tex/dry_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	8	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crp_sq		92	100	../tex/dry_crp_sq.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	4	14	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crphill_irr	91	100	../tex/dry_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	8	14	-10	999	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_crphill_sq	91	100	../tex/dry_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+# dry (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	4	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crp_irr		92	100	../tex/des_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	8	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crp_sq		92	100	../tex/dry_crp_sq.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	4	14	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crphill_irr		91	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	8	14	-10	999	150	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_crphill_sq		91	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+# desert (flat and hill)
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	0	4	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crp_irr		92	100	../tex/des_crp_irr.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	0	8	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crp_sq		92	100	../tex/des_crp_sq.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_IRR		NO_VALUE	0	0	4	14	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crphill_irr		91	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
+MTERRAIN    NO_VALUE		lu_usgs_CROPS_SQ		NO_VALUE	0	0	8	14	-10	999	0	150	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_crphill_sq		91	100	../tex/des_crphill.png		3000	DOWN	border.png		NO_VALUE	90	150	0
 #
 #
 #
 #
 ########### ICE ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # ice / snow terrain
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_flat		88	300	../tex/ice_flat.png		3000	DOWN	border.png		NO_VALUE	200	230	255
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	25	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_slope_lo		87	100	../tex/ice_slope_lo.png		3000	DOWN	border.png		NO_VALUE	200	230	255
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	25	45	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_slope_hi		86	100	../tex/ice_slope_hi.png		3000	DOWN	border.png		NO_VALUE	200	230	255
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	-999	-10	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_cliff		85	100	../tex/ice_cliff.png		1000	DOWN	border.png		NO_VALUE	200	230	255
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	-999	-15	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_flat		88	1500	../tex/ice_flat.png		3000	DOWN	border.png		NO_VALUE	200	230	255
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	25	-999	-15	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_slope		87	100	../tex/ice_slope.png		3000	DOWN	border.png		NO_VALUE	200	230	255
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	25	50	-999	-15	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_slope_hi		86	100	../tex/ice_slope_hi.png		3000	DOWN	border.png		NO_VALUE	200	230	255
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	50	90	-999	-15	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/ice_cliff		85	100	../tex/ice_cliff.png		1000	DOWN	border.png		NO_VALUE	200	230	255
+# polar desert under ice
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	40	-999	-14	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/ice_polardesert		88	300	../tex/ice_polardesert.png	3000	DOWN	border.png		NO_VALUE	200	230	255
 #
 #
 #
 #
 ########### HIGH CLIFF ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
-# very high cliffs for some climate
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	60	90	0	0	400	9999	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cliff_hiew		4	10	../tex/temp_cliff_hi.png	1000	EW	border.png		NO_VALUE	150	150	150
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	60	90	0	0	400	9999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cliff_hins		5	10	../tex/temp_cliff_hi.png	1000	NS	border.png		NO_VALUE	150	150	150
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
+# very high cliffs for some climate (with slope value according to the NS/EW triangle managing)
+# desert
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	42	90	0	0	0	400	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hiew		4	1	../tex/des_cliff_hi.png		1000	EW	border.png		NO_VALUE	150	150	150
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	42	90	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hins		5	1	../tex/des_cliff_hi.png		1000	NS	border.png		NO_VALUE	150	150	150
+MTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	42	90	0	0	0	400	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hiew		4	1	../tex/des_cliff_hi.png		1000	EW	border.png		NO_VALUE	150	150	150
+MTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	42	90	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hins		5	1	../tex/des_cliff_hi.png		1000	NS	border.png		NO_VALUE	150	150	150
+# dry
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	42	90	0	0	200	400	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_cliff_hiew		4	1	../tex/dry_cliff_hi.png		1000	EW	border.png		NO_VALUE	150	150	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	42	90	0	0	200	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_cliff_hins		5	1	../tex/dry_cliff_hi.png		1000	NS	border.png		NO_VALUE	150	150	150
+# temp and others
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	42	90	0	0	400	99999	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cliff_hiew		4	1	../tex/temp_cliff_hi.png	1000	EW	border.png		NO_VALUE	150	150	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	42	90	0	0	400	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cliff_hins		5	1	../tex/temp_cliff_hi.png	1000	NS	border.png		NO_VALUE	150	150	150
 #
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	60	90	0	0	0	400	0	45	135	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hiew		4	10	../tex/des_cliff_hi.png		1000	EW	border.png		NO_VALUE	150	150	150
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	60	90	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff_hins		5	10	../tex/des_cliff_hi.png		1000	NS	border.png		NO_VALUE	150	150	150
 #
 #
 #
+########### HIGHLAND OR ROCK ##############
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
+# dry highland (rocks) below the ice
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	-15	-5	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/rock_flat		68	1500	../tex/rock_flat.png		3000	DOWN	border.png		NO_VALUE	200	230	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	35	-15	-7	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/rock_slope		66	100	../tex/rock_slope.png		2000	DOWN	border.png		NO_VALUE	200	230	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	35	90	-15	-5	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/rock_cliff		65	100	../tex/dry_cliff.png		3000	DOWN	border.png		NO_VALUE	200	230	150
+# low altitude sloped dry highland (rocks+trees)
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	15	35	-7	-5	0	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/rock_lo_slope		67	100	../tex/dry_cliff.png		3000	DOWN	border.png		NO_VALUE	200	230	150
 #
-########### HIGH TUNDRA ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
-# high tundra below the ice
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	-10	-3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/tundra_flat		67	300	../tex/tundra_flat.png		3000	DOWN	border.png		NO_VALUE	200	230	150
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	35	-10	-3	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/tundra_slope		66	100	../tex/tundra_slope.png		2000	DOWN	border.png		NO_VALUE	200	230	150
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	35	90	-10	-1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/tundra_cliff		65	100	../tex/tundra_cliff.png		2000	DOWN	border.png		NO_VALUE	200	230	150
-#
+# highland below the ice
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	-15	-5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_flat		68	1500	../tex/hiland_flat.png		3000	DOWN	border.png		NO_VALUE	200	230	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	35	-15	-7	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_slope		66	100	../tex/hiland_slope.png		3000	DOWN	border.png		NO_VALUE	200	230	150
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	35	90	-15	-5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_cliff		65	100	../tex/hiland_cliff.png		2000	DOWN	border.png		NO_VALUE	200	230	150
+# low altitude sloped highland (grassland+conifer)
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	15	35	-7	-5	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/hiland_lo_slope		67	100	../tex/hiland_lo_slope.png	2000	DOWN	border.png		NO_VALUE	200	230	150
 #
 #
 #
 ############ MIRE/BOG/FEN ##############
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # bog flat terrain from landuse
-NTERRAIN    NO_VALUE		lu_usgs_BOG			NO_VALUE	0	0	0	10	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	0	art/ter/bog_hot			80	300	../tex/bog_hot.png		3000	DOWN	border.png		NO_VALUE	0	80	0
-NTERRAIN    NO_VALUE		lu_usgs_BOG			NO_VALUE	0	0	0	10	0	0	650	9999	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	0	art/ter/bog_cold		80	300	../tex/bog_cold.png		3000	DOWN	border.png		NO_VALUE	0	80	0
+MTERRAIN    NO_VALUE		lu_usgs_BOG			NO_VALUE	0	0	0	5	0	0	0	650	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	1	art/ter/bog_hot			80	300	../tex/bog_hot.png		3000	DOWN	border.png		NO_VALUE	0	80	0
+MTERRAIN    NO_VALUE		lu_usgs_BOG			NO_VALUE	0	0	0	5	0	0	650	99999	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	1	art/ter/bog_cold		80	300	../tex/bog_cold.png		3000	DOWN	border.png		NO_VALUE	0	80	0
 # bog flat terrain near water
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	300	650	1	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	0	art/ter/bog_hot			80	300	../tex/bog_hot.png		3000	DOWN	border.png		NO_VALUE	0	80	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	10	0	0	650	9999	1	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	0	art/ter/bog_cold		80	300	../tex/bog_cold.png		3000	DOWN	border.png		NO_VALUE	0	80	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	5	0	0	0	650	1	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	1	art/ter/bog_hot			80	300	../tex/bog_hot.png		3000	DOWN	border.png		NO_VALUE	0	80	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	5	0	0	650	99999	1	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0 	1	art/ter/bog_cold		80	300	../tex/bog_cold.png		3000	DOWN	border.png		NO_VALUE	0	80	0
 #
 #
 #
 #
 ########### DESERT ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # desert terrain, sand or shrubs, based on landuse
-# sand ok (0-50mm rain)
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	5	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_sand_flat		72	300	../tex/des_sand_flat.png	1000	DOWN	border.png		NO_VALUE	255	255	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	5	35	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_sand_slope		71	300	../tex/des_sand_slope.png	3000	DOWN	border.png		NO_VALUE	255	255	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	35	90	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_sand_cliff		70	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	255	0
-# sand (50-400mm rain) became shrubs
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	8	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_flat		76	300	../tex/des_flat.png		2000	DOWN	border.png		NO_VALUE	255	200	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	8	45	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_slope		75	300	../tex/des_slope.png		3000	DOWN	border.png		NO_VALUE	255	200	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	45	90	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff		74	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	200	0
+# sand 0-50mm rain -> ok
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	5	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_sand_flat		72	1500	../tex/des_sand_flat.png	1200	DOWN	border.png		NO_VALUE	255	255	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	5	35	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_sand_slope		71	1500	../tex/des_sand_slope.png	2000	DOWN	border.png		NO_VALUE	255	255	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	35	90	0	0	0	50	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_sand_cliff		70	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	255	0
+# sand 50-400mm rain -> became shrubs
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	0	8	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_flat		76	1500	../tex/des_flat.png		2000	DOWN	border.png		NO_VALUE	255	200	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	8	45	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_slope		75	300	../tex/des_slope.png		3000	DOWN	border.png		NO_VALUE	255	200	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT_SAND		NO_VALUE	0	0	45	90	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_cliff		74	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	200	0
 #
 # shrubs
-NTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	0	8	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_flat		76	300	../tex/des_flat.png		2000	DOWN	border.png		NO_VALUE	255	200	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	8	45	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_slope		75	300	../tex/des_slope.png		3000	DOWN	border.png		NO_VALUE	255	200	0
-NTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	45	90	0	0	50	400	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/des_cliff		74	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	200	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	0	8	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_flat		76	1500	../tex/des_flat.png		2000	DOWN	border.png		NO_VALUE	255	200	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	8	45	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_slope		75	300	../tex/des_slope.png		3000	DOWN	border.png		NO_VALUE	255	200	0
+MTERRAIN    NO_VALUE		lu_usgs_DESERT			NO_VALUE	0	0	45	90	0	0	0	400	0	0	0	0	0	0	0	0	0	0	0.1	0	0	0	0	0	1	art/ter/des_cliff		74	100	../tex/des_cliff.png		2000	DOWN	border.png		NO_VALUE	255	200	0
+#
+#
+#
+#
+########### SAVANNA ##############
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
+# savanna terrain, based on his landuse
+MTERRAIN    NO_VALUE		lu_usgs_SAVANNA			NO_VALUE	0	0	0	8	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/des_savanna_flat	72	1500	../tex/des_flat.png		3000	DOWN	border.png		NO_VALUE	255	100	0
 #
 #
 #
 #
 ########### WET ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # wet damp terrain
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	15	0	0	1600	9999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/wet_flat		62	300	../tex/wet_flat.png		3000	DOWN	border.png		forest1.for	0	120	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	15	55	0	0	1600	9999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/wet_slope		61	100	../tex/wet_slope.png		3000	DOWN	border.png		forest2.for	0	120	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	55	90	0	0	1600	9999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/wet_cliff		60	100	../tex/temp_cliff.png		3000	DOWN	border.png		NO_VALUE	0	120 	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	1600	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_flat		62	300	../tex/wet_flat.png		3000	DOWN	border.png		NO_VALUE	0	120	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	35	0	0	1600	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_slope		61	100	../tex/wet_slope.png		3000	DOWN	border.png		NO_VALUE	0	120	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	35	90	0	0	1600	99999	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_cliff		60	100	../tex/wet_cliff.png		3000	DOWN	border.png		NO_VALUE	0	120 	0
+#
+# wet tex on some temp north face to better join both climate
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	1400	1600	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_flat		62	300	../tex/wet_flat.png		3000	DOWN	border.png		NO_VALUE	0	120	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	35	0	0	1500	1600	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_slope		61	100	../tex/wet_slope.png		3000	DOWN	border.png		NO_VALUE	0	120	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	35	90	0	0	1400	1600	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/wet_cliff		60	100	../tex/wet_cliff.png		3000	DOWN	border.png		NO_VALUE	0	120 	0
 #
 #
 #
 #
 ########### TEMP ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # temperate terrain
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_flat		52	300	../tex/temp_flat.png		3000	DOWN	border.png		forest3.for	0	200	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_slope		51	100	../tex/temp_slope.png		3000	DOWN	border.png		forest4.for	0	200	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/temp_cliff		50	100	../tex/temp_cliff.png		2000	DOWN	border.png		NO_VALUE	0	200 	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_flat		52	300	../tex/temp_flat.png		3000	DOWN	border.png		NO_VALUE	0	200	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_slope		51	100	../tex/temp_slope.png		3000	DOWN	border.png		Connifer	0	200	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	650	1600	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_cliff		50	100	../tex/temp_cliff.png		2000	DOWN	border.png		NO_VALUE	0	200 	0
+#
+# temp tex on some semidry north face to better join both climate
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	500	650	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_flat		52	300	../tex/temp_flat.png		3000	DOWN	border.png		NO_VALUE	0	200	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	550	650	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_slope		51	100	../tex/temp_slope.png		3000	DOWN	border.png		Connifer	0	200	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	500	650	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/temp_cliff		50	100	../tex/temp_cliff.png		2000	DOWN	border.png		NO_VALUE	0	200 	0
 #
 #
 #
 #
 ########### SEMI-DRY ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # semi-dry terrain
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	15	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/semidry_flat		42	300	../tex/semidry_flat.png		2000	DOWN	border.png		forest5.for	180	125	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	15	55	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/semidry_slope		41	100	../tex/semidry_slope.png	3000	DOWN	border.png		forest6.for	180	125	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	55	90	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/semidry_cliff		40	100	../tex/semidry_cliff.png	2000	DOWN	border.png		NO_VALUE	180	125 	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_flat		42	300	../tex/semidry_flat.png		2000	DOWN	border.png		NO_VALUE	180	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_slope		41	100	../tex/semidry_slope.png	3000	DOWN	border.png		NO_VALUE	180	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	300	650	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_cliff		40	100	../tex/dry_cliff.png		2000	DOWN	border.png		NO_VALUE	180	125 	0
+#
+# semidry tex on some dry north face to better join both climate
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	200	300	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_flat		42	300	../tex/semidry_flat.png		2000	DOWN	border.png		NO_VALUE	180	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	250	300	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_slope		41	100	../tex/semidry_slope.png	3000	DOWN	border.png		NO_VALUE	180	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	200	300	0	0	90	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/semidry_cliff		40	100	../tex/dry_cliff.png		2000	DOWN	border.png		NO_VALUE	180	125 	0
 #
 #
 #
 #
 ########### DRY ##############
-#           |-------------------------------------------------------------------------------------------LAND USE RULES-----------------------------------------------------------------------------------------------------------------------------------------------------|   |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
-#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-	-URBAN-	-LATITUDE-	VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
-#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	 SQUARE	MIN	MAX							DIST	TEXTURE				RES	
+#           |-------------------------------------------------------------------------------------------LAND USE RULES--------------------------------------------------------------------------------------------------------------------------------------------------------------|  |---------------TERRAIN TYPE INFO-----------|  |--------------2D TEXTURING----------------------------------------|  |---Forest Info---|	|--- MAP COLOR---|
+#           TERRAIN		LAND USE			CLIMATE		-ELEVATION-	---SLOPE---	---TEMP---	---RAIN---	WATER	-SLOPE_HEAD-	--REL ELEV-     -ELEV_RANGE-	-URBAN DENSITY-	-URBAN CENTER-	-URBAN TRANS-  -URBAN	-LATITUDE-    VARIANT	NAME				LAYER	TRANS					TEXTURE	PROJ	BORDER			Forest		Red	Green	Blue
+#								KOEPPEN		MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	PROX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX	MIN	MAX    SQUARE-	MIN	MAX							DIST	TEXTURE				RES	
 # dry terrain
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	15	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_flat		32	300	../tex/dry_flat.png		3000	DOWN	border.png		forest7.for	255	125	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	15	55	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_slope		31	100	../tex/dry_slope.png		2000	DOWN	border.png		forest8.for	255	125	0
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	55	90	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	art/ter/dry_cliff		30	100	../tex/dry_cliff.png		2000	DOWN	border.png		NO_VALUE	255	125 	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	8	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_flat		32	1500	../tex/dry_flat.png		3000	DOWN	border.png		NO_VALUE	255	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	8	45	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_slope		31	100	../tex/dry_slope.png		2000	DOWN	border.png		NO_VALUE	255	125	0
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	45	90	0	0	0	300	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	art/ter/dry_cliff		30	100	../tex/dry_cliff.png		2000	DOWN	border.png		NO_VALUE	255	125 	0
 #
 #
 #
 #
 ############ ANY ############## to close holes of missing terrains
-NTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0	0	art/ter/any			1	100	../tex/any.png			3000	DOWN	border.png		NO_VALUE	255	0	255
+MTERRAIN    NO_VALUE		NO_VALUE			NO_VALUE	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0 	0	0	0	0	0	art/ter/any			1	100	../tex/any.png			3000	DOWN	border.png		NO_VALUE	255	0	255

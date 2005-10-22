@@ -53,7 +53,7 @@ LU_TRANSLATE lu_usgs_COLD_IRRIGATED_CROPLAND								lu_usgs_ND
 LU_TRANSLATE lu_usgs_COOL_GRASSES_AND_SHRUBS								lu_usgs_ND
 LU_TRANSLATE lu_usgs_HOT_AND_MILD_GRASSES_AND_SHRUBS							lu_usgs_ND
 LU_TRANSLATE lu_usgs_COLD_GRASSLAND									lu_usgs_ND
-LU_TRANSLATE lu_usgs_SAVANNA_WOODS									lu_usgs_ND
+LU_TRANSLATE lu_usgs_SAVANNA_WOODS									lu_usgs_SAVANNA
 LU_TRANSLATE lu_usgs_MIRE_BOG_FEN									lu_usgs_BOG
 LU_TRANSLATE lu_usgs_MARSH_WETLAND									lu_usgs_ND
 LU_TRANSLATE lu_usgs_MEDITERRANEAN_SCRUB								lu_usgs_ND
