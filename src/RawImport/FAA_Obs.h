@@ -54,6 +54,8 @@ bool	WriteDegFile(const char * inFile, int lon, int lat);
 
 bool	ReadAPTNavAsObs(const char * inFile);
 
+int		GetObjMinMaxHeights(map<int, float>& mins, map<int, float>& maxs);
+
 void ApplyObjects(Pmwx& ioMap);
 
 #endif

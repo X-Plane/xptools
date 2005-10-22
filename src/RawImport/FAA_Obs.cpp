@@ -372,6 +372,8 @@ bool	ReadDegFile(const char * inFile)
 			if (sscanf(l, "%lf %lf %f %f %s",
 				&obs.lon, &obs.lat, &obs.msl, &obs.agl, buf) == 5)
 			{
+//				printf("Got: %lf %lf %f %f %s\n",
+//					obs.lon, obs.lat, obs.msl, obs.agl, buf);
 				obs.kind = LookupToken(buf);
 				gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 			}
@@ -537,4 +539,20 @@ void ApplyObjects(Pmwx& ioMap)
 		}
 	}
 	printf("Placed %d objects.\n", placed);
+}
+
+
+int	GetObjMinMaxHeights(map<int, float>& mins, map<int, float>& maxs)
+{
+	for (FAAObsTable::iterator obs = gFAAObs.begin(); obs != gFAAObs.end(); ++obs)
+	if (obs->second.agl != NO_DATA)
+	{
+		if (mins.count(obs->second.kind) == 0)
+			mins[obs->second.kind] = 999999;
+		if (maxs.count(obs->second.kind) == 0)
+			maxs[obs->second.kind] = 0;
+		mins[obs->second.kind] = min(mins[obs->second.kind], obs->second.agl);
+		maxs[obs->second.kind] = max(maxs[obs->second.kind], obs->second.agl);
+	}
+	return gFAAObs.size();
 }
