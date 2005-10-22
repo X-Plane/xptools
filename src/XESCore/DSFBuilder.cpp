@@ -191,6 +191,7 @@ static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 
 static double GetTightnessBlend(CDT& inMesh, CDT::Vertex_handle v_han)
 {
+/*
 	float y_norm = 1.0;
 	CDT::Face_circulator stop, circ;
 	stop = circ = inMesh.incident_faces(v_han);
@@ -205,6 +206,21 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Vertex_handle v_han)
 	y_norm = acos(y_norm) / (PI / 2.0);
 	y_norm = max(0.0f, min(y_norm, 1.0f));
 	return y_norm;
+*/
+	double smallest_dot = 1.0;
+	CDT::Face_circulator stop, circ, last;
+	stop = circ = inMesh.incident_faces(v_han);
+	do {
+		last = circ;
+		++circ;
+		Vector3	v1(circ->info().normal[0],circ->info().normal[1],circ->info().normal[2]);
+		Vector3	v2(last->info().normal[0],last->info().normal[1],last->info().normal[2]);
+		smallest_dot = min(smallest_dot, v1.dot(v2));
+		
+	} while (stop != circ);
+	smallest_dot = max(0.0, smallest_dot);	// must be non-negative!
+	smallest_dot = acos(smallest_dot) / (PI / 2.0);
+	return smallest_dot;	
 }
 
 // Given an edge, finds the next edge clockwise from the source vertex
