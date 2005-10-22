@@ -62,6 +62,7 @@ enum {
 	specCmd_MeshErr,
 	specCmd_PreviewSHP,
 	specCmd_KillObjs,
+	specCmd_CheckEnums,
 	specCmd_Count
 };
 
@@ -83,6 +84,7 @@ const char *	kSpecCmdNames [] = {
 	"Measure Error in Triangulation...",
 	"Preview Shape File",
 	"Kill Features Without Heights in Selected Faces",
+	"Self-Check Enums",
 	0
 };
 
@@ -93,6 +95,7 @@ static	const char	kCmdKeys [] = {
 	0,		0,
 	0,		0,
 //	0,		0,
+	0,		0,
 	0,		0,
 	0,		0,
 	0,		0,
@@ -189,6 +192,11 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					for (map<float, int>::iterator h = feat->second.begin(); h != feat->second.end(); ++h)
 						printf("   h=%5lf count = %d\n", h->first, h->second);
 				}
+			}
+			break;
+		case specCmd_CheckEnums:
+			{
+				EnumSystemSelfCheck();
 			}
 			break;
 		case specCmd_FaceHeight:

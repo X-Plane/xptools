@@ -472,6 +472,11 @@ char *	WED_SelectionTool::GetStatusText(void)
 		{
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->mAreaFeature.mFeatType));
 		}
+		
+		if (the_face->mParams.count(af_Height))
+		{
+			n += sprintf(buf+n, "AGL:%lf ", the_face->mParams[af_Height]);
+		}
 	}
 	if (gEdgeSelection.size() == 1)
 	{
