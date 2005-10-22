@@ -27,14 +27,14 @@
 #include "XObjDefs.h"
 #include "ObjUtils.h"
 #include "XObjReadWrite.h"
-void	BuildOneFakeObject(const char * dir, const char * fname, double width, double depth)
+void	BuildOneFakeObject(const char * dir, const char * fname, double width, double depth, double height)
 {
 	width -= 2.0;
 	depth -= 2.0;
 	if (width < 2.0) width = 2.0;
 	if (depth < 2.0) depth = 2.0;
 	
-	float h = log10(depth + width) * 5.0;
+	float h = max(20.0, height);
 	float w = width * 0.5;
 	float d = depth * 0.5;
 	char path[1024];
@@ -141,7 +141,7 @@ void	BuildFakeLib(const char * dir)
 	for (int n = 0; n < gRepTable.size(); ++n)
 	{
 		char	lname[400], oname[400];
-		if (1)
+		if (gRepTable[n].obj_type == rep_Obj)
 		{
 			sprintf(lname, "%s.obj",FetchTokenString(gRepTable[n].obj_name));
 			sprintf(oname, "%s.obj",FetchTokenString(gRepTable[n].obj_name));
@@ -152,8 +152,9 @@ void	BuildFakeLib(const char * dir)
 				++a;
 			}
 			fprintf(lib, "EXPORT %s %s\n",lname, oname);
-			BuildOneFakeObject(dir, oname, gRepTable[n].obj_width,gRepTable[n].obj_depth);
+			BuildOneFakeObject(dir, oname, gRepTable[n].width_max,gRepTable[n].depth_max, gRepTable[n].height_max);
 		}		
+/*
 		if (!gRepTable[n].fac_allow)
 		{
 			sprintf(lname, "%s.fac",FetchTokenString(gRepTable[n].obj_name));
@@ -167,6 +168,7 @@ void	BuildFakeLib(const char * dir)
 			fprintf(lib, "EXPORT %s %s\n",lname, oname);
 			BuildOneFakeFacade(dir, oname);
 		}
+*/		
 	}
 	
 	fprintf(lib, "EXPORT lib/us/roads.net gen_roads.net\n");
@@ -258,11 +260,11 @@ void	CheckLib(const char * inDir)
 			double	x = offx[key];
 			double	y = offz[key];
 			
-			if (w > gRepTable[n].obj_width ||
-				d > gRepTable[n].obj_depth)
+			if (w > gRepTable[n].width_max ||
+				d > gRepTable[n].depth_max)
 			{
 				printf("Object %30s %30s Desired: %4f,%4f, actual %4f,%4f\n",
-					buf, key.c_str(), gRepTable[n].obj_width,gRepTable[n].obj_depth, w, d);
+					buf, key.c_str(), gRepTable[n].width_max,gRepTable[n].depth_max, w, d);
 			}
 		}
 	}

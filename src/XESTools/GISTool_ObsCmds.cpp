@@ -8,6 +8,8 @@
 #include "AssertUtils.h"
 #include "XFileTwiddle.h"
 #include "FAA_Obs.h"
+#include "EnumSystem.h"
+#include "MiscFuncs.h"
 #include "GISUtils.h"
 #include "AptIO.h"
 
@@ -19,7 +21,7 @@ static int DoObsImport(const vector<const char *>& args)
 	{
 		int countl = gFAAObs.size();
 		bool	ok = false;
-		const char * fname = args[1];
+		const char * fname = args[n];
 			 if (!strcmp(format, "faa")) ok = LoadFAAObsFile(fname);
 		else if (!strcmp(format, "deg")) ok = ReadDegFile(fname);
 		else if (!strcmp(format, "old")) ok = LoadLegacyObjectArchive(fname);
@@ -37,7 +39,7 @@ static int DoObsImport(const vector<const char *>& args)
 	printf("Imported %d obstacles.\n", gFAAObs.size());
 
 	ApplyObjects(gMap);
-	gFAAObs.clear();
+//	gFAAObs.clear();
 	return 0;
 }
 
@@ -171,12 +173,35 @@ static int DoAptTest(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoShowObjRange(const vector<const char *>& args)
+{
+	map<int, float> mins, maxs;
+	int num = GetObjMinMaxHeights(mins, maxs);
+	printf("Info on %d types.\n", mins.size());
+	for(map<int,float>::iterator i = mins.begin(); i != mins.end(); ++i)
+	{
+		printf("%30s %7d %7d\n",
+			FetchTokenString(i->first),
+			(int) mins[i->first], (int) maxs[i->first]);
+	}	
+	printf("Processed %d obs.\n", num);
+	return 0;
+}
+
+static int DoBuildObjLib(const vector<const char *>& args)
+{
+	BuildFakeLib(args[0]);
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sObsCmds[] = {
 { "-obs", 			2, -1, DoObsImport, 			"Import obstacles.", "" },
 { "-apt", 			1, 1, DoAptImport, 				"Import airport data.", "" },
 { "-aptwrite", 		1, 1, DoAptExport, 				"Export airport data.", "" },
 { "-aptindex", 		1, 1, DoAptBulkExport, 			"Export airport data.", "" },
 { "-apttest", 		0, 0, DoAptTest, 			"Export airport data.", "" },
+{ "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "" },
+{ "-makeobjlib",	1,	1,	DoBuildObjLib,		"Make a fake obj lib of placeholder objects.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 
