@@ -153,7 +153,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 {
 		int 	count;
 		vec_rgb	vrgb;
-		vec_tex	vst;
+		vec_tex	vst, vst2;
 
 	outObj.texture.clear();
 	outObj.cmds.clear();
@@ -323,7 +323,6 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				if (obj2_op >= 0)
 					return false;
 				count = -obj2_op;
-				count *= 2;
 				cmd.cmdID = obj_Quad_Strip;
 				cmd.cmdType = type_Poly;
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
@@ -333,9 +332,15 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 					vst.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
 					vst.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
 					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst2.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst2.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst2.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
 					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst2.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
 					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst2.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
 					cmd.st.push_back(vst);
+					cmd.st.push_back(vst2);
 				}
 				outObj.cmds.push_back(cmd);					
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
