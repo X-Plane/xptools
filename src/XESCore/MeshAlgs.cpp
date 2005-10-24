@@ -297,6 +297,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
+	if (f->info().terrain_general == terrain_Water) return;
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
 	{
@@ -524,6 +525,7 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
 		do {
 			if (!mesh.is_infinite(iter))
 			if (iter->info().terrain_specific != layer)
+			if (iter->info().terrain_general != terrain_Water)
 			{
 				iter->info().terrain_border.insert(layer);
 				for (int n = 0; n < 3; ++n)
@@ -966,8 +968,10 @@ void	AddWaterMeshPoints(
 						e1 = water.search_nearest(pts[n-1].x, pts[n-1].y);
 					if (e2 == NO_DATA) 
 						e2 = water.search_nearest(pts[n].x,pts[n].y);
-					if (e1 == NO_DATA || e2 == NO_DATA)
-						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY\n");
+//					BEN SEZ: this is not really an error!  Remember - water data is only points contained inside a water body; very narrrow ones will contain NO
+//					DEM points and this will fail.
+//					if (e1 == NO_DATA || e2 == NO_DATA)
+//						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY.  LOC=%lf,%lf->%lf,%lf\n",pts[n-1].x,pts[n-1].y,pts[n].x,pts[n].y);
 				}
 				if (e1 == NO_DATA)					e1 = master.value_linear(pts[n-1].x, pts[n-1].y);
 				if (e2 == NO_DATA)					e2 = master.value_linear(pts[n].x, pts[n].y);
@@ -976,7 +980,7 @@ void	AddWaterMeshPoints(
 //				slave.zap_linear(pts[n-1].x, pts[n-1].y);
 //				slave.zap_linear(pts[n].x, pts[n].y);
 				
-				if (e1 == NO_DATA || e2 == NO_DATA) printf("ERROR: missing elevation data for constraint.\n");
+				if (e1 == NO_DATA || e2 == NO_DATA) AssertPrintf("ERROR: missing elevation data for constraint.\n");
 				v1 = outMesh.insert(CDT::Point(pts[n-1].x, pts[n-1].y), local);
 				v1->info().height = e1;
 				local = v1->face();
@@ -1977,7 +1981,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			tri_total++;
 			tri_border += (tri->info().terrain_border.size());
 		} else if (!tri->info().terrain_border.empty())
-			AssertPrintf("BORDER ON NON-NATURAL LAND USE!");
+			AssertPrintf("BORDER ON NON-NATURAL LAND USE!  Terrain = %s", FetchTokenString(tri->info().terrain_general));
 		printf("Total: %d - border: %d - check: %d - opt: %d\n", tri_total, tri_border, tri_check, tri_opt);
 	}
 
@@ -2323,8 +2327,10 @@ void MarchHeightStart(CDT& inMesh, const CDT::Point& loc, CDT_MarchOverTerrain_t
 	// Special case: under some conditions we'll get the infinite-face edge.  This actually depends
 	// on what our seed locate was.  Either way it is unacceptable - passing in an infinite face
 	// generally makes the locate algorithm a little bonkers.  Reverse it here.
-	if (inMesh.is_infinite(info.locate_face) && locate_type == CDT::EDGE)
-		info.locate_face = info.locate_face->neighbor(locate_index);
+	if (inMesh.is_infinite(info.locate_face) && (locate_type == CDT::EDGE || locate_type == CDT::VERTEX))
+	{
+		info.locate_face = info.locate_face->neighbor(info.locate_face->index(inMesh.infinite_vertex()));
+	}
 }
 
 void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates)
