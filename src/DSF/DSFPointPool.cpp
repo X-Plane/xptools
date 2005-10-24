@@ -220,7 +220,10 @@ bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
 {
 	if (size() != offset.size()) return false;
 	if (size() != scale.size()) return false;
-	
+
+#if DEV
+	DSFTuple	backup(*this);	
+#endif	
 	double * i = mData;
 	const double * j = offset.mData;
 	const double * k = scale.mData;
@@ -228,11 +231,12 @@ bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
 	while (c--)
 	{
 		if (*k)
-//		printf("   %lf   ->   ", *i);
 			*i = ((*i - *j) * 4294967295.0 / (*k) );
-//		printf("   %lf\n", *i);
 		if (*i < 0.0 || *i > 4294967295.0)
+		{
+			*this = backup;
 			return false;
+		}
 		++i, ++j, ++k;
 	}
 	return true;
@@ -633,7 +637,9 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 	{
 		DSFTuple	pt(inPoints[n]);
 		if (!pt.encode32(mOffset, mScale))
+		{
 			return DSFPointPoolLoc(-1, -1);
+		}
 			
 		mPointsIndex.insert(map<DSFTuple, int>::value_type(pt, mPoints.size()));
 		mPoints.push_back(pt);
