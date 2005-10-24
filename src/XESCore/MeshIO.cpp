@@ -281,12 +281,14 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		if (F[j]->vertex(0) != V[0] &&
 			F[j]->vertex(1) != V[0] &&
 			F[j]->vertex(2) != V[0])
-		DebugAssert(fi.normal[0] > -1.1);
-		DebugAssert(fi.normal[0] <  1.1);
-		DebugAssert(fi.normal[1] > -1.1);
-		DebugAssert(fi.normal[1] <  1.1);
-		DebugAssert(fi.normal[2] > -1.1);
-		DebugAssert(fi.normal[2] <  1.1);
+		{	
+			DebugAssert(fi.normal[0] > -1.1);
+			DebugAssert(fi.normal[0] <  1.1);
+			DebugAssert(fi.normal[1] > -1.1);
+			DebugAssert(fi.normal[1] <  1.1);
+			DebugAssert(fi.normal[2] > -1.1);
+			DebugAssert(fi.normal[2] <  1.1);
+		}
 #endif		
 		fi.terrain_general = conv[fi.terrain_general];
 		fi.terrain_specific = conv[fi.terrain_specific];
