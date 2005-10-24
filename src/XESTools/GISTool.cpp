@@ -91,7 +91,11 @@ int	main(int argc, char * argv[])
 //	char * args[] = { "./GISTool", "-vpf", "/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/", "bnd", "-120", "30", "-validate", "-bbox", "-save", "foo.xes" };
 //	char * args[] = { "./GISTool", "-extent", "-130", "20", "-60", "50", "-gshhs", "/Volumes/GIS/data/GSHHS/gshhs_1.3/gshhs_c.b", "-bbox", "-save", "foo.xes", "-validate" };
 //	char * args[] = { "./GISTool_d", "-apt", "/Volumes/GIS/data/apt.dat", "-apttest" };
-
+//	char * args[] = { "/code/XPTools/SceneryTools/GISTool_d", "-extent", "-118", "32", "-117", "33", "-load", "config/global_climate_smooth_rain.xes",
+//						"-crop", "-load", "/rendering_farm/blend_xes/+30-120/+32-118.xes", "-glcc", "/rendering_farm/glcc/lu_new.raw", "oge2_import.txt", "-oz", "/rendering_farm/DEM output-earth/+30-120/+32-118.oz",
+//									"-obs", "deg", "/rendering_farm/faa_obs/+32-118.obs", "-apt", "/rendering_farm/apts/+30-120/+32-118.apt", "-bbox", "-simplify", "-validate",
+//									"-spreadsheet", "/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt", "-upsample", "-calcslope", "-derivedems", "-buildroads",
+//									"-burnapts", "-zoning", "-calcmesh", "-assignterrain", "-save", "output/+30-120/+32-118.xes", "-exportdsf", "output" };
 //	argv = args;
 //	argc = sizeof(args) / sizeof(args[0]);
 
@@ -135,14 +139,13 @@ int	main(int argc, char * argv[])
 
 //		delete total;
 
-		exit(0);
-		return result;	
+		exit(result);
 
 	} catch (exception& e) {
 		fprintf(stderr,"Caught unknown exception %s.  Exiting.\n", e.what());
-		exit(1);
+		exit(0);
 	} catch (...) {
 		fprintf(stderr,"Caught unknown exception.  Exiting.\n");
-		exit(1);
+		exit(0);
 	}
 }
