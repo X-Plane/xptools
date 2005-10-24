@@ -52,6 +52,8 @@ bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName);
 // because we have the entire US NED dataset in this form.  DEM position is taken from
 // the header in +42-073 format.
 bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName);
+// "Oz" file - same as above but no header and 16-bit big endian
+bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);
 bool	WriteFloatHGT(const DEMGeo& inMap, const char * inFileName);
 // Raw IMG files - a giant 8-bit-per-sample worldwide image at 30 arc-seconds.  Used to
 // get data out of GTOPO30 land use.

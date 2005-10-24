@@ -206,17 +206,63 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 	char dummy2;
 	reader.ReadInt(dummy1);
 	reader.ReadBulk(&dummy2,1,false);
-	if (inMap.mData)
 	{
-		for (int x = 0; x < dim; ++x)
-		for (int y = 0; y < dim; ++y)
+		if (inMap.mData)
 		{
-			float	v;
-			reader.ReadFloat(v);
-			inMap.mData[x + y * dim] = v;
+			for (int x = 0; x < dim; ++x)
+			for (int y = 0; y < dim; ++y)
+			{
+				float	v;
+				reader.ReadFloat(v);
+				inMap.mData[x + y * dim] = v;
+			}
 		}
 	}
+		
+	MemFile_Close(fi);	
+	return true;
+}
+
+bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
+{
+	int	lat, lon;
+	char ns, ew;
+	string	fname(inFileName);
+	string::size_type p = fname.find_last_of(":\\/");
+	if (p != fname.npos) fname = fname.substr(p+1);
+	if (sscanf(fname.c_str(), "%c%d%c%d", &ns, &lat, &ew, &lon) == 4)
+	{
+		if (ns == '-') lat = -lat;
+		if (ew == '-') lon = -lon;
+		inMap.mWest = lon;
+		inMap.mEast = lon + 1;
+		inMap.mSouth = lat;
+		inMap.mNorth = lat + 1;
+	}
+
+	MFMemFile *	fi = MemFile_Open(inFileName);
+	if (!fi) return false;
 	
+	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_BigEndian);
+	
+	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
+	long words = len / sizeof(short);
+	long dim = sqrt(words);
+	
+	inMap.resize(dim, dim);
+	{
+		if (inMap.mData)
+		{
+			for (int y = 0; y < dim; ++y)
+			for (int x = 0; x < dim; ++x)
+			{
+				short	s;
+				reader.ReadShort(s);
+				inMap.mData[x + y * dim] = s;
+			}
+		}
+	}
+		
 	MemFile_Close(fi);	
 	return true;
 }
