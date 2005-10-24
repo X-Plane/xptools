@@ -271,7 +271,7 @@ int	make_composite_landuse(int generic, int specific)
 	if (generic > terrain_Natural)
 		printf("WARNING: got big terrains: %d, %d (natural=%d)\n", generic, specific, terrain_Natural);	
 	if (specific < terrain_Natural && generic == terrain_Natural)
-		printf("WARNING: specific terrain out of order!\n");
+		printf("WARNING: specific terrain out of order!  Generic=%s Specific=%s (%d,%d)\n", FetchTokenString(generic), FetchTokenString(specific), generic, specific);
 	int ret_val = (generic != terrain_Water) ? (specific) : generic; 
 	if (ret_val == 1)
 		printf("WTF are we doing?!?\n");
