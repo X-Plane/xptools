@@ -495,7 +495,9 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 {
 	int old_base = tri->info().terrain_specific;
 
-	DebugAssert(old_base != terrain_Water);
+	DebugAssert(new_base != terrain_Water);
+	DebugAssert(tri->info().terrain_specific != terrain_Water);
+	DebugAssert(tri->info().terrain_general != terrain_Water);
 	tri->info().terrain_specific = new_base;	
 	if (new_base != terrain_Water)
 	{
@@ -1141,43 +1143,6 @@ void	AddBulkPointsToMesh(
 }
 
 /*
- * LimitTriSize
- *
- * 
- *
- *
- */
-void	LimitTriSize(DEMGeo& land, DEMGeo& deriv, float tri_size, CDT& outMesh)
-{
-	int interval_x = tri_size / deriv.x_dist_to_m(1);
-	int interval_y = tri_size / deriv.y_dist_to_m(1);
-	double max_sz = tri_size * MTR_TO_NM * NM_TO_DEG_LAT;
-
-	CDT::Face_handle loc = CDT::Face_handle();
-	
-	for (int y = 0; y < deriv.mHeight;y += interval_y)
-	for (int x = 0; x < deriv.mWidth; x += interval_x)
-	{
-		float h = land.get(x,y);
-		if (h != NO_DATA)
-		{
-			CDT::Point p(land.x_to_lon(x), land.y_to_lat(y));
-//			int li;
-//			CDT::Locate_type lt;
-//			loc = outMesh.locate(p, lt, li, loc);
-//			DebugAssert(lt == CDT::VERTEX || lt == CDT::EDGE || lt == CDT::FACE);
-//			
-//			double max_y = max(max(loc->vertex(
-
-			CDT::Vertex_handle v = outMesh.insert(p, loc);
-			v->info().height = h;
-			loc = v->face();			
-		}		
-	}
-}
-
-
-/*
  * CalculateMeshNormals
  *
  * This routine calcs the normals per vertex.
@@ -1616,7 +1581,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
-					printf("Hit any rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
+					AssertPrintf("Hit any rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
 						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh, center_y);
 				}
 				
@@ -2182,8 +2147,9 @@ void	Calc2ndDerivative(DEMGeo& deriv)
 	}
 }
 
-double	HeightWithinTri(CDT::Face_handle f, double inLon, double inLat)
+double	HeightWithinTri(CDT& inMesh, CDT::Face_handle f, double inLon, double inLat)
 {
+	Assert(!inMesh.is_infinite(f));
 	Point3	p1(CGAL::to_double(f->vertex(0)->point().x()),
 			   CGAL::to_double(f->vertex(0)->point().y()),
 				 			   f->vertex(0)->info().height);
@@ -2225,7 +2191,7 @@ double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id)
 	
 	if (!inMesh.is_infinite(f))
 	{
-		return HeightWithinTri(f, inLon, inLat);
+		return HeightWithinTri(inMesh, f, inLon, inLat);
 	} else {
 		printf("Requested point was off mesh: %lf, %lf\n", inLon, inLat);
 		return NO_DATA;
@@ -2321,8 +2287,6 @@ void MarchHeightStart(CDT& inMesh, const CDT::Point& loc, CDT_MarchOverTerrain_t
 	int					locate_index;
 
 	info.locate_face = inMesh.locate(loc, locate_type, locate_index, info.locate_face);
-	info.locate_pt = loc;
-	info.locate_height = HeightWithinTri(info.locate_face, loc.x(), loc.y());
 	
 	// Special case: under some conditions we'll get the infinite-face edge.  This actually depends
 	// on what our seed locate was.  Either way it is unacceptable - passing in an infinite face
@@ -2331,6 +2295,8 @@ void MarchHeightStart(CDT& inMesh, const CDT::Point& loc, CDT_MarchOverTerrain_t
 	{
 		info.locate_face = info.locate_face->neighbor(info.locate_face->index(inMesh.infinite_vertex()));
 	}
+	info.locate_pt = loc;
+	info.locate_height = HeightWithinTri(inMesh, info.locate_face, loc.x(), loc.y());
 }
 
 void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates)
@@ -2358,7 +2324,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		if (inMesh.is_infinite(goal_face) && goal_type == CDT::EDGE)
 			goal_face = goal_face->neighbor(goal_index);
 
-		double				goal_height = HeightWithinTri(goal_face, goal.x(), goal.y());
+		double				goal_height = HeightWithinTri(inMesh, goal_face, goal.x(), goal.y());
 
 		march_info.locate_pt = goal;
 		march_info.locate_face = goal_face;
@@ -2401,7 +2367,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		if (!inMesh.is_infinite(now) && inMesh.triangle(now).bounded_side(goal) != CGAL::ON_UNBOUNDED_SIDE)
 		{
 			march_info.locate_pt = last_pt = goal;
-			march_info.locate_height = last_ht = HeightWithinTri(now, goal.x(), goal.y());
+			march_info.locate_height = last_ht = HeightWithinTri(inMesh, now, goal.x(), goal.y());
 			march_info.locate_face = now;
 			intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));		
 			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
@@ -2436,7 +2402,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 				CGAL::Object o = CGAL::intersection(ray, crossed_seg);
 				if (CGAL::assign(last_pt, o))
 				{
-					last_ht = HeightWithinTri(now, last_pt.x(), last_pt.y());
+					last_ht = HeightWithinTri(inMesh, now, last_pt.x(), last_pt.y());
 					intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
 				} else {
 #if DEV				

@@ -49,7 +49,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDems,
 								ProgressFunc inProg);
 
 void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer& outRasterizer);
-double	HeightWithinTri(CDT::Face_handle tri, double inLon, double inLat);
+double	HeightWithinTri(CDT& inMesh, CDT::Face_handle tri, double inLon, double inLat);
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id);
 void	Calc2ndDerivative(DEMGeo& ioDEM);
 int		CalcMeshError(CDT& inMesh, DEMGeo& inElevation, map<float, int>& outError, ProgressFunc inFunc);
