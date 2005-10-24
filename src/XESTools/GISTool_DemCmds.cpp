@@ -30,6 +30,12 @@ static int DoFloatDEMImport(const vector<const char *>& args)
 	return DoAnyImport(args, ReadFloatHGT);
 }
 
+static int DoShortOzImport(const vector<const char *>& args)
+{
+	return DoAnyImport(args, ReadShortOz);
+}
+
+
 static int DoUSGSNaturalImport(const vector<const char *>& args)
 {
 	return DoAnyImport(args, ExtractUSGSNaturalFile);
@@ -175,6 +181,7 @@ static int DoApply(const vector<const char *>& args)
 static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit raw HGT DEM.", "" },
 { "-hgtzip", 		1, 1, DoHGTExport, 			"Export 16-bit raw HGT DEM.", "" },
+{ "-oz",			1, 1, DoShortOzImport,		"Read short DEM.", "" },
 { "-floatdem", 		1, 1, DoFloatDEMImport, 	"Import floating-point DEM", "" },
 { "-usgs_natural", 	1, 1, DoUSGSNaturalImport, 	"Import USGS Natural-format DEM", "" },
 { "-ida", 			1, 1, DoIDAImport, 			"Import IDA-format raster file.", "" },
