@@ -23,6 +23,7 @@ public:
 static	void	DefaultDebugAssert(const char * cond, const char * file, int line)
 {
 	printf("Debug Assert Failed: %s (%s, %d.)\n", cond, file, line);
+	throw assert_fail_exception(cond,file, line);
 }
 
 static	void	DefaultAssert(const char * cond, const char * file, int line)
