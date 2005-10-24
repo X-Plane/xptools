@@ -478,7 +478,7 @@ void	LoadDEMTables(void)
 //	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
 
-	if (gNaturalTerrainFile.empty())	LoadConfigFile("natural_terrain.txt");	
+	if (gNaturalTerrainFile.empty())	LoadConfigFile("master_terrain.txt");
 	else								LoadConfigFileFullPath(gNaturalTerrainFile.c_str());
 	if (gLanduseTransFile.empty())		LoadConfigFile("landuse_translate.txt");
 	else								LoadConfigFileFullPath(gLanduseTransFile.c_str());
