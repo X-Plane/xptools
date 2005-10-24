@@ -240,10 +240,7 @@ static int DoOverlay(const vector<const char *>& args)
 
 static int DoSave(const vector<const char *>& args)
 {
-#if !DEV
-hello
-#endif
-	int nland = 1; // SHOULD BE ZERO
+	int nland = 0;
 	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		if (!f->IsWater())
