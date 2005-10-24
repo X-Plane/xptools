@@ -506,7 +506,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		if (loc.first == -1 || loc.second == -1)
 		{
 			(*prim)->vertices[n].dump();
-			printf("\n");
+			printf(" ");
 			(*prim)->vertices[n].dumphex();
 			printf("\n");
 			Assert(!"ERROR: could not sink vertex:\n");
@@ -718,7 +718,18 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			// Sink into the least shared pool, but contiguous.
 			DSFPointPoolLoc	loc = 	targetPool.AcceptContiguous(chainSpecs[n].path);
 			if (loc.first == -1 || loc.second == -1)
+			{
+#if DEV			
+				for (i =  0; i < chainSpecs[n].path.size(); ++i)
+				{
+					chainSpecs[n].path[i].dump();
+					printf(" ");
+					chainSpecs[n].path[i].dumphex();
+					printf("\n");					
+				}
+#endif				
 				Assert(!"ERROR: Could not sink chain.\n");
+			}
 			chainSpecs[n].contiguous = true;
 			chainSpecs[n].lowest_index = loc.second;
 			chainSpecs[n].highest_index = loc.second + chainSpecs[n].path.size();
