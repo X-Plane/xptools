@@ -13,6 +13,15 @@
 #include "Zoning.h"
 #include "DEMDefs.h"
 #include "Hydro.h"
+#include "DEMTables.h"
+
+static int DoSpreadsheet(const vector<const char *>& args)
+{
+	if (gVerbose) printf("Setting spreadsheet to %s\n", args[0]);
+	gNaturalTerrainFile = args[0];
+	LoadDEMTables();
+	return 0;
+}
 
 static int DoUpsample(const vector<const char *>& args)
 {
@@ -126,6 +135,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sProcessCmds[] = {
+{ "-spreadsheet",	1, 1, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
 { "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		0, 0, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
