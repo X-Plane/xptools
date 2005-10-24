@@ -51,7 +51,7 @@ struct	WED_ImportState_t {
 	float		north;
 };
 
-static WED_ImportState_t	sImportState = { 0, 0, 0, 0, 121, 121, 0.0, 1.0, 0, 0, 0,
+static WED_ImportState_t	sImportState = { 0, 0, 0, 0, 1201, 1201, 0.0, 1.0, 0, 0, 0,
 				-180.0, -90.0, 180.0, 90.0 };
 
 enum {
