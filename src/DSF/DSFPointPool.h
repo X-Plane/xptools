@@ -24,7 +24,10 @@
 #define DSFPOINTPOOL_H
 
 #include <vector>
-#include <map>
+#include <list>
+#include <hash_map>
+
+#include "AssertUtils.h"
 
 using namespace std;
 
@@ -45,36 +48,38 @@ public:
 	DSFTuple(const double * values, int length);
 	~DSFTuple();
 	
-	DSFTuple& operator=(const DSFTuple& rhs);
-	bool operator==(const DSFTuple& rhs) const;
-	bool operator< (const DSFTuple& rhs) const;
+	inline DSFTuple& operator=(const DSFTuple& rhs);
+	inline bool operator==(const DSFTuple& rhs) const;
+	inline bool operator< (const DSFTuple& rhs) const;
 	
-	DSFTuple& operator += (const DSFTuple& rhs);
-	DSFTuple& operator -= (const DSFTuple& rhs);
-	DSFTuple& operator *= (const DSFTuple& rhs);
-	DSFTuple& operator /= (const DSFTuple& rhs);
+	inline DSFTuple& operator += (const DSFTuple& rhs);
+	inline DSFTuple& operator -= (const DSFTuple& rhs);
+	inline DSFTuple& operator *= (const DSFTuple& rhs);
+	inline DSFTuple& operator /= (const DSFTuple& rhs);
 	
-	DSFTuple operator+ (const DSFTuple& rhs) const;
-	DSFTuple operator- (const DSFTuple& rhs) const;
-	DSFTuple operator* (const DSFTuple& rhs) const;
-	DSFTuple operator/ (const DSFTuple& rhs) const;
+	inline DSFTuple operator+ (const DSFTuple& rhs) const;
+	inline DSFTuple operator- (const DSFTuple& rhs) const;
+	inline DSFTuple operator* (const DSFTuple& rhs) const;
+	inline DSFTuple operator/ (const DSFTuple& rhs) const;
 	
-	bool in_range(const DSFTuple& offset, const DSFTuple& scale) const;
-	bool encode(const DSFTuple& offset, const DSFTuple& scale);
-	bool encode32(const DSFTuple& offset, const DSFTuple& scale);
+	inline bool in_range(const DSFTuple& offset, const DSFTuple& scale) const;
+	inline bool encode(const DSFTuple& offset, const DSFTuple& scale);
+	inline bool encode32(const DSFTuple& offset, const DSFTuple& scale);
 
-	inline int size() const { return mLen; }
-	inline double operator[](int n) const { return mData[n]; }
-	inline double& operator[](int n) { return mData[n]; }
-	inline double * begin() { return mData; }
-	inline const double * begin() const { return mData; }
-	inline double * end() { return mData+mLen; }
-	inline const double * end() const { return mData+mLen; }
-	void push_back(double v);
-	void insert(double * ptr, double v);
+	inline int size() const 				{ return mLen; 		}
+	inline double operator[](int n) const 	{ return mData[n]; 	}
+	inline double& operator[](int n) 		{ return mData[n]; 	}
+	inline double * begin() 				{ return mData; 	}
+	inline const double * begin() const 	{ return mData; 	}
+	inline double * end() 					{ return mData+mLen;}
+	inline const double * end() const 		{ return mData+mLen;}
+	inline void push_back(double v);
+	inline void insert(double * ptr, double v);
 	
 	void dump(void);
 	void dumphex(void);
+
+	inline size_t hash(void) const;
 
 private:
 
@@ -83,10 +88,15 @@ private:
 	
 };
 
-typedef	vector<DSFTuple>			DSFTupleVector;
-typedef vector<DSFTupleVector>		DSFTupleVectorVector;
+template <>
+struct hash<DSFTuple> : std::unary_function<DSFTuple, std::size_t> {
+	std::size_t operator()(const DSFTuple& key) const { return key.hash(); }
+};
 
-/* A shared point poo.  Every point is pooled, and the 
+typedef	vector<DSFTuple>			DSFTupleVector;
+typedef list<DSFTupleVector>		DSFTupleVectorVector;
+
+/* A shared point pool.  Every point is pooled, and the 
  * points are sorted spatially.  The shared point pool
  * is really N sub-point-pools, so each point ends up
  * with a pair of indices. */
@@ -119,7 +129,6 @@ public:
 	// You can also limit these to a single pool if you have a pool #
 	// that you know is good (from above).
 	DSFPointPoolLoc	AcceptContiguous(const DSFTupleVector& inPoints);
-	DSFPointPoolLoc	AcceptContiguousPool(int pool, const DSFTupleVector& inPoints);
 	// This routine accepts a single point, sharing if possible.
 	DSFPointPoolLoc	AcceptShared(const DSFTuple& inPoint);
 
@@ -139,14 +148,15 @@ private:
 		DSFTuple					mOffset;
 		DSFTuple					mScale;
 		
-		DSFTupleVector			mPoints;			// These are our points
-		map<DSFTuple, int>			mPointsIndex;		// This is used to see if we already have a point.
+		DSFTupleVector				mPoints;			// These are our points
+		hash_map<DSFTuple, int>		mPointsIndex;		// This is used to see if we already have a point.
 
 	};
 	
-	vector<SharedSubPool>		mPools;
+	list<SharedSubPool>			mPools;
 	vector<int>					mUsageMapping;
 
+	DSFPointPoolLoc	AcceptContiguousPool(int pp, SharedSubPool * pool, const DSFTupleVector& inPoints);
 
 };
 
@@ -184,7 +194,7 @@ private:
 
 	};
 	
-	vector<ContiguousSubPool>	mPools;
+	list<ContiguousSubPool>		mPools;
 	vector<int>					mUsageMapping;
 };
 
@@ -216,8 +226,300 @@ private:
 	DSFTuple					mScale;
 		
 	DSFTupleVector				mPoints;			// These are our points
-	map<DSFTuple, int>			mPointsIndex;		// This is used to see if we already have a point.
+	hash_map<DSFTuple, int>		mPointsIndex;		// This is used to see if we already have a point.
 	
 };
 
+
+#pragma mark -
+
+inline DSFTuple::DSFTuple() : mLen(0)
+{
+}
+
+inline DSFTuple::DSFTuple(int planes) : mLen(planes)
+{
+	if (planes > MAX_TUPLE_LEN)
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
+	double * d = mData;
+	while (planes--)
+		*d++ = 0.0;
+}
+
+inline DSFTuple::DSFTuple(const DSFTuple& rhs) : mLen(rhs.mLen)
+{
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+		*d1++ = *d2++;
+}
+
+inline DSFTuple::DSFTuple(const double * values, int length) : mLen(length)
+{
+	double * d1 = mData;
+	const double * d2 = values;
+	while (length--)
+		*d1++ = *d2++;
+}
+
+inline DSFTuple::~DSFTuple()
+{
+}
+	
+inline DSFTuple& DSFTuple::operator=(const DSFTuple& rhs)
+{
+	mLen = rhs.mLen;
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+		*d1++ = *d2++;
+	return *this;
+}
+
+inline bool DSFTuple::operator==(const DSFTuple& rhs) const
+{
+	if (mLen != rhs.mLen) return false;
+	const double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+		if (*d1++ != *d2++) return false;
+	return true;
+}
+
+inline bool DSFTuple::operator< (const DSFTuple& rhs) const
+{
+	if (mLen < rhs.mLen) return true;
+	if (mLen > rhs.mLen) return false;
+	const double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+	{
+		if (*d1 < *d2) return true;
+		if (*d1 > *d2) return false;
+		++d1, ++d2;
+	}
+	return false;
+}
+
+inline DSFTuple& DSFTuple::operator += (const DSFTuple& rhs)
+{
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+	{
+		(*d1++) += (*d2++);
+	}
+	return *this;
+}
+
+inline DSFTuple& DSFTuple::operator -= (const DSFTuple& rhs)
+{
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+	{
+		(*d1++) -= (*d2++);
+	}
+	return *this;
+}
+
+inline DSFTuple& DSFTuple::operator *= (const DSFTuple& rhs)
+{
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+	{
+		(*d1++) *= (*d2++);
+	}
+	return *this;
+}
+
+inline DSFTuple& DSFTuple::operator /= (const DSFTuple& rhs)
+{
+	double * d1 = mData;
+	const double * d2 = rhs.mData;
+	int c = mLen;
+	while (c--)
+	{
+		(*d1++) /= (*d2++);
+	}
+	return *this;
+}
+
+inline DSFTuple DSFTuple::operator+ (const DSFTuple& rhs) const
+{
+	DSFTuple	me(*this);
+	me += rhs;
+	return me;
+}
+
+inline DSFTuple DSFTuple::operator- (const DSFTuple& rhs) const
+{
+	DSFTuple	me(*this);
+	me -= rhs;
+	return me;
+}
+
+inline DSFTuple DSFTuple::operator* (const DSFTuple& rhs) const
+{
+	DSFTuple	me(*this);
+	me *= rhs;
+	return me;
+}
+
+inline DSFTuple DSFTuple::operator/ (const DSFTuple& rhs) const
+{
+	DSFTuple	me(*this);
+	me /= rhs;
+	return me;
+}
+
+inline bool DSFTuple::in_range(const DSFTuple& offset, const DSFTuple& scale) const
+{
+	if (size() != offset.size()) return false;
+	if (size() != scale.size()) return false;
+	
+	const double * i = mData;
+	const double * j = offset.mData;
+	const double * k = scale.mData;
+	int c = mLen;	
+	while (c--)
+	{
+		if (*i < *j) return false;
+		if (*k != 0 && *i > (*j + *k)) return false;
+		if (*k == 0 && *i > 65535.0) return false;
+		++i, ++j, ++k;
+	}
+	return true;
+}
+
+inline bool DSFTuple::encode(const DSFTuple& offset, const DSFTuple& scale)
+{
+	if (size() != offset.size()) return false;
+	if (size() != scale.size()) return false;
+	
+	double * i = mData;
+	const double * j = offset.mData;
+	const double * k = scale.mData;
+	int c = mLen;
+	while (c--)
+	{
+		if (*k)
+//		printf("   %lf   ->   ", *i);
+			*i = ((*i - *j) * 65535.0 / (*k) );
+//		printf("   %lf\n", *i);
+		if (*i < 0.0 || *i > 65535.0)
+			return false;
+		++i, ++j, ++k;
+	}
+	return true;
+}
+
+
+inline bool DSFTuple::encode32(const DSFTuple& offset, const DSFTuple& scale)
+{
+	if (size() != offset.size()) return false;
+	if (size() != scale.size()) return false;
+
+#if DEV
+	DSFTuple	backup(*this);	
+#endif	
+	double * i = mData;
+	const double * j = offset.mData;
+	const double * k = scale.mData;
+	int c = mLen;
+	while (c--)
+	{
+		if (*k)
+			*i = ((*i - *j) * 4294967295.0 / (*k) );
+		if (*i < 0.0 || *i > 4294967295.0)
+		{
+#if DEV
+			*this = backup;
+#endif			
+			return false;
+		}
+		++i, ++j, ++k;
+	}
+	return true;
+}
+
+inline void DSFTuple::push_back(double v)
+{
+#if DEV
+	if (mLen == MAX_TUPLE_LEN)
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
 #endif
+	mData[mLen++] = v;
+}
+
+inline void DSFTuple::insert(double * ptr, double v)
+{
+#if DEV
+	if (mLen == MAX_TUPLE_LEN)
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");		
+#endif		
+	int index = ptr - mData;
+	if (index < mLen)
+		memmove(ptr + sizeof(double), ptr, (mLen - index) * sizeof(double));
+	*ptr = v;
+	++mLen;
+}
+
+
+inline void DSFTuple::dump(void)
+{
+	if (mLen < 0 || mLen > MAX_TUPLE_LEN)
+		printf("Tuple bad length: %d", mLen);
+	else
+	for (int n = 0; n < mLen; ++n)
+		printf("%c%lf",(n==0) ? ' ' : ',', mData[n]);
+}
+
+inline void DSFTuple::dumphex(void)
+{
+	if (mLen < 0 || mLen > MAX_TUPLE_LEN)
+		printf("Tuple bad length: %d", mLen);
+	else
+	for (int n = 0; n < mLen; ++n)
+		printf("%c%lx%lx",(n==0) ? ' ' : ',', mData[n]);
+}
+
+inline size_t DSFTuple::hash(void) const
+{
+	size_t	ret = 0;
+	size_t * p = (size_t *) mData;
+	int words = mLen;
+
+	while (words--)
+	{
+		ret = (ret << 5) ^ (ret >> (27)) ^ *p++;
+		ret = (ret << 7) ^ (ret >> 25) ^ *p++;
+	}
+	return ret;
+/*
+	double res = 1.0;
+	int words = mLen;
+	const double * p = mData;
+	while (words--)
+	if (*p != 0.0)
+		res *= *p++;
+	
+	size_t * pp = (size_t *) &res;
+	size_t ret = *pp++;
+	ret ^= *pp;
+	return ret;
+*/
+}
+
+
+#endif
+
+
