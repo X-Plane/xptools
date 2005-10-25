@@ -486,17 +486,32 @@
 	 *
 	 */
 	 
-		
+	 
+	 /*
+	 	IMPORTANT: this area needs to be cleaned up after the V8 global render!  Basically:
+	 	terrain_Water and all .ter enum types are FINAL terrain types - they can go to a DSF
+	 	without trouble.
+	 	terrain_Natural is a place-holder indicating that the mesh needs to be filled in using
+	 	the natural terrain rule-system.
+	 	terrain_Airport, et. al. are feature-placeholders; they indicate that we also want to
+	 	use the terrain rule system, but inputting this feature into the 'terrain' column
+	 	as a restriction.
+	 	
+	 	All other types are no longer used (but were part of zoning once upon a time.)
+	 
+	 */
+	 
+/*		
 	TOKEN(terrain_VirtualOrtho00)			// Do not use in mTerrainType
 	TOKEN(terrain_VirtualOrtho01)			// Do not use in mTerrainType
 	TOKEN(terrain_VirtualOrtho10)			// Do not use in mTerrainType
 	TOKEN(terrain_VirtualOrtho11)			// Do not use in mTerrainType
-
+*/
 	// Natural land uses
 	TOKEN(terrain_Water)
 
 	// Man made land uses....each of tehse must have a hill variant
-	
+/*	
 	// Aggricultural land uses.
 	TOKEN(terrain_Marker_Artificial)
 	TOKEN(terrain_MixedFarm)				// A mix of farm + natural terrain
@@ -521,7 +536,7 @@
 	TOKEN(terrain_IndustrialHill)
 	TOKEN(terrain_Downtown)					// High-rise and sky scrapers
 	TOKEN(terrain_DowntownHill)
-		
+*/		
 	// Feature land uses - for specific things that are in the scenery.  No hill variants.
 	TOKEN(terrain_Marker_Features)
 	TOKEN(terrain_MilitaryBase)				// Feature terrains - these terrains
