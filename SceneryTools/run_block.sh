@@ -12,6 +12,6 @@ for (( tile_x = $west; tile_x <= $east; tile_x++ ))
 do
         for (( tile_y = $south; tile_y <= $north; tile_y++ ))
         do
-                $cmd $tile_x $tile_y $dst
+                $cmd $tile_x $tile_y "$dst"
         done
 done

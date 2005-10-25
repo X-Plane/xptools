@@ -53,6 +53,11 @@ xes_dir=$datadir/world_xes/$folder/$file.xes
 hydro_cmd="-hydro $datadir/swbd/$folder/$file.shp -hydrosimplify"
 fi
 
+if [ ! -e $xes_dir ]; then
+	echo "skipping - $xes_dir does npt exist."
+	exit 0
+fi
+
 apt_cmd=-apt
 apt_file=$datadir/apts/$folder/$file.apt
 
