@@ -32,7 +32,7 @@ set<int>					gEnumDEMs;
 
 
 NaturalTerrainTable			gNaturalTerrainTable;
-NaturalTerrainLandUseIndex	gNaturalTerrainLandUseIndex;
+//NaturalTerrainLandUseIndex	gNaturalTerrainLandUseIndex;
 NaturalTerrainIndex			gNaturalTerrainIndex;
 //TerrainPromoteTable			gTerrainPromoteTable;
 //ManTerrainTable				gManTerrainTable;
@@ -381,7 +381,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			int rn = gNaturalTerrainTable.size();
 			gNaturalTerrainTable.push_back(info);
 
-			gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
+//			gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
 			if (gNaturalTerrainIndex.count(info.name) == 0)
 				gNaturalTerrainIndex[info.name] = rn;
 		}
@@ -396,7 +396,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		int rn = gNaturalTerrainTable.size();
 		gNaturalTerrainTable.push_back(info);
 
-		gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
+//		gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
 		if (gNaturalTerrainIndex.count(info.name) == 0)
 			gNaturalTerrainIndex[info.name] = rn;
 	}
@@ -461,7 +461,7 @@ void	LoadDEMTables(void)
 	gColorBands.clear();
 	gEnumDEMs.clear();
 	gNaturalTerrainTable.clear();
-	gNaturalTerrainLandUseIndex.clear();
+//	gNaturalTerrainLandUseIndex.clear();
 	gNaturalTerrainIndex.clear();
 //	gTerrainPromoteTable.clear();
 	gBeachInfoTable.clear();
@@ -515,84 +515,40 @@ int	FindNaturalTerrain(
 {
 	// OPTIMIZE - figure out what the major keys should be.
 	
-	pair<NaturalTerrainLandUseIndex::iterator,NaturalTerrainLandUseIndex::iterator>	range;
-	range = gNaturalTerrainLandUseIndex.equal_range(landuse);
+//	pair<NaturalTerrainLandUseIndex::iterator,NaturalTerrainLandUseIndex::iterator>	range;
+//	range = gNaturalTerrainLandUseIndex.equal_range(landuse);
 	
-	int best_typed = gNaturalTerrainTable.size();
-	int best_untyped = gNaturalTerrainTable.size();
-	int choice_typed = -1;
-	int choice_untyped = -1;
-	
-	for (NaturalTerrainLandUseIndex::iterator i = range.first; i != range.second; ++i)
+	for (int rec_num = 0; rec_num < gNaturalTerrainTable.size(); ++rec_num)
 	{
-		int rec_num = i->second;
 		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
 		
 		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 //		float slope_to_use = slope_tri;
 
-		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
-		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)
-		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
-		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
-		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
+		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
 		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
+		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
 		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
+		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
+		if (rec.terrain == NO_VALUE || terrain == NO_VALUE || terrain == rec.terrain)
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
 		if (rec.elev_range_min == rec.elev_range_max || elevrange == NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
 		if (rec.urban_density_min == rec.urban_density_max || urban_density == NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
-		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
 		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
-		if (!rec.near_water || water)
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
-		if (rec.variant == 0 || variant_blob == 0 || variant_head == 0 || rec.variant == variant_blob || rec.variant == variant_head)
-		{
-			best_typed = rec_num;
-			choice_typed = rec.name;
-			break;
-		}
-	}
-
-	range = gNaturalTerrainLandUseIndex.equal_range(NO_VALUE);
-	
-	for (NaturalTerrainLandUseIndex::iterator i = range.first; i != range.second; ++i)
-	{
-		int rec_num = i->second;
-		NaturalTerrainInfo_t& rec = gNaturalTerrainTable[rec_num];
-
-		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
-//		float slope_to_use = slope_tri;
-
-		if (terrain == NO_VALUE || rec.terrain == NO_VALUE || terrain == rec.terrain)
-		if (climate == NO_VALUE || rec.climate == NO_VALUE || climate == rec.climate)
-		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
-		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
-		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
-		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
-		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
-		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
-		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
-		if (rec.elev_range_min == rec.elev_range_max || elevrange == NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
-		if (rec.urban_density_min == rec.urban_density_max || urban_density == NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
+		if (!rec.near_water || water)
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
-		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))
-		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
-		if (!rec.near_water || water)
-		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
-		if (rec.variant == 0 || variant_blob == 0 || variant_head == 0 || rec.variant == variant_blob || rec.variant == variant_head)
+		if (rec.landuse == NO_VALUE || landuse == NO_VALUE || landuse == rec.landuse)
+		if (rec.climate == NO_VALUE || climate == NO_VALUE || climate == rec.climate)
+		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		{
-			best_untyped = rec_num;
-			choice_untyped = rec.name;
-			break;
+			return rec.name;
 		}
 	}
 
-	if (choice_untyped != -1 && choice_typed != -1)
-		return (best_untyped < best_typed) ? choice_untyped : choice_typed;
-	if (choice_untyped != -1) return choice_untyped;
-	return choice_typed;
+	return -1;
 }
 
 #pragma mark -

@@ -110,11 +110,11 @@ struct	NaturalTerrainInfo_t {
 	float			map_rgb[3];
 };	
 typedef vector<NaturalTerrainInfo_t>	NaturalTerrainTable;			// Natural terrain rules ordered by rule priority
-typedef multimap<int, int>				NaturalTerrainLandUseIndex;		// Index based on land use ranges
+//typedef multimap<int, int>				NaturalTerrainLandUseIndex;		// Index based on land use ranges
 typedef map<int, int>					NaturalTerrainIndex;			// Index from .ter enum to line info!
 
 extern	NaturalTerrainTable				gNaturalTerrainTable;
-extern	NaturalTerrainLandUseIndex		gNaturalTerrainLandUseIndex;
+//extern	NaturalTerrainLandUseIndex		gNaturalTerrainLandUseIndex;
 extern	NaturalTerrainIndex				gNaturalTerrainIndex;
 int		FindNaturalTerrain(
 				int		terrain,
