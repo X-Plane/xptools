@@ -525,11 +525,13 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 {
 	int total = 0;
 	int added = 0;
+	vector<Point3>	all_pts, these_pts;
+		
 	for (Net_ChainInfoSet::iterator chainIter = ioChains.begin(); chainIter != ioChains.end(); ++chainIter)
 	{
+		all_pts.clear();
+		these_pts.clear();
 		Net_ChainInfo_t *	chain = *chainIter;
-		
-		vector<Point3>	all_pts, these_pts;
 		
 		CDT_MarchOverTerrain_t	info;
 		
