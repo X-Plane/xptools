@@ -743,6 +743,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	/************************************************************************************************************/
 	
 	FILE * fi = fopen(inPath, "wb");
+	if (fi == NULL)
+		AssertPrintf("DSF File open for write failed: %s", inPath);
 	DSFHeader_t header;
 	memcpy(header.cookie, DSF_COOKIE, sizeof(header.cookie));
 	header.version = SWAP32(DSF_MASTER_VERSION);
