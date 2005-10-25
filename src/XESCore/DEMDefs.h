@@ -206,6 +206,13 @@ void	DEMGeo_ReduceMinMax(
 			const DEMGeo& inMax,
 				  DEMGeo& outMin,
 				  DEMGeo& outMax);
+				  
+void	DEMGeo_ReduceMinMaxN(
+			const DEMGeo& inData, 
+				  DEMGeo& outMin,
+				  DEMGeo& outMax,
+				  int N);
+				  
 
 // Given a DEM, produce a pair of vectors of DEMs of progressively smaller size that 
 // summarize our min and max values.  (This is like a mipmap.)  

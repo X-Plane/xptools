@@ -655,6 +655,40 @@ void	DEMGeo_ReduceMinMax(
 	}
 }
 
+void	DEMGeo_ReduceMinMaxN(
+					const DEMGeo& inDEM, 
+						  DEMGeo& outMin,
+						  DEMGeo& outMax,
+						  int N)
+{
+	outMin.copy_geo_from(inDEM);
+	outMax.copy_geo_from(inDEM);
+	
+	outMin.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
+	outMax.resize((inDEM.mWidth-1) / N + 1, (inDEM.mHeight-1) / N + 1);
+	
+	int x, y, dx, dy;
+	float e1, e2, e3;
+	
+	for (y = 0; y < outMin.mHeight; y++)
+	for (x = 0; x < outMin.mWidth; x++)
+	{
+		int rx = x * N;
+		int ry = y * N;
+		e1 = e2 = NO_DATA;
+		for (dy = 0; dy < N; ++dy)
+		for (dx = 0; dx < N; ++dx)
+		{
+			e3 = inDEM.get(rx + dx, ry + dy);
+			e1 = MIN_NODATA(e1, e3);
+			e2 = MAX_NODATA(e2, e3);
+		}
+		outMin(x,y) = e1;
+		outMax(x,y) = e2;
+	}
+}
+
+
 /*
  * Given a DEM, build 1 or more reduced DEMs that summarize
  * the min and maxes over a given area.
