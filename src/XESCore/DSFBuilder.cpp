@@ -34,11 +34,21 @@
 #include "ObjTables.h"
 #include "AssertUtils.h"
 
+#include "PerfUtils.h"
+
 /* 
 	TODO:
 		make names that are written out to the definition manifest be what we want!
 
  */
+
+#define PROFILE_PERFORMANCE 1
+#if PROFILE_PERFORMANCE
+#define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
+#else
+#define TIMER(x)	
+#endif
+
 
 #define		PATCH_DIM_HI	32
 #define		PATCH_DIM_LO	32
@@ -71,9 +81,8 @@ struct	edge_wrapper {
 };
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
-static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6])
+static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6], int kind)
 {
-	int				 i;
 	CDT::Face_circulator stop, circ;
 //	int	lterrain = NO_VALUE;
 	
@@ -102,7 +111,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 	stop = circ = inMesh.incident_faces(v_s);
 	do {
-		if (!inMesh.is_infinite(circ) && circ->info().terrain_general != terrain_Water)
+		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
 		{
 //			if (lterrain == NO_VALUE)								lterrain = circ->info().terrain_specific;
 //			else if (lterrain != circ->info().terrain_specific)		lterrain = NO_DATA;
@@ -115,7 +124,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 	stop = circ = inMesh.incident_faces(v_t);
 	do {
-		if (!inMesh.is_infinite(circ) && circ->info().terrain_general != terrain_Water)
+		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
 		{
 			nrml_t.dx += circ->info().normal[0];
 			nrml_t.dy += circ->info().normal[1];
@@ -135,39 +144,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 		coords[3] = nrml_s.dx;
 		coords[4] =-nrml_s.dy;
 	}
-	double		slope = min(nrml_s.dz, nrml_t.dz);
-	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
-	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
-									   v_t->point().x(),v_t->point().y());
-	
-	static int last_time_cv = 0;
-		
-	if (!last)
-	{
-//		if (lterrain != NO_VALUE || lterrain != NO_DATA)
-		int lterrain = edge.edge.first->neighbor(edge.edge.second)->info().terrain_specific;
-		for (i = 0; i < gBeachInfoTable.size(); ++i)
-		{
-			if (slope >= gBeachInfoTable[i].min_slope && 
-				slope <= gBeachInfoTable[i].max_slope &&
-				(lterrain == gBeachInfoTable[i].terrain_type || gBeachInfoTable[i].terrain_type == NO_VALUE) &&
-				len >= gBeachInfoTable[i].min_len &&
-				wave >= gBeachInfoTable[i].min_sea &&
-				wave <= gBeachInfoTable[i].max_sea)
-			{
-				last_time_cv = coords[5] = gBeachInfoTable[i].x_beach_type;
-				break;
-			}
-		}
-		if (i == gBeachInfoTable.size())
-		{
-			AssertPrintf("Error: found no useful beaech type. Slope = %lf, Wave = %lf, len = %lf, terrain = %s",
-						slope, wave, len, FetchTokenString(lterrain));
-			coords[5] = 0;
-		}
-	} else {
-		coords[5] = last_time_cv;
-	}
+	coords[5] = kind;
 }
 
 #define	INLAND_BLEND_DIST 5.0
@@ -254,31 +231,54 @@ edge_wrapper edge_twin(const edge_wrapper& e)
 	return new_e;
 }
 
-int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh)
+int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 {
 	if (inMesh.is_infinite(inEdge.edge.first)) return false;
 	if (inMesh.is_infinite(inEdge.edge.first->neighbor(inEdge.edge.second))) return false;
 
-	if (inEdge.edge.first->info().terrain_specific != terrain_Water) return false;
-	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain_specific == terrain_Water) return false;
+	if (inEdge.edge.first->info().terrain != terrain_Water) return false;
+	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;
+	
+	CDT::Face_handle tri = inEdge.edge.first;
+	if (tri->info().terrain == terrain_Water)
+		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
+
+	int lterrain = tri->info().terrain;
+	int i;	
+	
+	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
+//	loc = inMesh.locate(CDT::Point(pm_vt->point().x, pm_vt->point().y), lt, i, loc);
+//	Assert(lt == CDT::VERTEX);
+	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
+
+	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
+	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
+									   v_t->point().x(),v_t->point().y());
+									   
+	double slope = tri->info().normal[2];
+	
+	for (i = 0; i < gBeachInfoTable.size(); ++i)
+	{
+		if (slope >= gBeachInfoTable[i].min_slope && 
+			slope <= gBeachInfoTable[i].max_slope &&
+			(lterrain == gBeachInfoTable[i].terrain_type || gBeachInfoTable[i].terrain_type == NO_VALUE) &&
+			len >= gBeachInfoTable[i].min_len &&
+			wave >= gBeachInfoTable[i].min_sea &&
+			wave <= gBeachInfoTable[i].max_sea)
+		{
+			kind = gBeachInfoTable[i].x_beach_type;
+			break;
+		}
+	}
+
+	if (i == gBeachInfoTable.size())
+	{
+		return false;
+	}
 	return true;
 }
 
-int	make_composite_landuse(int generic, int specific) 
-{ 
-	if (generic < terrain_VirtualOrtho00) 
-		printf("WARNING: got small terrains: %d, %d (natural=%d)\n", generic, specific, terrain_Natural);
-	if (generic > terrain_Natural)
-		printf("WARNING: got big terrains: %d, %d (natural=%d)\n", generic, specific, terrain_Natural);	
-	if (specific < terrain_Natural && generic == terrain_Natural)
-		printf("WARNING: specific terrain out of order!  Generic=%s Specific=%s (%d,%d)\n", FetchTokenString(generic), FetchTokenString(specific), generic, specific);
-	int ret_val = (generic != terrain_Water) ? (specific) : generic; 
-	if (ret_val == 1)
-		printf("WTF are we doing?!?\n");
-	return ret_val;
-}
-
-string		get_composite_terrain_name(int composite) 
+string		get_terrain_name(int composite) 
 {
 	if (composite == terrain_Water)
 		return FetchTokenString(composite);
@@ -288,7 +288,7 @@ string		get_composite_terrain_name(int composite)
 	}
 
 //	DebugAssert(!"bad terrain.");
-//	printf("WARNING: no name for terrain %d (token=%s\n", composite, FetchTokenString(composite));
+	AssertPrintf("WARNING: no name for terrain %d (token=%s\n", composite, FetchTokenString(composite));
 	return "UNKNOWN TERRAIN!";
 }
 
@@ -520,10 +520,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
 		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
-		landuses.insert(map<int, int, SortByLULayer>::value_type(make_composite_landuse(fi->info().terrain_general, fi->info().terrain_specific),0));
-		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(make_composite_landuse(fi->info().terrain_general, fi->info().terrain_specific));
+		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
+		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
-			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(make_composite_landuse(terrain_Natural, *border_lu));
+			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
 	}
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.5)) return;	
@@ -563,8 +563,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
 		
 		sLoResTris[(int) x + (int) y * PATCH_DIM_LO].push_back(fi);
-		landuses.insert(map<int, int, SortByLULayer>::value_type(make_composite_landuse(fi->info().terrain_general, fi->info().terrain_specific),0));
-		sLoResLU[(int) x + (int) y * PATCH_DIM_LO].insert(make_composite_landuse(fi->info().terrain_general, fi->info().terrain_specific));
+		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
+		sLoResLU[(int) x + (int) y * PATCH_DIM_LO].insert(fi->info().terrain);
 	}
 #endif
 	
@@ -597,7 +597,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (tri = 0; tri < sLoResTris[cur_id].size(); ++tri)
 			{
 				f = sLoResTris[cur_id][tri];
-				if (make_composite_landuse(f->info().terrain_general, f->info().terrain_specific) == lu_ranked->first)	
+				if (f->info().terrain == lu_ranked->first)	
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -696,7 +696,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
-				if (make_composite_landuse(f->info().terrain_general, f->info().terrain_specific) == lu_ranked->first)
+				if (f->info().terrain == lu_ranked->first)
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -853,7 +853,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	
 	for (lu = landuses_reversed.begin(); lu != landuses_reversed.end(); ++lu)
 	{
-		string def = get_composite_terrain_name(lu->second);
+		string def = get_terrain_name(lu->second);
 //		def = string("lib/terrain/") + def;
 		cbs.AcceptTerrainDef_f(def.c_str(), writer);
 	}
@@ -871,12 +871,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	typedef hash_map<edge_wrapper, edge_wrapper, hash_edge>						LinkMap;
 	typedef set<edge_wrapper>													LinkSet;
+	typedef hash_map<edge_wrapper, int, hash_edge>								LinkInfo;
 	
 	LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
 	LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.
-	LinkSet			all;		// Ones we haven't exported.
+	LinkInfo		all;		// Ones we haven't exported.
 	LinkSet			starts;		// Ones that are not pointed to by a HE
 	edge_wrapper	beach, last_beach;
+	int				beachKind;
 
 	// Go through and build up the link map, e.g. for each edge, who's next.
 	// Also record each edge that's pointed to by another - these are NOT
@@ -887,14 +889,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		edge_wrapper edge;
 		edge.edge.first = fi;
 		edge.edge.second = v;
-		if (has_beach(edge, inHiresMesh))
+		if (has_beach(edge, inHiresMesh, beachKind))
 		{
-			all.insert(edge);
+			all[edge] = beachKind;
+			starts.insert(edge);
 			// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise. 
 			// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
 			for (edge_wrapper iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
 			{
-				if (has_beach(iter, inHiresMesh))
+				if (has_beach(iter, inHiresMesh, beachKind))
 				{
 //					DebugAssert(iter->twin() != he);
 					DebugAssert(linkNext.count(edge) == 0);
@@ -905,13 +908,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				}
 				// If we hit something that isn't bounding water, we've gone out of our land into the next
 				// water out of this vertex.  Stop now before we link to a non-connected water body!!
-				if (iter.edge.first->info().terrain_specific != terrain_Water)
+				if (iter.edge.first->info().terrain != terrain_Water)
 					break;
 			}
 		}
 	}
 
-	starts = all;
 	for (LinkSet::iterator i = nonStart.begin(); i != nonStart.end(); ++i)
 	{
 		starts.erase(*i);
@@ -930,13 +932,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		{
 			last_beach = beach;
 			DebugAssert(all.count(beach) != 0);
-			BeachPtGrab(beach, false, inHiresMesh, coords6);
+			beachKind = all[beach];
+			BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
 			cbs.AddPolygonPoint_f(coords6, writer);
 			all.erase(beach);
 		}
 		DebugAssert(all.count(*a_start) == 0);
 
-		BeachPtGrab(last_beach, true, inHiresMesh, coords6);
+		BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
 		cbs.AddPolygonPoint_f(coords6, writer);	
 		
 		cbs.EndPolygonWinding_f(writer);
@@ -944,16 +947,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	}
 
 #if DEV
-	for (LinkSet::iterator test = all.begin(); test != all.end(); ++test)
+	for (LinkInfo::iterator test = all.begin(); test != all.end(); ++test)
 	{
-		DebugAssert(linkNext.count(*test) != 0);
+		DebugAssert(linkNext.count(test->first) != 0);
 	}
 #endif
 
 	// Now just pick an edge and export in a circulator - we should only have rings!	
 	while (!all.empty())
 	{
-		edge_wrapper this_start = *all.begin();
+		edge_wrapper this_start = all.begin()->first;
 		cbs.BeginPolygon_f(0, 1, 6, writer);
 		cbs.BeginPolygonWinding_f(writer);
 	
@@ -961,7 +964,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		do {
 			DebugAssert(all.count(beach) != 0);
 			DebugAssert(linkNext.count(beach) != 0);
-			BeachPtGrab(beach, false, inHiresMesh, coords6);
+			beachKind = all.begin()->second;
+			BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
 			cbs.AddPolygonPoint_f(coords6, writer);			
 			all.erase(beach);
 			beach = linkNext[beach];
@@ -1173,17 +1177,47 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.3)) return;	
 
-	BuildNetworkTopology(inVectorMap, junctions, chains);
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
-	DrapeRoads(junctions, chains, inHiresMesh);
-	PromoteShapePoints(junctions, chains);
-	VerticalPartitionRoads(junctions, chains);
-	VerticalBuildBridges(junctions, chains);
-	InterpolateRoadHeights(junctions, chains);
-	AssignExportTypes(junctions, chains);
-	DeleteBlankChains(junctions, chains);
-	OptimizeNetwork(junctions, chains, false);
-	SpacePowerlines(junctions, chains, 1000.0, 10.0);
+	{
+		TIMER(BuildNetworkTopology)
+		BuildNetworkTopology(inVectorMap, junctions, chains);
+	}
+	{
+		TIMER(DrapeRoads)
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
+		DrapeRoads(junctions, chains, inHiresMesh);
+	}
+	{	
+		TIMER(PromoteShapePoints)
+		PromoteShapePoints(junctions, chains);
+	}
+	{
+		TIMER(VerticalPartitionRoads)		
+		VerticalPartitionRoads(junctions, chains);
+	}
+	{
+		TIMER(VerticalBuildBridges)
+		VerticalBuildBridges(junctions, chains);
+	}
+	{
+		TIMER(InterpolateRoadHeights)
+		InterpolateRoadHeights(junctions, chains);
+	}
+	{
+		TIMER(AssignExportTypes)
+		AssignExportTypes(junctions, chains);
+	}
+	{
+		TIMER(DeleteBlankChains)
+		DeleteBlankChains(junctions, chains);
+	}
+	{
+		TIMER(OptimizeNetwork)
+		OptimizeNetwork(junctions, chains, false);
+	}
+	{
+		TIMER(SpacePowerlines)
+		SpacePowerlines(junctions, chains, 1000.0, 10.0);
+	}
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;	
 
 	cur_id = 1;
