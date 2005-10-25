@@ -35,6 +35,9 @@
 #include "GISTool_MiscCmds.h"
 #include "GISTool_ProcessingCmds.h"
 #include "GISTool_VectorCmds.h"
+#if USE_CHUD
+#include <CHUD/CHUD.h>
+#endif
 
 extern void	SelfTestAll(void);
 
@@ -62,6 +65,11 @@ static int DoHelp(const vector<const char *>& args)
 	return ok;
 }
 
+#if USE_CHUD
+static int DoChudStart(const vector<const char *>& args)	{	return chudStartRemotePerfMonitor((char *) args[0]); }
+static int DoChudStop(const vector<const char *>& args)		{	return chudStopRemotePerfMonitor(); }
+#endif
+
 static int DoSelfTest(const vector<const char *>& args)		{	SelfTestAll(); 	return 0; 	}
 static int DoVerbose(const vector<const char *>& args)		{	gVerbose = 1;	return 0;	}
 static int DoQuiet(const vector<const char *>& args)		{	gVerbose = 0;	return 0;	}
@@ -79,6 +87,10 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 { "-progress",		0, 0, DoProgress, "Shows progress bars", "" },
 { "-noprogress",	0, 0, DoNoProgress, "Disables progress bars", "" },
 { "-selftest",		0, 0, DoSelfTest, "Self test internal algorithms.", "" },
+#if USE_CHUD
+{ "-chud_start",	1, 1, DoChudStart, "Start profiling", "" },
+{ "-chud_stop",		0, 0, DoChudStop, "stop profiling", "" },
+#endif
 { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -134,9 +146,19 @@ int	main(int argc, char * argv[])
 		{
 			args.push_back(argv[n]);			
 		}
-		
+
+#if USE_CHUD		
+		chudInitialize();
+		bool 				can_profile = chudInitialize() == chudSuccess;
+		if (can_profile) 	can_profile = chudAcquireRemoteAccess() == chudSuccess;
+		else 							  chudCleanup();
+#endif		
 		result = GISTool_ParseCommands(args);
 
+#if USE_CHUD
+		if (can_profile)	chudReleaseRemoteAccess();
+		if (can_profile)	chudCleanup();
+#endif		
 //		delete total;
 
 		exit(result);
