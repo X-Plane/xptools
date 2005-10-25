@@ -514,7 +514,7 @@ void	WED_MapView::DrawSelf(void)
 				if (GetBucketForFace(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, fit) == n)
 				{
 					++mTris[n];
-					if (fit->info().terrain_general != NO_VALUE && fit->info().terrain_specific != NO_VALUE)
+					if (fit->info().terrain != NO_VALUE)
 					{				
 						CDT::Vertex_handle	a = fit->vertex(2);
 						CDT::Vertex_handle	b = fit->vertex(1);
@@ -526,13 +526,13 @@ void	WED_MapView::DrawSelf(void)
 
 						float	col[4];
 
-						if (fit->info().terrain_general != terrain_Water)
+						if (fit->info().terrain != terrain_Water)
 						{
-							GetNaturalTerrainColor(fit->info().terrain_specific, col);
+							GetNaturalTerrainColor(fit->info().terrain, col);
 							col[3] = 0.5;
 						} else {
 
-							RGBColor_t&	rgbc = gEnumColors[fit->info().terrain_general];
+							RGBColor_t&	rgbc = gEnumColors[fit->info().terrain];
 							col[0] = rgbc.rgb[0];
 							col[1] = rgbc.rgb[1];
 							col[2] = rgbc.rgb[2];
@@ -1489,13 +1489,8 @@ char * WED_MapView::MonitorCaption(void)
 	recent = gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
 	if (lt == CDT::FACE)
 	{
-		int tg = recent->info().terrain_general;
-		int ts = recent->info().terrain_specific;
-		if (tg != terrain_Water) {
-			n += sprintf(buf+n, "Tri:%s/%s ", FetchTokenString(tg),FetchTokenString(ts));
-		} else {
-			n += sprintf(buf+n, "Tri:%s/%s ", FetchTokenString(tg),FetchTokenString(ts));
-		}
+		int ts = recent->info().terrain;
+		n += sprintf(buf+n, "Tri:%s ", FetchTokenString(ts));
 
 		int slope = acos(recent->info().normal[2]) * RAD_TO_DEG;
 		float slope_head_f = recent->info().normal[1];
