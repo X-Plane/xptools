@@ -120,8 +120,8 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 		
-			writer2.WriteInt(FT[j]->info().terrain_general);
-			writer2.WriteInt(FT[j]->info().terrain_specific);
+			writer2.WriteInt(FT[j]->info().feature);
+			writer2.WriteInt(FT[j]->info().terrain);
 			writer2.WriteInt(FT[j]->info().flag);
 			writer2.WriteFloat(FT[j]->info().normal[0]);
 			writer2.WriteFloat(FT[j]->info().normal[1]);
@@ -270,8 +270,8 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		PROGRESS_CHECK(func, 0, 1, "Reading mesh...", ctr, tot, step)
 	
 		MeshFaceInfo	fi;
-		readData1.ReadInt(fi.terrain_general);
-		readData1.ReadInt(fi.terrain_specific);
+		readData1.ReadInt(fi.feature);
+		readData1.ReadInt(fi.terrain);
 		readData1.ReadInt(fi.flag);
 		readData1.ReadFloat(fi.normal[0]);
 		readData1.ReadFloat(fi.normal[1]);
@@ -290,8 +290,8 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 			DebugAssert(fi.normal[2] <  1.1);
 		}
 #endif		
-		fi.terrain_general = conv[fi.terrain_general];
-		fi.terrain_specific = conv[fi.terrain_specific];
+		fi.feature = conv[fi.feature];
+		fi.terrain = conv[fi.terrain];
 		
 		readData1.ReadInt(index);
 		while (index--)

@@ -59,10 +59,10 @@ struct	MeshVertexInfo {
 };
 
 struct	MeshFaceInfo {
-	MeshFaceInfo() : terrain_general(NO_DATA), terrain_specific(NO_DATA),flag(0) { }
+	MeshFaceInfo() : terrain(NO_DATA),feature(NO_VALUE),flag(0) { }
 	MeshFaceInfo(const MeshFaceInfo& rhs) : 
-								terrain_general(rhs.terrain_general), 
-								terrain_specific(rhs.terrain_specific),
+								terrain(rhs.terrain),
+								feature(rhs.feature), 
 								flag(rhs.flag),
 								terrain_border(rhs.terrain_border) { 
 								normal[0] = rhs.normal[0]; 
@@ -70,8 +70,8 @@ struct	MeshFaceInfo {
 								normal[2] = rhs.normal[2]; }								
 								
 	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) { 
-								terrain_general = rhs.terrain_general; 
-								terrain_specific = rhs.terrain_specific; 
+								terrain = rhs.terrain; 
+								feature = rhs.feature;
 								flag = rhs.flag;
 								terrain_border = rhs.terrain_border; 
 								normal[0] = rhs.normal[0]; 
@@ -86,8 +86,8 @@ struct	MeshFaceInfo {
 	double			plane_b;
 	double			plane_c;
 
-	int				terrain_general;		// General terrain type for this triangle, e.g. terrain_Natural, terrain_Water
-	int				terrain_specific;		// Specific terrain type, e.g. natural converted to a real land use. (This is a .ter enum, NOT a table index btw)
+	int				terrain;				// General terrain type for this triangle, e.g. terrain_Natural, terrain_Water
+	int				feature;				// Specific terrain type, e.g. natural converted to a real land use. (This is a .ter enum, NOT a table index btw)
 	int				flag;					// General purpose, useful for..um...algorithms.
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.

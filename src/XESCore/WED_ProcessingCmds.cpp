@@ -369,7 +369,7 @@ void WED_UpdateProcCmds(void)
 #endif	
 	for (CDT::Finite_faces_iterator f = gTriangulationHi.finite_faces_begin(); f != gTriangulationHi.finite_faces_end(); ++f)
 	{
-		if (f->info().terrain_specific == NO_VALUE)
+		if (f->info().terrain == NO_VALUE || f->info().terrain == terrain_Natural)
 		{
 			mesh_set = false;
 			break;

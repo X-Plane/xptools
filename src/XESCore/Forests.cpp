@@ -28,8 +28,8 @@ inline	int	tri_forest_type(CDT::Face_handle f)
 	// BUT if ANY terrain has no forest, return no forest.  This way we will never put trees over a potentially
 	// incompatible bitmap, EVEN if the Italians decide to put the forest type on top for visual reasons.
 
-	int forest_type = gNaturalTerrainTable[gNaturalTerrainIndex[f->info().terrain_specific]].forest_type;
-	int forest_terrain = f->info().terrain_specific;
+	int forest_type = gNaturalTerrainTable[gNaturalTerrainIndex[f->info().terrain]].forest_type;
+	int forest_terrain = f->info().terrain;
 	if (forest_type == NO_VALUE) return NO_VALUE;
 	
 	for (set<int>::iterator border = f->info().terrain_border.begin(); border != f->info().terrain_border.end(); ++border)
@@ -168,7 +168,7 @@ void GenerateForests(
 	{
 		if ((ctr % 1000) == 0 && inProg && inProg(0, 2, "Indexing mesh", (float) ctr / total)) return;
 
-		if (ffi->info().terrain_general != terrain_Water)
+		if (ffi->info().terrain != terrain_Water)
 		{
 			if (tri_forest_type(ffi) != NO_VALUE)
 			{

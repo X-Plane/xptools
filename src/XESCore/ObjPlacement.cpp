@@ -469,7 +469,7 @@ bool	ProcessOneLot(
 	recent = mesh.locate_cache(CDT::Point(centroid.x,centroid.y), lt, i, hint_id);
 	if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 	{
-		terrain = recent->info().terrain_specific;
+		terrain = recent->info().terrain;
 	} else {
 		DebugAssert(!"Hrm....object not found on terrain mesh...");
 	}
@@ -1035,7 +1035,7 @@ void	InstantiateGTPolygon(
 		recent = mesh.locate_cache(CDT::Point(i->mLocation.x,i->mLocation.y), lt, side, hint_id);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
-			terrain = recent->info().terrain_specific;
+			terrain = recent->info().terrain;
 		} else {
 			DebugAssert(!"Hrm....object not found on terrain mesh...");
 		}
@@ -1217,7 +1217,7 @@ void	InstantiateGTPolygon(
 						recent = mesh.locate_cache(CDT::Point(l.x,l.y), lt, side, hint_id);
 						if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 						{
-							terrain = recent->info().terrain_specific;
+							terrain = recent->info().terrain;
 						} else {
 							DebugAssert(!"Hrm....object not found on terrain mesh...");
 						}
