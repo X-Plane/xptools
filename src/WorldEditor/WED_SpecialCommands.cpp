@@ -56,6 +56,7 @@ enum {
 	specCmd_TempMSL,
 	specCmd_FixMSL,
 	specCmd_FixRain,
+	specCmd_SplatClimate,
 	specCmd_Div2,
 	specCmd_FaceHeight,
 	specCmd_ObjHeight,
@@ -78,6 +79,7 @@ const char *	kSpecCmdNames [] = {
 	"Create Sea Level Temperatures...",
 	"Filter Sea Level Temperatures...",
 	"Filter Rain Fall...",
+	"Spread Climate Data...",
 	"-",
 	"Show Height of Selected Faces...",
 	"Show Height of Objs in Selected Faces...",
@@ -95,6 +97,7 @@ static	const char	kCmdKeys [] = {
 	0,		0,
 	0,		0,
 //	0,		0,
+	0,		0,
 	0,		0,
 	0,		0,
 	0,		0,
@@ -423,6 +426,25 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					rain(x,y) = NO_DATA;				
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			break;
+		case specCmd_SplatClimate:
+			{
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.0);
+				while (SpreadDEMValuesIterate(gDem[dem_Temperature	  	 ])) { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.15);
+				while (SpreadDEMValuesIterate(gDem[dem_TemperatureRange	 ]))	 { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.3);
+				while (SpreadDEMValuesIterate(gDem[dem_Rainfall			 ])) { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.45);
+				while (SpreadDEMValuesIterate(gDem[dem_Biomass			 ])) { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.6);
+				while (SpreadDEMValuesIterate(gDem[dem_TemperatureSeaLevel ])) { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 0.75);
+				while (SpreadDEMValuesIterate(gDem[dem_Climate			 ])) { }
+				WED_ProgressFunc(0, 1, "Spreading climate.", 1.0);
+
+				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+			}
 			break;
 		case specCmd_ReloadConfigFiles:
 			WED_ProgressFunc(0, 1, "Reloading config files...", 0.0);
