@@ -37,7 +37,7 @@
 #include "MemFileUtils.h"
 #include "XESIO.h"
 
-extern DEMPrefs_t	gDemPrefs = { 4, 0.5, 1.0 };
+extern DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
 
 struct	SnowLineInfo_t {
 	float	lat;
@@ -153,6 +153,55 @@ foo:
 			temp(x,y) = h;
 	}
 	ioDem.swap(temp);
+}
+
+bool	SpreadDEMValuesIterate(DEMGeo& ioDem)
+{
+	bool did_any = false;
+	DEMGeo	temp(ioDem);
+	for (int y = 0; y < ioDem.mHeight; ++y)
+	for (int x = 0; x < ioDem.mWidth; ++x)
+	{
+		float	h =  temp(x,y);
+		if (h == NO_DATA)	
+		{
+			int n = rand() % 4;
+			switch(n) {
+			case 0:
+				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == NO_DATA) h = ioDem.get(x+1,y  );
+				break;
+			case 1:
+				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == NO_DATA) h = ioDem.get(x-1,y  );
+				break;
+			case 2:
+				if (h == NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
+				break;
+			default:
+				if (h == NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
+				break;
+			}
+			if (h != NO_DATA)
+			{
+				temp(x,y) = h;
+				did_any = true;
+			}
+		}
+	}
+	if (did_any)
+		ioDem.swap(temp);
+	return did_any;
 }
 
 
@@ -1501,19 +1550,12 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 	elev.calc_slope(slope, slopeHeading, inProg);
 
 	{
-		DEMGeo	mins(elev2), maxs(elev2), tempMin, tempMax;
-		for (int n = 0; n < gDemPrefs.local_range; ++n)
-		{
-			tempMin.swap(mins);
-			tempMax.swap(maxs);
-			DEMGeo_ReduceMinMax(tempMin, tempMax, mins, maxs);
-		}
+		DEMGeo	mins, maxs;
+		DEMGeo_ReduceMinMaxN(elev2, mins, maxs, 8);
+
 		for (y = 0; y < elev2.mHeight; ++y)
 		for (x = 0; x < elev2.mWidth ; ++x)
 		{
-			if (x == 0 && inProg)
-				inProg(1, 2, "Calculating local min/max", (float) y / (float) elev2.mHeight);
-			
 			e0 = mins.value_linear(elev2.x_to_lon(x), elev2.y_to_lat(y));
 			e1 = maxs.value_linear(elev2.x_to_lon(x), elev2.y_to_lat(y));
 			elevationRange(x,y) = e1 - e0;
