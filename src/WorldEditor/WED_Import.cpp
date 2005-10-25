@@ -44,6 +44,7 @@ struct	WED_ImportState_t {
 	float		scale;
 	int			flip_x;
 	int			flip_y;
+	int			swap_xy;
 	int			invert;
 	float		west;
 	float		south;
@@ -51,7 +52,7 @@ struct	WED_ImportState_t {
 	float		north;
 };
 
-static WED_ImportState_t	sImportState = { 0, 0, 0, 0, 1201, 1201, 0.0, 1.0, 0, 0, 0,
+static WED_ImportState_t	sImportState = { 0, 0, 0, 0, 1201, 1201, 0.0, 1.0, 0, 0, 0, 0,
 				-180.0, -90.0, 180.0, 90.0 };
 
 enum {
@@ -157,6 +158,7 @@ void	WED_ShowImportDialog(void)
 					XP_ROW, 
 						XP_CHECKBOX, "Flip X", &sImportState.flip_x, 
 						XP_CHECKBOX, "Flip Y", &sImportState.flip_y,
+						XP_CHECKBOX, "Swap XY", &sImportState.swap_xy,
 					XP_END,
 					XP_ROW,
 						XP_CAPTION, "Byte Offset:", 
@@ -214,6 +216,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			{
 				int ix = x;
 				int iy = y;
+				if (sImportState.swap_xy) swap(ix, iy);
 				if (sImportState.flip_x) ix = info.width - x - 1;
 				if (sImportState.flip_y) iy = info.width - y - 1;
 				unsigned char * p = info.data + y * (info.width * info.channels + info.pad) + x * info.channels;
@@ -294,6 +297,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				for (int x = 0; x < theDem->mWidth; ++x)
 				{
 					int ix = x, iy = y;
+					if (sImportState.swap_xy) swap(ix, iy);
 					if (sImportState.flip_x) ix = theDem->mWidth - 1 - ix;
 					if (sImportState.flip_y) iy = theDem->mHeight - 1 - iy;
 
