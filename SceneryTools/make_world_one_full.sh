@@ -63,6 +63,9 @@ obs_mode=
 obs_file=
 fi
 
+mkdir -p $3
+mkdir -p $3/$folder
+
 $tool \
 	-extent $west $south $east $north \
 	-load config/global_climate_smooth_rain.xes \

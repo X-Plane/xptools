@@ -33,7 +33,7 @@ east=`expr $west + 1`
 north=`expr $south + 1`
 folder=`./genpath folder $west $south`
 file=`./genpath file $west $south`
-output="$3/Earth nav data/$folder/$file.dsf"
+output="$3Earth nav data/$folder/$file.dsf"
 hydro_cmd=
 hydro_file=
 logdir=$datadir/logs/$folder/$file.txt
@@ -73,6 +73,7 @@ obs_file=
 fi
 
 $tool \
+	-noprogress \
 	-extent $west $south $east $north \
 	-load config/global_climate_smooth_rain.xes \
 	-crop \
@@ -94,7 +95,7 @@ $tool \
 	-zoning \
 	-calcmesh \
 	-assignterrain \
-	-exportdsf $3 | tee >> $logdir
+	-exportdsf "$3" | tee $logdir
 
 
 #	-instobjs \
