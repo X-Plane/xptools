@@ -884,91 +884,94 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 	/************************************************************************************
 	 * RASTERIZE SHAPE FILE FOR SRTM IDEA OF WATER BODIES
 	 ************************************************************************************/
-	 
-	SHPHandle file = SHPOpen(inShapeFile, "rb");
-	if (file == NULL)	return;
-	int	entityCount, shapeType;
-	double	bounds_lo[4], bounds_hi[4];
+
+		int rx1, rx2, x, y, dx, dy;
+		float e;
+		
 	
-	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-	
-	PolyRasterizer	raster;
-
-	set<GISHalfedge *>	edges;
-	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
-	if (e->mDominant)
-	if ((e->face()->IsWater() != e->twin()->face()->IsWater() && !e->face()->is_unbounded() && !e->twin()->face()->is_unbounded()) ||
-		(e->face()->IsWater() && e->twin()->face()->is_unbounded()) ||
-		(e->face()->is_unbounded() && e->twin()->face()->IsWater()))
+	if ( inShapeFile )
 	{
-		edges.insert(e);
-	}	
+		SHPHandle file = SHPOpen(inShapeFile, "rb");
+		if (file == NULL)	return;
+		int	entityCount, shapeType;
+		double	bounds_lo[4], bounds_hi[4];
+		
+		SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
+		
+		PolyRasterizer	raster;
 
-	for (int n = 0; n < entityCount; ++n)
-	{
-		SHPObject * obj = SHPReadObject(file, n);
-
-		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
+		set<GISHalfedge *>	edges;
+		for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
+		if (e->mDominant)
+		if ((e->face()->IsWater() != e->twin()->face()->IsWater() && !e->face()->is_unbounded() && !e->twin()->face()->is_unbounded()) ||
+			(e->face()->IsWater() && e->twin()->face()->is_unbounded()) ||
+			(e->face()->is_unbounded() && e->twin()->face()->IsWater()))
 		{
-			for (int part = 0; part < obj->nParts; ++part)
-			{
-				int start_idx = obj->panPartStart[part];
-				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-				Polygon2 pts(stop_idx - start_idx);
-				for (int index = start_idx; index < stop_idx; ++index)
-				{
-					pts[index-start_idx] = Point2(obj->padfX[index],obj->padfY[index]);
-				}
-				DebugAssert(pts.front() == pts.back());
-				pts.pop_back();
-				
-				for (int i = 0; i < pts.size(); ++i)
-				{
-					int j = (i + 1) % pts.size();
-					double x1 = new_wet.lon_to_x(pts[i].x);
-					double y1 = new_wet.lat_to_y(pts[i].y);
-					double x2 = new_wet.lon_to_x(pts[j].x);
-					double y2 = new_wet.lat_to_y(pts[j].y);
+			edges.insert(e);
+		}	
 
-					if (y1 != y2)
+		for (int n = 0; n < entityCount; ++n)
+		{
+			SHPObject * obj = SHPReadObject(file, n);
+
+			if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
+			{
+				for (int part = 0; part < obj->nParts; ++part)
+				{
+					int start_idx = obj->panPartStart[part];
+					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+					Polygon2 pts(stop_idx - start_idx);
+					for (int index = start_idx; index < stop_idx; ++index)
 					{
-						if (y1 < y2)
-							raster.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
-						else
-							raster.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
+						pts[index-start_idx] = Point2(obj->padfX[index],obj->padfY[index]);
+					}
+					DebugAssert(pts.front() == pts.back());
+					pts.pop_back();
+					
+					for (int i = 0; i < pts.size(); ++i)
+					{
+						int j = (i + 1) % pts.size();
+						double x1 = new_wet.lon_to_x(pts[i].x);
+						double y1 = new_wet.lat_to_y(pts[i].y);
+						double x2 = new_wet.lon_to_x(pts[j].x);
+						double y2 = new_wet.lat_to_y(pts[j].y);
+
+						if (y1 != y2)
+						{
+							if (y1 < y2)
+								raster.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
+							else
+								raster.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
+						}
 					}
 				}
-			}
-		} 
+			} 
 
-		SHPDestroyObject(obj);	
-	}	
-	SHPClose(file);
+			SHPDestroyObject(obj);	
+		}	
+		SHPClose(file);
 
-	raster.SortMasters();
-	
-	int rx1, rx2, x, y, dx, dy;
-	float e;
-	
-	y = 0;
-	raster.StartScanline(y);
-	while (!raster.DoneScan())
-	{
-		while (raster.GetRange(rx1, rx2))
+		raster.SortMasters();
+		
+		y = 0;
+		raster.StartScanline(y);
+		while (!raster.DoneScan())
 		{
-			for (x = rx1; x < rx2; ++x)
+			while (raster.GetRange(rx1, rx2))
 			{
-				e = elev.get(x,y);
-				DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
-				new_wet(x,y) = e;
+				for (x = rx1; x < rx2; ++x)
+				{
+					e = elev.get(x,y);
+					DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
+					new_wet(x,y) = e;
+				}
 			}
+			++y;
+			if (y >= elev.mHeight) 
+				break;
+			raster.AdvanceScanline(y);		
 		}
-		++y;
-		if (y >= elev.mHeight) 
-			break;
-		raster.AdvanceScanline(y);		
 	}
-
 	/************************************************************************************
 	 * RASTERIZE OLD VMAP0 DATA, BUT CORRECT WATER BODIES TO NOT CLIMB UP MOUNTAINS!
 	 ************************************************************************************/
