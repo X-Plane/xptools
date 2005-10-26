@@ -271,6 +271,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 #endif		
 		if (!(ioMesh.is_face(ioBorder.vertices[n].buddy, ioBorder.vertices[n+1].buddy, ioMesh.infinite_vertex(), ioBorder.edges[n].buddy)))
 		{
+/*		
 			CDT::Vertex_circulator	circ, stop;
 			printf("    Vert 1 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n].buddy->point().x(), ioBorder.vertices[n].buddy->point().y(), &*ioBorder.vertices[n].buddy);
 			circ = stop = ioMesh.incident_vertices(ioBorder.vertices[n].buddy);
@@ -289,9 +290,14 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 				ioBorder.vertices[n  ].buddy->point().y(),
 				ioBorder.vertices[n+1].buddy->point().x(),
 				ioBorder.vertices[n+1].buddy->point().y());
+*/
+		// BEN SEZ: this used to be an error but - there are cases where the SLAVE file has a lake ENDING at the edge...there is no way the MASTER
+		// could have induced these pts, so we're screwed.  For now - we'll just blunder on.
+			ioBorder.edges[n].buddy = CDT::Face_handle();				
+		} else {
+			int idx = ioBorder.edges[n].buddy->index(ioMesh.infinite_vertex());
+			ioBorder.edges[n].buddy = ioBorder.edges[n].buddy->neighbor(idx);
 		}
-		int idx = ioBorder.edges[n].buddy->index(ioMesh.infinite_vertex());
-		ioBorder.edges[n].buddy = ioBorder.edges[n].buddy->neighbor(idx);
 	}
 }
 
@@ -494,6 +500,9 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT::Vertex_handle v1, CDT::Vertex_handle v2, set<CDT::Vertex_handle>& ioModVertices)
 {
 	int old_base = tri->info().terrain;
+
+	if (old_base == terrain_Water || new_base == terrain_Water)
+		return;
 
 	DebugAssert(new_base != terrain_Water);
 	DebugAssert(tri->info().terrain != terrain_Water);
@@ -1493,8 +1502,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float cl2 = inClimate.search_nearest(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
 				float cl3 = inClimate.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
 
-				if (lu == NO_DATA)
-					fprintf(stderr, "NO data anywhere near %f, %f\n", center_x, center_y);
+				// Ben sez: tiny island in the middle of nowhere - do NOT expect LU.  That's okay - Sergio doesn't need it.
+//				if (lu == NO_DATA)
+//					fprintf(stderr, "NO data anywhere near %f, %f\n", center_x, center_y);
 				lu = MAJORITY_RULES(lu,lu1,lu2, lu3);
 				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
 
@@ -1623,6 +1633,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// by a lower priority texture.  If we just use borders, that low prio tex will end up UNDER our base, and we'll
 	// never see it.  So we need to take the tex on our right side and reduce it.
 	for (n = 0; n < gMatchLeft.edges.size(); ++n)
+	if (gMatchLeft.edges[n].buddy != CDT::Face_handle())
 	{
 		lowest = gMatchLeft.edges[n].buddy->info().terrain;
 		if (LowerPriorityNaturalTerrain(gMatchLeft.edges[n].base, lowest))
@@ -1659,6 +1670,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	}
 
 	for (n = 0; n < gMatchBottom.edges.size(); ++n)
+	if (gMatchBottom.edges[n].buddy != CDT::Face_handle())
 	{
 		lowest = gMatchBottom.edges[n].buddy->info().terrain;
 		if (LowerPriorityNaturalTerrain(gMatchBottom.edges[n].base, lowest))
@@ -1845,6 +1857,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// was already there.
 	
 	for (n = 0; n < gMatchLeft.edges.size(); ++n)
+	if (gMatchLeft.edges[n].buddy != CDT::Face_handle())
 	if (gMatchLeft.edges[n].buddy->info().terrain != terrain_Water)
 	{
 		// Handle the base terrain
@@ -1872,6 +1885,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	}
 	
 	for (n = 0; n < gMatchBottom.edges.size(); ++n)
+	if (gMatchBottom.edges[n].buddy != CDT::Face_handle())
 	if (gMatchBottom.edges[n].buddy->info().terrain != terrain_Water)
 	{
 		// Handle the base terrain
@@ -1953,7 +1967,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			tri_total++;
 			tri_border += (tri->info().terrain_border.size());
 		} else if (!tri->info().terrain_border.empty())
-			AssertPrintf("BORDER ON NON-NATURAL LAND USE!  Terrain = %s", FetchTokenString(tri->info().terrain));
+			AssertPrintf("BORDER ON WATER LAND USE!  Terrain = %s", FetchTokenString(tri->info().terrain));
 		printf("Total: %d - border: %d - check: %d - opt: %d\n", tri_total, tri_border, tri_check, tri_opt);
 	}
 
