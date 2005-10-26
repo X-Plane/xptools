@@ -627,8 +627,8 @@ inline bool		Polygon2::inside(const Point2& inPoint) const
 		Segment2 s(side(n));
 		if ((s.p1.x < inPoint.x && inPoint.x < s.p2.x) ||
 			(s.p2.x < inPoint.x && inPoint.x < s.p1.x) ||
-			(s.p1.x == inPoint.x && s.p1.x < inPoint.x) ||
-			(s.p2.x == inPoint.x && s.p2.x < inPoint.x))
+			(s.p1.x == inPoint.x && s.p2.x < inPoint.x) ||
+			(s.p2.x == inPoint.x && s.p1.x < inPoint.x))
 		if (inPoint.y > s.y_at_x(inPoint.x))
 			++cross_counter;
 	}
