@@ -540,8 +540,8 @@ int	FindNaturalTerrain(
 		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (!rec.near_water || water)
 		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
-		if (rec.landuse == NO_VALUE || landuse == NO_VALUE || landuse == rec.landuse)
-		if (rec.climate == NO_VALUE || climate == NO_VALUE || climate == rec.climate)
+		if (rec.landuse == NO_VALUE || landuse == rec.landuse)	// NOTE: no land use is NOT a free pass to match anything!!
+		if (rec.climate == NO_VALUE || climate == rec.climate)	// Same with  climate
 		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		{
 			return rec.name;
