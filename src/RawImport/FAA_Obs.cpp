@@ -27,6 +27,7 @@
 #include "DEMDefs.h"
 #include "MapDefs.h"
 #include "MapAlgs.h"
+#include "GISTool_Globals.h"
 
 FAAObsTable		gFAAObs;
 
@@ -520,7 +521,7 @@ void ApplyObjects(Pmwx& ioMap)
 					++n;
 			}
 			
-			if (v.size() == 1)
+			if (v.size() > 0)
 			{
 				GISPointFeature_t	feat;
 				feat.mFeatType = i->second.kind;
@@ -533,9 +534,10 @@ void ApplyObjects(Pmwx& ioMap)
 #if 0
 				printf("Placed %s at %lf, %lf\n",
 					FetchTokenString(i->second.kind), i->second.lon, i->second.lat);
-#endif				
-			} else if (v.size() > 1)
-				fprintf(stderr,"ERROR: Point feature matches multiple areas.\n");		
+#endif		
+			if (v.size() > 1)
+				fprintf(stderr,"WARNING (%d,%d): Point feature %lf, %lf matches multiple areas.\n",gMapWest, gMapSouth, loc.x, loc.y);
+			}
 		}
 	}
 	printf("Placed %d objects.\n", placed);
