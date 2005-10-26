@@ -215,7 +215,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 	
 int		WED_SelectionTool::GetNumButtons(void)
 {
-	return 9;
+	return 10;
 }
 
 void	WED_SelectionTool::GetNthButtonName(int n, string& s)
@@ -230,6 +230,7 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	case 6: s=  "Simplify pmwx"; break;
 	case 7: s=	"Gut Area"; break;
 	case 8: s=	"Insert Map"; break;
+	case 9: s=  "Make Faces Wet"; break;
 	}
 }
 
@@ -418,6 +419,12 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		gEdgeSelection.clear();
 		gFaceSelection.clear();
 		gVertexSelection.clear();
+		break;
+	case 9:
+		for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+		{
+			(*f)->mTerrainType = terrain_Water;
+		}
 		break;
 	}
 	DebugAssert(gMap.is_valid());
