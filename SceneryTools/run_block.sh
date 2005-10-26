@@ -8,9 +8,9 @@ north=$4
 cmd=$5
 dst=$6
 
-for (( tile_x = $west; tile_x <= $east; tile_x++ ))
+for (( tile_y = $south; tile_y <= $north; tile_y++ ))
 do
-        for (( tile_y = $south; tile_y <= $north; tile_y++ ))
+        for (( tile_x = $west; tile_x <= $east; tile_x++ ))
         do
                 $cmd $tile_x $tile_y "$dst"
         done
