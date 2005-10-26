@@ -49,8 +49,12 @@ xes_dir=$datadir/us_xes/$folder/$file.xes
 fi
 
 if [ ! -e $xes_dir ]; then
-xes_dir=$datadir/world_xes/$folder/$file.xes
-hydro_cmd="-hydro $datadir/swbd/$folder/$file.shp -hydrosimplify"
+	xes_dir=$datadir/world_xes/$folder/$file.xes
+	if [ -e $datadir/swbd/$folder/$file.shp ]; then
+		hydro_cmd="-hydro $datadir/swbd/$folder/$file.shp -hydrosimplify"
+	else
+		hydro_cmd="-hydro -hydrosimplify"
+	fi
 fi
 
 if [ ! -e $xes_dir ]; then
