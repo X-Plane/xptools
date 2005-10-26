@@ -108,6 +108,11 @@ int	main(int argc, char * argv[])
 //									"-obs", "deg", "/rendering_farm/faa_obs/+32-118.obs", "-apt", "/rendering_farm/apts/+30-120/+32-118.apt", "-bbox", "-simplify", "-validate",
 //									"-spreadsheet", "/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt", "-upsample", "-calcslope", "-derivedems", "-buildroads",
 //									"-burnapts", "-zoning", "-calcmesh", "-assignterrain", "-save", "output/+30-120/+32-118.xes", "-exportdsf", "output" };
+//	char * args[] = { "/code/XPTools/SceneryTools/GISTool","-noprogress","-extent","-118","33","-117","34","-load","config/global_climate_smooth_rain.xes",
+//						"-crop","-load","/rendering_farm/us_xes/+30-120/+33-118.xes","-glcc","/rendering_farm/glcc/lu_new.raw","oge2_import.txt",
+//						"-oz","/rendering_farm/DEM output-earth/+30-120/+33-118.oz","-obs","deg","/rendering_farm/faa_obs/+33-118.obs","-apt","/rendering_farm/apts/+30-120/+33-118.apt",
+//						"-bbox","-simplify","-validate","-spreadsheet","/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt","-upsample","-calcslope",
+//						"-derivedems","-buildroads","-burnapts","-zoning","-calcmesh","-assignterrain","-exportdsf","/code/design++/Custom Scenery/a_rerender/" };
 //	argv = args;
 //	argc = sizeof(args) / sizeof(args[0]);
 
