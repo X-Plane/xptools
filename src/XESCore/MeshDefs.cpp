@@ -22,6 +22,7 @@
  */
 
 #include "MeshDefs.h"
+#include "WED_Globals.h"
 
 /*
  * CACHED LOCATES - THEORY OF OPERATION
@@ -82,3 +83,106 @@ void CDT::clear(void)
 	CDTBase::clear();
 }
 
+inline int sign_of(double x) { return x > 0.0 ? 1 : (x < 0.0 ? -1 : 0); }
+
+
+#if DEV
+CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
+{
+	int			li;
+	Locate_type	lt;
+	Face_handle	who = locate(p, lt, li, hint);
+	if (lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
+	{
+		if(lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
+		{
+
+			Point	p0(who->vertex(0)->point());
+			Point	p1(who->vertex(1)->point());
+			Point	p2(who->vertex(2)->point());
+
+			CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
+			
+			
+			CGAL::Orientation 	o2 = orientation(p0, p1, p),
+								o0 = orientation(p1, p2, p),
+								o1 = orientation(p2, p0, p),
+								o2b= orientation(p1, p0, p),
+								o0b= orientation(p2, p1, p),
+								o1b= orientation(p0, p2, p);
+								
+
+//			if (o1 == CGAL::COLLINEAR && collinear_between(p0, p, p2)) { li = 1; lt = EDGE; }
+//			if (o2 == CGAL::COLLINEAR && collinear_between(p1, p, p0)) { li = 2; lt = EDGE; }
+//			if (o0 == CGAL::COLLINEAR && collinear_between(p2, p, p1)) { li = 0; lt = EDGE; }
+
+			// Collinear witih TWO sides?  Hrmm...should be a vertex.
+			if (o1 == CGAL::COLLINEAR && o2 == CGAL::COLLINEAR) { li = 0; lt = VERTEX; }
+			if (o2 == CGAL::COLLINEAR && o0 == CGAL::COLLINEAR) { li = 1; lt = VERTEX; }
+			if (o0 == CGAL::COLLINEAR && o1 == CGAL::COLLINEAR) { li = 2; lt = VERTEX; }
+
+			// Colinear with a side and positive on the other two - should be on that edge.
+			if (o1 == CGAL::COLLINEAR && o2 == CGAL::POSITIVE && o0 == CGAL::POSITIVE) 				{ li = 1; lt = EDGE; }
+			if (o2 == CGAL::COLLINEAR && o0 == CGAL::POSITIVE && o1 == CGAL::POSITIVE) 				{ li = 2; lt = EDGE; }
+			if (o0 == CGAL::COLLINEAR && o1 == CGAL::POSITIVE && o2 == CGAL::POSITIVE) 				{ li = 0; lt = EDGE; }
+			
+			// On negative of a side AND its opposite?  We've got a rounding error.  Call it the edge and go home.
+			if (o0 == CGAL::NEGATIVE && o0b == CGAL::NEGATIVE) { li = 0; lt = EDGE; }
+			if (o1 == CGAL::NEGATIVE && o1b == CGAL::NEGATIVE) { li = 1; lt = EDGE; }
+			if (o2 == CGAL::NEGATIVE && o2b == CGAL::NEGATIVE) { li = 2; lt = EDGE; }
+
+/*			
+			if (o0 == CGAL::NEGATIVE && o1 == CGAL::POSITIVE && o2 == CGAL::POSITIVE && o0b == CGAL::POSITIVE)
+			{
+				lt = FACE;
+//				li = ccw(who->neighbor(0)->index(who->vertex(ccw(0))));
+				who = who->neighbor(0);
+			} 
+			if (o1 == CGAL::NEGATIVE && o2 == CGAL::POSITIVE && o0 == CGAL::POSITIVE && o1b == CGAL::POSITIVE)
+			{
+				lt = FACE;
+//				li = ccw(who->neighbor(1)->index(who->vertex(ccw(1))));
+				who = who->neighbor(1);
+			} 
+			if (o2 == CGAL::NEGATIVE && o0 == CGAL::POSITIVE && o1 == CGAL::POSITIVE && o2b == CGAL::POSITIVE)
+			{
+				lt = FACE;
+//				li = ccw(who->neighbor(2)->index(who->vertex(ccw(2))));
+				who = who->neighbor(2);
+			} 
+*/
+			if (lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE) 
+			{
+				Point	p0_(who->vertex(0)->point());
+				Point	p1_(who->vertex(1)->point());
+				Point	p2_(who->vertex(2)->point());
+
+				CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
+				
+				
+				CGAL::Orientation 	_o2 = orientation(p0_, p1_, p),
+									_o0 = orientation(p1_, p2_, p),
+									_o1 = orientation(p2_, p0_, p);
+			
+				gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(),p.y()),Point3(1,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0.x(),p0.y()),Point3(0,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1.x(),p1.y()),Point3(0,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1.x(),p1.y()),Point3(0,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2.x(),p2.y()),Point3(0,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2.x(),p2.y()),Point3(0,1,1)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0.x(),p0.y()),Point3(0,1,1)));
+
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0_.x(),p0_.y()),Point3(0,1,0)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1_.x(),p1_.y()),Point3(0,1,0)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1_.x(),p1_.y()),Point3(0,1,0)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2_.x(),p2_.y()),Point3(0,1,0)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2_.x(),p2_.y()),Point3(0,1,0)));
+				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0_.x(),p0_.y()),Point3(0,1,0)));
+
+				AssertPrintf("Unable to resolve bad locate.");
+			}
+		}
+	}
+	return CDTBase::insert(p, lt, who, li);
+}
+#endif

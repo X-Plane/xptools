@@ -114,6 +114,61 @@ public:
 			void		cache_reset(void);
 			void		clear(void);
 
+
+	// SAFE insert...basically when using a fast cartesian kernel, the
+	// face locate may return 'face' when it means 'edge' because the 
+	// set of tests for the march-locate aren't quite specific enough to resolve
+	// rounding errors.  (At least that's what I _think_ it is.)  So...
+	// We do the locate, check for this case, and try to manually find an edge
+	// we're on.  If we do, we fix up the locate info and procede safely.  If not
+	// we assert - we would have done that anyway.
+#if DEV
+	Vertex_handle	safe_insert(const Point& p, Face_handle hint);
+#else
+	Vertex_handle	safe_insert(const Point& p, Face_handle hint)
+	{
+		int			li;
+		Locate_type	lt;
+		Face_handle	who = locate(p, lt, li, hint);
+		if (lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
+		{
+			if(lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
+			{
+
+				Point	p0(who->vertex(0)->point());
+				Point	p1(who->vertex(1)->point());
+				Point	p2(who->vertex(2)->point());
+
+				CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
+					
+				CGAL::Orientation 	o2 = orientation(p0, p1, p),
+									o0 = orientation(p1, p2, p),
+									o1 = orientation(p2, p0, p),
+									o2b= orientation(p1, p0, p),
+									o0b= orientation(p2, p1, p),
+									o1b= orientation(p0, p2, p);
+
+				// Collinear witih TWO sides?  Hrmm...should be a vertex.
+				if (o1 == CGAL::COLLINEAR && o2 == CGAL::COLLINEAR) { li = 0; lt = VERTEX; }
+				if (o2 == CGAL::COLLINEAR && o0 == CGAL::COLLINEAR) { li = 1; lt = VERTEX; }
+				if (o0 == CGAL::COLLINEAR && o1 == CGAL::COLLINEAR) { li = 2; lt = VERTEX; }
+
+				// Colinear with a side and positive on the other two - should be on that edge.
+				if (o1 == CGAL::COLLINEAR && o2 == CGAL::POSITIVE && o0 == CGAL::POSITIVE) 				{ li = 1; lt = EDGE; }
+				if (o2 == CGAL::COLLINEAR && o0 == CGAL::POSITIVE && o1 == CGAL::POSITIVE) 				{ li = 2; lt = EDGE; }
+				if (o0 == CGAL::COLLINEAR && o1 == CGAL::POSITIVE && o2 == CGAL::POSITIVE) 				{ li = 0; lt = EDGE; }
+				
+				// On negative of a side AND its opposite?  We've got a rounding error.  Call it the edge and go home.
+				if (o0 == CGAL::NEGATIVE && o0b == CGAL::NEGATIVE) { li = 0; lt = EDGE; }
+				if (o1 == CGAL::NEGATIVE && o1b == CGAL::NEGATIVE) { li = 1; lt = EDGE; }
+				if (o2 == CGAL::NEGATIVE && o2b == CGAL::NEGATIVE) { li = 2; lt = EDGE; }
+
+				if (lt == FACE) AssertPrintf("Unable to resolve bad locate.");
+			}
+		}
+		return CDTBase::insert(p, lt, who, li);
+	}
+#endif	
 private:
 
 	static	int		sKeyGen;
