@@ -4,11 +4,37 @@
 # This table defines the appearance of man-made terrain.  Man-made terrain is placed via algorithms that are not included here.
 #
 #
-#BEACH	min_slope	max_slope	terrain				min_wave	max_wave		min_len		beach
-BEACH	0			10			NO_VALUE			0.8			1.0				128.0		1
-BEACH	0			10			NO_VALUE			0.7			1.0				 80.0		2
-BEACH	10			30			NO_VALUE			0.5			1.0				 40.0		3
-#BEACH	30			50			NO_VALUE			0.5			1.0				 60.0		4
-#BEACH	50			90			NO_VALUE			0.0			1.0				100.0		5
-BEACH	0			30			NO_VALUE			0.0			1.0				  0.0		6
-#BEACH	30			90			NO_VALUE			0.0			1.0				  0.0		7
+#BEACH	RAIN	RAIN	TEMP	TEMP	LAT		LAT		SLOPE	SLOPE	OCEAN	OCEAN	TURN	LEN		BEACH	PRIORITY
+#		MIN		MAX		MIN		MAX		MIN		MAX		MIN		MAX		MIN		MAX		MAX		MIN		TYPE	
+
+# WHITE BEACHES
+BEACH	325		99999	0		0		0		0		0		6		0.5		1.0		15		500		1		9
+BEACH	325		99999	0		0		0		0		0		12		0.5		1.0		45		0		2		12
+BEACH	325		99999	0		0		0		0		12		25		0.5		1.0		45		500		3		11
+BEACH	325		99999	0		0		0		0		25		30		0.5		1.0		45		500		4		10
+
+# TAN BEACHES
+BEACH	0		325		0		0		0		0		0		6		0.5		1.0		15		500		5		1
+BEACH	0		325		0		0		0		0		0		12		0.5		1.0		45		0		6		4
+BEACH	0		325		0		0		0		0		12		25		0.5		1.0		45		500		7		3
+BEACH	0		325		0		0		0		0		25		30		0.5		1.0		45		500		8		2
+
+# GRAY BEACHES
+BEACH	0		0		-999	5		55		90		0		6		0.5		1.0		15		500		9		5
+BEACH	0		0		-999	5		55		90		0		12		0.5		1.0		45		0		10		8
+BEACH	0		0		-999	5		55		90		12		25		0.5		1.0		45		500		11		7
+BEACH	0		0		-999	5		55		90		25		30		0.5		1.0		45		500		12		6
+
+# LAKE BEACHES
+BEACH	0		0		0		0		0		0		0		6		0.0		1.0		70		0		13		13
+
+# SMALL BEACHES
+BEACH	0		0		-999	5		0		0		12		25		0.0		1.0		180		0		14		15
+BEACH	0		0		-999	5		0		0		0		12		0.0		1.0		180		0		15		14
+
+BEACH	0		325		0		0		0		0		12		25		0.0		1.0		180		0		16		15
+BEACH	0		325		0		0		0		0		0		12		0.0		1.0		180		0		17		14
+
+
+BEACH	0		0		0		0		0		0		12		25		0.0		1.0		180		0		18		15
+BEACH	0		0		0		0		0		0		0		12		0.0		1.0		180		0		19		14
