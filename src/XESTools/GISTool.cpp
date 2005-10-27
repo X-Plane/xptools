@@ -45,7 +45,10 @@ void	CGALFailure(
         const char* what, const char* expr, const char* file, int line, const char* msg)
 {
 	fprintf(stdout,"Terminating due to a CGAL exception.\n");
+	fprintf(stdout,"****************************************************************************\n");
 	fprintf(stdout,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
+	fprintf(stdout,"****************************************************************************\n");
+
 	fprintf(stderr,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
 	exit(1);
 }        
@@ -169,11 +172,17 @@ int	main(int argc, char * argv[])
 		exit(result);
 
 	} catch (exception& e) {
+		fprintf(stdout,"****************************************************************************\n");
 		fprintf(stdout,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
+		fprintf(stdout,"****************************************************************************\n");
+	
 		fprintf(stderr,"ERROR (%d,%d): Caught unknown exception %s.  Exiting.\n", gMapWest, gMapSouth, e.what());
 		exit(0);
 	} catch (...) {
+		fprintf(stdout,"****************************************************************************\n");
 		fprintf(stdout,"ERROR (%d,%d): Caught unknown exception.  Exiting.\n", gMapWest, gMapSouth);
+		fprintf(stdout,"****************************************************************************\n");
+
 		fprintf(stderr,"ERROR (%d,%d): Caught unknown exception.  Exiting.\n", gMapWest, gMapSouth);
 		exit(0);
 	}
