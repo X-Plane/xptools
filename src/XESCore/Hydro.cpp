@@ -1135,7 +1135,7 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 					for (n = 0; n < water_elev.mHeight; ++n)
 					{
 						if (fscanf(fi, "%f", &e) == 1)
-							water_elev(n, 0) = e;
+							water_elev(0, n) = e;
 					}					
 				}
 			}
