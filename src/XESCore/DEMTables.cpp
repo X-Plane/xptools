@@ -37,6 +37,7 @@ NaturalTerrainIndex			gNaturalTerrainIndex;
 //TerrainPromoteTable			gTerrainPromoteTable;
 //ManTerrainTable				gManTerrainTable;
 BeachInfoTable				gBeachInfoTable;
+BeachPriorityTable			gBeachPriorityTable;
 LandUseTransTable			gLandUseTransTable;
 
 static	void	ValidateNaturalTerrain(void);
@@ -121,18 +122,32 @@ bool	ReadEnumDEM(const vector<string>& tokens, void * ref)
 bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
-	if (TokenizeLine(tokens, " ffefffi", 
-		&info.min_slope, &info.max_slope,
-		&info.terrain_type, 
-		&info.min_sea, &info.max_sea, &info.min_len,		
-		&info.x_beach_type) != 8) return false;
+	int priority;
 		
+	if (TokenizeLine(tokens, " ffffffffffffii", 
+				&info.min_rain,
+				&info.max_rain,
+				&info.min_temp,
+				&info.max_temp,
+				&info.min_lat,
+				&info.max_lat,
+				&info.min_slope,
+				&info.max_slope,
+				&info.min_sea,
+				&info.max_sea,
+				&info.max_turn,
+				&info.min_len,
+				&info.x_beach_type,
+				&priority) != 15) return false;
+
+	info.max_turn = cosdeg(info.max_turn);
+
 	info.min_slope=cosdeg(info.min_slope);
-	info.max_slope=cosdeg(info.max_slope);
-	// NOTE: because we are storing cosigns, a flat beach is 1.0, so we are reversing the 
-	// ordering here.
-	swap(info.min_slope,info.max_slope);
+	info.max_slope=cosdeg(info.max_slope);			// NOTE: because we are storing cosigns, a flat beach is 1.0, so we are reversing the 
+	swap(info.min_slope,info.max_slope);			// ordering here.
+	DebugAssert(gBeachPriorityTable.count(info.x_beach_type)==0);
 	gBeachInfoTable.push_back(info);
+	gBeachPriorityTable[info.x_beach_type] = priority;
 	return true;
 }
 
@@ -465,6 +480,7 @@ void	LoadDEMTables(void)
 	gNaturalTerrainIndex.clear();
 //	gTerrainPromoteTable.clear();
 	gBeachInfoTable.clear();
+	gBeachPriorityTable.clear();
 	sForests.clear();
 	gLandUseTransTable.clear();
 	
@@ -574,6 +590,15 @@ bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 	// index numbers as priority.  Better than nothing.
 	return lhs < rhs;
 }
+
+bool	LowerPriorityBeachType(int lhs, int rhs)
+{
+	DebugAssert(gBeachPriorityTable.count(lhs) > 0);
+	DebugAssert(gBeachPriorityTable.count(rhs) > 0);
+	
+	return gBeachPriorityTable[lhs] < gBeachPriorityTable[rhs];
+}
+
 
 void ValidateNaturalTerrain(void)
 {

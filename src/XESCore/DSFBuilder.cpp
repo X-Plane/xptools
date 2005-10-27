@@ -213,6 +213,18 @@ edge_wrapper edge_twin_next(const edge_wrapper& e)
 	return new_e;
 }
 
+// Given an edge, find the next edge in a clockwise circulation
+// around its target vertex.  (Pmwx equivalent is next->twin)
+edge_wrapper edge_next_twin(const edge_wrapper& e)
+{
+	edge_wrapper new_e;
+
+	new_e.edge.first = e.edge.first->neighbor(CDT::ccw(e.edge.second));
+	new_e.edge.second = CDT::cw(new_e.edge.first->index(e.edge.first->vertex(e.edge.second)));
+	return new_e;
+}
+
+
 // Given an edge, find the leftmost turn connected to us.  (pmwx equivalent is next)
 edge_wrapper edge_next(const edge_wrapper& e)
 {
@@ -231,14 +243,42 @@ edge_wrapper edge_twin(const edge_wrapper& e)
 	return new_e;
 }
 
-int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
+int is_coast(const edge_wrapper& inEdge, const CDT& inMesh)
 {
 	if (inMesh.is_infinite(inEdge.edge.first)) return false;
 	if (inMesh.is_infinite(inEdge.edge.first->neighbor(inEdge.edge.second))) return false;
 
 	if (inEdge.edge.first->info().terrain != terrain_Water) return false;
-	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;
+	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;	
+	return true;
+}
+
+double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
+{
+	CDT::Vertex_handle	e1s = e1.edge.first->vertex(CDT::ccw(e1.edge.second));
+	CDT::Vertex_handle	e1t = e1.edge.first->vertex(CDT:: cw(e1.edge.second));
+
+	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
+	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
 	
+	DebugAssert(e1t == e2s);
+	
+	Point2	p1(e1s->point().x(),e1s->point().y());
+	Point2	p2(e1t->point().x(),e1t->point().y());
+	Point2	p3(e2t->point().x(),e2t->point().y());
+	
+	Vector2	v1(p1,p2);
+	Vector2 v2(p2,p3);
+	v1.normalize();
+	v2.normalize();
+	return v1.dot(v2);
+}
+
+
+int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
+{
+	if (!is_coast(inEdge, inMesh))	return false;
+
 	CDT::Face_handle tri = inEdge.edge.first;
 	if (tri->info().terrain == terrain_Water)
 		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
@@ -247,9 +287,24 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	int i;	
 	
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
-//	loc = inMesh.locate(CDT::Point(pm_vt->point().x, pm_vt->point().y), lt, i, loc);
-//	Assert(lt == CDT::VERTEX);
 	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
+	
+	double	prev_ang = 1.0, next_ang = 1.0;
+	
+	// Find our outgoing (next) angle
+	for (edge_wrapper iter = edge_next(inEdge); iter != edge_twin(inEdge); iter = edge_twin_next(iter))
+	if (is_coast(iter, inMesh))
+	{
+		next_ang = edge_angle(inEdge, iter);
+		break;
+	}
+
+	// Find our incoming (previous) angle	
+	for (edge_wrapper iter = edge_next_twin(edge_twin(inEdge)); iter != edge_twin(inEdge); iter = edge_next_twin(iter))
+	if (is_coast(iter, inMesh))
+	{
+		prev_ang = edge_angle(iter, inEdge);
+	}
 
 	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
 	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
@@ -261,10 +316,16 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	{
 		if (slope >= gBeachInfoTable[i].min_slope && 
 			slope <= gBeachInfoTable[i].max_slope &&
-			(lterrain == gBeachInfoTable[i].terrain_type || gBeachInfoTable[i].terrain_type == NO_VALUE) &&
-			len >= gBeachInfoTable[i].min_len &&
 			wave >= gBeachInfoTable[i].min_sea &&
-			wave <= gBeachInfoTable[i].max_sea)
+			wave <= gBeachInfoTable[i].max_sea &&
+			prev_ang >= gBeachInfoTable[i].max_turn &&
+			next_ang >= gBeachInfoTable[i].max_turn)
+			
+			// TODO 
+//			min_len
+//			min_lat/max_lat
+//			min_rain/max_rain
+//			min_temp/max_temp
 		{
 			kind = gBeachInfoTable[i].x_beach_type;
 			break;

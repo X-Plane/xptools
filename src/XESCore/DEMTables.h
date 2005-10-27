@@ -171,16 +171,24 @@ extern ManTerrainTable							gManTerrainTable;
  * BEACH TERRAIN INFO
  ************************************************************************/
 struct BeachInfo_t {
+	float		min_rain;
+	float		max_rain;
+	float		min_temp;
+	float		max_temp;
+	float		min_lat;
+	float		max_lat;
 	float		min_slope;
 	float		max_slope;
-	int			terrain_type;			
 	float		min_sea;
 	float		max_sea;
+	float		max_turn;
 	float		min_len;
 	int			x_beach_type;
 };
 typedef vector<BeachInfo_t>		BeachInfoTable;
 extern BeachInfoTable			gBeachInfoTable;
+typedef map<int, int>			BeachPriorityTable;
+extern BeachPriorityTable		gBeachPriorityTable;
 
 /************************************************************************
  * BEACH TERRAIN INFO
@@ -193,6 +201,7 @@ extern LandUseTransTable	gLandUseTransTable;
 // However please note that there is no equality of priority, e.g. 
 // priority(a) == priorty((b) -> a == b
 bool	LowerPriorityNaturalTerrain(int lhs, int rhs);
+bool	LowerPriorityBeachType(int lhs, int rhs);
 bool	IsForestType(int inType);
 
 extern	string	gNaturalTerrainFile;
