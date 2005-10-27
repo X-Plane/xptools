@@ -317,8 +317,7 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 		} else
 			AssertPrintf("Bad Locate.");
 */
-		
-		CDT::Vertex_handle new_v = inCDT.insert(p, face_handle);
+		CDT::Vertex_handle new_v = inCDT.safe_insert(p, face_handle);
 		new_v->info().height = h;
 		
 		CDT::Face_circulator circ, stop;

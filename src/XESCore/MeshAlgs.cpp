@@ -488,7 +488,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
 	{
-		pts->buddy = ioMesh.insert(CDT::Point(pts->loc.x, pts->loc.y), nearf);
+		pts->buddy = ioMesh.safe_insert(CDT::Point(pts->loc.x, pts->loc.y), nearf);
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
 	}
@@ -991,10 +991,10 @@ void	AddWaterMeshPoints(
 //				slave.zap_linear(pts[n].x, pts[n].y);
 				
 				if (e1 == NO_DATA || e2 == NO_DATA) AssertPrintf("ERROR: missing elevation data for constraint.\n");
-				v1 = outMesh.insert(CDT::Point(pts[n-1].x, pts[n-1].y), local);
+				v1 = outMesh.safe_insert(CDT::Point(pts[n-1].x, pts[n-1].y), local);
 				v1->info().height = e1;
 				local = v1->face();
-				v2 = outMesh.insert(CDT::Point(pts[n].x, pts[n].y), local);
+				v2 = outMesh.safe_insert(CDT::Point(pts[n].x, pts[n].y), local);
 				v2->info().height = e2;
 				local = v2->face();
 				
@@ -1140,7 +1140,7 @@ void	AddBulkPointsToMesh(
 				local = outMesh.locate(p, tp, vnum, local);
 	//			if (tp != CDT::EDGE)
 				{
-					CDT::Vertex_handle vv = outMesh.insert(p, local);
+					CDT::Vertex_handle vv = outMesh.safe_insert(p, local);
 					vv->info().height = h;
 					local = vv->face();	
 					++total;
@@ -1601,7 +1601,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
-					AssertPrintf("Hit any rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
+					AssertPrintf("Hit %s rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
+						FetchTokenString(gNaturalTerrainTable.back().name),
 						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh, center_y);
 				}
 				
