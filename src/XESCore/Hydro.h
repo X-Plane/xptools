@@ -15,6 +15,6 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc inFunc)
 
 
 // for testing
-void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge);
+void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, bool is_outer_ccb);
 
 #endif

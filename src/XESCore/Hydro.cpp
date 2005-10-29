@@ -1341,7 +1341,7 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 	printf("End result: %d simplifies, %d before, %d after.\n", nuke, total, ioMap.number_of_halfedges());
 }
 
-void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge)
+void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, bool is_outer_ccb)
 {
 	bool	is_split = false;
 	bool	first_split = false;
@@ -1400,7 +1400,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge)
 
 					DebugAssert(cross_pt == pt_c);
 					
-					GISHalfedge * new_edge = ioMap.nox_insert_edge_between_vertices(src_split, dst_split);
+					GISHalfedge * new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
 
 					if (is_left) new_edge->twin()->face()->mTerrainType = terrain_new;
 					else		 new_edge->face()->mTerrainType = terrain_new;
@@ -1461,14 +1461,16 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
+
+		SimplifyWaterCCB(ioMap,(*i)->outer_ccb(), true);
+
 		set<GISHalfedge *>	e;
-		e.insert((*i)->outer_ccb());
 		for (Pmwx::Holes_iterator h = (*i)->holes_begin(); h != (*i)->holes_end(); ++h)
 			e.insert(*h);
 
 		for (set<GISHalfedge *>::iterator ee = e.begin(); ee != e.end(); ++ee)
 		{
-			SimplifyWaterCCB(ioMap,*ee);
+			SimplifyWaterCCB(ioMap,*ee, false);
 		}
 	}
 	PROGRESS_DONE(func, 0, 1, "Smoothing coastlines");
