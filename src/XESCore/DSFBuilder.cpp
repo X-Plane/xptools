@@ -345,7 +345,7 @@ string		get_terrain_name(int composite)
 		return FetchTokenString(composite);
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
-		return string("lib/terrain/") + FetchTokenString(composite) + ".ter";
+		return string("lib/g8/") + FetchTokenString(composite) + ".ter";
 	}
 
 //	DebugAssert(!"bad terrain.");
@@ -915,7 +915,6 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	for (lu = landuses_reversed.begin(); lu != landuses_reversed.end(); ++lu)
 	{
 		string def = get_terrain_name(lu->second);
-//		def = string("lib/terrain/") + def;
 		cbs.AcceptTerrainDef_f(def.c_str(), writer);
 	}
 	
@@ -1035,7 +1034,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.EndPolygon_f(writer);
 		
 	}
-	cbs.AcceptPolygonDef_f("lib/us/beaches.bch", writer);
+	cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer);
 	
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
@@ -1139,12 +1138,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	for (obdef = facades_reversed.begin(); obdef != facades_reversed.end(); ++obdef)
 	{
-//		string facName = gRepTable[gRepFeatureIndex[obdef->second]].fac_name;
 		string facName = FetchTokenString(obdef->second);
 		if (IsForestType(obdef->second))
 		{
-			facName = FetchTokenString(obdef->second);
-			facName += ".for";
+			facName = "lib/g8/"+facName+".for";
 		} else
 			facName += ".fac";
 		cbs.AcceptPolygonDef_f(facName.c_str(), writer);
@@ -1331,7 +1328,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	CleanupNetworkTopology(junctions, chains);
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;	
-	cbs.AcceptNetworkDef_f("lib/us/roads.net", writer);
+	cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer);
 #endif	
 	
 	/****************************************************************
@@ -1343,7 +1340,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer);
 	sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer);
 	cbs.AcceptProperty_f("sim/planet", "earth", writer);
-	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9", writer);
+	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 1.0", writer);
 	cbs.AcceptProperty_f("laminar/internal_revision", "1", writer);
 	
 	/****************************************************************
