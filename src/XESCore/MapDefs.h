@@ -720,10 +720,13 @@ public:
 
 	/* These three routines insert an edge in specific situations.  The requirement
 	 * is that the edge not  cross any other edges; these routines are faster because
-	 * they don't check for splits. */
+	 * they don't check for splits.  For inserting between vertices, the flga on_outer_ccb
+	 * tells us that we know for a fact that both points are on the face's outer CCB.  This 
+	 * provides a performance boost for the split-face-from-outer-ccb case because we can avoid
+	 * checking for holes.  Setting this on false causes the PMWX to check this for you. */
 	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);	
 	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);	
-	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2);
+	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2, bool known_on_outer_ccb);
 
 	/*****************************************************************************
 	 * MISC STUFF
@@ -789,7 +792,7 @@ private:
 	GISHalfedge *	get_preceding(GISHalfedge * points_to_vertex, const Point2& p);
 	GISHalfedge *	insert_edge_in_hole(GISFace * face, const Point2& p1, const Point2& p2);
 	GISHalfedge *	insert_edge_from_vertex(GISHalfedge * inAdjacent, const Point2& p);
-	GISHalfedge *	insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2);
+	GISHalfedge *	insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2, bool known_on_outer_ccb);
 
 
 	void			delete_vertex(GISVertex * halfedge);

@@ -743,7 +743,7 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 				if (i2 != pt_index.end())
 				{
 					/* CASE 1 - Both points already in. */
-					nh = ioDstMap.nox_insert_edge_between_vertices(i1->second, i2->second);
+					nh = ioDstMap.nox_insert_edge_between_vertices(i1->second, i2->second, false);
 				} 
 				else
 				{

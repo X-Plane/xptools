@@ -531,7 +531,7 @@ Pmwx& Pmwx::operator=(const GISFace& rhs)
 					if (i2 != pt_index.end())
 					{
 						/* CASE 1 - Both points already in. */
-						nh = nox_insert_edge_between_vertices(i1->second, i2->second);
+						nh = nox_insert_edge_between_vertices(i1->second, i2->second, false);
 					} 
 					else
 					{
@@ -582,7 +582,7 @@ Pmwx& Pmwx::operator=(const GISFace& rhs)
 					if (i2 != pt_index.end())
 					{
 						/* CASE 1 - Both points already in. */
-						nh = nox_insert_edge_between_vertices(i1->second, i2->second);
+						nh = nox_insert_edge_between_vertices(i1->second, i2->second, false);
 					} 
 					else
 					{
@@ -2078,7 +2078,7 @@ GISHalfedge * Pmwx::insert_edge(const Point2& p1, const Point2& p2, GISHalfedge 
 			{
 				new_he = insert_edge_between_vertices(
 					get_preceding(cur_he, found),
-					get_preceding(found_he, cur));
+					get_preceding(found_he, cur), false);
 				if (notifier) notifier(NULL, new_he, ref);
 			} else 
 				if (notifier) notifier(new_he, NULL, ref);
@@ -2144,14 +2144,15 @@ GISHalfedge *	Pmwx::nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2
 	return insert_edge_from_vertex(get_preceding(p1->halfedge(), p2), p2);
 }
 
-GISHalfedge *	Pmwx::nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2)
+GISHalfedge *	Pmwx::nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2, bool known_on_outer_ccb)
 {
 	GISHalfedge * check = vertices_connected(p1, p2);
 	if (check) return check;
 
 	return insert_edge_between_vertices(
 		get_preceding(p1->halfedge(), p2->point()),
-		get_preceding(p2->halfedge(), p1->point()));
+		get_preceding(p2->halfedge(), p1->point()),
+		known_on_outer_ccb);
 }
 
 /*******************************************************************************************
@@ -2320,15 +2321,22 @@ There are a few cases:
 */
 
 
-GISHalfedge *	Pmwx::insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2)
+GISHalfedge *	Pmwx::insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2, bool known_on_outer_ccb)
 {
 	DebugAssert(e1 != e2);
 	DebugAssert(e1->target() != e2->target());
 	DebugAssert(e1->target()->point() != e2->target()->point());
 	DebugAssert(e1->face() == e2->face());
 
+#if DEV
 	GISHalfedge * e1_hole = e1->get_hole_rep();
 	GISHalfedge * e2_hole = e2->get_hole_rep();
+	if (known_on_outer_ccb) DebugAssert(e1_hole == NULL);
+	if (known_on_outer_ccb) DebugAssert(e2_hole == NULL);
+#else
+	GISHalfedge * e1_hole = known_on_outer_ccb ? NULL : e1->get_hole_rep();
+	GISHalfedge * e2_hole = known_on_outer_ccb ? NULL : e2->get_hole_rep();
+#endif	
 	GISFace *	  old_f = e1->face();
 	GISFace *	  new_f = NULL;
 
