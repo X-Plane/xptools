@@ -327,7 +327,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		try {
 			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			{
-				SimplifyWaterCCB(gMap, (*fsel)->outer_ccb());
+				SimplifyWaterCCB(gMap, (*fsel)->outer_ccb(), true);
 			}
 		} catch (...) {
 		}
