@@ -154,7 +154,7 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	NaturalTerrainInfo_t	info;
-	string					name, proj;
+	string					ter_name, tex_name, proj;
 	
 	int						auto_vary;
 	
@@ -195,10 +195,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.lat_max,
 			&auto_vary,
 
-			&name,
+			&ter_name,
 			&info.layer,
 			&info.xon_dist,
-			&info.base_tex,
+			&tex_name,
 			&info.base_res,
 			&proj,
 			&info.border_tex,
@@ -245,10 +245,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.lat_max,
 			&auto_vary,
 
-			&name,
+			&ter_name,
 			&info.layer,
 			&info.xon_dist,
-			&info.base_tex,
+			&tex_name,
 	//		&info.comp_tex,
 			&info.base_res,
 	//		&info.comp_res,
@@ -300,10 +300,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.lat_max,
 			&auto_vary,
 
-			&name,
+			&ter_name,
 			&info.layer,
 			&info.xon_dist,
-			&info.base_tex,
+			&tex_name,
 	//		&info.comp_tex,
 			&info.base_res,
 	//		&info.comp_res,
@@ -331,7 +331,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.urban_trans_min > info.urban_trans_max)	return false;
 	if (info.urban_square < 0 || info.urban_square > 2)	return false;
 	if (info.lat_min > info.lat_max)					return false;
-	if (auto_vary != 0 && auto_vary != 1) 	return false;
+	if (auto_vary != 0 && auto_vary != 1 && auto_vary != 2) 	return false;
 	
 	info.map_rgb[0] /= 255.0;
 	info.map_rgb[1] /= 255.0;
@@ -342,30 +342,30 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
-	if (proj == "HDG")	auto_vary = 2;
+	if (proj == "HDG")	auto_vary = 3;
 		
-	string::size_type nstart = info.base_tex.find_last_of("\\/:");
-	if (nstart == info.base_tex.npos)	nstart = 0; else nstart++;
-	if (info.base_tex.size()-nstart > 31)
-		printf("WARNING: base tex %s too long.\n", info.base_tex.c_str());
+	string::size_type nstart = tex_name.find_last_of("\\/:");
+	if (nstart == tex_name.npos)	nstart = 0; else nstart++;
+	if (tex_name.size()-nstart > 31)
+		printf("WARNING: base tex %s too long.\n", tex_name.c_str());
 
 	if (info.slope_min == info.slope_max &&	info.slope_min != 0.0)
-		printf("WARNING: base tex %s has slope min and max both of %f\n", name.c_str(), info.slope_min);
+		printf("WARNING: base tex %s has slope min and max both of %f\n", ter_name.c_str(), info.slope_min);
 
 	if (info.proj_angle != proj_Down)
 	if (info.slope_min < 30.0)
-		printf("WARNING: base tex %s is projected but min slope is %f\n", name.c_str(), info.slope_min);
+		printf("WARNING: base tex %s is projected but min slope is %f\n", ter_name.c_str(), info.slope_min);
 
 	if (info.proj_angle == proj_NorthSouth)
 	if (!(info.slope_heading_min == 0.0 && info.slope_heading_max == 0.0 ||
 		info.slope_heading_min == 0.0 && info.slope_heading_max == 45.0 ||
 		info.slope_heading_min == 135.0 && info.slope_heading_max == 180.0))
-		printf("WARNING: base tex %s is projected north-south but has bad headings.\n",name.c_str());
+		printf("WARNING: base tex %s is projected north-south but has bad headings.\n",ter_name.c_str());
 
 	if (info.proj_angle == proj_EastWest)
 	if (!(info.slope_heading_min == 0.0 && info.slope_heading_max == 0.0 ||
 		info.slope_heading_min == 45.0 && info.slope_heading_max == 135.0))
-		printf("WARNING: base tex %s is projected east-west but has bad headings.\n",name.c_str());
+		printf("WARNING: base tex %s is projected east-west but has bad headings.\n",ter_name.c_str());
 
 	// We use 1-cos notation, which keeps our order constant.	
 	info.slope_min = 1.0 - cosdeg(info.slope_min);
@@ -379,19 +379,26 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	swap(info.slope_heading_min, info.slope_heading_max);
 
 	// AUTO-VARIATION - we take one rule and make four rules with variant codes.  Later the rule-finder will generate random codes to select rules spatially.
-	// The auto-vary code is: 0 = none, 1 = vary by spatial blobs, 2 = vary by slope heading
+	// The auto-vary code is: 0 = none, 1 = vary by spatial blobs, 2 = vary by spatial blobs (2tex) 3 = vary by slope heading
 	// The resulting codes in the struct are: 0 - no vary, 1-4 = spatial variants (all equal), 5-8 = heading variatns (N,E,S,W)
 	if (auto_vary > 0)
 	{
 		for (int rep = 1; rep <= 4; ++rep)
 		{
-			info.variant = rep + (auto_vary == 2 ? 4 : 0);
+			info.variant = rep + (auto_vary == 3 ? 4 : 0);
 			info.map_rgb[2] += ((float) rep / 80.0);
 
-			string rep_name = name;
+			string rep_name = ter_name;
 			rep_name += ('0' + rep);
 			LowerCheckName(rep_name);
 			info.name = LookupTokenCreate(rep_name.c_str());	
+			
+			string tex_vari = tex_name;
+			tex_vari.erase(tex_vari.size()-4);
+			if (auto_vary == 2 && (rep == 2 || rep == 4))
+				tex_vari += "2";
+			tex_vari += ".png";
+			info.base_tex = tex_vari;
 			
 			int rn = gNaturalTerrainTable.size();
 			gNaturalTerrainTable.push_back(info);
@@ -405,8 +412,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		
 		info.variant = 0;
 		
-		LowerCheckName(name);
-		info.name = LookupTokenCreate(name.c_str());	
+		LowerCheckName(ter_name);
+		info.name = LookupTokenCreate(ter_name.c_str());	
+		info.base_tex = tex_name;
 		
 		int rn = gNaturalTerrainTable.size();
 		gNaturalTerrainTable.push_back(info);
