@@ -88,7 +88,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		if (predone.count(gNaturalTerrainTable[n].name)) continue;
 		predone.insert(gNaturalTerrainTable[n].name);
 		
-		fprintf(lib, "EXPORT   lib/terrain/%s.ter       %s.ter" CRLF,
+		fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
 			FetchTokenString(gNaturalTerrainTable[n].name),FetchTokenString(gNaturalTerrainTable[n].name));
 			
 		lib_path = package + FetchTokenString(gNaturalTerrainTable[n].name) + ".ter";		
@@ -120,7 +120,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		switch(gNaturalTerrainTable[n].variant) {
 		case 5:			fprintf(ter, "PROJECT_ANGLE 0 1 0 180" CRLF);		break;
 		case 6:			fprintf(ter, "PROJECT_ANGLE 0 1 0 270" CRLF);		break;
-		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);		break;
+		case 7:			fprintf(ter, "PROJECT_ANGLE 0 1 0 0" CRLF);			break;
 		case 8:			fprintf(ter, "PROJECT_ANGLE 0 1 0 90" CRLF);		break;
 		default: 
 			{			
@@ -149,46 +149,6 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 
 		fclose(ter);
 	}
-
-#if	 0	
-	for (ManTerrainTable::iterator i = gManTerrainTable.begin(); i != gManTerrainTable.end(); ++i)
-	{
-		if (i->second.terrain_name.empty()) continue;
-		
-		fprintf(lib, "EXPORT   lib/terrain/%s.ter       %s.ter" CRLF,
-			i->second.terrain_name.c_str(),i->second.terrain_name.c_str());
-
-		lib_path = package + i->second.terrain_name + ".ter";
-		local_path(lib_path);
-		dir_path = lib_path;
-		only_dir(dir_path);
-		MakeDirExist(dir_path.c_str());
-		
-		ter = fopen(lib_path.c_str(), "w");
-		fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
-
-		fprintf(ter, "BASE_TEX %s" CRLF, i->second.base_tex.c_str());
-		if (!i->second.comp_tex.empty())
-			fprintf(ter, "COMPOSITE_TEX %s" CRLF, i->second.comp_tex.c_str());
-		else
-			fprintf(ter, "NO_ALPHA" CRLF);		
-		if (!i->second.lit_tex.empty())
-			fprintf(ter, "LIT_TEX %s" CRLF, i->second.lit_tex.c_str());
-		fprintf(ter, "BORDER_TEX border.png" CRLF);
-		fprintf(ter, "PROJECTED %d %d" CRLF, (int) i->second.base_res, (int) i->second.base_res);
-
-		dir_path = i->second.terrain_name + ".ter";
-		only_dir(dir_path);
-		canonical_path(dir_path);
-
-		imageFiles.insert(dir_path + i->second.base_tex);
-		imageFiles.insert(dir_path + i->second.comp_tex);
-		imageFiles.insert(dir_path + i->second.lit_tex);
-		imageFiles.insert(dir_path + "border.png");
-		// TODO: comp_res
-		fclose(ter);
-	}
-#endif
 	
 	fclose(lib);
 
