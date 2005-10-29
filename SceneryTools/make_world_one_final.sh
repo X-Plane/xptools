@@ -43,6 +43,11 @@ if [ -e "$output" ]; then
 	exit 0
 fi
 
+if [ ! -e "$datadir/DEM output-earth/$folder/$file.oz" ]; then
+	echo "skipping - "$datadir/DEM output-earth/$folder/$file.oz" - SRTM does not exist."
+	exit 0
+fi
+
 xes_dir=$datadir/blend_xes/$folder/$file.xes
 if [ ! -e $xes_dir ]; then
 xes_dir=$datadir/us_xes/$folder/$file.xes
