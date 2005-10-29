@@ -1400,7 +1400,11 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, bool is_outer_ccb)
 
 					DebugAssert(cross_pt == pt_c);
 					
-					GISHalfedge * new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
+					GISHalfedge * new_edge;
+					if (is_left)
+						new_edge = ioMap.nox_insert_edge_between_vertices(dst_split, src_split, is_outer_ccb && is_left)->twin();
+					else
+						new_edge = ioMap.nox_insert_edge_between_vertices(src_split, dst_split, false);
 
 					if (is_left) new_edge->twin()->face()->mTerrainType = terrain_new;
 					else		 new_edge->face()->mTerrainType = terrain_new;
