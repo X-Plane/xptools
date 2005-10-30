@@ -472,6 +472,7 @@ public:
 	Holes_iterator				holes_end() 			{ return mHoles.end(); }
 	Holes_const_iterator		holes_end() const 		{ return mHoles.end(); }
 	int							holes_count() const 	{ return mHoles.size(); }
+	void						copy_holes(set<GISHalfedge *>& holes) const { holes = mHoles; }
 
 	Ccb_halfedge_circulator			outer_ccb() 			{ return Ccb_halfedge_circulator(mOuterCCB); }
 	Ccb_halfedge_const_circulator	outer_ccb() const		{ return Ccb_halfedge_const_circulator(mOuterCCB); }
@@ -726,7 +727,7 @@ public:
 	 * checking for holes.  Setting this on false causes the PMWX to check this for you. */
 	GISHalfedge *	nox_insert_edge_in_hole(const Point2& p1, const Point2& p2);	
 	GISHalfedge *	nox_insert_edge_from_vertex(GISVertex * p1, const Point2& p2);	
-	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2, bool known_on_outer_ccb);
+	GISHalfedge *	nox_insert_edge_between_vertices(GISVertex * p1, GISVertex * p2);
 
 	/*****************************************************************************
 	 * MISC STUFF
@@ -792,7 +793,7 @@ private:
 	GISHalfedge *	get_preceding(GISHalfedge * points_to_vertex, const Point2& p);
 	GISHalfedge *	insert_edge_in_hole(GISFace * face, const Point2& p1, const Point2& p2);
 	GISHalfedge *	insert_edge_from_vertex(GISHalfedge * inAdjacent, const Point2& p);
-	GISHalfedge *	insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2, bool known_on_outer_ccb);
+	GISHalfedge *	insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2);
 
 
 	void			delete_vertex(GISVertex * halfedge);
