@@ -4,6 +4,7 @@
 class	Pmwx;
 class	DEMGeoMap;
 class	GISHalfedge;
+class	GISFace;
 
 #include "ProgressUtils.h"
 
@@ -13,8 +14,6 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * shapeFile, Pro
 // Simplify the coastlines of a complex map based on certain areas to cover.
 void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc inFunc);
 
-
-// for testing
-void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, GISHalfedge * our_hole_rep);
-
+// For testing
+void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face);
 #endif

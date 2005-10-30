@@ -1027,6 +1027,8 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 	
 	for (y = 0; y < elev.mHeight ; y++)
 	for (x = 0; x < elev.mWidth  ; x++)
+	if (new_wet.get(x,y) == NO_DATA && 
+		old_wet.get(x,y) != NO_DATA)
 	{
 		double	bmin, bmax;
 		bmin = bmax = elev.get(x,y);
@@ -1041,7 +1043,11 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 //			bmax = MAX_NODATA(bmax, e);
 		}
 		if ((bmax-bmin) > VMAP_TOO_STEEP && old_wet.get(x,y) != NO_DATA)
+		{
 			old_wet(x,y) = NO_DATA;
+			wetness(x,y) = 1.0;
+			continue;
+		}
 //		relief(x,y) = bmax-bmin;
 	
 		int	c_old = 0, c_new = 0;
@@ -1053,7 +1059,8 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 		}
 		double rat = (double) c_new   / (double) ((SRTM_CHOICE_BLOCK_SIZE*2+1) * (SRTM_CHOICE_BLOCK_SIZE*2+1));
 		wetness(x,y) = rat;
-	}
+	} else
+		wetness(x,y) = 1.0;
 
 	for (y = 0; y < elev.mHeight ; ++y)
 	for (x = 0; x < elev.mWidth  ; ++x)
@@ -1341,24 +1348,74 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 	printf("End result: %d simplifies, %d before, %d after.\n", nuke, total, ioMap.number_of_halfedges());
 }
 
-static void	BuildHoleCache(GISFace * face, map<GISHalfedge *, Bbox2>& hole_cache, GISHalfedge * skip)
+inline void SubBox(const Bbox2& src, float x1, float y1, float x2, float y2, Bbox2& dst)
 {
-	for (Pmwx::Holes_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
-	if (*h != skip)
+	Vector2 sz(src.p1,src.p2);
+	dst.p1.x = src.p1.x + sz.dx * x1;
+	dst.p1.y = src.p1.y + sz.dy * y1;
+	dst.p2.x = src.p1.x + sz.dx * x2;
+	dst.p2.y = src.p1.y + sz.dy * y2;
+}
+
+inline int SubBoxIdx(const Bbox2& lim, const Point2& p, int div)
+{
+	float dx = (p.x - lim.p1.x) / (lim.p2.x - lim.p1.x);
+	float dy = (p.y - lim.p1.y) / (lim.p2.y - lim.p1.y);
+	
+	dx *= (float) div;
+	dy *= (float) div;
+	
+	int idx = max(0, min((int) dx, div-1));
+	int idy = max(0, min((int) dy, div-1));
+	
+	return idx + idy * div;
+}
+
+static void BuildPtCache(GISFace * inFace, const Bbox2& lim, int divs, vector<pair<Bbox2, vector<Point2> > >& outCache)
+{
+	outCache.clear();
+	vector<pair<Bbox2, int> > 		index;
+	index.resize(divs * divs);
+	outCache.reserve(divs * divs);
+	for (int y = 0; y < divs; ++y)
+	for (int x = 0; x < divs; ++x)
 	{
-		Bbox2	lim((*h)->target()->point());
-		Pmwx::Ccb_halfedge_circulator circ, stop;
-		circ = stop = *h;
-		do {
-			lim += circ->target()->point();
-			++circ;
-		} while (circ != stop);
-		hole_cache[*h] = lim;
+		int idx = y * divs + x;
+		SubBox(lim, (float) x / (float) divs, (float) y / (float) divs, (float) (x+1) / (float) divs, (float) (y+1) / (float) divs, index[idx].first);
+		index[idx].second = -1;
 	}
+	
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	if (!inFace->is_unbounded())
+	{
+		stop = circ = inFace->outer_ccb();
+		do 
+		{
+			Point2 p = circ->target()->point();
+			int idx = SubBoxIdx(lim, p, divs);
+			if (index[idx].second == -1)
+			{
+				idx = index[idx].second = outCache.size();
+				outCache.push_back(pair<Bbox2, vector<Point2> >());
+				outCache[idx].first = p;
+				outCache[idx].second.push_back(p);				
+			} else {
+				idx = index[idx].second;
+				outCache[idx].first += p;
+				outCache[idx].second.push_back(p);
+			}
+			++circ;
+		} while (stop != circ);
+	}
+#if DEV
+	for (vector<pair<Bbox2, vector<Point2> > >::iterator zone = outCache.begin(); zone != outCache.end(); ++zone)
+	for (vector<Point2>::iterator p = zone->second.begin(); p != zone->second.end(); ++p)
+		DebugAssert(zone->first.contains(*p));
+#endif	
 }
 
 
-static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, map<GISHalfedge *, Bbox2>& hole_cache)
+static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<Bbox2, vector<Point2> > >& cache)
 {
 	DebugAssert(e1->next() == e2);
 	if (e2->next() == e1) return true;
@@ -1373,61 +1430,34 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, map<GISHalfe
 	
 	Pmwx::Ccb_halfedge_circulator circ, stop;
 	
-	GISFace * face = e1->face();
-	if (!face->is_unbounded())
+	for (vector<pair<Bbox2, vector<Point2> > >::iterator zone = cache.begin(); zone != cache.end(); ++zone)
+	if (lim.overlap(zone->first))
 	{
-		circ = stop = face->outer_ccb();
-		do 
+		for (vector<Point2>::iterator pp = zone->second.begin(); pp != zone->second.end(); ++pp)
 		{
-			Point2	p = circ->target()->point();
+			Point2 p(*pp);
 			if (lim.contains(p))
-			if (circ != e1 && circ != e2 && circ->next() != e1)
 			if (!s1.on_right_side(p) &&
 				!s2.on_right_side(p) &&
 				!s3.on_right_side(p))
+			if (p != s1.p1 && p != s2.p1 && p != s3.p1)
 			{
 				return true;
 			}			
-			++circ;
-		} while (circ != stop);	
-	}
-	
-	for (Pmwx::Holes_iterator h = e1->face()->holes_begin(); h != e1->face()->holes_end(); ++h)
-	{
-		map<GISHalfedge *, Bbox2>::iterator cache = hole_cache.find(*h);
-		if (cache == hole_cache.end() || lim.overlap(cache->second))
-		{
-			circ = stop = *h;
-			do 
-			{
-				Point2	p = circ->target()->point();
-				if (lim.contains(p))
-				if (circ != e1 && circ != e2 && circ->next() != e1)
-				if (!s1.on_right_side(p) &&
-					!s2.on_right_side(p) &&
-					!s3.on_right_side(p))
-				{
-					return true;
-				}			
-				++circ;
-			} while (circ != stop);
 		}
 	}
+
 	return false;
 }
 
 
-void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, GISHalfedge * our_hole_rep)
+void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector<Point2> > >&		cache)
 {
 	bool	is_split = false;
 	bool	first_split = false;
 	GISHalfedge * stop = edge;	
 	bool	first_loop = true;
 	bool	last_loop = false;
-	
-	map<GISHalfedge *, Bbox2>	hole_cache;
-	BuildHoleCache(edge->face(), hole_cache, our_hole_rep);
-	
 	do {
 	
 		DebugAssert(edge->face()->IsWater());
@@ -1472,7 +1502,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, GISHalfedge * our_hole_re
 			if (v1.dot(v2) < 0.99)
 			{
 				bool is_left = Vector2(pt_a, pt_b).left_turn(Vector2(pt_b, pt_c));
-				bool occupied = is_left ? AnyPtInEdgeSpaceCCB(edge, edge->next(), hole_cache) : AnyPtInEdgeSpaceCCB(edge->twin(), edge->twin()->next(), hole_cache);
+				bool occupied = is_left ? AnyPtInEdgeSpaceCCB(edge, edge->next(), cache) : AnyPtInEdgeSpaceCCB(edge->twin(), edge->twin()->next(), cache);
 			
 				if (!occupied)
 				{
@@ -1538,6 +1568,35 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, GISHalfedge * our_hole_re
 	} while (edge != stop && !last_loop);
 }
 
+void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face)
+{
+	Bbox2	lim;
+
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	circ = stop = face->outer_ccb();
+	lim = circ->target()->point();
+	do {
+		lim += circ->target()->point();
+		++circ;
+	} while (circ != stop);
+
+	vector<pair<Bbox2, vector<Point2> > >		cache;
+	BuildPtCache(face, lim, 16, cache);
+	
+		
+	SimplifyWaterCCB(ioMap,face->outer_ccb(), cache);
+
+	set<GISHalfedge *> ee;
+
+	face->copy_holes(ee);			
+	
+	for (set<GISHalfedge *>::iterator e = ee.begin(); e != ee.end(); ++e)
+	{
+		SimplifyWaterCCB(ioMap,*e, cache);
+	}
+}
+
+
 void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 {
 	set<GISFace *>	water;
@@ -1552,17 +1611,8 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
+		SimplifyCoastlineFace(ioMap, *i);
 
-		SimplifyWaterCCB(ioMap,(*i)->outer_ccb(), NULL);
-
-		set<GISHalfedge *> ee;
-
-		(*i)->copy_holes(ee);			
-		
-		for (set<GISHalfedge *>::iterator e = ee.begin(); e != ee.end(); ++e)
-		{
-			SimplifyWaterCCB(ioMap,*e, *e);
-		}
 	}
 	PROGRESS_DONE(func, 0, 1, "Smoothing coastlines");
 }
