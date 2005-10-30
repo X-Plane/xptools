@@ -8,6 +8,7 @@ north=$4
 cmd=$5
 dst=$6
 
+date
 for (( tile_y = $south; tile_y <= $north; tile_y++ ))
 do
         for (( tile_x = $west; tile_x <= $east; tile_x++ ))
@@ -15,3 +16,4 @@ do
                 $cmd $tile_x $tile_y "$dst"
         done
 done
+date
