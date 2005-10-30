@@ -327,13 +327,19 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		try {
 			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			{
-				SimplifyWaterCCB(gMap, (*fsel)->outer_ccb(), true);
+				SimplifyWaterCCB(gMap, (*fsel)->outer_ccb(), NULL);
+
+				set<GISHalfedge *> ee;
+				(*fsel)->copy_holes(ee);			
+				
+				for (set<GISHalfedge *>::iterator e = ee.begin(); e != ee.end(); ++e)
+				{
+					SimplifyWaterCCB(gMap,*e, *e);
+				}
+						
 			}
 		} catch (...) {
 		}
-		gEdgeSelection.clear();
-		gFaceSelection.clear();
-		gVertexSelection.clear();
 		break;
 	case 6:
 		SimplifyMap(gMap);
