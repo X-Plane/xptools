@@ -8,7 +8,7 @@
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
 
-WED_TopoTester::WED_TopoTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer)
+WED_TopoTester::WED_TopoTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer), mRayShoot(false)
 {
 }
 WED_TopoTester::~WED_TopoTester()
