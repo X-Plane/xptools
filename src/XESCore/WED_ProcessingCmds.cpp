@@ -208,8 +208,12 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			}
 			break;
 		case procCmd_HydroSimplfiy:
-			SimplifyCoastlines(gMap, 5000.0 / (DEG_TO_NM_LAT * DEG_TO_NM_LAT * NM_TO_MTR * NM_TO_MTR), WED_ProgressFunc);
-			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+			{
+				Bbox2	bounds;
+				CalcBoundingBox(gMap, bounds.p1, bounds.p2);
+				SimplifyCoastlines(gMap, bounds, WED_ProgressFunc);
+				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+			}
 			break;
 		case procCmd_DeriveDEMs:
 			DeriveDEMs(gMap, gDem,WED_ProgressFunc);			
