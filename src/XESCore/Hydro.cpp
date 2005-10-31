@@ -12,7 +12,11 @@
 #include "PerfUtils.h"
 #include "DEMToVector.h"
 #include "CompGeomUtils.h"
-
+#include "PlatformUtils.h"
+#if APL && !defined(__MACH__)
+#include "XUtils.h"
+#endif
+#define HYDRO_BORDER	"Hydro"
 
 // This is how high we can raise the waterlevel of a river (turning it into a lake) before we give up
 // and say 'heck, we have no idea what's going on'.  This prevents water from flowing massively uphill
@@ -1085,9 +1089,18 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 	DEMGeo&	water_elev(dems[dem_HydroElevation]);
 	char	fname_left[1024], fname_bot[1024], fname_self[1024];
 
-	sprintf(fname_self,"%+03d%+04d.hydro.txt", (int) (water_elev.mSouth), (int) (water_elev.mWest));
-	sprintf(fname_left,"%+03d%+04d.hydro.txt", (int) (water_elev.mSouth), (int) (water_elev.mWest - 1));
-	sprintf(fname_bot ,"%+03d%+04d.hydro.txt", (int) (water_elev.mSouth - 1), (int) (water_elev.mWest));
+	string border_loc = HYDRO_BORDER;
+#if APL && !defined(__MACH__)
+	string	appP;
+	AppPath(appP);
+	string::size_type b = appP.rfind(':');
+	appP.erase(b+1);
+	border_loc = appP + border_loc;
+#endif
+
+	sprintf(fname_self,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth), (int) (water_elev.mWest));
+	sprintf(fname_left,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth), (int) (water_elev.mWest - 1));
+	sprintf(fname_bot ,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth - 1), (int) (water_elev.mWest));
 	FILE * fi;
 	int n, w, h;
 	float e;
@@ -1371,7 +1384,7 @@ inline int SubBoxIdx(const Bbox2& lim, const Point2& p, int div)
 	return idx + idy * div;
 }
 
-static void BuildPtCache(GISFace * inFace, const Bbox2& lim, int divs, vector<pair<Bbox2, vector<Point2> > >& outCache)
+static void BuildPtCache(Pmwx& inMap, const Bbox2& lim, int divs, vector<pair<Bbox2, vector<Point2> > >& outCache)
 {
 	outCache.clear();
 	vector<pair<Bbox2, int> > 		index;
@@ -1384,29 +1397,25 @@ static void BuildPtCache(GISFace * inFace, const Bbox2& lim, int divs, vector<pa
 		SubBox(lim, (float) x / (float) divs, (float) y / (float) divs, (float) (x+1) / (float) divs, (float) (y+1) / (float) divs, index[idx].first);
 		index[idx].second = -1;
 	}
-	
-	Pmwx::Ccb_halfedge_circulator circ, stop;
-	if (!inFace->is_unbounded())
+
+	for (Pmwx::Vertex_iterator i = inMap.vertices_begin(); i != inMap.vertices_end(); ++i)
 	{
-		stop = circ = inFace->outer_ccb();
-		do 
+		Point2 p = i->point();
+		
+		int idx = SubBoxIdx(lim, p, divs);
+		if (index[idx].second == -1)
 		{
-			Point2 p = circ->target()->point();
-			int idx = SubBoxIdx(lim, p, divs);
-			if (index[idx].second == -1)
-			{
-				idx = index[idx].second = outCache.size();
-				outCache.push_back(pair<Bbox2, vector<Point2> >());
-				outCache[idx].first = p;
-				outCache[idx].second.push_back(p);				
-			} else {
-				idx = index[idx].second;
-				outCache[idx].first += p;
-				outCache[idx].second.push_back(p);
-			}
-			++circ;
-		} while (stop != circ);
+			idx = index[idx].second = outCache.size();
+			outCache.push_back(pair<Bbox2, vector<Point2> >());
+			outCache[idx].first = p;
+			outCache[idx].second.push_back(p);				
+		} else {
+			idx = index[idx].second;
+			outCache[idx].first += p;
+			outCache[idx].second.push_back(p);
+		}
 	}
+	
 #if DEV
 	for (vector<pair<Bbox2, vector<Point2> > >::iterator zone = outCache.begin(); zone != outCache.end(); ++zone)
 	for (vector<Point2>::iterator p = zone->second.begin(); p != zone->second.end(); ++p)
@@ -1427,6 +1436,8 @@ static bool	AnyPtInEdgeSpaceCCB(GISHalfedge * e1, GISHalfedge * e2, vector<pair<
 	Segment2	s1(e1->source()->point(), e1->target()->point());
 	Segment2	s2(e2->source()->point(), e2->target()->point());
 	Segment2	s3(e2->target()->point(), e1->source()->point());
+	
+	DebugAssert(Vector2(s1.p1,s1.p2).signed_area(Vector2(s2.p1,s2.p2)) > 0.0);
 	
 	Pmwx::Ccb_halfedge_circulator circ, stop;
 	
@@ -1502,7 +1513,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 			if (v1.dot(v2) < 0.99)
 			{
 				bool is_left = Vector2(pt_a, pt_b).left_turn(Vector2(pt_b, pt_c));
-				bool occupied = is_left ? AnyPtInEdgeSpaceCCB(edge, edge->next(), cache) : AnyPtInEdgeSpaceCCB(edge->twin(), edge->twin()->next(), cache);
+				bool occupied = is_left ? AnyPtInEdgeSpaceCCB(edge, edge->next(), cache) : AnyPtInEdgeSpaceCCB(edge->next()->twin(), edge->next()->twin()->next(), cache);
 			
 				if (!occupied)
 				{
@@ -1568,7 +1579,7 @@ void	SimplifyWaterCCB(Pmwx& ioMap, GISHalfedge * edge, vector<pair<Bbox2, vector
 	} while (edge != stop && !last_loop);
 }
 
-void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face)
+void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face, vector<pair<Bbox2, vector<Point2> > >& cache)
 {
 	Bbox2	lim;
 
@@ -1580,10 +1591,6 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face)
 		++circ;
 	} while (circ != stop);
 
-	vector<pair<Bbox2, vector<Point2> > >		cache;
-	BuildPtCache(face, lim, 16, cache);
-	
-		
 	SimplifyWaterCCB(ioMap,face->outer_ccb(), cache);
 
 	set<GISHalfedge *> ee;
@@ -1597,13 +1604,16 @@ void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face)
 }
 
 
-void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
+void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 {
 	set<GISFace *>	water;
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())
 	if (f->IsWater())
 		water.insert(f);			
+
+	vector<pair<Bbox2, vector<Point2> > >		cache;
+	BuildPtCache(ioMap, bounds, 16, cache);
 		
 	PROGRESS_START(func, 0, 1, "Smoothing coastlines");
 	int ctr = 0;
@@ -1611,7 +1621,7 @@ void	SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 	for (set<GISFace *>::iterator i = water.begin(); i != water.end(); ++i, ++ctr)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Smoothing coastlines", ctr, water.size(), water.size() / 200);
-		SimplifyCoastlineFace(ioMap, *i);
+		SimplifyCoastlineFace(ioMap, *i, cache);
 
 	}
 	PROGRESS_DONE(func, 0, 1, "Smoothing coastlines");
