@@ -28,11 +28,16 @@
 #include "CompGeomUtils.h"
 #include "PolyRasterUtils.h"
 #include "AssertUtils.h"
+#include "PlatformUtils.h"
 #include "PerfUtils.h"
 #include "MapAlgs.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
 #include "GreedyMesh.h"
+#if APL && !defined(__MACH__)
+#include "XUtils.h"
+#endif
+#define MESH_BORDER	"Border"
 
 #define PROFILE_PERFORMANCE 1
 
@@ -457,18 +462,32 @@ void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_han
 	} while (stop != now);
 }
 
+// Border matching:
+// We are going to go through a master edge from an old render and our slave render and try to correlate
+// vertices.  This is a 3-part algorithm:
+// 1. Find all of the slave edge points.
+// 2. Match existing slave points with master points.
+// 3. Induce any extra slave points as needed.
+
 void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 {
-	map<double, CDT::Vertex_handle>	slaves;
-	Point2	origin = ioBorder.vertices.front().loc;
+	map<double, CDT::Vertex_handle>	slaves;					// Slave map, from relative border offset to the handle.  Allows for fast slave location.
+	Point2	origin = ioBorder.vertices.front().loc;			// Origin of our tile.
+
+	// Step 1.  Fetch the entire border from the mesh.
 	fetch_border(ioMesh, origin, slaves, isRight);
+	
+	// Step 2. Until we have exhausted all of the slaves, we are going to try to find the neaerest master-slave pair and link them.
 	
 	while (!slaves.empty())	
 	{
-		multimap<double, pair<double, mesh_match_vertex_t *> >	nearest;
+		multimap<double, pair<double, mesh_match_vertex_t *> >	nearest;	// This is a slave/master pair - slave is IDed by its offset.
+
+		// Go through each non-assigned vertex.
 		for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 		if (pts->buddy == NULL)
 		{
+			// Find the nearest slave for it by decreasing distance.
 			for (map<double, CDT::Vertex_handle>::iterator sl = slaves.begin(); sl != slaves.end(); ++sl)
 			{
 				double myDist = isRight ? (pts->loc.y - CGAL::to_double(sl->second->point().y())) : (pts->loc.x - CGAL::to_double(sl->second->point().x()));
@@ -477,13 +496,21 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 			}
 		}
 		
-		Assert(!nearest.empty());
+		// If we have not found a nearest pair, it means that we have assigned all masters to slaves and still have slaves left over!  This happens when we 
+		// cannot conform the border due to more water in the slave than master (or at least different water).  The most common case is the US-Canada border,
+		// where the US is the master, Canada is the slave; because the US is not hydro-reconstructed it does not force the Canada border to water match.  We just
+		// accept a discontinuity on the 49th parallel for now. :-(
+		if (nearest.empty())
+			break;
+
+		// File off the match, and nuke the slave.			
 		pair<double, mesh_match_vertex_t *> best_match = nearest.begin()->second;
 		DebugAssert(slaves.count(best_match.first) > 0);
 		best_match.second->buddy = slaves[best_match.first];
 		slaves.erase(best_match.first);
 	}
 	
+	// Step 3.  Go through all unmatched masters and insert them diriectly into the mesh.
 	CDT::Face_handle	nearf = NULL;
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
@@ -492,6 +519,8 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
 	}
+	
+	// At this point all masters have a slave, and some slaves may be connected to a master.
 }
 
 // RebaseTriangle - 
@@ -1286,10 +1315,20 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	{
 		TIMER(edges);
 		
-		char	fname_left[32];
-		char	fname_bot[32];
-		sprintf(fname_left,"%+03d%+04d.border.txt", (int) (deriv.mSouth), (int) (deriv.mWest - 1));
-		sprintf(fname_bot ,"%+03d%+04d.border.txt", (int) (deriv.mSouth - 1), (int) (deriv.mWest));
+		char	fname_left[512];
+		char	fname_bot[512];
+
+		string border_loc = MESH_BORDER;		
+#if APL && !defined(__MACH__)
+		string	appP;
+		AppPath(appP);
+		string::size_type b = appP.rfind(':');
+		appP.erase(b+1);
+		border_loc = appP + border_loc;
+#endif
+
+		sprintf(fname_left,"%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
+		sprintf(fname_bot ,"%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) (deriv.mSouth - 1), (int) (deriv.mWest));
 		
 		mesh_match_t bot_junk, left_junk;
 		bool	has_left = gMeshPrefs.border_match ? load_match_file(fname_left, left_junk, gMatchLeft) : false;
@@ -1986,10 +2025,21 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		double	east = inElevation.mEast;
 		double	south = inElevation.mSouth;
 		double	north = inElevation.mNorth;
-		char	fname[32];
-		sprintf(fname, "%+03d%+04d.border.txt", (int) south, (int) west);
+		char	fname[512];
+
+		string border_loc = MESH_BORDER;		
+#if APL && !defined(__MACH__)
+		string	appP;
+		AppPath(appP);
+		string::size_type b = appP.rfind(':');
+		appP.erase(b+1);
+		border_loc = appP + border_loc;
+#endif
+		
+		sprintf(fname, "%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) south, (int) west);
 		
 		FILE * border = fopen(fname, "w");
+		if (border == NULL) AssertPrintf("Unable to open file %s for writing.", fname);
 		
 		CDT::Point	cur(west,north), stop(east, north);
 	
