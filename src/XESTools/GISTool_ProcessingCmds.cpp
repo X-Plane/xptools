@@ -14,6 +14,7 @@
 #include "DEMDefs.h"
 #include "Hydro.h"
 #include "DEMTables.h"
+#include "MapAlgs.h"
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -69,7 +70,10 @@ static int DoHydroReconstruct(const vector<const char *>& args)
 static int DoHydroSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Simplifying coastlines...\n");
-	SimplifyCoastlines(gMap, 5000.0 / (DEG_TO_NM_LAT * DEG_TO_NM_LAT * NM_TO_MTR * NM_TO_MTR), gProgress);
+	Bbox2	bounds;
+	
+	CalcBoundingBox(gMap, bounds.p1, bounds.p2);
+	SimplifyCoastlines(gMap, bounds, gProgress);
 	return 0;
 }
 

@@ -116,6 +116,7 @@ int	main(int argc, char * argv[])
 //						"-oz","/rendering_farm/DEM output-earth/+30-120/+33-118.oz","-obs","deg","/rendering_farm/faa_obs/+33-118.obs","-apt","/rendering_farm/apts/+30-120/+33-118.apt",
 //						"-bbox","-simplify","-validate","-spreadsheet","/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt","-upsample","-calcslope",
 //						"-derivedems","-buildroads","-burnapts","-zoning","-calcmesh","-assignterrain","-exportdsf","/code/design++/Custom Scenery/a_rerender/" };
+//	char * args[]  = { "", "-load", "foo.xes", "-calcmesh" };
 //	argv = args;
 //	argc = sizeof(args) / sizeof(args[0]);
 
