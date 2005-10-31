@@ -395,7 +395,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			
 			string tex_vari = tex_name;
 			tex_vari.erase(tex_vari.size()-4);
-			if (auto_vary == 2 && (rep == 2 || rep == 4))
+			if (auto_vary == 2 && (rep == 2 || rep == 3))
 				tex_vari += "2";
 			tex_vari += ".png";
 			info.base_tex = tex_vari;
