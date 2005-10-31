@@ -327,7 +327,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		try {
 			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			{
-				SimplifyCoastlineFace(gMap, *fsel);
+//				SimplifyCoastlineFace(gMap, *fsel);
 			}
 		} catch (...) {
 		}
