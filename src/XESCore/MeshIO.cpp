@@ -277,21 +277,21 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 		readData1.ReadFloat(fi.normal[1]);
 		readData1.ReadFloat(fi.normal[2]);
 
-#if DEV
 		if (F[j]->vertex(0) != V[0] &&
 			F[j]->vertex(1) != V[0] &&
 			F[j]->vertex(2) != V[0])
 		{	
+#if DEV
 			DebugAssert(fi.normal[0] > -1.1);
 			DebugAssert(fi.normal[0] <  1.1);
 			DebugAssert(fi.normal[1] > -1.1);
 			DebugAssert(fi.normal[1] <  1.1);
 			DebugAssert(fi.normal[2] > -1.1);
 			DebugAssert(fi.normal[2] <  1.1);
-		}
 #endif		
-		fi.feature = conv[fi.feature];
-		fi.terrain = conv[fi.terrain];
+			fi.feature = conv[fi.feature];
+			fi.terrain = conv[fi.terrain];
+		}
 		
 		readData1.ReadInt(index);
 		while (index--)
