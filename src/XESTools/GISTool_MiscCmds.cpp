@@ -4,6 +4,7 @@
 #include "PerfUtils.h"
 #include "SceneryPackages.h"
 #include "DEMTables.h"
+#include <md5.h>
 
 #include "MapDefs.h"
 #include "GISUtils.h"
@@ -124,7 +125,92 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 	return 1;
 }
 
+int DoShowCoverage(const vector<const char *>& args)
+{
+	FILE * fi = fopen(args[0], "rb");
+	if (fi == NULL)
+	{
+		fprintf(stderr, "Could not open %s\n", args[0]);
+		return 0;
+	}
+	for (int y = gMapSouth; y < gMapNorth; ++y)
+	for (int x = gMapWest; x < gMapEast; ++x)
+	{
+		char c = fgetc(fi);
+		if (c != 0) printf("Includes %+03d%+04d\n", y, x);
+	}
+	fclose(fi);
+	return 1;
+}
+
+int DoMakeCoverage(const vector<const char *>& args)
+{
+	char buf[1024];		
+	const char * dir = args[0];
+	const char * ext = args[1];
+	const char * fname = args[2];
+	const char * fname2 = args[3];
+	FILE * fi = fopen(fname, "wb");
+	FILE * fi2 = (strcmp(fname2, "-")) ? fopen(fname2, "w") : NULL;
+	if (!fi) { printf("Could not open '%s' to record output\n", fname); return 0; }
+	else {
+		printf("Computing coverage for %d,%d -> %d,%d at path '%s', extension '%s'\n", gMapWest, gMapSouth, gMapEast, gMapNorth,dir,ext);
+		int c = 0;
+		char dirchar = APL ? '/' : '\\';
+		for (int y = gMapSouth; y < gMapNorth; ++y)
+		for (int x = gMapWest; x < gMapEast; ++x)
+		{
+			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d%s", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x, ext);
+			FILE * f = fopen(buf, "rb");
+			if (f) { 
+				fputc(255,fi); ++c; 
+				if (fi2)
+				{
+					MD5_CTX	ctx;
+					MD5Init(&ctx);
+					int t = 0;
+					while (!feof(f))
+					{							
+						unsigned char	buf[1024];
+						int len = fread(buf, 1, 1024, f);
+						t += len;
+						if (len)
+							MD5Update(&ctx, buf, len);
+					}
+					MD5Final(&ctx);
+					fprintf(fi2, "%+03d%+04d%c%+03d%+04d%s  Len = %30d MD5 = %02X%02X%02X%02X %02X%02X%02X%02X %02X%02X%02X%02X %02X%02X%02X%02X\n",
+						 latlon_bucket(y), latlon_bucket(x), dirchar, y, x, ext,
+						 	t, ctx.digest[ 0],ctx.digest[ 1],ctx.digest[ 2],ctx.digest[ 3],
+								ctx.digest[ 4],ctx.digest[ 5],ctx.digest[ 6],ctx.digest[ 7],
+								ctx.digest[ 8],ctx.digest[ 9],ctx.digest[10],ctx.digest[11],
+								ctx.digest[12],ctx.digest[13],ctx.digest[14],ctx.digest[15]);
+				}
+				fclose(f);
+										
+			} else fputc(0,fi); 
+		}
+		fclose(fi);
+		if (fi2) fclose(fi2);
+		printf("Found %d files.\n", c);
+	}			
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 static	GISTool_RegCmd_t		sMiscCmds[] = {
+{ "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "" },
+{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "" },
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Import SDTS VTP vector map.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
