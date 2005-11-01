@@ -704,7 +704,7 @@ static void __MergeMaps_EdgeNotifier(GISHalfedge * he_old, GISHalfedge * he_new,
 	}
 }
 
-void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *> * outFaces, bool pre_integrated)
+void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *> * outFaces, bool pre_integrated, ProgressFunc func)
 {
 // OPTIMIZE: now that maps have a point index, we do not need to maintain a prviate one!
 	DebugAssert(ioSrcMap.is_valid());
@@ -719,6 +719,10 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 	info.vertMap = &vertMap;
 	
 	int ctr = 0;
+	int total = ioSrcMap.number_of_halfedges();
+	int step = total / 200;
+
+	PROGRESS_START(func, 0, 2, "Merging edges into map...")
 
 	if (pre_integrated)
 	{
@@ -732,6 +736,8 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 		for (Pmwx::Halfedge_iterator iter = ioSrcMap.halfedges_begin(); iter != ioSrcMap.halfedges_end(); ++iter, ++ctr)
 		if (iter->mDominant)
 		{
+			PROGRESS_CHECK(func, 0, 2, "Merging edges into map...", ctr, total, step)
+		
 			map<Point2, GISVertex *, lesser_y_then_x>::iterator i1, i2;
 			GISHalfedge * nh;
 			
@@ -785,6 +791,8 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 		for (Pmwx::Halfedge_iterator iter = ioSrcMap.halfedges_begin(); iter != ioSrcMap.halfedges_end(); ++iter, ++ctr)
 		if (iter->mDominant)
 		{
+			PROGRESS_CHECK(func, 0, 2, "Merging edges into map...", ctr, total, step)
+		
 			info.srcEdge = iter;
 			map<GISVertex *, GISVertex *>::iterator hint = vertMap.find(iter->source());
 			if (hint != vertMap.end()) 
@@ -797,17 +805,26 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 			}
 		}
 	}
+
+	PROGRESS_DONE(func, 0, 2, "Merging edges into map...")
+
+	PROGRESS_START(func, 1, 2, "Copying face metadata...")
 	
 	// STEP 2 - map a faces boundary from src to dst.  Flood fill to find the corresponding faces and copy 
 	// what's needed.
 	
 	ctr = 0;
-
-	for (Pmwx::Face_iterator fiter = ioSrcMap.faces_begin(); fiter != ioSrcMap.faces_end(); ++fiter)
+	total = ioSrcMap.number_of_faces();
+	step = total / 200;
+	
+	for (Pmwx::Face_iterator fiter = ioSrcMap.faces_begin(); fiter != ioSrcMap.faces_end(); ++fiter, ++ctr)
 	if (!fiter->is_unbounded())
 	// Fast eval - if the source face is uninteresting, skip this whole loop!
 	if (fiter->mAreaFeature.mFeatType != NO_VALUE || fiter->mTerrainType != terrain_Natural)
 	{
+		PROGRESS_CHECK(func, 1, 2, "Copying face metadata...", ctr, total, step)
+	
+
 		set<GISHalfedge *>	borders_old, borders_new;
 
 		FindEdgesForFace(fiter, borders_old);
@@ -853,8 +870,9 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 				(*face)->mAreaFeature.mFeatType = fiter->mAreaFeature.mFeatType;
 			
 		}
-		++ctr;
 	}
+	PROGRESS_DONE(func, 1, 2, "Copying face metadata...")
+	
 }
 
 // Vertex hasher - to be honest I forget why this was necessary, but without it the 
@@ -2178,4 +2196,52 @@ retry:
 		
 	DebugAssert(inMap.is_valid());
 }
+
+inline bool Near(double x, double y)
+{
+	return fabs(x-y) < 0.00001;
+}
+
+inline bool IsOnBox(const Point2& p1, const Point2& p2, const Bbox2& box)
+{
+	if (Near(p1.x , p2.x ) && Near(p1.x , box.p1.x)) return true;
+	if (Near(p1.x , p2.x ) && Near(p1.x , box.p2.x)) return true;
+
+	if (Near(p1.y , p2.y ) && Near(p1.y , box.p1.y)) return true;
+	if (Near(p1.y , p2.y ) && Near(p1.y , box.p2.y)) return true;
+	return false;
+}
 		
+void UnmangleBorder(Pmwx& ioMap)
+{
+/*	for (Pmwx::Holes_iterator hole = ioMap.unbounded_face()->holes_begin(); hole != ioMap.unbounded_face()->holes_end(); ++hole)
+	{
+		printf("Hole:\n");
+		Pmwx::Ccb_halfedge_circulator iter, stop;
+		iter = stop = *hole;
+		do {
+			printf("  %lf,%lf  valence = %d\n", iter->target()->point().x,iter->target()->point().y, iter->target()->degree());
+			++iter;
+		} while (iter != stop);
+	} */
+	
+	set <GISHalfedge *>	dead;
+	
+	Bbox2	box;
+	CalcBoundingBox(ioMap, box.p1, box.p2);
+	
+	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he)
+	if (he->mDominant)
+	if (he->face() != ioMap.unbounded_face())
+	if (he->twin()->face() != ioMap.unbounded_face())
+	if (IsOnBox(he->source()->point(), he->target()->point(), box))
+		dead.insert(he);
+
+	printf("Will kill %d segments.\n", dead.size());
+	for (set<GISHalfedge *>::iterator d = dead.begin(); d != dead.end(); ++d)
+	{
+		DebugAssert((*d)->face()->IsWater() == (*d)->twin()->face()->IsWater());
+		ioMap.remove_edge(*d);
+	}
+
+}
