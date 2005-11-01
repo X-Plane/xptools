@@ -117,6 +117,8 @@ int	main(int argc, char * argv[])
 //						"-bbox","-simplify","-validate","-spreadsheet","/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt","-upsample","-calcslope",
 //						"-derivedems","-buildroads","-burnapts","-zoning","-calcmesh","-assignterrain","-exportdsf","/code/design++/Custom Scenery/a_rerender/" };
 //	char * args[]  = { "", "-load", "foo.xes", "-calcmesh" };
+//	char * args[] = { "./GISTool","-extent","-75","45","-60","60","-vpf","/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/","bnd","-75","45","-bbox","-cropsave","/Volumes/GIS/data/world_xes/" };
+
 //	argv = args;
 //	argc = sizeof(args) / sizeof(args[0]);
 
