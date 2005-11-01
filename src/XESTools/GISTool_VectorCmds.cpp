@@ -279,6 +279,10 @@ static int DoVPFImport(const vector<const char *>& args)
 	int west = (180 + atoi(args[2]) ) / 15;
 	int south = (90 + atoi(args[3])) / 15;
 	
+	printf("Arg count: %d\n", args.size());
+	printf("args: %s\n%s\n%s\n%s\n", args[0], args[1], args[2], args[3]);
+	printf("West = %d, south = %d\n", west, south);
+	
 	char	tile[5];
 	char	coverage[1024];
 	tile[0] = chrs[west];
@@ -306,7 +310,8 @@ static int DoVPFImport(const vector<const char *>& args)
 		}
 		strcpy(coverage, cov_dir);
 		strcat(coverage, found);
-		if (first || sVPFRules[found].topology != 3)
+		if (first)
+//		if (first || sVPFRules[found].topology != 3)
 		{
 			ok = VPFImportTopo3(coverage, tile, gMap,
 					sVPFRules[found].topology == 3,
@@ -327,6 +332,8 @@ static int DoVPFImport(const vector<const char *>& args)
 					gMap.insert_edge(Point2(sw.x,y),Point2(ne.x,y), NULL, NULL);
 				}
 			}
+			
+			UnmangleBorder(gMap);
 		} else {
 			Pmwx	overlay;
 			ok = VPFImportTopo3(coverage, tile, overlay,
@@ -335,7 +342,15 @@ static int DoVPFImport(const vector<const char *>& args)
 					&*sVPFRules[found].face_rules.begin(),
 					&*sVPFRules[found].trans_flags.begin());
 			if (gVerbose) printf("Merging maps  Dst faces = %d, src hedges = %d\n", gMap.number_of_faces(), overlay.number_of_halfedges());
-			MergeMaps(gMap, overlay, true, NULL, false);
+			
+			if (sVPFRules[found].topology < 3)
+			{
+				for (Pmwx::Face_iterator ff = overlay.faces_begin(); ff != overlay.faces_end(); ++ff)
+					ff->mTerrainType = terrain_Natural;
+			}
+			
+			TopoIntegrateMaps(&gMap, &overlay);
+			MergeMaps(gMap, overlay, true, NULL, true, gProgress);
 		}
 				
 		if (ok)
