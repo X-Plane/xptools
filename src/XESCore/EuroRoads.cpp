@@ -74,7 +74,8 @@ void	AddEuroRoads(
 	MergeMaps(ioBase, road_area, 
 			false, 		// Don't force props
 			&faces, 		// Don't return face set
-			true);		// pre integrated
+			true,
+			inFunc);		// pre integrated
 			
 
 	for (set<GISFace *>::iterator face = faces.begin(); face != faces.end(); ++face)

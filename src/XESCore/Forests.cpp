@@ -351,7 +351,7 @@ void GenerateForests(
 								TopoIntegrateMaps(&forestMap, &baseClone);
 	//							if (DEBUG_FOREST_TREE_MAPS_CTR == forest_type_ctr)
 	//								throw forest_type_ctr;
-								MergeMaps(forestMap, baseClone, true, NULL, true);
+								MergeMaps(forestMap, baseClone, true, NULL, true, inProg);
 	#if DEBUG_SHOW_MAP_MERGE_FAIL							
 							} catch (...) {
 								if (ConfirmMessage("Would you like to see the forest map or original road map?",

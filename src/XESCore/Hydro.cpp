@@ -1196,7 +1196,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * shapeFile, Pro
 	
 	TopoIntegrateMaps(&ioMap, &water);
 
-	MergeMaps(water, ioMap, true, NULL, true);
+	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap.swap(water);
 	
 	ConformWater(ioDem, true);	

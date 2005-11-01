@@ -276,7 +276,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<
 		if (inFillWater)
 			OverlayMap(inDstMap, temp);
 		else {
-			MergeMaps(inDstMap, temp, inFillWater, &outDstFaces, false);	
+			MergeMaps(inDstMap, temp, inFillWater, &outDstFaces, false, NULL);	
 			for (set<GISFace *>::iterator cleanMe = outDstFaces.begin(); cleanMe != outDstFaces.end(); ++cleanMe)
 				(*cleanMe)->mAreaFeature.mFeatType = NO_VALUE;
 		}

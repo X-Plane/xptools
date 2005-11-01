@@ -266,6 +266,12 @@ void ReduceToWaterBodies(Pmwx& ioMap);
 int SimplifyMap(Pmwx& ioMap);
 
 /*
+ * TODO - DOC THIS 
+ *
+ */
+void UnmangleBorder(Pmwx& ioMap);
+
+/*
  * RemoveUnboundedWater
  *
  * Similar to the routines above, this routine removes all vectors with water on both sides
@@ -307,7 +313,7 @@ int RemoveUnboundedWater(Pmwx& ioMap);
  * ended up, without having to do a bunch of fac-relocates from edge bounds.
  *
  */
-void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *> * outFaces, bool pre_integrated);
+void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *> * outFaces, bool pre_integrated, ProgressFunc func);
 
 /*
  * SwapAreas
