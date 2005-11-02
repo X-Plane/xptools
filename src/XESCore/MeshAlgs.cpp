@@ -53,7 +53,7 @@
 #endif
 
 MeshPrefs_t gMeshPrefs = { 
-				60000, 
+				65000, 
 				7.5,
 				1,
 				1,
@@ -618,12 +618,56 @@ inline float SAFE_MAX(float a, float b, float c)
 
 inline double GetXonDist(int layer1, int layer2, double y_normal)
 {
-	double dist_1 = gNaturalTerrainTable[gNaturalTerrainIndex[layer1]].xon_dist;
-	double dist_2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].xon_dist;
-	bool down1 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
-	bool down2 = gNaturalTerrainTable[gNaturalTerrainIndex[layer2]].proj_angle == proj_Down;
-//	if (down1 != down2) return 0.0;
-	return min(dist_1, dist_2) * y_normal;
+	int ind1 = gNaturalTerrainIndex[layer1];
+	int	ind2 = gNaturalTerrainIndex[layer2];
+	
+	NaturalTerrainInfo_t& rec1(gNaturalTerrainTable[ind1]);
+	NaturalTerrainInfo_t& rec2(gNaturalTerrainTable[ind2]);
+
+#if DEV
+	const char * t1 = FetchTokenString(rec1.name);
+	const char * t2 = FetchTokenString(rec2.name);
+#endif
+
+	double dist_1 = rec1.xon_dist;
+	double dist_2 = rec2.xon_dist;
+	
+	double base_dist = min(dist_1, dist_2);
+
+	if (!rec1.xon_hack ||
+		!rec2.xon_hack ||
+		!rec1.terrain == terrain_Airport ||
+		!rec2.terrain == terrain_Airport
+		) return base_dist * y_normal;
+
+#if 0	
+	bool diff_lat = 	rec1.lat_min != rec2.lat_min || 
+						rec1.lat_max != rec2.lat_max;
+					
+	bool diff_temp = 	rec1.temp_min > rec2.temp_max ||
+				     	rec2.temp_min > rec1.temp_max;
+
+	bool diff_rain = 	rec1.rain_min > rec2.rain_max ||
+				     	rec2.rain_min > rec1.rain_max;
+
+	bool diff_temp_rng =rec1.temp_rng_min > rec2.temp_rng_max ||
+				     	rec2.temp_rng_min > rec1.temp_rng_max;
+
+	if (rec1.temp_min == rec1.temp_max)	diff_temp = false;
+	if (rec2.temp_min == rec2.temp_max)	diff_temp = false;
+	if (rec1.rain_min == rec1.rain_max)	diff_rain = false;
+	if (rec2.rain_min == rec2.rain_max)	diff_rain = false;
+	if (rec1.temp_rng_min == rec1.temp_rng_max)	diff_temp_rng = false;
+	if (rec2.temp_rng_min == rec2.temp_rng_max)	diff_temp_rng = false;
+
+	if (diff_lat || diff_temp || diff_rain || diff_temp_rng)
+	{
+//		printf("%s, %s (%lf,%lf) 30x norm=%lf\n", t1, t2, dist_1, dist_2, y_normal);
+		base_dist *= 30.0;
+	}	
+#endif	
+		
+	return max(base_dist, 50.0) * y_normal * y_normal;
 }
 
 
