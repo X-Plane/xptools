@@ -55,8 +55,8 @@ fi
 
 if [ ! -e $xes_dir ]; then
 	xes_dir=$datadir/world_xes/$folder/$file.xes
-	if [ -e $datadir/swbd/$folder/$file.shp ]; then
-		hydro_cmd="-hydro $datadir/swbd/$folder/$file.shp -hydrosimplify"
+	if [ -e $datadir/srtm_masks/$folder/$file.mask.zip ]; then
+		hydro_cmd="-hydro $datadir/srtm_masks/$folder/$file.mask.zip -hydrosimplify"
 	else
 		hydro_cmd="-hydro -hydrosimplify"
 	fi
