@@ -33,7 +33,19 @@ east=`expr $west + 1`
 north=`expr $south + 1`
 folder=`./genpath folder $west $south`
 file=`./genpath file $west $south`
-output=$3/$folder/$file
+output="$3$folder/$file.xes"
+hydro_cmd=
+hydro_file=
+logdir=$datadir/logs/$folder/$file.txt
+
+if [ ! -e "$3$folder" ]; then
+	mkdir -p $3$folder
+fi
+
+if [ ! -e "$datadir/DEM output-earth/$folder/$file.oz" ]; then
+	echo "skipping - SRTM does not exist."
+	exit 0
+fi
 
 xes_dir=$datadir/blend_xes/$folder/$file.xes
 if [ ! -e $xes_dir ]; then
@@ -42,6 +54,16 @@ fi
 
 if [ ! -e $xes_dir ]; then
 xes_dir=$datadir/world_xes/$folder/$file.xes
+	if [ -e $datadir/swbd/$folder/$file.shp ]; then
+		hydro_cmd="-hydro $datadir/swbd/$folder/$file.shp -hydrosimplify"
+	else
+		hydro_cmd="-hydro -hydrosimplify"
+fi
+fi
+
+if [ ! -e $xes_dir ]; then
+	echo "skipping - $xes_dir does npt exist."
+	exit 0
 fi
 
 apt_cmd=-apt
@@ -63,10 +85,8 @@ obs_mode=
 obs_file=
 fi
 
-mkdir -p $3
-mkdir -p $3/$folder
-
 $tool \
+	-noprogress \
 	-extent $west $south $east $north \
 	-load config/global_climate_smooth_rain.xes \
 	-crop \
@@ -78,4 +98,9 @@ $tool \
 	-bbox \
 	-simplify \
 	-validate \
-	-save $output.xes
+	-save "$output"
+
+
+#	-instobjs \
+#	-removedupes \
+#	-forests \
