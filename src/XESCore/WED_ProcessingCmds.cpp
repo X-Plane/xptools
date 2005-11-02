@@ -198,11 +198,11 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_HydroCorrect:
 			{
-				char	buf[1024];
-				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, buf)) break;
+				char	f1[1024];
+				f1[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, f1)) break;
 						
-				HydroReconstruct(gMap,  gDem,buf,WED_ProgressFunc);
+				HydroReconstruct(gMap,  gDem,f1,WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			}
