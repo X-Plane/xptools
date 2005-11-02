@@ -9,6 +9,7 @@
 #include "GISUtils.h"
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
+#include "Hydro.h"
 #include "TigerRead.h"
 #include "gshhs.h"
 #include "TigerProcess.h"
@@ -605,6 +606,12 @@ static int DoShapeImport(const vector<const char *>& args)
 	return 0;
 }	
 
+int DoWetMask(const vector<const char *>& args)
+{
+	MakeWetMask(args[0], gMapWest, gMapSouth, args[1]);
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 { "-tiger", 		1, -1, 	DoTigerImport, 			"Import tiger line file.", "" },
@@ -613,6 +620,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	1, 1, 	DoShapeImport, 			"Import ESRI Shape File.", "" },
+{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 
