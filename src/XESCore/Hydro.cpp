@@ -5,8 +5,11 @@
 #include "DEMAlgs.h"
 #include <ShapeFil.h>
 #include "MapAlgs.h"
+#include "GISUtils.h"
 #include "WED_Globals.h"
 #include "AssertUtils.h"
+#include "SimpleIO.h"
+#include "MemFileUtils.h"
 #include "MeshAlgs.h"
 #include "PolyRasterUtils.h"
 #include "PerfUtils.h"
@@ -867,7 +870,7 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
  * SHAPE-FILE BASED CORRECTION
  ******************************************************************************************************************************/
 
-void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShapeFile, ProgressFunc inProg)
+void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile, ProgressFunc inProg)
 {
 	const DEMGeo& elev(dems[dem_Elevation]);
 
@@ -886,96 +889,23 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 //	relief.copy_geo_from(elev);
 
 	/************************************************************************************
-	 * RASTERIZE SHAPE FILE FOR SRTM IDEA OF WATER BODIES
+	 * RASTERIZE MASK FILE
 	 ************************************************************************************/
 
-		int rx1, rx2, x, y, dx, dy;
-		float e;
-		
-	
-	if ( inShapeFile )
+	int x,y;
+	MFMemFile * mem_file = MemFile_Open(maskFile);
+	if (mem_file)
 	{
-		SHPHandle file = SHPOpen(inShapeFile, "rb");
-		if (file == NULL)	return;
-		int	entityCount, shapeType;
-		double	bounds_lo[4], bounds_hi[4];
-		
-		SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
-		
-		PolyRasterizer	raster;
-
-		set<GISHalfedge *>	edges;
-		for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e)
-		if (e->mDominant)
-		if ((e->face()->IsWater() != e->twin()->face()->IsWater() && !e->face()->is_unbounded() && !e->twin()->face()->is_unbounded()) ||
-			(e->face()->IsWater() && e->twin()->face()->is_unbounded()) ||
-			(e->face()->is_unbounded() && e->twin()->face()->IsWater()))
-		{
-			edges.insert(e);
-		}	
-
-		for (int n = 0; n < entityCount; ++n)
-		{
-			SHPObject * obj = SHPReadObject(file, n);
-
-			if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
-			{
-				for (int part = 0; part < obj->nParts; ++part)
-				{
-					int start_idx = obj->panPartStart[part];
-					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
-					Polygon2 pts(stop_idx - start_idx);
-					for (int index = start_idx; index < stop_idx; ++index)
-					{
-						pts[index-start_idx] = Point2(obj->padfX[index],obj->padfY[index]);
-					}
-					DebugAssert(pts.front() == pts.back());
-					pts.pop_back();
-					
-					for (int i = 0; i < pts.size(); ++i)
-					{
-						int j = (i + 1) % pts.size();
-						double x1 = new_wet.lon_to_x(pts[i].x);
-						double y1 = new_wet.lat_to_y(pts[i].y);
-						double x2 = new_wet.lon_to_x(pts[j].x);
-						double y2 = new_wet.lat_to_y(pts[j].y);
-
-						if (y1 != y2)
-						{
-							if (y1 < y2)
-								raster.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
-							else
-								raster.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
-						}
-					}
-				}
-			} 
-
-			SHPDestroyObject(obj);	
-		}	
-		SHPClose(file);
-
-		raster.SortMasters();
-		
-		y = 0;
-		raster.StartScanline(y);
-		while (!raster.DoneScan())
-		{
-			while (raster.GetRange(rx1, rx2))
-			{
-				for (x = rx1; x < rx2; ++x)
-				{
-					e = elev.get(x,y);
-					DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
-					new_wet(x,y) = e;
-				}
-			}
-			++y;
-			if (y >= elev.mHeight) 
-				break;
-			raster.AdvanceScanline(y);		
-		}
+		const char * p = MemFile_GetBegin(mem_file);
+		const char * e = MemFile_GetEnd(mem_file);
+		Assert((e - p) == (new_wet.mWidth * new_wet.mHeight));
+		for (y = 0; y < new_wet.mHeight; ++y)
+		for (x = 0; x < new_wet.mWidth ; ++x)
+		if (*p++)
+			new_wet(x,y) = elev.get(x,y);
+		MemFile_Close(mem_file);
 	}
+
 	/************************************************************************************
 	 * RASTERIZE OLD VMAP0 DATA, BUT CORRECT WATER BODIES TO NOT CLIMB UP MOUNTAINS!
 	 ************************************************************************************/
@@ -1029,6 +959,8 @@ void	UpdateWaterWithShapeFile(Pmwx& inMap, DEMGeoMap& dems, const char * inShape
 	 * COMBINE RESULTS
 	 ************************************************************************************/
 	
+	int dx, dy;
+	float e;
 	for (y = 0; y < elev.mHeight ; y++)
 	for (x = 0; x < elev.mWidth  ; x++)
 	if (new_wet.get(x,y) == NO_DATA && 
@@ -1164,9 +1096,9 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 	}
 }
 
-void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * shapeFile, ProgressFunc inFunc)
+void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, ProgressFunc inFunc)
 {
-	UpdateWaterWithShapeFile(ioMap, ioDem, shapeFile, inFunc);
+	UpdateWaterWithMaskFile(ioMap, ioDem, mask_file, inFunc);
 	ConformWater(ioDem, false);
 	BuildRivers		  (ioMap, ioDem, inFunc);
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
@@ -1626,3 +1558,200 @@ void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc func)
 	}
 	PROGRESS_DONE(func, 0, 1, "Smoothing coastlines");
 }
+
+
+#pragma mark -
+
+// Sets the included area of the shapefile to '1'.
+bool	ShapeFileToBoolDem(const char * inShapeFile, DEMGeo& elev)
+{
+	SHPHandle file = SHPOpen(inShapeFile, "rb");
+	if (file == NULL)	return false;
+	int	entityCount, shapeType;
+	int x, y, rx1, rx2;
+	double	bounds_lo[4], bounds_hi[4];
+	
+	Bbox2	dem_limit(elev.mWest, elev.mSouth, elev.mEast, elev.mNorth);
+	
+	SHPGetInfo(file, &entityCount, &shapeType, bounds_lo, bounds_hi);
+	
+	PolyRasterizer	raster;
+
+	for (int n = 0; n < entityCount; ++n)
+	{
+		SHPObject * obj = SHPReadObject(file, n);
+
+		if (obj->nSHPType == SHPT_POLYGONZ || obj->nSHPType == SHPT_POLYGON || obj->nSHPType == SHPT_POLYGONM)
+		if (obj->nVertices > 0)
+		{
+			Bbox2	shape_limit(Point2(obj->padfX[0],obj->padfY[0]));
+			for (int pt = 1; pt < obj->nVertices; ++pt)
+			{
+				shape_limit += Point2(obj->padfX[pt],obj->padfY[pt]);
+			}
+		
+			if (dem_limit.overlap(shape_limit))
+			for (int part = 0; part < obj->nParts; ++part)
+			{
+				int start_idx = obj->panPartStart[part];
+				int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+				Polygon2 pts(stop_idx - start_idx);
+				for (int index = start_idx; index < stop_idx; ++index)
+				{
+					pts[index-start_idx] = Point2(obj->padfX[index],obj->padfY[index]);
+				}
+				DebugAssert(pts.front() == pts.back());
+				pts.pop_back();
+				
+				for (int i = 0; i < pts.size(); ++i)
+				{
+					int j = (i + 1) % pts.size();
+					double x1 = elev.lon_to_x(pts[i].x);
+					double y1 = elev.lat_to_y(pts[i].y);
+					double x2 = elev.lon_to_x(pts[j].x);
+					double y2 = elev.lat_to_y(pts[j].y);
+
+					if (y1 != y2)
+					{
+						if (y1 < y2)
+							raster.masters.push_back(PolyRasterSeg_t(x1,y1,x2,y2));
+						else
+							raster.masters.push_back(PolyRasterSeg_t(x2,y2,x1,y1));
+					}
+				}
+			}
+		} 
+
+		SHPDestroyObject(obj);	
+	}	
+	SHPClose(file);
+	
+	raster.SortMasters();
+	
+	y = 0;
+	raster.StartScanline(y);
+	while (!raster.DoneScan())
+	{
+		while (raster.GetRange(rx1, rx2))
+		{
+			for (x = max(0,rx1); (x < rx2 && x < elev.mWidth); ++x)
+			{
+				elev(x,y) = 1;
+			}
+		}
+		++y;
+		if (y >= elev.mHeight) 
+			break;
+		raster.AdvanceScanline(y);		
+	}
+	return true;
+}
+
+bool	MakeWetMask(const char * inShapeDir, int lon, int lat, const char * inMaskDir)
+{
+	int n, x, y;
+	DEMGeo	wet_mask(1201, 1201);
+	wet_mask.mWest  = lon  ;
+	wet_mask.mEast  = lon+1;
+	wet_mask.mSouth = lat  ;
+	wet_mask.mNorth = lat+1;
+	
+	char	fname_me[1024];
+	char	fname_r [1024];
+	char	fname_t [1024];
+	char	fname_l [1024];
+	char	fname_b [1024];
+	char	fname_tr[1024];
+	char	fname_tl[1024];
+	char	fname_br[1024];
+	char	fname_bl[1024];
+	
+	sprintf(fname_me,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat  ),  latlon_bucket(lon  ), DIR_STR, lat  , lon  );
+
+	sprintf(fname_r ,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat  ),  latlon_bucket(lon+1), DIR_STR, lat  , lon+1);
+	sprintf(fname_t ,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat+1),  latlon_bucket(lon  ), DIR_STR, lat+1, lon  );
+	sprintf(fname_l ,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat  ),  latlon_bucket(lon-1), DIR_STR, lat  , lon-1);
+	sprintf(fname_b ,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat-1),  latlon_bucket(lon  ), DIR_STR, lat-1, lon  );
+
+	sprintf(fname_tr,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat+1),  latlon_bucket(lon+1), DIR_STR, lat+1, lon+1);
+	sprintf(fname_tl,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat+1),  latlon_bucket(lon-1), DIR_STR, lat+1, lon-1);
+	sprintf(fname_br,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat-1),  latlon_bucket(lon+1), DIR_STR, lat-1, lon+1);
+	sprintf(fname_bl,"%s%+03d%+04d%s%+03d%+04d.shp", inShapeDir,latlon_bucket(lat-1),  latlon_bucket(lon-1), DIR_STR, lat-1, lon-1);
+
+	bool got_me = ShapeFileToBoolDem(fname_me, wet_mask);
+	if (got_me)
+	{
+		bool got_r  = ShapeFileToBoolDem(fname_r , wet_mask);
+		bool got_t  = ShapeFileToBoolDem(fname_t , wet_mask);
+		bool got_b  = ShapeFileToBoolDem(fname_b , wet_mask);
+		bool got_l  = ShapeFileToBoolDem(fname_l , wet_mask);
+
+		bool got_tr = ShapeFileToBoolDem(fname_tr, wet_mask);
+		bool got_tl = ShapeFileToBoolDem(fname_tl, wet_mask);
+		bool got_br = ShapeFileToBoolDem(fname_br, wet_mask);
+		bool got_bl = ShapeFileToBoolDem(fname_bl, wet_mask);
+
+		if (!got_r)
+		for (n = 1; n < 1200; ++n)
+			wet_mask(1200,n) = wet_mask.get(1199,n);
+
+		if (!got_l)
+		for (n = 1; n < 1200; ++n)
+			wet_mask(0,n) = wet_mask.get(1,n);
+		
+		if (!got_t)
+		for (n = 1; n < 1200; ++n)
+			wet_mask(n,1200) = wet_mask.get(n,1199);
+
+		if (!got_b)
+		for (n = 1; n < 1200; ++n)
+			wet_mask(n,0) = wet_mask.get(n,1);
+		
+		if (!got_tr)
+		{
+				 if (got_t)	wet_mask(1200,1200) = wet_mask(1199, 1200);
+			else if (got_r) wet_mask(1200,1200) = wet_mask(1200, 1199);
+			else 			wet_mask(1200,1200) = wet_mask(1199, 1199);
+		}
+
+		if (!got_tl)
+		{
+				 if (got_t)	wet_mask(0,1200) = wet_mask(1, 1200);
+			else if (got_l) wet_mask(0,1200) = wet_mask(0, 1199);
+			else 			wet_mask(0,1200) = wet_mask(1, 1199);
+		}
+
+		if (!got_br)
+		{
+				 if (got_b)	wet_mask(1200,0) = wet_mask(1199, 0);
+			else if (got_r) wet_mask(1200,0) = wet_mask(1200, 1);
+			else 			wet_mask(1200,0) = wet_mask(1199, 1);
+		}
+
+		if (!got_bl)
+		{
+				 if (got_b)	wet_mask(0,0) = wet_mask(1, 0);
+			else if (got_l) wet_mask(0,0) = wet_mask(0, 1);
+			else 			wet_mask(0,0) = wet_mask(1, 1);
+		}
+
+
+		
+		char	final[1024], internal[1024];
+		sprintf(final,"%s%+03d%+04d%s%+03d%+04d.mask.zip", inMaskDir, latlon_bucket(lat  ), latlon_bucket(lon  ), DIR_STR, lat  , lon  );
+		sprintf(internal,"%+03d%+04d.mask", lat  , lon  );
+		printf("Writing: %s\n", final);
+		
+		char	buf[1201*1201];
+		for (y = 0; y < 1201; ++y)
+		for (x = 0; x < 1201; ++x)
+			buf[x+y*1201] = wet_mask.get(x,y) > 0.0 ? 1 : 0;
+		
+		ZipFileWriter	writer(final, internal, platform_BigEndian);
+		writer.WriteBulk(buf, sizeof(buf), false);
+		
+	}
+	
+	return got_me;
+}	
+
