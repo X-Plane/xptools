@@ -878,6 +878,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	if (ioDEMs.find(dem_Climate) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Rainfall) == ioDEMs.end())				return;
 	if (ioDEMs.find(dem_Biomass) == ioDEMs.end())				return;
+	if (ioDEMs.find(dem_TemperatureRange) == ioDEMs.end())		return;
 		
 	bool	has_sealevel = 	ioDEMs.find(dem_TemperatureSeaLevel) != ioDEMs.end();
 		
@@ -887,6 +888,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	DEMGeo&		rainfall	 = ioDEMs[dem_Rainfall];
 	DEMGeo&		biomass		 = ioDEMs[dem_Biomass];
 	DEMGeo&		temp_msl	 = ioDEMs[dem_TemperatureSeaLevel];
+	DEMGeo&		temprange	 = ioDEMs[dem_TemperatureRange];
 	DEMGeo		elevation_reduced, elevation_general;
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 0.0);
@@ -897,6 +899,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	SpreadDEMValues(climate);
 	SpreadDEMValues(rainfall);
 	SpreadDEMValues(biomass);
+	SpreadDEMValues(temprange);
 	
 	/*************** STEP 1 - INTERPOLATE TEMPERATURE DATA ***************/
 
@@ -957,9 +960,10 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	// Other continuous parameters are easy - we just do an upsample based on the apparent
 	// relationship to temperature.  See comments from UpsampleFromParamLinear on whether
 	// this is really a good idea in practice or not.
-	DEMGeo	derived_rainfall, derived_biomass;
+	DEMGeo	derived_rainfall, derived_biomass, derived_temprange;
 //	UpsampleFromParamLinear(temperature, final_temperature, biomass, derived_biomass);
 	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], rainfall, derived_rainfall, 60, 60);
+	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], temprange, derived_temprange, 60, 60);
 
 	/*************** STEP 3 - INTERPOLATE CLIMATE! ***************/
 
@@ -1016,6 +1020,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 //	elevation.swap(elevation_general);
 	climate.swap(derived_climate);
 	rainfall.swap(derived_rainfall);
+	temprange.swap(derived_temprange);
 	biomass.swap(derived_biomass);
 
 	if (inProg)	inProg(0, 1, "Upsampling Environment", 1.0);

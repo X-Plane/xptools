@@ -207,6 +207,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[1],
 			&info.map_rgb[2]
 			) < 31) return false;	
+		info.xon_hack = true;
 	} else 	if (tokens[0] == "MTERRAIN") {
 
 		
@@ -262,6 +263,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[1],
 			&info.map_rgb[2]
 			) != 40) return false;
+		info.xon_hack = false;
 	
 	} else {
 		
@@ -317,6 +319,8 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[1],
 			&info.map_rgb[2]
 			) != 42) return false;
+		info.xon_hack = false;
+			
 	}	
 	if (info.elev_min > info.elev_max)	return false;
 	if (info.slope_min > info.slope_max)	return false;
@@ -511,6 +515,14 @@ void	LoadDEMTables(void)
 	LoadConfigFile("beach_terrain.txt");
 	
 	ValidateNaturalTerrain();
+	
+	/*
+	printf("---forests---\n");
+	for (set<int>::iterator f = sForests.begin(); f != sForests.end(); ++f)
+	{
+		printf("%s\n", FetchTokenString(*f));
+	}*/
+	
 }
 
 #pragma mark -

@@ -93,6 +93,7 @@ struct	NaturalTerrainInfo_t {
 	int				name;
 	int				layer;
 	float			xon_dist;
+	int				xon_hack;
 	// 2-D Texturing
 	string			base_tex;
 //	string			comp_tex;
