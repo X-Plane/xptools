@@ -200,7 +200,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			{
 				char	f1[1024];
 				f1[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, f1)) break;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1)) break;
 						
 				HydroReconstruct(gMap,  gDem,f1,WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
