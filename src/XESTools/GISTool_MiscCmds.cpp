@@ -63,7 +63,7 @@ static int	DoObjToConfig(const vector<const char *>& args)
 
 static int	DoCheckSpreadsheet(const vector<const char *>& args)
 {
-	CheckDEMRuleCoverage();
+	CheckDEMRuleCoverage(gProgress);
 	return 0;
 }
 
