@@ -10,7 +10,7 @@
 #include "DEMAlgs.h"
 #include "DEMTables.h"
 #include "WED_ProcessingCmds.h"
-
+#include "DSFBuilder.h"
 #define PREFS_FILE	"WorldEditor.prf"
 
 static XPWidgetID		sPrefsDialog = NULL;
@@ -31,7 +31,7 @@ void	WED_ShowPrefsDialog(void)
 		sPrefsDialog = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "Preferences", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
 				XP_COLUMN,
-					XP_TABS, "Processing;View;Mesh;DEMs", &sPrefsTab,
+					XP_TABS, "Processing;View;Mesh;DEMs;DSF", &sPrefsTab,
 						XP_COLUMN, XP_TAG, TAG_COMMAND_PREFS,
 							XP_ROW, XP_CHECKBOX,"Calculate Terrain Slope", 		&gProcessingCmdPrefs.do_calc_slope, 			XP_END,
 							XP_ROW, XP_CHECKBOX,"Upsample Environment", 		&gProcessingCmdPrefs.do_upsample_environment, 	XP_END,
@@ -65,6 +65,9 @@ void	WED_ShowPrefsDialog(void)
 							XP_ROW, XP_CAPTION, "Local Area Search(1-8):", XP_EDIT_INT, 5, 5, &gDemPrefs.local_range, XP_END,
 							XP_ROW, XP_CAPTION, "Temperature Elevation Calibration(0-1):", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.temp_percentile, XP_END,
 							XP_ROW, XP_CAPTION, "Rain Variation(0-1):", XP_EDIT_FLOAT, 5, 5, 1, &gDemPrefs.rain_disturb, XP_END,
+						XP_END,
+						XP_COLUMN,
+							XP_ROW, XP_CHECKBOX, "Export Roads", &gDSFBuildPrefs.export_roads, XP_END,
 						XP_END,
 					XP_END,
 					XP_ROW, XP_BUTTON_CANCEL, "Cancel", XP_BUTTON_OK, "OK", XP_END,

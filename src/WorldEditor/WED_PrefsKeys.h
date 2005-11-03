@@ -44,3 +44,5 @@ PREFS_KEY_INT	("PROCESSING", "DO_ASSIGN_LANDUSE"			,gProcessingCmdPrefs.do_assig
 PREFS_KEY_INT	("PROCESSING", "DO_REMOVE_DUPE_OBJS"		,gProcessingCmdPrefs.remove_duplicate_objs)
 PREFS_KEY_INT	("PROCESSING", "DO_3D_FORESTS"				,gProcessingCmdPrefs.build_3d_forests)	
 PREFS_KEY_INT	("PROCESSING", "DO_PLACE_BUILDINGS"			,gProcessingCmdPrefs.place_buildings)
+
+PREFS_KEY_INT	("DSF_EXPORT", "EXPORT_ROADS",				gDSFBuildPrefs.export_roads)
