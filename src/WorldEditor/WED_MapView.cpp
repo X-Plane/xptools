@@ -63,10 +63,10 @@
 #define GL_GLEXT_FUNCTION_POINTERS 1
 #include <glext.h>
 
-#define DRAW_MESH_BORDERS 0
+#define DRAW_MESH_BORDERS 1
 
 #define DEBUG_PRINT_LAYERS 0
-#define DEBUG_PRINT_NORMAL 0
+#define DEBUG_PRINT_NORMAL 1
 
 
 const int 	kInfoStripHeight = 18;
@@ -1500,11 +1500,18 @@ char * WED_MapView::MonitorCaption(void)
 			slope_head_f /= flat_len;
 		int slope_head = -asin(slope_head_f) * RAD_TO_DEG + 90.0;		
 		
-		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
+//		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
 
 #if DEBUG_PRINT_NORMAL
-//		PRINT NORMAL
-		n += sprintf(buf+n, "Normal: %f ", recent->info().normal[2]);
+
+		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.0f) ",
+					acos(1.0-recent->info().debug_slope_dem) * RAD_TO_DEG,
+					acos(1.0-recent->info().debug_slope_tri) * RAD_TO_DEG,
+					recent->info().debug_temp,
+					recent->info().debug_temp_range,
+					recent->info().debug_rain,
+					-asin(recent->info().debug_heading) * RAD_TO_DEG + 90.0);
+
 #endif
 
 #if DEBUG_PRINT_LAYERS
