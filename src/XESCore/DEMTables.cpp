@@ -842,7 +842,12 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l, 1, 5);
 
 		if (found == any_rule)
-		printf("Found any rule on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
+		printf("Found %s rule on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
+			FetchTokenString(found),	
+			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st, 
+			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l);
+		if (found == -1)
+		printf("Found hole on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
 			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st, 
 			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l);
 		
