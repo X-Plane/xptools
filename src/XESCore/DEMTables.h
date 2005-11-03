@@ -24,6 +24,9 @@
 #define DEMTABLES_H
 
 #include "ConfigSystem.h"
+#include "ProgressUtils.h"
+#include "AssertUtils.h"
+#include "ParamDefs.h"
 
 /************************************************************************
  * ENUM COLORS
@@ -88,6 +91,7 @@ struct	NaturalTerrainInfo_t {
 	float			lat_min;
 	float			lat_max;
 	int				variant;
+	int				related;
 	
 	// DEFS
 	int				name;
@@ -201,9 +205,17 @@ extern LandUseTransTable	gLandUseTransTable;
 // Given two specific terrains, equivalent to priority(lsh) < priority(rhs).
 // However please note that there is no equality of priority, e.g. 
 // priority(a) == priorty((b) -> a == b
-bool	LowerPriorityNaturalTerrain(int lhs, int rhs);
-bool	LowerPriorityBeachType(int lhs, int rhs);
-bool	IsForestType(int inType);
+inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if lhs is lower prio than rhs.  Lower prio is from lower layer or earlier rule if layers equal
+inline bool	LowerPriorityBeachType(int lhs, int rhs);				// Return true if lhs is lower prio beach type than rhs.
+bool	IsForestType(int inType);								// Returns true if enum is for a forest
+inline bool 	IncompatibleProjection(int lhs, int rhs);				// Returns true if terrains are not projected the same way
+inline bool	AreVariants(int lhs, int rhs);							// Returns true if two terrains are variants of each other
+inline bool	HasVariant(int lhs);
+inline int		OtherVariant(int terrain);								// Returns a different variant of the terrain
+inline int		AnyVariant(int terrain);								// Returns any variant of the terrain randomly
+inline int		SpecificVariant(int terrain, int i);					// Use i (0-4) as a seed - get variant
+
+
 
 extern	string	gNaturalTerrainFile;
 extern	string	gLanduseTransFile;
@@ -211,7 +223,91 @@ extern	string	gReplacementClimate;
 extern 	string	gReplacementRoads;
 
 void	LoadDEMTables(void);
-void	CheckDEMRuleCoverage(void);
+void	CheckDEMRuleCoverage(ProgressFunc func);
 void	GetNaturalTerrainColor(int terrain, float rgb[3]);
+
+
+
+inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
+{
+	// Fast case - if these are equal, don't even bother with a lookup, we know
+	// that they can't be lower/higher prioritY!
+	if (lhs == rhs) return false;
+	
+	if (lhs == terrain_Water) return true;
+	if (rhs == terrain_Water) return false;
+	lhs = gNaturalTerrainIndex[lhs];
+	rhs = gNaturalTerrainIndex[rhs];
+	
+	int lhs_layer = gNaturalTerrainTable[lhs].layer;
+	int rhs_layer = gNaturalTerrainTable[rhs].layer;
+	
+	// Lookups - if we have a layer difference, that goes.
+	if (lhs_layer < rhs_layer) return true;
+	if (lhs_layer > rhs_layer) return false;
+	
+	// Tie breaker - if the terrains are diferent but the layers are the same, 
+	// we have to enforce a layer difference somehow or else we will get haywire
+	// results when we try to sort by layer priority.  So simply use their
+	// index numbers as priority.  Better than nothing.
+	return lhs < rhs;
+}
+
+inline bool	LowerPriorityBeachType(int lhs, int rhs)
+{
+	DebugAssert(gBeachPriorityTable.count(lhs) > 0);
+	DebugAssert(gBeachPriorityTable.count(rhs) > 0);
+	
+	return gBeachPriorityTable[lhs] < gBeachPriorityTable[rhs];
+}
+
+
+inline bool IncompatibleProjection(int lhs, int rhs)
+{
+	if (lhs == rhs) return false;
+	return (gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].proj_angle != 
+			gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].proj_angle);
+}
+
+inline bool	AreVariants(int lhs, int rhs)
+{
+	int v1 = gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related;
+	int v2 = gNaturalTerrainTable[gNaturalTerrainIndex[rhs]].related;
+	return (v1 == v2 && v1 != -1);
+}
+
+inline bool	HasVariant(int lhs)
+{
+	return gNaturalTerrainTable[gNaturalTerrainIndex[lhs]].related != -1;
+}
+
+inline int		OtherVariant(int terrain)
+{
+	int me_idx = gNaturalTerrainIndex[terrain];
+	int base = gNaturalTerrainTable[me_idx].related;
+	if (base == -1) return terrain;
+	
+	if (base == me_idx) return gNaturalTerrainTable[base + 1 + rand() % 3].name;
+	
+	int vary = gNaturalTerrainTable[base + rand() % 4].name;
+	if (vary == terrain) 	return gNaturalTerrainTable[base].name;
+	else					return gNaturalTerrainTable[vary].name;
+}
+
+inline int		AnyVariant(int terrain)
+{
+	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
+	if (base == -1) return terrain;
+	return gNaturalTerrainTable[base + rand() % 4].name;
+}
+
+inline int SpecificVariant(int terrain, int i)
+{
+	int base = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].related;
+	if (base == -1) return terrain;
+	return gNaturalTerrainTable[base + i].name;
+}
+
+
 
 #endif

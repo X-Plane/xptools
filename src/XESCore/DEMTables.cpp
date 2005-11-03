@@ -23,7 +23,7 @@
 #include "DEMTables.h"
 #include "EnumSystem.h"
 #include "DEMDefs.h"
-#include "CoverageFinder.h"
+//#include "CoverageFinder.h"
 
 EnumColorTable				gEnumColors;
 ColorBandTable				gColorBands;
@@ -387,6 +387,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	// The resulting codes in the struct are: 0 - no vary, 1-4 = spatial variants (all equal), 5-8 = heading variatns (N,E,S,W)
 	if (auto_vary > 0)
 	{
+		// -1 for related field means no relation.  Otherwise it is the index of the FIRST of four variants.
+		// So...
+		info.related = auto_vary == 3 ? -1 : gNaturalTerrainTable.size();
 		for (int rep = 1; rep <= 4; ++rep)
 		{
 			info.variant = rep + (auto_vary == 3 ? 4 : 0);
@@ -415,6 +418,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	} else {
 		
 		info.variant = 0;
+		info.related = -1;
 		
 		LowerCheckName(ter_name);
 		info.name = LookupTokenCreate(ter_name.c_str());	
@@ -589,37 +593,6 @@ int	FindNaturalTerrain(
 
 #pragma mark -
 
-bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
-{
-	// Fast case - if these are equal, don't even bother with a lookup, we know
-	// that they can't be lower/higher prioritY!
-	if (lhs == rhs) return false;
-	
-	if (lhs == terrain_Water) return true;
-	if (rhs == terrain_Water) return false;
-	lhs = gNaturalTerrainIndex[lhs];
-	rhs = gNaturalTerrainIndex[rhs];
-	
-	// Lookups - if we have a layer difference, that goes.
-	if (gNaturalTerrainTable[lhs].layer < gNaturalTerrainTable[rhs].layer) return true;
-	if (gNaturalTerrainTable[lhs].layer > gNaturalTerrainTable[rhs].layer) return false;
-	
-	// Tie breaker - if the terrains are diferent but the layers are the same, 
-	// we have to enforce a layer difference somehow or else we will get haywire
-	// results when we try to sort by layer priority.  So simply use their
-	// index numbers as priority.  Better than nothing.
-	return lhs < rhs;
-}
-
-bool	LowerPriorityBeachType(int lhs, int rhs)
-{
-	DebugAssert(gBeachPriorityTable.count(lhs) > 0);
-	DebugAssert(gBeachPriorityTable.count(rhs) > 0);
-	
-	return gBeachPriorityTable[lhs] < gBeachPriorityTable[rhs];
-}
-
-
 void ValidateNaturalTerrain(void)
 {
 	map<int, int>	canonical;
@@ -643,14 +616,48 @@ void ValidateNaturalTerrain(void)
 	}	
 }
 
-bool	IsForestType(int inType)
-{
-	return sForests.count(inType) != 0;
-}
+struct float_between_iterator {
+	typedef set<float>					set_type;
+	typedef set_type::const_iterator	iter_type;
+	iter_type		i_;
+	bool			h_;
+	const set_type&	s_;
+	
+	float_between_iterator(const set_type& s) : s_(s), i_(s.begin()), h_(false) 
+	{ 
+	}
+	
+	bool operator()(void) const { 
+		return i_ != s_.end(); 
+	}
+	
+	float_between_iterator& operator++(void) { 
+		if (h_) { 
+			h_ = false; 
+			++i_; } 
+		else 
+			h_ = true; 
+		return *this;
+	}
+	
+	float operator * (void) const { 
+		if (h_)
+		{
+			iter_type j = i_;
+			++j;
+			if (j == s_.end()) return *i_;
+			return (*i_ + *j) * 0.5;
+		} else
+			return *i_;
+		}
+	
+};
 
-void	CheckDEMRuleCoverage(void)
+
+
+void	CheckDEMRuleCoverage(ProgressFunc func)
 {
-	CoverageFinder	cov(10);
+/*	CoverageFinder	cov(10);
 	cov.NameAxis(0, "Terrain");
 	cov.NameAxis(1, "Landuse");
 	cov.NameAxis(2, "Climate");
@@ -724,6 +731,120 @@ void	CheckDEMRuleCoverage(void)
 	}
 
 	cov.OutputGaps();		
+*/
+
+	set<int>		terrain, landuse, urban_square, near_water;
+	set<float>		elev, slope, temp, temp_rng, rain, slope_head, rel_elev, elev_range, urban_density, urban_radial, urban_trans, lat;
+	
+	terrain.insert(NO_VALUE);
+	landuse.insert(NO_VALUE);
+	
+	for (int n = 0; n < gNaturalTerrainTable.size(); ++n)
+	{
+		NaturalTerrainInfo_t& rec(gNaturalTerrainTable[n]);
+		terrain.insert(rec.terrain);
+		landuse.insert(rec.landuse);
+		elev.insert(rec.elev_min);
+		elev.insert(rec.elev_max);
+		slope.insert(rec.slope_min);
+		slope.insert(rec.slope_max);
+		temp.insert(rec.temp_min);
+		temp.insert(rec.temp_max);
+		temp_rng.insert(rec.temp_rng_min);
+		temp_rng.insert(rec.temp_rng_max);
+		rain.insert(rec.rain_min);
+		rain.insert(rec.rain_max);
+		near_water.insert(rec.near_water);
+		slope_head.insert(rec.slope_heading_min);
+		slope_head.insert(rec.slope_heading_max);
+		rel_elev.insert(rec.rel_elev_min);
+		rel_elev.insert(rec.rel_elev_max);
+		elev_range.insert(rec.elev_range_min);
+		elev_range.insert(rec.elev_range_max);
+		urban_density.insert(rec.urban_density_min);
+		urban_density.insert(rec.urban_density_max);
+		urban_radial.insert(rec.urban_radial_min);
+		urban_radial.insert(rec.urban_radial_max);
+		urban_trans.insert(rec.urban_trans_min);
+		urban_trans.insert(rec.urban_trans_max);
+		urban_square.insert(rec.urban_square);
+		lat.insert(rec.lat_min);
+		lat.insert(rec.lat_max);
+	}
+
+	int any_rule = gNaturalTerrainTable.back().name;
+	
+	printf("Landuse: %d states.\n",landuse.size()); 
+	printf("Terrain: %d states.\n",terrain.size()); 
+	printf("Elev: %d states.\n",elev.size() );
+	printf("Slope: %d states.\n",slope.size() );
+	printf("Temp: %d states.\n",temp.size() );
+	printf("Temp Range: %d states.\n",temp_rng.size() );
+	printf("Rain: %d states.\n",rain.size() );
+	printf("Near Water: %d states.\n",near_water.size());
+	printf("Slope Headign: %d states.\n",slope_head.size() );
+	printf("Elevation Range: %d states.\n",elev_range.size() );
+	printf("Urban Density: %d states.\n",urban_density.size() );
+	printf("Urban Radial: %d states.\n",urban_radial.size() );
+	printf("Urban Trans: %d states.\n",urban_trans.size() );
+	printf("Urban Square: %d states.\n",urban_square.size());
+	printf("Latitude: %d states.\n",lat.size());
+	
+	int total = landuse.size() * 
+				terrain.size() * 
+				elev.size() * 2 *
+				slope.size() * 2 *
+				temp.size() * 2 *
+				temp_rng.size() * 2 *
+				rain.size() * 2 *
+				near_water.size() *
+				slope_head.size() * 2 *
+				elev_range.size() * 2 *
+				urban_density.size() * 2 *
+				urban_radial.size() * 2 *
+				urban_trans.size() * 2 *
+				urban_square.size() *
+				lat.size() * 2;
+
+	printf("Total pts to check: %d\n", total);
+	int step = total / 200;
+
+	PROGRESS_START(func, 0, 1, "Checking tables");
+	
+	int ctr = 0;
+	
+	for (set<int>::iterator lu = landuse.begin(); lu != landuse.end(); ++lu)
+	for (set<int>::iterator ter = terrain.begin(); ter != terrain.end(); ++ter)	
+	for (float_between_iterator el(elev); el(); ++el)
+	for (float_between_iterator sd(slope); sd(); ++sd)
+	for (float_between_iterator st(slope); st(); ++st)
+	for (float_between_iterator t(temp); t(); ++t)
+	for (float_between_iterator tr(temp_rng); tr(); ++tr)
+	for (float_between_iterator r(rain); r(); ++r)
+	for (set<int>::iterator nw = near_water.begin(); nw != near_water.end(); ++nw)
+	for (float_between_iterator sh(slope_head); sh(); ++sh)
+	for (float_between_iterator re(rel_elev); re(); ++re)
+	for (float_between_iterator er(elev_range); er(); ++er)
+	for (float_between_iterator ud(urban_density); ud(); ++ud)
+	for (float_between_iterator ur(urban_radial); ur(); ++ur)
+	for (float_between_iterator ut(urban_trans); ut(); ++ut)
+	for (set<int>::iterator us = urban_square.begin(); us != urban_square.end(); ++us)	
+	for (float_between_iterator l(lat); l(); ++l)
+	{
+		PROGRESS_CHECK(func, 0, 1, "Checking tables", ctr, total, step);
+		
+		int found = FindNaturalTerrain(*ter, *lu, NO_VALUE, *el, *sd, *st, 
+			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l, 1, 5);
+
+		if (found == any_rule)
+		printf("Found any rule on: ter=%s lu=%s el=%f sd=%f st=%f t=%f tr=%f r=%f w=%d sh=%f re=%f er=%f ud=%f ur=%f ut=%f us=%d l=%f\n",
+			FetchTokenString(*ter), FetchTokenString(*lu), *el, *sd, *st, 
+			*t, *tr, *r, *nw, *sh, *re, *er, *ud, *ur, *ut, *us, *l);
+		
+		++ctr;
+	}
+	PROGRESS_DONE(func, 0, 1, "Checking tables");
+	printf("Total: %d\n", ctr);
 }
 
 void	GetNaturalTerrainColor(int terrain, float rgb[3])
@@ -739,3 +860,9 @@ void	GetNaturalTerrainColor(int terrain, float rgb[3])
 	rgb[1] = info.map_rgb[1];
 	rgb[2] = info.map_rgb[2];
 }
+
+bool	IsForestType(int inType)
+{
+	return sForests.count(inType) != 0;
+}
+
