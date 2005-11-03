@@ -58,7 +58,7 @@ MeshPrefs_t gMeshPrefs = {
 				1,
 				1,
 				1500.0,
-				2000.0
+				2640.0
 };
 
 /* Conststraint markers - here's the deal: the way we set the water body
@@ -70,6 +70,10 @@ MeshPrefs_t gMeshPrefs = {
 typedef pair<CDT::Vertex_handle, CDT::Vertex_handle>	ConstraintMarker_t;
 typedef pair<int, int>									LandusePair_t;			// "Left" and "right" side
 typedef pair<ConstraintMarker_t, LandusePair_t>			LanduseConstraint_t;
+
+struct FaceHandleVectorHack {
+	vector<CDT::Face_handle>	v;
+};
 
 static	void	SlightClampToDEM(Point2& ioPoint, const DEMGeo& ioDEM);
 
@@ -187,6 +191,36 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 		++now;
 	} while (stop != now);
 	Assert(!"Next pt not found.");
+}
+
+void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& all, Bbox2& bounds)
+{
+	bounds = Point2(f->vertex(0)->point().x(),f->vertex(0)->point().y());
+	bounds += Point2(f->vertex(1)->point().x(),f->vertex(1)->point().y());
+	bounds += Point2(f->vertex(2)->point().x(),f->vertex(2)->point().y());
+	
+	all.clear();
+	set<CDT::Face_handle>	working;
+	working.insert(f);
+	
+	while (!working.empty())
+	{
+		CDT::Face_handle w = *working.begin();
+		working.erase(working.begin());
+		all.insert(w);
+		
+		for (int n = 0; n < 3; ++n)
+		{
+			bounds += Point2(w->vertex(0)->point().x(),w->vertex(0)->point().y());
+			CDT::Face_handle t = w->neighbor(n);
+			
+			if (!inMesh.is_infinite(t))
+			if (t->info().terrain != terrain_Water)
+			if (AreVariants(t->info().terrain, w->info().terrain))
+			if (all.count(t) == 0)
+				working.insert(t);
+		}
+	}
 }
 
 #pragma mark -
@@ -634,6 +668,8 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 	
 	double base_dist = min(dist_1, dist_2);
 
+return base_dist * y_normal;
+
 	if (!rec1.xon_hack ||
 		!rec2.xon_hack ||
 		!rec1.terrain == terrain_Airport ||
@@ -666,8 +702,14 @@ inline double GetXonDist(int layer1, int layer2, double y_normal)
 		base_dist *= 30.0;
 	}	
 #endif	
+
+	if (rec1.proj_angle != proj_Down ||
+		rec2.proj_angle != proj_Down)
+	return 1.0;
+
+	return 500.0 * y_normal * y_normal * y_normal;
 		
-	return max(base_dist, 50.0) * y_normal * y_normal;
+//	return max(base_dist, 50.0) * y_normal * y_normal;
 }
 
 
@@ -1544,17 +1586,18 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 	DEMGeo	landuse(inDEMs[dem_LandUse]);
 
+// BEN SEZ: do NOT overwrite interrupted and other such areas with nearest landuse - that causes problems.
 	for (int y = 0; y < landuse.mHeight;++y)
 	for (int x = 0; x < landuse.mWidth; ++x)
 	{
 		float e = landuse(x,y);
 		if (e == NO_VALUE || 
-			e == lu_usgs_INTERRUPTED_AREAS || 
+//			e == lu_usgs_INTERRUPTED_AREAS || 
 //			e == lu_usgs_URBAN_SQUARE || 
 //			e == lu_usgs_URBAN_IRREGULAR || 
 			e == lu_usgs_INLAND_WATER || 
-			e == lu_usgs_SEA_WATER || 
-			e == lu_usgs_NO_DATA)
+			e == lu_usgs_SEA_WATER)
+//			e == lu_usgs_NO_DATA)
 			landuse(x,y) = NO_DATA;			
 	}
 	landuse.fill_nearest();	
@@ -1682,6 +1725,17 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, center_y, variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
+					
+				#if DEV
+					tri->info().debug_slope_dem = sl;
+					tri->info().debug_slope_tri = sl_tri;
+					tri->info().debug_temp = tm;
+					tri->info().debug_temp_range = tmr;
+					tri->info().debug_rain = rn;
+					tri->info().debug_heading = sh;
+				
+				#endif
+					
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
 					AssertPrintf("Hit %s rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
@@ -1696,6 +1750,42 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		}
 	}
 
+	/***********************************************************************************************
+	 * TRY TO CONSOLIDATE BLOBS
+	 ***********************************************************************************************/
+	// If a blob's total area is less than the blobbing distance, it's not really needed!  Simplify
+	// it.
+
+	int tri_merged = 0;
+	set<CDT::Face_handle>	all_variants;
+	
+	for (CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
+	if (f->info().terrain != terrain_Water)
+	if (HasVariant(f->info().terrain))
+		all_variants.insert(f);
+		
+	float max_rat = gMeshPrefs.rep_switch_m * MTR_TO_NM * NM_TO_DEG_LAT;
+	
+	while (!all_variants.empty())
+	{
+		CDT::Face_handle		w = *all_variants.begin();
+		int						base = SpecificVariant(w->info().terrain,0);
+		set<CDT::Face_handle>	tri_set;
+		Bbox2					bounds;
+		FindAllCovariant(ioMesh, w, tri_set, bounds);
+
+		bool devary = (bounds.ymax() - bounds.ymin() < max_rat) && (bounds.xmax() - bounds.xmin()) < max_rat;
+
+		for (set<CDT::Face_handle>::iterator kill = tri_set.begin(); kill != tri_set.end(); ++kill)
+		{
+			if (devary)
+			{
+				(*kill)->info().terrain = base;
+				++tri_merged;
+			}
+			all_variants.erase(*kill);
+		}
+	}
 
 	/***********************************************************************************************
 	 * DEAL WITH INTRUSION FROM OUR MASTER SIDE
@@ -1997,6 +2087,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	
 	}
 #endif
+	
 	/***********************************************************************************************
 	 * OPTIMIZE BORDERS!
 	 ***********************************************************************************************/
@@ -2052,7 +2143,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			tri_border += (tri->info().terrain_border.size());
 		} else if (!tri->info().terrain_border.empty())
 			AssertPrintf("BORDER ON WATER LAND USE!  Terrain = %s", FetchTokenString(tri->info().terrain));
-		printf("Total: %d - border: %d - check: %d - opt: %d\n", tri_total, tri_border, tri_check, tri_opt);
+		printf("Total: %d - border: %d - check: %d - opt: %d, devary=%d\n", tri_total, tri_border, tri_check, tri_opt,tri_merged);
 	}
 
 	
