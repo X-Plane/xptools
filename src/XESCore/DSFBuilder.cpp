@@ -49,6 +49,8 @@
 #define TIMER(x)	
 #endif
 
+DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
+
 
 #define		PATCH_DIM_HI	32
 #define		PATCH_DIM_LO	32
@@ -58,7 +60,6 @@
 #define		ORTHO_FAR_LOD			-1.0
 #define		MAX_TRIS_PER_PATCH		85
 
-#define		NO_ROADS 0
 #define		NO_ORTHO 1
 #define		NO_BORDERS 0
 #define 	TEST_FORESTS 0
@@ -166,36 +167,52 @@ static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 	return ret;
 }
 
-static double GetTightnessBlend(CDT& inMesh, CDT::Vertex_handle v_han)
+// Tightness - given a vertex on a face and a certain terrain border we're putting down on that face,
+// what "tightness" shouldd the transition have - that's basically the T coord of the dither control mask.
+static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex_handle v_han, int terrain)
 {
-/*
-	float y_norm = 1.0;
-	CDT::Face_circulator stop, circ;
-	stop = circ = inMesh.incident_faces(v_han);
-	do {
-		if (inMesh.is_infinite(circ))	// SPECIAL CASE - if we are an edge vertex, @#$@ it, call us 45 degrees - 
-			return 0.5;					// we need to match - in the future this could be improved.
-		else
-			y_norm = min(y_norm, circ->info().normal[2]);
-		++circ;
-	} while (stop != circ);
-	y_norm = max(0.0f, min(y_norm, 1.0f));
-	y_norm = acos(y_norm) / (PI / 2.0);
-	y_norm = max(0.0f, min(y_norm, 1.0f));
-	return y_norm;
-*/
+	// First check for projetion problems.  Take a vector of the angle this iterrain will proj at and
+	// the tri normal.  If they are 'shear' by more than 45 degrees, the projection is going to look like
+	// ass.  In that case automatically tighten up the border via a cos^2 power curve, for the tightest
+	// border at totally shear angle.
+	Vector3	tproj(0,0,1);
+	int proj = gNaturalTerrainTable[gNaturalTerrainIndex[terrain]].proj_angle;
+	if (proj == proj_EastWest)	tproj = Vector3(1,0,0);
+	if (proj == proj_NorthSouth)	tproj = Vector3(0,1,0);
+	
+	Vector3	tri(f_han->info().normal[0],
+				f_han->info().normal[1],
+				f_han->info().normal[2]);
+
+	double proj_err_dot = fabs(tri.dot(tproj));
+	if (proj_err_dot < 0.7)
+	{
+		return 1.0 - proj_err_dot * proj_err_dot; 
+	}
+
+	// Okay we don't have proj problems...basically find the biggest angle change (smallest
+	// dot product of normals) between the tri we are doing now and any of the incident neighbors
+	// who share the terrain.  Translate that into an angle from 0 (planar) to 90 (right turn),
+	// and that is indexed into the T coord.
+
 	double smallest_dot = 1.0;
-	CDT::Face_circulator stop, circ, last;
+	CDT::Face_circulator stop, circ; // , last;
 	stop = circ = inMesh.incident_faces(v_han);
+	Vector3	up(0,0,1);
 	do {
-		last = circ;
+//		last = circ;
 		++circ;
-		Vector3	v1(circ->info().normal[0],circ->info().normal[1],circ->info().normal[2]);
-		Vector3	v2(last->info().normal[0],last->info().normal[1],last->info().normal[2]);
-		smallest_dot = min(smallest_dot, v1.dot(v2));
+		if (!inMesh.is_infinite(circ))
+		if (circ->info().terrain == terrain || circ->info().terrain_border.count(terrain))					// We know we'll hit this iat least once, because circ must equal f_han once.
+		{
+			Vector3	v1(circ->info().normal[0],circ->info().normal[1],circ->info().normal[2]);
+			Vector3	v2(f_han->info().normal[0],f_han->info().normal[1],f_han->info().normal[2]);
+			smallest_dot = min(smallest_dot, v1.dot(v2));
+			smallest_dot = min(smallest_dot, v1.dot(up));			
+		}
 		
 	} while (stop != circ);
-	smallest_dot = max(0.0, smallest_dot);	// must be non-negative!
+	smallest_dot = max(0.0, smallest_dot);				// must be non-negative!
 	smallest_dot = acos(smallest_dot) / (PI / 2.0);
 	return smallest_dot;	
 }
@@ -862,47 +879,64 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 ***************************************************************************************************************************************/	
 
 #if !NO_BORDERS
-		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)
+		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)		// For each triangle in this patch
 		if (lu_ranked->first >= terrain_Natural)
-		if (sHiResBO[cur_id].count(lu_ranked->first))
+		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
 			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer);
 			cbs.BeginPrimitive_f(dsf_Tri, writer);				
 			tris_this_patch = 0;
-			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
+			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
 			{
 				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain_border.count(lu_ranked->first))
+				if (f->info().terrain_border.count(lu_ranked->first))			// If it has this border...
 				{
-					if (tris_this_patch >= MAX_TRIS_PER_PATCH)
+					float	bblend[3];
+					int vi;
+					for (vi = 0; vi < 3; ++vi)
+						bblend[vi] = f->vertex(vi)->info().border_blend[lu_ranked->first];
+					
+					int ts = -1, te = 0;
+					if (bblend[0] == bblend[1] &&
+						bblend[1] == bblend[2] &&
+						bblend[0] == 1.0)
 					{
-						cbs.EndPrimitive_f(writer);
-						cbs.BeginPrimitive_f(dsf_Tri, writer);				
-						tris_this_patch = 0;
-					}
-				
-					for (int vi = 2; vi >= 0 ; --vi)
-					{
-						coords8[0] = f->vertex(vi)->point().x();
-						coords8[1] = f->vertex(vi)->point().y();
-						coords8[2] = f->vertex(vi)->info().height;
-						coords8[3] = f->vertex(vi)->info().normal[0];
-						coords8[4] =-f->vertex(vi)->info().normal[1];
-						coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
-						coords8[6] = GetTightnessBlend(inHiresMesh, f->vertex(vi));
-						DebugAssert(!is_water);
-//						if (is_composite)
-//							coords8[7] = is_water ? GetWaterBlend(f->vertex(vi), waterType) : f->vertex(vi)->info().vege_density;
-						DebugAssert(coords8[3] >= -1.0);
-						DebugAssert(coords8[3] <=  1.0);
-						DebugAssert(coords8[4] >= -1.0);
-						DebugAssert(coords8[4] <=  1.0);
-						cbs.AddPatchVertex_f(coords8, writer);
+						ts = 0; te = 3;
 					}
 					
-					++total_tris;
-					++border_tris;
-					++tris_this_patch;
+					for (int border_pass = ts; border_pass < te; ++border_pass)
+					{
+				
+						if (tris_this_patch >= MAX_TRIS_PER_PATCH)
+						{
+							cbs.EndPrimitive_f(writer);
+							cbs.BeginPrimitive_f(dsf_Tri, writer);				
+							tris_this_patch = 0;
+						}
+					
+						for (vi = 2; vi >= 0 ; --vi)
+						{
+							coords8[0] = f->vertex(vi)->point().x();
+							coords8[1] = f->vertex(vi)->point().y();
+							coords8[2] = f->vertex(vi)->info().height;
+							coords8[3] = f->vertex(vi)->info().normal[0];
+							coords8[4] =-f->vertex(vi)->info().normal[1];
+//							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
+							coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
+							coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
+							DebugAssert(!is_water);
+	//						if (is_composite)
+	//							coords8[7] = is_water ? GetWaterBlend(f->vertex(vi), waterType) : f->vertex(vi)->info().vege_density;
+							DebugAssert(coords8[3] >= -1.0);
+							DebugAssert(coords8[3] <=  1.0);
+							DebugAssert(coords8[4] >= -1.0);
+							DebugAssert(coords8[4] <=  1.0);
+							cbs.AddPatchVertex_f(coords8, writer);
+						}
+						++total_tris;
+						++border_tris;
+						++tris_this_patch;						
+					}										
 				}
 			}
 			cbs.EndPrimitive_f(writer);
@@ -1231,105 +1265,106 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.0)) return;	
 
-#if !NO_ROADS
+	if (gDSFBuildPrefs.export_roads)
+	{
 
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.3)) return;	
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.3)) return;	
 
-	{
-		TIMER(BuildNetworkTopology)
-		BuildNetworkTopology(inVectorMap, junctions, chains);
-	}
-	{
-		TIMER(DrapeRoads)
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
-		DrapeRoads(junctions, chains, inHiresMesh);
-	}
-	{	
-		TIMER(PromoteShapePoints)
-		PromoteShapePoints(junctions, chains);
-	}
-	{
-		TIMER(VerticalPartitionRoads)		
-		VerticalPartitionRoads(junctions, chains);
-	}
-	{
-		TIMER(VerticalBuildBridges)
-		VerticalBuildBridges(junctions, chains);
-	}
-	{
-		TIMER(InterpolateRoadHeights)
-		InterpolateRoadHeights(junctions, chains);
-	}
-	{
-		TIMER(AssignExportTypes)
-		AssignExportTypes(junctions, chains);
-	}
-	{
-		TIMER(DeleteBlankChains)
-		DeleteBlankChains(junctions, chains);
-	}
-	{
-		TIMER(OptimizeNetwork)
-		OptimizeNetwork(junctions, chains, false);
-	}
-	{
-		TIMER(SpacePowerlines)
-		SpacePowerlines(junctions, chains, 1000.0, 10.0);
-	}
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;	
-
-	cur_id = 1;
-	for (ji = junctions.begin(); ji != junctions.end(); ++ji)
-		(*ji)->index = cur_id++;
-
-		vector<Point3>	intermediates;
-			
-	for (ci = chains.begin(); ci != chains.end(); ++ci)
-	{
-		coords3[0] = (*ci)->start_junction->location.x;
-		coords3[1] = (*ci)->start_junction->location.y;
-		coords3[2] = (*ci)->start_junction->location.z;
-		if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
-			printf("WARNING: coordinate out of range.\n");
-			
-		cbs.BeginSegment_f(
-						0, 
-						(*ci)->export_type,
-						(*ci)->start_junction->index,
-						coords3,
-						false,
-						writer);
-		++total_chains;
-		
-		for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
 		{
-			coords3[0] = shapePoint->x;
-			coords3[1] = shapePoint->y;
-			coords3[2] = shapePoint->z;
+			TIMER(BuildNetworkTopology)
+			BuildNetworkTopology(inVectorMap, junctions, chains);
+		}
+		{
+			TIMER(DrapeRoads)
+			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.6)) return;	
+			DrapeRoads(junctions, chains, inHiresMesh);
+		}
+		{	
+			TIMER(PromoteShapePoints)
+			PromoteShapePoints(junctions, chains);
+		}
+		{
+			TIMER(VerticalPartitionRoads)		
+			VerticalPartitionRoads(junctions, chains);
+		}
+		{
+			TIMER(VerticalBuildBridges)
+			VerticalBuildBridges(junctions, chains);
+		}
+		{
+			TIMER(InterpolateRoadHeights)
+			InterpolateRoadHeights(junctions, chains);
+		}
+		{
+			TIMER(AssignExportTypes)
+			AssignExportTypes(junctions, chains);
+		}
+		{
+			TIMER(DeleteBlankChains)
+			DeleteBlankChains(junctions, chains);
+		}
+		{
+			TIMER(OptimizeNetwork)
+			OptimizeNetwork(junctions, chains, false);
+		}
+		{
+			TIMER(SpacePowerlines)
+			SpacePowerlines(junctions, chains, 1000.0, 10.0);
+		}
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;	
+
+		cur_id = 1;
+		for (ji = junctions.begin(); ji != junctions.end(); ++ji)
+			(*ji)->index = cur_id++;
+
+			vector<Point3>	intermediates;
+				
+		for (ci = chains.begin(); ci != chains.end(); ++ci)
+		{
+			coords3[0] = (*ci)->start_junction->location.x;
+			coords3[1] = (*ci)->start_junction->location.y;
+			coords3[2] = (*ci)->start_junction->location.z;
 			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 				printf("WARNING: coordinate out of range.\n");
+				
+			cbs.BeginSegment_f(
+							0, 
+							(*ci)->export_type,
+							(*ci)->start_junction->index,
+							coords3,
+							false,
+							writer);
+			++total_chains;
+			
+			for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
+			{
+				coords3[0] = shapePoint->x;
+				coords3[1] = shapePoint->y;
+				coords3[2] = shapePoint->z;
+				if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
+					printf("WARNING: coordinate out of range.\n");
 
-			cbs.AddSegmentShapePoint_f(coords3, false, writer);
-			++total_shapes;
+				cbs.AddSegmentShapePoint_f(coords3, false, writer);
+				++total_shapes;
+			}
+
+			coords3[0] = (*ci)->end_junction->location.x;
+			coords3[1] = (*ci)->end_junction->location.y;
+			coords3[2] = (*ci)->end_junction->location.z;
+			if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
+				printf("WARNING: coordinate out of range.\n");		
+			cbs.EndSegment_f(
+					(*ci)->end_junction->index,
+					coords3,
+					false,
+					writer);
 		}
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;	
 
-		coords3[0] = (*ci)->end_junction->location.x;
-		coords3[1] = (*ci)->end_junction->location.y;
-		coords3[2] = (*ci)->end_junction->location.z;
-		if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
-			printf("WARNING: coordinate out of range.\n");		
-		cbs.EndSegment_f(
-				(*ci)->end_junction->index,
-				coords3,
-				false,
-				writer);
+		CleanupNetworkTopology(junctions, chains);
+		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;	
+		cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer);
 	}
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;	
-
-	CleanupNetworkTopology(junctions, chains);
-	if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;	
-	cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer);
-#endif	
 	
 	/****************************************************************
 	 * MANIFEST

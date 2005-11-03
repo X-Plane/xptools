@@ -28,6 +28,12 @@
 #include "DEMDefs.h"
 #include "ProgressUtils.h"
 
+struct	DSFBuildPrefs_t {
+	int	export_roads;
+};
+
+extern DSFBuildPrefs_t	gDSFBuildPrefs;
+
 void	BuildDSF(
 			const char *	inFileName,
 			const DEMGeo&	inLanduse,
