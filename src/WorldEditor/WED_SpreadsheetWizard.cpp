@@ -11,6 +11,7 @@ struct	WED_WizardParams {
 	float	elev_min;	float	elev_max;
 	float	slop_min;	float	slop_max;
 	float	temp_min;	float	temp_max;
+	float	tmpr_min;	float	tmpr_max;
 	float	rain_min;	float	rain_max;
 	float	sdir_min;	float	sdir_max;
 	float	relv_min;	float	relv_max;
@@ -43,6 +44,7 @@ void	WED_ShowSpreadsheetWizard(void)
 					XP_ROW, XP_CAPTION, "Elev Min/Max (M)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.elev_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.elev_max, XP_END,
 					XP_ROW, XP_CAPTION, "Slope Min/Max (D)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.slop_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.slop_max, XP_END,
 					XP_ROW, XP_CAPTION, "Temp Min/Max (M)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.temp_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.temp_max, XP_END,
+					XP_ROW, XP_CAPTION, "Temp Range Min/Max (M)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.tmpr_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.tmpr_max, XP_END,
 					XP_ROW, XP_CAPTION, "Rain Min/Max (mm)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.rain_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.rain_max, XP_END,
 					XP_ROW, XP_CAPTION, "Slope Dir Min/Max (D)", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.sdir_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.sdir_max, XP_END,
 					XP_ROW, XP_CAPTION, "Relative Elevation Min/Max", XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.relv_min, XP_EDIT_FLOAT, 6, 6, 0, &sWizardParams.relv_max, XP_END,
@@ -116,6 +118,7 @@ void	WED_WizardAction(XPWidgetID)
 		TEST_RULE(dem_Elevation, 			elev_min, elev_max)
 		TEST_RULE(dem_Slope, 				slop_min, slop_max)
 		TEST_RULE(dem_Temperature, 			temp_min, temp_max)
+		TEST_RULE(dem_TemperatureRange, 		tmpr_min, tmpr_max)
 		TEST_RULE(dem_Rainfall, 			rain_min, rain_max)
 		TEST_RULE(dem_SlopeHeading,			sdir_min, sdir_max)
 		TEST_RULE(dem_RelativeElevation, 	relv_min, relv_max)
