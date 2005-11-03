@@ -635,8 +635,13 @@ struct float_between_iterator {
 		if (h_) { 
 			h_ = false; 
 			++i_; } 
-		else 
+		else {
 			h_ = true; 
+			iter_type j = i_;
+			++j;
+			if (j == s_.end())
+				++i_;
+		}
 		return *this;
 	}
 	
@@ -792,19 +797,19 @@ void	CheckDEMRuleCoverage(ProgressFunc func)
 	
 	int total = landuse.size() * 
 				terrain.size() * 
-				elev.size() * 2 *
-				slope.size() * 2 *
-				temp.size() * 2 *
-				temp_rng.size() * 2 *
-				rain.size() * 2 *
+				(elev.size() * 2 - 1) *
+				(slope.size() * 2 - 1) *
+				(temp.size() * 2 - 1) *
+				(temp_rng.size() * 2 - 1)*
+				(rain.size() * 2 - 1)*
 				near_water.size() *
-				slope_head.size() * 2 *
-				elev_range.size() * 2 *
-				urban_density.size() * 2 *
-				urban_radial.size() * 2 *
-				urban_trans.size() * 2 *
+				(slope_head.size() * 2 - 1)*
+				(elev_range.size() * 2 - 1)*
+				(urban_density.size() * 2 - 1)*
+				(urban_radial.size() * 2 - 1)*
+				(urban_trans.size() * 2 - 1)*
 				urban_square.size() *
-				lat.size() * 2;
+				(lat.size() * 2 - 1);
 
 	printf("Total pts to check: %d\n", total);
 	int step = total / 200;
