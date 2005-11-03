@@ -93,6 +93,15 @@ struct	MeshFaceInfo {
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
 
 	FaceQueue::iterator	self;					// Queue ref to self!
+	
+#if DEV
+	float			debug_slope_dem;
+	float			debug_slope_tri;
+	float			debug_temp;
+	float			debug_temp_range;
+	float			debug_rain;
+	float			debug_heading;
+#endif	
 };
 
 typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, FastKernel>		Vb;
