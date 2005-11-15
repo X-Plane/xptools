@@ -45,16 +45,19 @@ ac_unbackslash_string(path);
 	ac_add_tools_menu_item("Make Transparent", "ac3d xplane_make_transparent", "Makes BMP magenta transparent.");
 	ac_add_tools_menu_item("Make Night Lighting", "ac3d xplane_make_night", "Shows LIT bitmap overlays.");
 	ac_add_tools_menu_item("Make Animation Group", "ac3d xplane_make_animation_group", "Make an animation group.");
+	ac_add_tools_menu_item("Make Trees", "ac3d xplane_make_tree", "Make trees.");
+	ac_add_tools_menu_item("Bulk Export...", "ac3d xplane_bulk_export", "Do a bulk export.");
+	ac_add_tools_menu_item("Select downward surfaces...", "ac3d xplane_select_down_surfaces", "Select downward facing surfaces...");
+
 
 	ac_add_command_full("xplane_calc_lod", do_calc_lod, 0, NULL, "ac3d xplane_change_tex", "Calculates x-plane LOD params.");
 	ac_add_command_full("xplane_change_texture", do_change_tex, 0, NULL, "ac3d xplane_change_texture", "Changes textures.");
 	ac_add_command_full("xplane_make_transparent", do_show_transparent, 0, NULL, "ac3d xplane_make_night", "Makes selected object's textures transparent.");
 	ac_add_command_full("xplane_make_night", do_show_night, 0, NULL, "ac3d xplane_make_night", "Show an object's night lighting.");
 	ac_add_command_full("xplane_make_animation_group", do_animation_group, 0, NULL, "ac3d xplane_make_animation_group", "Make an animation group.");
-
-
-
-
+	ac_add_command_full("xplane_make_tree", do_tree_extrude, 0, NULL, "ac3d xplane_make_tree", "Make a tree from a quad.");
+	ac_add_command_full("xplane_bulk_export", do_bulk_export, 0, NULL, "ac3d xplane_bulk_export", "Export many objects.");
+	ac_add_command_full("xplane_select_down_surfaces", do_select_downfacing, 0, NULL, "ac3d xplane_select_down_surfaces", "Select down-facing surfaces.");
 	return(0);
 }
 
@@ -66,6 +69,6 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
-    return("OBJ7 Import/Export Plugin v2.0b1 - by Ben Supnik");
+    return("OBJ8 Import/Export Plugin v2.0b2 - by Ben Supnik");
 }
 

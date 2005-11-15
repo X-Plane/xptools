@@ -31,6 +31,7 @@
 #include "PlatformUtils.h"
 #include "PerfUtils.h"
 #include "MapAlgs.h"
+#include "DEMAlgs.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
 #include "GreedyMesh.h"
@@ -68,7 +69,7 @@ MeshPrefs_t gMeshPrefs = {
  * wet.  This lets us seed the water-finding process. */
  
 typedef pair<CDT::Vertex_handle, CDT::Vertex_handle>	ConstraintMarker_t;
-typedef pair<int, int>									LandusePair_t;			// "Left" and "right" side
+typedef pair<const GISHalfedge *, const GISHalfedge *>	LandusePair_t;			// "Left" and "right" side
 typedef pair<ConstraintMarker_t, LandusePair_t>			LanduseConstraint_t;
 
 struct FaceHandleVectorHack {
@@ -829,7 +830,9 @@ int CopyWetPoints(
 		{
 			for (int x = x1; x < x2; ++x)
 			{
-				int e = orig.get_lowest(x,y,5);
+			// BENTODO
+//				int e = orig.get_lowest(x,y,5);
+				int e = orig.get(x,y);
 				if (e != NO_DATA)
 				{
 					deriv(x,y) = e;
@@ -917,7 +920,7 @@ void AddEdgePoints(
 			deriv(dx,y) = orig(dx,y);
 		}
 		if (orig(x,y) == NO_DATA)
-			printf("WARNING: mesh point %d,%d lacks data for cutting and edging!\n", x, y);
+			AssertPrintf("ERROR: mesh point %d,%d lacks data for cutting and edging!\n", x, y);
 		deriv(x,y) = orig(x,y);
 		
 	}
@@ -1085,19 +1088,19 @@ void	AddWaterMeshPoints(
 			{				
 				e1 = NO_DATA;
 				e2 = NO_DATA;
-				if (f1->mTerrainType == terrain_Water || f2->mTerrainType == terrain_Water)
-				{
-					e1 = water.xy_nearest(pts[n-1].x, pts[n-1].y);
-					e2 = water.xy_nearest(pts[n].x, pts[n].y);
-					if (e1 == NO_DATA) 
-						e1 = water.search_nearest(pts[n-1].x, pts[n-1].y);
-					if (e2 == NO_DATA) 
-						e2 = water.search_nearest(pts[n].x,pts[n].y);
+//				if (f1->mTerrainType == terrain_Water || f2->mTerrainType == terrain_Water)
+//				{
+//					e1 = water.xy_nearest(pts[n-1].x, pts[n-1].y);
+//					e2 = water.xy_nearest(pts[n].x, pts[n].y);
+//					if (e1 == NO_DATA) 
+//						e1 = water.search_nearest(pts[n-1].x, pts[n-1].y);
+//					if (e2 == NO_DATA) 
+//						e2 = water.search_nearest(pts[n].x,pts[n].y);
 //					BEN SEZ: this is not really an error!  Remember - water data is only points contained inside a water body; very narrrow ones will contain NO
 //					DEM points and this will fail.
 //					if (e1 == NO_DATA || e2 == NO_DATA)
 //						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY.  LOC=%lf,%lf->%lf,%lf\n",pts[n-1].x,pts[n-1].y,pts[n].x,pts[n].y);
-				}
+//				}
 				if (e1 == NO_DATA)					e1 = master.value_linear(pts[n-1].x, pts[n-1].y);
 				if (e2 == NO_DATA)					e2 = master.value_linear(pts[n].x, pts[n].y);
 				if (e1 == NO_DATA)					e1 = master.xy_nearest(pts[n-1].x, pts[n-1].y);
@@ -1114,14 +1117,14 @@ void	AddWaterMeshPoints(
 				local = v2->face();
 				
 				outMesh.insert_constraint(v1, v2);
-				outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(f1->mTerrainType, f2->mTerrainType)));
+				outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
 			}
 		}
 	}
 }
 
 
-void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
+void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& wetPts, const DEMGeo& allPts)
 {
 	set<CDT::Face_handle>		wet_faces;
 	set<CDT::Face_handle>		visited;
@@ -1148,8 +1151,13 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
 		{
 			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
 		} else {
-			face_h->info().terrain = c->second.first;
-			face_h->info().feature = c->second.first;
+			face_h->info().terrain = c->second.first->face()->mTerrainType;
+			face_h->info().feature = c->second.first->face()->mTerrainType;
+			// BEN SEZ: we will get conflicts on origin faces!  imagine water tries separated by a bridge - WED thinks they're
+			// al the same but they're not.
+//			DebugAssert(face_h->info().orig_face == NULL || face_h->info().orig_face == c->second.first->face());
+			if (face_h->info().orig_face == NULL)
+				face_h->info().orig_face = c->second.first->face();
 			wet_faces.insert(face_h);
 		}
 
@@ -1157,8 +1165,12 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
 		{
 			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
 		} else {
-			face_h->info().terrain = c->second.second;
-			face_h->info().feature = c->second.second;
+			face_h->info().terrain = c->second.second->face()->mTerrainType;
+			face_h->info().feature = c->second.second->face()->mTerrainType;
+//			DebugAssert(face_h->info().orig_face == NULL || face_h->info().orig_face == c->second.second->face());
+			if (face_h->info().orig_face == NULL)
+				face_h->info().orig_face = c->second.second->face();
+			
 			wet_faces.insert(face_h);
 		}
 	}
@@ -1170,55 +1182,38 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines)
 		visited.insert(f);
 		
 		int tg = f->info().terrain;		
+		const GISFace * of = f->info().orig_face;
 		f->info().flag = 0;
 		CDT::Face_handle	fn;
-		if (!ioMesh.is_constrained(CDT::Edge(f,0)))
+		for (int vi = 0; vi < 3; ++ vi)
+		if (!ioMesh.is_constrained(CDT::Edge(f,vi)))
 		{
-			fn = f->neighbor(0);
+			fn = f->neighbor(vi);
 			if (!ioMesh.is_infinite(fn))
 			if (visited.find(fn) == visited.end())
 			{
 				if (fn->info().terrain != terrain_Natural && fn->info().terrain != tg)
 					AssertPrintf("Error: conflicting terrain assignment between %s and %s, near %lf, %lf\n",
 							FetchTokenString(fn->info().terrain), FetchTokenString(tg),
-							CGAL::to_double(f->vertex(0)->point().x()), CGAL::to_double(f->vertex(0)->point().y()));
+							CGAL::to_double(f->vertex(vi)->point().x()), CGAL::to_double(f->vertex(vi)->point().y()));
 				fn->info().terrain = tg;
 				fn->info().feature = tg;
+				if (fn->info().orig_face == NULL) fn->info().orig_face = of;
 				wet_faces.insert(fn);
 			}
 		}
-
-		if (!ioMesh.is_constrained(CDT::Edge(f,1)))
-		{
-			fn = f->neighbor(1);
-			if (!ioMesh.is_infinite(fn))
-			if (visited.find(fn) == visited.end())
-			{
-				if (fn->info().terrain != terrain_Natural && fn->info().terrain != tg)
-					AssertPrintf("Error: conflicting terrain assignment between %s and %s, near %lf, %lf\n",
-							FetchTokenString(fn->info().terrain), FetchTokenString(tg),
-							CGAL::to_double(f->vertex((1))->point().x()), CGAL::to_double(f->vertex((1))->point().y()));
-				fn->info().terrain = tg;
-				fn->info().feature = tg;
-				wet_faces.insert(fn);
-			}
-		}
-
-		if (!ioMesh.is_constrained(CDT::Edge(f,2)))
-		{
-			fn = f->neighbor(2);
-			if (!ioMesh.is_infinite(fn))
-			if (visited.find(fn) == visited.end())
-			{
-				if (fn->info().terrain != terrain_Natural && fn->info().terrain != tg)
-					AssertPrintf("Error: conflicting terrain assignment between %s and %s, near %lf, %lf\n",
-							FetchTokenString(fn->info().terrain), FetchTokenString(tg),
-							CGAL::to_double(f->vertex((2))->point().x()), CGAL::to_double(f->vertex((2))->point().y()));
-				fn->info().terrain = tg;
-				fn->info().feature = tg;
-				wet_faces.insert(fn);
-			}
-		}
+	}
+	
+	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
+	if (ffi->info().terrain == terrain_Water)
+	for (int vi = 0; vi < 3; ++vi)
+	{
+		int xw, yw;
+		float e = allPts.xy_nearest(ffi->vertex(vi)->point().x(),ffi->vertex(vi)->point().y(), xw, yw);
+		
+		e = allPts.get_lowest_heuristic(xw, yw, 5);
+		if (e != NO_DATA)
+			ffi->vertex(vi)->info().height = e;
 	}
 }
 
@@ -1369,6 +1364,36 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		printf("Land ratio: %lf\n", land_ratio);
 	}
 	
+/*	
+	{
+		DEMGeo	temp(water);
+		for (y = 0; y < temp.mHeight; ++y)
+		for (x = 0; x < temp.mWidth; ++x)
+		{
+			float me = water.get(x,y);
+			if (me != NO_DATA)
+			if (water.get(x-1,y-1) > me &&
+				water.get(x  ,y-1) > me &&
+				water.get(x+1,y  ) > me &&
+				water.get(x-1,y  ) > me &&
+				water.get(x+1,y+1) > me &&
+				water.get(x  ,y+1) > me &&
+				water.get(x+1,y+1) > me)
+			{
+				temp(x,y) = NO_DATA;
+			}
+		}
+
+		for (y = 0; y < temp.mHeight; ++y)
+		for (x = 0; x < temp.mWidth; ++x)
+		{
+			water(x,y) = temp.get_lowest_heuristic(x,y,5);
+		}
+		
+//		if (SpreadDEMValuesIterate(water))
+//			SpreadDEMValuesIterate(water);
+	}*/
+	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.4);
 	
 	{
@@ -1505,6 +1530,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	{
 	
 		TIMER(Triangulate_Coastlines)
+		
 		AddWaterMeshPoints(inMap, orig, water, deriv, outMesh, coastlines_markers, true);
 	}
 	
@@ -1527,7 +1553,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.2);
 	{
-		SetWaterBodiesToWet(outMesh, coastlines_markers);	
+		SetWaterBodiesToWet(outMesh, coastlines_markers, water, orig);	
 	}
 	
 	/*********************************************************************************************************************
@@ -1538,7 +1564,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	CalculateMeshNormals(outMesh);
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 1.0);
-	
+
 //	orig.swap(water);
 }
 
@@ -1659,10 +1685,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	rn3 = inRain.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
 				float	rn = SAFE_AVERAGE(rn1, rn2, rn3);	// Could be safe max.
 
-				float	sh1 = inSlopeHeading.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	sh2 = inSlopeHeading.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	sh3 = inSlopeHeading.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
-				float	sh = SAFE_AVERAGE(sh1, sh2, sh3);	// Could be safe max.
+//				float	sh1 = inSlopeHeading.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
+//				float	sh2 = inSlopeHeading.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
+///				float	sh3 = inSlopeHeading.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+//				float	sh = SAFE_AVERAGE(sh1, sh2, sh3);	// Could be safe max.
 
 				float	re1 = inRelElev.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
 				float	re2 = inRelElev.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
@@ -1706,7 +1732,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				
 				float	sl_tri = 1.0 - tri->info().normal[2];
 				float	flat_len = sqrt(tri->info().normal[1] * tri->info().normal[1] + tri->info().normal[0] * tri->info().normal[0]);
-				float	sh_tri = -tri->info().normal[1];
+				float	sh_tri = tri->info().normal[1];
 				if (flat_len != 0.0)
 				{
 					sh_tri /= flat_len;
@@ -1719,28 +1745,25 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				int variant_blob = ((x_variant + y_variant * 2) % 4) + 1;
 				int variant_head = (tri->info().normal[0] > 0.0) ? 6 : 8;
 				
-				if (sh_tri < -0.7)	variant_head = 5;
-				if (sh_tri >  0.7)	variant_head = 7;
+				if (sh_tri < -0.7)	variant_head = 7;
+				if (sh_tri >  0.7)	variant_head = 5;
 				
 				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, center_y, variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 					
-				#if DEV
 					tri->info().debug_slope_dem = sl;
 					tri->info().debug_slope_tri = sl_tri;
 					tri->info().debug_temp = tm;
 					tri->info().debug_temp_range = tmr;
 					tri->info().debug_rain = rn;
-					tri->info().debug_heading = sh;
+					tri->info().debug_heading = sh_tri;
 				
-				#endif
-					
 				if (terrain == gNaturalTerrainTable.back().name)
 				{
 					AssertPrintf("Hit %s rule. lu=%s, msl=%f, slope=%f, trislope=%f, temp=%f, temprange=%f, rain=%f, water=%d, heading=%f, lat=%f\n",
 						FetchTokenString(gNaturalTerrainTable.back().name),
-						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh, center_y);
+						FetchTokenString(lu), el, acos(1-sl)*RAD_TO_DEG, acos(1-sl_tri)*RAD_TO_DEG, tm, tmr, rn, near_water, sh_tri, center_y);
 				}
 				
 				tri->info().terrain = terrain;
@@ -2421,7 +2444,7 @@ static void SlightClampToDEM(Point2& ioPoint, const DEMGeo& ioDEM)
 		ioPoint.x > wicked_east ||
 		ioPoint.x < wicked_west)
 	{
-		printf("WARNING: Point is way outside DEM.  Will probably cause a leak.\n");
+		AssertPrintf("WARNING: Point is way outside DEM.  Will probably cause a leak.\n");
 	} else {
 		if (ioPoint.x > ioDEM.mEast)	ioPoint.x = ioDEM.mEast;
 		if (ioPoint.x < ioDEM.mWest)	ioPoint.x = ioDEM.mWest;

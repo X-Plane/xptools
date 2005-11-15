@@ -887,3 +887,4 @@ float	DEMGeo_LocalMinMaxWithCache(
 	return maxh - minh;
 }
 
+

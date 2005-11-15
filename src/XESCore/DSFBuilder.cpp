@@ -52,8 +52,8 @@
 DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 
 
-#define		PATCH_DIM_HI	32
-#define		PATCH_DIM_LO	32
+#define		PATCH_DIM_HI	16
+#define		PATCH_DIM_LO	16
 #define		TERRAIN_NEAR_LOD 		0.0
 #define		TERRAIN_FAR_LOD			-1.0
 #define		ORTHO_NEAR_LOD			100000.0
@@ -78,8 +78,19 @@ struct	edge_wrapper {
 	bool operator!=(const edge_wrapper& x) const { return edge != x.edge; }
 	bool operator<(const edge_wrapper& x) const { return edge < x.edge; } 
 
+	const GISFace * orig_face(void) const { return edge.first->info().orig_face; }
+
 	CDT::Edge	edge;
 };
+
+struct hash_edge {
+	typedef edge_wrapper		KeyType;
+	// Trick: we think most ptrs are 4-byte aligned - reuse lower 2 bits.
+	size_t operator()(const KeyType& key) const { return (size_t) &*key.edge.first + (size_t) key.edge.second; }
+};
+
+
+
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
 static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[6], int kind)
@@ -146,6 +157,13 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 		coords[4] =-nrml_s.dy;
 	}
 	coords[5] = kind;
+}
+
+float GetParamConst(const GISFace * face, int e)
+{
+	GISParamMap::const_iterator i = face->mParams.find(e);
+	if (i == face->mParams.end()) return 0.0;
+	return i->second;
 }
 
 #define	INLAND_BLEND_DIST 5.0
@@ -270,6 +288,34 @@ int is_coast(const edge_wrapper& inEdge, const CDT& inMesh)
 	return true;
 }
 
+double edge_len(const edge_wrapper& e)
+{
+	CDT::Vertex_handle	v_s = e.edge.first->vertex(CDT::ccw(e.edge.second));
+	CDT::Vertex_handle	v_t = e.edge.first->vertex(CDT:: cw(e.edge.second));
+	return LonLatDistMeters(v_s->point().x(),v_s->point().y(),
+									   v_t->point().x(),v_t->point().y());
+}
+
+bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
+{
+	CDT::Vertex_handle	e1s = e1.edge.first->vertex(CDT::ccw(e1.edge.second));
+	CDT::Vertex_handle	e1t = e1.edge.first->vertex(CDT:: cw(e1.edge.second));
+
+	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
+	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
+	
+	DebugAssert(e1t == e2s);
+	
+	Point2	p1(e1s->point().x(),e1s->point().y());
+	Point2	p2(e1t->point().x(),e1t->point().y());
+	Point2	p3(e2t->point().x(),e2t->point().y());
+	
+	Vector2	v1(p1,p2);
+	Vector2 v2(p2,p3);
+
+	return v1.left_turn(v2);
+}
+
 double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 {
 	CDT::Vertex_handle	e1s = e1.edge.first->vertex(CDT::ccw(e1.edge.second));
@@ -286,8 +332,12 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 	
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
+	double scale = cos(p2.y * DEG_TO_RAD);
+	v1.dx *= scale;
+	v2.dx *= scale;
 	v1.normalize();
 	v2.normalize();
+	
 	return v1.dot(v2);
 }
 
@@ -297,6 +347,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	if (!is_coast(inEdge, inMesh))	return false;
 
 	CDT::Face_handle tri = inEdge.edge.first;
+	
+	DebugAssert(tri->info().terrain == terrain_Water);
 	if (tri->info().terrain == terrain_Water)
 		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
 
@@ -306,13 +358,21 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
 	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
 	
+	const GISFace * orig_face = inEdge.orig_face();
+	Assert(orig_face != NULL);
+	
 	double	prev_ang = 1.0, next_ang = 1.0;
+	bool	prev_convex = true, next_convex =true;
+	double prev_len = 0.0;
+	double next_len = 0.0;
 	
 	// Find our outgoing (next) angle
 	for (edge_wrapper iter = edge_next(inEdge); iter != edge_twin(inEdge); iter = edge_twin_next(iter))
 	if (is_coast(iter, inMesh))
 	{
 		next_ang = edge_angle(inEdge, iter);
+		next_convex = edge_convex(inEdge, iter);
+		next_len = edge_len(iter);
 		break;
 	}
 
@@ -321,11 +381,13 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	if (is_coast(iter, inMesh))
 	{
 		prev_ang = edge_angle(iter, inEdge);
+		prev_convex = edge_convex(iter, inEdge);
+		prev_len = edge_len(iter);
 	}
 
 	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
 	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
-									   v_t->point().x(),v_t->point().y());
+									   v_t->point().x(),v_t->point().y()) + prev_len + next_len;
 									   
 	double slope = tri->info().normal[2];
 	
@@ -333,16 +395,20 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	{
 		if (slope >= gBeachInfoTable[i].min_slope && 
 			slope <= gBeachInfoTable[i].max_slope &&
-			wave >= gBeachInfoTable[i].min_sea &&
+			gBeachInfoTable[i].min_sea <= wave && 
 			wave <= gBeachInfoTable[i].max_sea &&
-			prev_ang >= gBeachInfoTable[i].max_turn &&
-			next_ang >= gBeachInfoTable[i].max_turn)
+			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
+			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
+			tri->vertex(0)->point().y() >= gBeachInfoTable[i].min_lat && 
+			tri->vertex(0)->point().y() <= gBeachInfoTable[i].max_lat &&
+			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
+			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
+			tri->info().debug_rain >= gBeachInfoTable[i].min_rain &&
+			tri->info().debug_rain <= gBeachInfoTable[i].max_rain &&
+//			len >= gBeachInfoTable[i].min_len &&
+			gBeachInfoTable[i].min_area < GetParamConst(orig_face, af_WaterArea) &&
+			(gBeachInfoTable[i].require_open == 0 || GetParamConst(orig_face,af_WaterOpen) != 0.0))
 			
-			// TODO 
-//			min_len
-//			min_lat/max_lat
-//			min_rain/max_rain
-//			min_temp/max_temp
 		{
 			kind = gBeachInfoTable[i].x_beach_type;
 			break;
@@ -355,6 +421,52 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	}
 	return true;
 }
+
+void FixBeachContinuity(hash_map<edge_wrapper, edge_wrapper, hash_edge>& linkNext, const edge_wrapper& this_start, hash_map<edge_wrapper, int, hash_edge>& typedata)
+{
+	edge_wrapper circ, discon, stop, iter;
+	bool retry;
+	
+	for (int lim = 0; lim < gBeachInfoTable.size(); ++lim)
+	{	
+		do {
+			retry = false;
+			circ = stop = this_start;
+
+			// Main circulator group on each beac htype	
+			do {
+				discon = circ;
+				
+				// Keep trying until our beach meets requirements
+				// Calculate contiguous type-length
+				double len = 0;
+				double req_len = gBeachInfoTable[gBeachIndex[typedata[circ]]].min_len;
+				do
+				{
+					len += edge_len(discon);
+					discon = (linkNext.count(discon) == 0) ? edge_wrapper() : linkNext[discon];
+					// incr disocn!
+				} while (discon != edge_wrapper() && discon != stop && typedata[discon] == typedata[circ]);
+			
+				// If we failed - go back and retry, otherwise advance forward and break out
+				if (len < req_len && gBeachIndex[typedata[circ]] < lim)
+				{
+					retry = true;
+					int new_type = gBeachInfoTable[gBeachIndex[typedata[circ]]].x_backup;
+					iter = circ;
+					do {
+						typedata[iter] = new_type;
+						iter = (linkNext.count(iter) == 0) ? edge_wrapper() : linkNext[iter];
+					} while (iter != discon);
+					
+				}
+				circ = discon;
+				
+			} while (circ != stop && circ != edge_wrapper());
+		} while (retry);
+	}
+}
+
 
 string		get_terrain_name(int composite) 
 {
@@ -387,13 +499,6 @@ struct	StNukeWriter {
 
 
 
-struct hash_edge {
-	typedef edge_wrapper		KeyType;
-	// Trick: we think most ptrs are 4-byte aligned - reuse lower 2 bits.
-	size_t operator()(const KeyType& key) const { return (size_t) &*key.edge.first + (size_t) key.edge.second; }
-};
-
-
 void 	CHECK_TRI(CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Vertex_handle c)
 {
 	if (a->point().x() == b->point().x() && a->point().y() == b->point().y())
@@ -412,6 +517,19 @@ void 	CHECK_TRI(CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Vertex_handle c
 		return;
 	}
 }
+
+struct	ObjPrio {
+
+	bool operator()(const int& lhs, const int& rhs) const
+	{
+		bool lfeat = IsFeatureObject(lhs);
+		bool rfeat = IsFeatureObject(rhs);
+		if (lfeat && rfeat) return lhs < rhs;
+		if (lfeat)			return false;
+		if (rfeat)			return true;
+							return lhs < rhs;
+	}
+};
 
 
 
@@ -458,6 +576,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int, SortByLULayer>::iterator 		lu_ranked;
 		map<int, int>::iterator 		lu;
 		map<int, int>::iterator 		obdef;
+		map<int, int, ObjPrio>::iterator obdef_prio;
 		set<int>::iterator				border_lu;
 		bool							is_water;
 		list<CDT::Face_handle>::iterator nf;
@@ -479,8 +598,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		
 		map<int, int, SortByLULayer>landuses;
 		map<int, int>				landuses_reversed;	
-		map<int, int>	objects,	objects_reversed;
+		map<int, int>				objects_reversed;
 		map<int, int>	facades,	facades_reversed;
+		map<int, int, ObjPrio>		objects;
 
 		char	prop_buf[256];
 
@@ -897,6 +1017,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						bblend[vi] = f->vertex(vi)->info().border_blend[lu_ranked->first];
 					
 					int ts = -1, te = 0;
+					if (!AreVariants(lu_ranked->first, f->info().terrain))
 					if (bblend[0] == bblend[1] &&
 						bblend[1] == bblend[2] &&
 						bblend[0] == 1.0)
@@ -1018,12 +1139,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	
 	for (LinkSet::iterator a_start = starts.begin(); a_start != starts.end(); ++a_start)
 	{
+		FixBeachContinuity(linkNext, *a_start, all);
 	
 		cbs.BeginPolygon_f(0, 0, 6, writer);
 		cbs.BeginPolygonWinding_f(writer);
 		
 		for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
 		{
+//			printf("output non-circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
 			last_beach = beach;
 			DebugAssert(all.count(beach) != 0);
 			beachKind = all[beach];
@@ -1051,11 +1174,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	while (!all.empty())
 	{
 		edge_wrapper this_start = all.begin()->first;
+		FixBeachContinuity(linkNext, this_start, all);	
 		cbs.BeginPolygon_f(0, 1, 6, writer);
 		cbs.BeginPolygonWinding_f(writer);
 	
 		beach = this_start;
 		do {
+//			printf("output circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
 			DebugAssert(all.count(beach) != 0);
 			DebugAssert(linkNext.count(beach) != 0);
 			beachKind = all.begin()->second;
@@ -1084,18 +1209,30 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (!pf->is_unbounded())
 	{
 		for (pointObj = pf->mObjs.begin(); pointObj != pf->mObjs.end(); ++pointObj)
-			objects.insert(map<int, int>::value_type(pointObj->mRepType, 0));		
+			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));		
 		for (polyObj = pf->mPolyObjs.begin(); polyObj != pf->mPolyObjs.end(); ++polyObj)
 			facades.insert(map<int, int>::value_type(polyObj->mRepType, 0));
 	}
+	
+	int lowest_required = objects.size();
 
 	// Farm out object IDs.
 	cur_id = 0;
-	for (obdef = objects.begin(); obdef != objects.end(); ++obdef, ++cur_id)
+	for (obdef_prio = objects.begin(); obdef_prio != objects.end(); ++obdef_prio, ++cur_id)
 	{
-		obdef->second = cur_id;
-		objects_reversed[cur_id] = obdef->first;
+		obdef_prio->second = cur_id;
+		objects_reversed[cur_id] = obdef_prio->first;
+		if (IsFeatureObject(obdef_prio->first))
+			lowest_required = min(lowest_required, cur_id);
 	}
+	
+	if (lowest_required != objects.size())
+	{
+		char buf[256];
+		sprintf(buf,"1/%d", lowest_required);
+		cbs.AcceptProperty_f("sim/require_object", buf, writer);
+	}
+	
 	cur_id = 1;
 	for (obdef = facades.begin(); obdef != facades.end(); ++obdef, ++cur_id)
 	{
@@ -1165,19 +1302,20 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	// Write out definition names too.	
 	for (obdef = objects_reversed.begin(); obdef != objects_reversed.end(); ++obdef)
 	{
-		string objName = FetchTokenString(obdef->second);
+		string objName = gObjLibPrefix + FetchTokenString(obdef->second);
 		objName += ".obj";
 		cbs.AcceptObjectDef_f(objName.c_str(), writer);
 	}
 
 	for (obdef = facades_reversed.begin(); obdef != facades_reversed.end(); ++obdef)
 	{
+		Assert(obdef->second != NO_VALUE);
 		string facName = FetchTokenString(obdef->second);
 		if (IsForestType(obdef->second))
 		{
 			facName = "lib/g8/"+facName+".for";
 		} else
-			facName += ".fac";
+			facName = gObjLibPrefix + facName + ".fac";
 		cbs.AcceptPolygonDef_f(facName.c_str(), writer);
 	}
 
@@ -1375,8 +1513,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer);
 	sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer);
 	cbs.AcceptProperty_f("sim/planet", "earth", writer);
-	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 1.0", writer);
-	cbs.AcceptProperty_f("laminar/internal_revision", "1", writer);
+	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9", writer);
+	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
 	
 	/****************************************************************
 	 * WRITEOUT

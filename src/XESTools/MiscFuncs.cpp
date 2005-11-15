@@ -27,7 +27,12 @@
 #include "XObjDefs.h"
 #include "ObjUtils.h"
 #include "XObjReadWrite.h"
-void	BuildOneFakeObject(const char * dir, const char * fname, double width, double depth, double height)
+
+enum {
+	fake_build, fake_tree, fake_both };
+	
+
+void	BuildOneFakeObject(const char * dir, const char * fname, double width, double depth, double height, int faketype)
 {
 	width -= 2.0;
 	depth -= 2.0;
@@ -49,6 +54,9 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	lod.attributes.push_back(15000);
 	obj.cmds.push_back(lod);
 	XObjCmd	cmd;
+	cmd.cmdType = type_Attr;
+	cmd.cmdID = attr_NoCull;
+	if (faketype != fake_build) obj.cmds.push_back(cmd);
 	cmd.cmdType = type_Poly;
 	cmd.cmdID = obj_Quad;
 	cmd.st.resize(4);
@@ -81,11 +89,13 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = 0; cmd.st[3].v[2] = -d;	
 	obj.cmds.push_back(cmd);
 	// TOP
+	if (faketype == fake_both) h *= 0.5;
 	cmd.st[0].v[0] = -w;	cmd.st[0].v[1] = h; cmd.st[0].v[2] =  d;
 	cmd.st[1].v[0] = -w;	cmd.st[1].v[1] = h; cmd.st[1].v[2] = -d;
 	cmd.st[2].v[0] =  w;	cmd.st[2].v[1] = h; cmd.st[2].v[2] = -d;
 	cmd.st[3].v[0] =  w;	cmd.st[3].v[1] = h; cmd.st[3].v[2] =  d;	
-	obj.cmds.push_back(cmd);
+	if (faketype != fake_tree)
+		obj.cmds.push_back(cmd);
 	XObjWrite(path, obj);
 }
 
@@ -143,7 +153,7 @@ void	BuildFakeLib(const char * dir)
 		char	lname[400], oname[400];
 		if (gRepTable[n].obj_type == rep_Obj)
 		{
-			sprintf(lname, "%s.obj",FetchTokenString(gRepTable[n].obj_name));
+			sprintf(lname, "%s%s.obj",gObjLibPrefix.c_str(), FetchTokenString(gRepTable[n].obj_name));
 			sprintf(oname, "%s.obj",FetchTokenString(gRepTable[n].obj_name));
 			char * a = oname;
 			while (*a)
@@ -152,7 +162,7 @@ void	BuildFakeLib(const char * dir)
 				++a;
 			}
 			fprintf(lib, "EXPORT %s %s\n",lname, oname);
-			BuildOneFakeObject(dir, oname, gRepTable[n].width_max,gRepTable[n].depth_max, gRepTable[n].height_max);
+			BuildOneFakeObject(dir, oname, gRepTable[n].width_max,gRepTable[n].depth_max, gRepTable[n].height_max, (gRepTable[n].road && gRepTable[n].fill) ? fake_both : (gRepTable[n].road ? fake_build : fake_tree) );
 		}		
 /*
 		if (!gRepTable[n].fac_allow)

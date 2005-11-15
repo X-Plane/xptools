@@ -53,6 +53,8 @@ public:
 	float *	get(int index);
 	const float *	get(int index) const;
 
+	void	get_minmax(float minCoords[3], float maxCoords[3]) const;
+
 private:
 
 	typedef	vector<float>									key_type;

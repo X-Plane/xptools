@@ -28,7 +28,12 @@ class	DEMGeoMap;
 class	CDT;
 class	Pmwx;
 class	GISHalfedge;
+class	Bbox2;
 #include "ProgressUtils.h"
+#include "Skeleton.h"
+
+typedef pair<GISFace *, ComplexPolygonVector>	PreinsetFace;
+
 
 double	GetInsetForEdgeMeters(const GISHalfedge * inEdge);
 double	GetInsetForEdgeDegs(const GISHalfedge * inEdge);
@@ -40,15 +45,30 @@ void	RemoveDuplicatesAll(
 							ProgressFunc		inProg);
 
 void	InstantiateGTPolygon(
-							GISFace * 			inFace, 
-							const DEMGeoMap& 	inDEMs,
-							const CDT&			inMesh);
+							GISFace *				inFace,
+							const ComplexPolygon2&	inBounds,
+							const DEMGeoMap& 		inDEMs,
+							const CDT&				inMesh);
 
 void	InstantiateGTPolygonAll(
-							Pmwx&				ioMap,
-							const DEMGeoMap& 	inDEMs,
-							const CDT&			inMesh,
-							ProgressFunc		inProg);
+							const vector<PreinsetFace>&	inFaces,
+							const DEMGeoMap& 			inDEMs,
+							const CDT&					inMesh,
+							ProgressFunc				inProg);
+
+void	GenerateInsets(
+					Pmwx& 					ioMap,
+					CDT&					ioMesh,
+					const Bbox2&			inBounds,
+					const set<int>&			inTypes,
+					vector<PreinsetFace>&	outInsets,
+					ProgressFunc			func);
+
+void	GenerateInsets(
+					const set<GISFace *>&	inFaces,
+					vector<PreinsetFace>&	outInsets,
+					ProgressFunc			func);
+
 
 void	DumpPlacementCounts(void);
 

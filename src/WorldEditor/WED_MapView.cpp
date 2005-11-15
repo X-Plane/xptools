@@ -33,6 +33,7 @@
 #include "AssertUtils.h"
 #include "WED_MapZoomer.h"
 #include "WED_MapTool.h"
+#include "ObjTables.h"
 #include "WED_Progress.h"
 #include "WED_SelectionTool.h"
 #include "WED_CropTool.h"
@@ -63,10 +64,13 @@
 #define GL_GLEXT_FUNCTION_POINTERS 1
 #include <glext.h>
 
-#define DRAW_MESH_BORDERS 1
+#define DRAW_MESH_BORDERS 0
 
 #define DEBUG_PRINT_LAYERS 0
-#define DEBUG_PRINT_NORMAL 1
+
+#define DEBUG_PRINT_NORMALS 1
+
+#define DEBUG_PRINT_CORNERS 1
 
 
 const int 	kInfoStripHeight = 18;
@@ -537,6 +541,9 @@ void	WED_MapView::DrawSelf(void)
 							col[1] = rgbc.rgb[1];
 							col[2] = rgbc.rgb[2];
 							col[3] = 0.5;
+							if (fit->info().normal[2] < 0.97) {
+								col[0] = 1.0; col[1] = 0.0; col[2] = 0.0;
+							}
 						}
 						
 						glColor4fv(col);					glVertex2f(p1.x(), p1.y());
@@ -966,6 +973,7 @@ put in  color enums?
 	}	
 	
 	const char * nat = QuickToFile(gNaturalTerrainFile);
+	const char * obj = QuickToFile(gObjPlacementFile);
 	
 	XPLMDrawTranslucentDarkBox(r-strlen(nat) * w - 20, t - 30 + h, r - 15, t - 30 - 1);
 	XPLMDrawString(white, r - strlen(nat) * w - 20, t - 30, nat, NULL, xplmFont_Basic);
@@ -981,6 +989,10 @@ put in  color enums?
 
 	XPLMDrawTranslucentDarkBox(r-gReplacementRoads.size() * w - 20, t - 90 + h, r - 15, t - 90 - 1);
 	XPLMDrawString(white, r - gReplacementRoads.size() * w - 20, t - 90, gReplacementRoads.c_str(), NULL, xplmFont_Basic);
+
+	XPLMDrawTranslucentDarkBox(r-strlen(obj) * w - 20, t - 120 + h, r - 15, t - 120 - 1);
+	XPLMDrawString(white, r - strlen(obj) * w - 20, t - 120, obj, NULL, xplmFont_Basic);
+
 	
 	char	buf[50];
 	int	x, y;
@@ -1499,19 +1511,38 @@ char * WED_MapView::MonitorCaption(void)
 		if (flat_len != 0.0)
 			slope_head_f /= flat_len;
 		int slope_head = -asin(slope_head_f) * RAD_TO_DEG + 90.0;		
-		
-//		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
 
-#if DEBUG_PRINT_NORMAL
-
-		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.0f) ",
+#if DEBUG_PRINT_NORMALS		
+		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
+#endif	
+		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f) ",
 					acos(1.0-recent->info().debug_slope_dem) * RAD_TO_DEG,
 					acos(1.0-recent->info().debug_slope_tri) * RAD_TO_DEG,
 					recent->info().debug_temp,
 					recent->info().debug_temp_range,
 					recent->info().debug_rain,
-					-asin(recent->info().debug_heading) * RAD_TO_DEG + 90.0);
+//					-asin(recent->info().debug_heading) * RAD_TO_DEG + 90.0);
+					recent->info().debug_heading);
 
+#if DEBUG_PRINT_CORNERS
+		n += sprintf(buf+n,"%.0f,%.0f,%.0f ",
+						recent->vertex(0)->info().height,
+						recent->vertex(1)->info().height,
+						recent->vertex(2)->info().height);
+#endif
+
+#if HACK_CHECK_FLATCALCS
+		{
+			if (recent->info()->terrain == terrain_Water)
+			for (int vi = 0; vi < 3; ++vi)
+			{
+				DEMGeo& wetPts(gDem[dem_Elevation];
+				int xw, yw;
+				float e = wetPts.xy_nearest(ffi->vertex(vi)->point().x(),ffi->vertex(vi)->point().y(), xw, yw);
+				e = wetPts.get_lowest_heuristic(xw, yw, 5);
+			}
+			
+		}
 #endif
 
 #if DEBUG_PRINT_LAYERS

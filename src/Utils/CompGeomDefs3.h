@@ -127,7 +127,10 @@ struct	Segment3 {
 	Segment3& operator+=(const Vector3& rhs) { p1 += rhs; p2 += rhs; return *this; }
 
 	double	squared_length(void) const { return (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y) + (p2.z - p1.z) * (p2.z - p1.z); }
-	Point3	midpoint(double s=0.5) const { double ms = 1.0 - s; return Point3(p1.x * ms + p2.x * s,p1.y * ms + p2.y * s, p1.z * ms + p2.z * s); }
+	Point3	midpoint(double s=0.5) const { if (s == 0.0) return p1; if (s == 1.0) return p2; double ms = 1.0 - s; return Point3(
+												p1.x == p2.x ? p1.x : p1.x * ms + p2.x * s,
+												p1.y == p2.y ? p1.y : p1.y * ms + p2.y * s, 
+												p1.z == p2.z ? p1.z : p1.z * ms + p2.z * s); }
 	Point3	projection(const Point3& pt) const;
 	double	squared_distance(const Point3& p) const;
 	bool	collinear_has_on(const Point3& p) const;

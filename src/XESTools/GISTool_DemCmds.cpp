@@ -6,6 +6,7 @@
 #include "PerfUtils.h"
 #include "PlatformUtils.h"
 #include "XFileTwiddle.h"
+#include "MemFileUtils.h"
 
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
@@ -163,7 +164,8 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	return 0;
 }
 
-static DEMGeo	gMem;
+static DEMGeo	gMem, gMask;
+static bool has_mask = false;
 
 static int DoRemember(const vector<const char *>& args)
 {
@@ -171,12 +173,57 @@ static int DoRemember(const vector<const char *>& args)
 	return 0;
 }
 
-static int DoApply(const vector<const char *>& args)
+static int DoMaskRemember(const vector<const char *>& args)
 {
-	gDem[dem_Elevation].overlay(gMem);
+	gMask.resize(1201, 1201);
+	
+	MFMemFile * fi = MemFile_Open(args[0]);
+	if (!fi) { fprintf(stderr, "Could not open mask %s.\n", args[0]); return 1; }
+	
+	const unsigned char * p = (const unsigned char *) MemFile_GetBegin(fi);
+	
+	for (int y = 0; y < 1201; ++y)
+	for (int x = 0; x < 1201; ++x)
+		gMask(x,y) = *p++;
+	
+	MemFile_Close(fi);
+	has_mask = true;
 	return 0;
 }
 
+static int DoApply(const vector<const char *>& args)
+{	
+	if (has_mask)
+	{
+		DEMGeo& final(gDem[dem_Elevation]);
+		Assert(final.mWidth == gMem.mWidth);
+		Assert(final.mWidth == gMask.mWidth);
+		Assert(final.mHeight == gMem.mHeight);
+		Assert(final.mHeight == gMask.mHeight);
+
+		int x, y;
+		
+		for (y = 0; y < final.mHeight; ++y)
+		for (x = 0; x < final.mWidth; ++x)
+		{
+			float r = gMask.get(x,y);
+			DebugAssert(r >= 0.0 && r <= 255.0);
+			if (r != 0.0)
+			{
+				if (r == 255.0)
+					final(x,y) = gMem(x,y);
+				else {
+					r = r / 255.0;
+					final(x,y) = gMem(x,y) * r + final(x,y) * (1.0 - r);
+				}
+			}
+		}
+
+		return 0;	
+	} else 
+		gDem[dem_Elevation].overlay(gMem);
+	return 0;
+}
 
 static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit raw HGT DEM.", "" },
@@ -189,6 +236,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-glcc", 			2, 2, DoGLCCImport, 		"Import GLCC land use raster data.", "" },
 { "-bulksrtm",		4, 4, DoBulkConvertSRTM,	"Bulk convert SRTM data.", "" },
 { "-markoverlay",	0, 0, DoRemember,			"Remember the current elevation as overlay.", "" },
+{ "-readmask",		1, 1, DoMaskRemember,		"Remember the current elevation as overlay.", "" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
@@ -197,3 +245,4 @@ void	RegisterDemCmds(void)
 {
 	GISTool_RegisterCommands(sDemCmds);
 }
+

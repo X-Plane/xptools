@@ -2,7 +2,7 @@
 
 #define APL 1
 #define IBM 0
-#define DEV 1
+#define DEV 0
 #define TARGET_API_MAC_CARBON 1
 #include "DSFToolsPrefix.h"
 

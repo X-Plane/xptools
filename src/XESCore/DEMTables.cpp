@@ -37,7 +37,8 @@ NaturalTerrainIndex			gNaturalTerrainIndex;
 //TerrainPromoteTable			gTerrainPromoteTable;
 //ManTerrainTable				gManTerrainTable;
 BeachInfoTable				gBeachInfoTable;
-BeachPriorityTable			gBeachPriorityTable;
+BeachIndex					gBeachIndex;
+
 LandUseTransTable			gLandUseTransTable;
 
 static	void	ValidateNaturalTerrain(void);
@@ -56,6 +57,11 @@ inline double cosdeg(double deg)
 	if (deg == -90.0) return 0.0;
 	if (deg == -180.0) return -1.0;
 	return cos(deg * DEG_TO_RAD);
+}
+
+static string	MakeLit(const string& inName)
+{
+	return inName.substr(0, inName.length()-4) + "_LIT.png";
 }
 
 static	bool	LowerCheckName(string& ioName)
@@ -122,9 +128,8 @@ bool	ReadEnumDEM(const vector<string>& tokens, void * ref)
 bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
-	int priority;
 		
-	if (TokenizeLine(tokens, " ffffffffffffii", 
+	if (TokenizeLine(tokens, " fffffffffffffifii", 
 				&info.min_rain,
 				&info.max_rain,
 				&info.min_temp,
@@ -135,19 +140,23 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 				&info.max_slope,
 				&info.min_sea,
 				&info.max_sea,
-				&info.max_turn,
+				&info.max_turn_convex,
+				&info.max_turn_concave,
 				&info.min_len,
+				&info.require_open,
+				&info.min_area,
 				&info.x_beach_type,
-				&priority) != 15) return false;
+				&info.x_backup) != 18) return false;
 
-	info.max_turn = cosdeg(info.max_turn);
+	info.max_turn_convex = cosdeg(info.max_turn_convex);
+	info.max_turn_concave = cosdeg(info.max_turn_concave);
 
 	info.min_slope=cosdeg(info.min_slope);
 	info.max_slope=cosdeg(info.max_slope);			// NOTE: because we are storing cosigns, a flat beach is 1.0, so we are reversing the 
 	swap(info.min_slope,info.max_slope);			// ordering here.
-	DebugAssert(gBeachPriorityTable.count(info.x_beach_type)==0);
+	DebugAssert(gBeachIndex.count(info.x_beach_type) == 0);
+	gBeachIndex[info.x_beach_type] = gBeachInfoTable.size();
 	gBeachInfoTable.push_back(info);
-	gBeachPriorityTable[info.x_beach_type] = priority;
 	return true;
 }
 
@@ -156,6 +165,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	NaturalTerrainInfo_t	info;
 	string					ter_name, tex_name, proj;
 	
+	int						has_lit = 0;;	
 	int						auto_vary;
 	
 	info.climate = NO_VALUE;
@@ -211,7 +221,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	} else 	if (tokens[0] == "MTERRAIN") {
 
 		
-		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsfssefff",
+		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsifssefff",
 			&info.terrain,
 			&info.landuse,
 			&info.climate,
@@ -250,6 +260,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.layer,
 			&info.xon_dist,
 			&tex_name,
+			&has_lit,
 	//		&info.comp_tex,
 			&info.base_res,
 	//		&info.comp_res,
@@ -262,7 +273,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.map_rgb[0],
 			&info.map_rgb[1],
 			&info.map_rgb[2]
-			) != 40) return false;
+			) != 41) return false;
 		info.xon_hack = false;
 	
 	} else {
@@ -406,6 +417,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 				tex_vari += "2";
 			tex_vari += ".png";
 			info.base_tex = tex_vari;
+
+			if (has_lit)
+				info.lit_tex = MakeLit(info.base_tex);
+			else
+				info.lit_tex.clear();
 			
 			int rn = gNaturalTerrainTable.size();
 			gNaturalTerrainTable.push_back(info);
@@ -423,6 +439,11 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		LowerCheckName(ter_name);
 		info.name = LookupTokenCreate(ter_name.c_str());	
 		info.base_tex = tex_name;
+
+		if (has_lit)
+			info.lit_tex = MakeLit(info.base_tex);
+		else
+			info.lit_tex.clear();
 		
 		int rn = gNaturalTerrainTable.size();
 		gNaturalTerrainTable.push_back(info);
@@ -496,7 +517,7 @@ void	LoadDEMTables(void)
 	gNaturalTerrainIndex.clear();
 //	gTerrainPromoteTable.clear();
 	gBeachInfoTable.clear();
-	gBeachPriorityTable.clear();
+	gBeachIndex.clear();
 	sForests.clear();
 	gLandUseTransTable.clear();
 	

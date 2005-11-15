@@ -23,6 +23,7 @@
 #include "WED_FileCommands.h"
 #include "XPLMMenus.h"
 #include "DEMTables.h"
+#include "ObjTables.h"
 #include "XESIO.h"
 #include "PlatformUtils.h"
 #include "AptIO.h"
@@ -52,6 +53,7 @@ enum {
 	fileCmd_OpenLandUse,
 	fileCmd_OpenClimateXES,
 	fileCmd_OpenRoadXES,
+	fileCmd_OpenObjSpreadsheet,
 	fileCmd_Sep1,
 	fileCmd_Save,
 	fileCmd_SaveAs,
@@ -68,10 +70,11 @@ const char *	kFileCmdNames [] = {
 	"New",
 	"Open...",
 	"Open Airport...",
-	"Open Spreadsheet...",
+	"Open Terrain Spreadsheet...",
 	"Open LandUse Translation...",
 	"Pick Climate XES...",
 	"Pick Road XES...",
+	"Pick OBj Spreadsheet..",
 	"-",
 	"Save",
 	"Save As...",
@@ -89,6 +92,7 @@ static	const char	kCmdKeys [] = {
 	'O',	xplm_ControlFlag,
 	0,		0,
 	'O',	xplm_ControlFlag + xplm_OptionAltFlag,
+	0,		0,
 	0,		0,
 	0,		0,
 	0,		0,
@@ -202,6 +206,16 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a road file", "Open", 8, buf)) { gReplacementRoads.clear(); return; }
 				gReplacementRoads = buf;
+			}
+			break;
+
+		case fileCmd_OpenObjSpreadsheet:
+			{
+				char	buf[1024];
+				buf[0] = 0;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick an object spreadsheet", "Open", 26, buf)) return;
+				gObjPlacementFile = buf;
+				LoadObjTables();
 			}
 			break;
 			

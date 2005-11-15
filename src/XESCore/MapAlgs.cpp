@@ -35,6 +35,7 @@
 
 // Show all ideal insert lines for an inset!
 #define DEBUG_SHOW_INSET 0
+#define TRACE_TOPO_INTEGRATE 0
 
 #if DEBUG_SHOW_INSET
 #include "WED_Globals.h"
@@ -167,7 +168,7 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces)
 	}
 }
 
-void	CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge))
+void	CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds)
 {
 	if (road_types != NULL) DebugAssert(weight_func != NULL);
 	if (road_types == NULL) DebugAssert(weight_func == NULL);
@@ -177,15 +178,18 @@ void	CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> 
 	
 	const GISHalfedge * iter = ccb, * stop = ccb;
 	
+	if (outBounds)	(*outBounds) = iter->source()->point();
+	
 	do {
 		outPolygon.push_back(iter->source()->point());
+		if (outBounds) (*outBounds) += iter->source()->point();
 		if (road_types)
 			road_types->push_back(weight_func(iter));		
 		iter = iter->next();
 	} while (iter != stop);
 }
 
-void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge))
+void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds)
 {
 	outPolygon.clear();
 	if (road_types)	road_types->clear();
@@ -194,14 +198,14 @@ void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, ve
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
-		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func);
+		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, outBounds);
 	}
 	
 	for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
-		CCBToPolygon(*hole, outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func);		
+		CCBToPolygon(*hole, outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, NULL);		
 	}
 }
 
@@ -564,7 +568,7 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 	}	
 }
 
-int SimplifyMap(Pmwx& ioMap)
+int SimplifyMap(Pmwx& ioMap, bool inKillRivers)
 {
 // OPTIMIZE: it would be possible to utilize the inherent 'creation order' in the Pmwx
 // to store the edges-to-die instead of a vector.  However this is probably NOT the major
@@ -590,6 +594,7 @@ int SimplifyMap(Pmwx& ioMap)
 						h->face()->mAreaFeature.mParams != h->twin()->face()->mAreaFeature.mParams);
 		bool	river = h->mParams.find(he_IsRiver) != h->mParams.end();
 		if (river && (iWet || oWet)) river = false;	// Wipe out rivers that are inside water bodies or coastlines too.
+		if (inKillRivers) river = false;
 
 		if (!river && !stuff && !road && !coastline && !border && !lu_change)
 			deadList.push_back(he);
@@ -1227,6 +1232,10 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 	// Note: we want to index the larger pmwx.  This way we can rule out by spatial sorting a lot more checks.
 	if (mapA->number_of_halfedges() > mapB->number_of_halfedges())
 	{
+#if TRACE_TOPO_INTEGRATE
+		printf("Swapwping maps for speed.\n");
+#endif
+	
 		swap(mapA, mapB);
 	}
 	
@@ -1285,24 +1294,40 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p1));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p1.x,segB.p1.y);
+#endif						
 					}
 					if (__near_colinear(segA, segB.p2))
 					{
 						did_colinear = true;
 						splitA.insert(SplitMap::value_type(iterA, segB.p2));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p2.x,segB.p2.y);
+#endif						
 					}
 					if (__near_colinear(segB, segA.p1))
 					{
 						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p1));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p1.x,segA.p1.y);
+#endif						
 					}
 					if (__near_colinear(segB, segA.p2))
 					{
 						did_colinear = true;
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p2));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p2.x,segA.p2.y);
+#endif						
 					}
 				}
 				
@@ -1312,11 +1337,20 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 					{
 						splitA.insert(SplitMap::value_type(iterA, p));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,  p.x,p.y,  segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y);
+#endif						
+						
 					}
 					if (p != segB.p1 && p != segB.p2)
 					{
 						splitB.insert(SplitMap::value_type(he_box->second, p));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,  p.x,p.y,  segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y);
+#endif						
 					}
 				}
 			}
@@ -1340,24 +1374,40 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 						did_colinear = true;				
 						splitA.insert(SplitMap::value_type(iterA, segB.p1));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p1.x,segB.p1.y);
+#endif						
 					}
 					if (__near_colinear(segA, segB.p2))
 					{
 						did_colinear = true;				
 						splitA.insert(SplitMap::value_type(iterA, segB.p2));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,segB.p2.x,segB.p2.y);
+#endif						
 					}
 					if (__near_colinear(segB, segA.p1))
 					{
 						did_colinear = true;				
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p1));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p1.x,segA.p1.y);
+#endif						
 					}
 					if (__near_colinear(segB, segA.p2))
 					{
 						did_colinear = true;				
 						splitB.insert(SplitMap::value_type(he_box->second, segA.p2));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: near collinear.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,segA.p2.x,segA.p2.y);
+#endif						
 					}
 				}
 				
@@ -1367,11 +1417,19 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 					{
 						splitA.insert(SplitMap::value_type(iterA, p));
 						setA.insert(iterA);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split A %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
+								segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y,  p.x,p.y,  segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y);
+#endif						
 					}
 					if (p != segB.p1 && p != segB.p2)
 					{
 						splitB.insert(SplitMap::value_type(he_box->second, p));
 						setB.insert(he_box->second);
+#if TRACE_TOPO_INTEGRATE	
+						printf("Will split B %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf: intersect from %.15lf,%.15lf->%.15lf,%.15lf.\n",
+								segB.p1.x,segB.p1.y,segB.p2.x,segB.p2.y,  p.x,p.y,  segA.p1.x,segA.p1.y,segA.p2.x,segA.p2.y);
+#endif						
 					}
 				}
 			}
@@ -1399,9 +1457,20 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 				DebugAssert(origSegA.p1.x == spi->second.x);
 			if (origSegA.is_horizontal())
 				DebugAssert(origSegA.p1.y == spi->second.y);
-#endif				
-			mapA->split_edge(subdiv, spi->second);
-			subdiv = subdiv->next();
+#endif
+#if TRACE_TOPO_INTEGRATE
+			printf("Splitting A: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+				subdiv->source()->point().x,subdiv->source()->point().y,
+				subdiv->target()->point().x,subdiv->target()->point().y,
+				spi->second.x, spi->second.y);
+#endif
+		// BEN SAYS: HOLY CRAP!!! SCARY LAST MINUTE CHANGE!  Try the Dr it hurts strategy when a bad intersect gives us a vertex we already have.  Hope that in
+		// the actual render the fact that the locate WILL succeed will keep things from falling appart.
+//			if (mapA->locate_vertex(spi->second) == NULL)
+			{
+				mapA->split_edge(subdiv, spi->second);
+				subdiv = subdiv->next();
+			}
 		}
 	}
 
@@ -1426,8 +1495,17 @@ void TopoIntegrateMaps(Pmwx * mapA, Pmwx * mapB)
 			if (origSegB.is_horizontal())
 				DebugAssert(origSegB.p1.y == spi->second.y);
 #endif				
-			mapB->split_edge(subdiv, spi->second);
-			subdiv = subdiv->next();
+#if TRACE_TOPO_INTEGRATE
+			printf("Splitting B: %.15lf,%.15lf->%.15lf,%.15lf at %.15lf,%.15lf\n", 
+				subdiv->source()->point().x,subdiv->source()->point().y,
+				subdiv->target()->point().x,subdiv->target()->point().y,
+				spi->second.x, spi->second.y);
+#endif
+//			if (mapB->locate_vertex(spi->second) == NULL)
+			{
+				mapB->split_edge(subdiv, spi->second);
+				subdiv = subdiv->next();
+			}
 		}
 	}	
 }

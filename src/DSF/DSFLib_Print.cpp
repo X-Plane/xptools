@@ -33,6 +33,7 @@
 #define PRINT_IT 0
 #define PRINT_IT_DEF 1
 #define CHECK_IT 0
+#define OBJ_HISTO 1
 
 static	int sDSF_Patches = 0;
 static	int sDSF_Tris = 0;
@@ -41,12 +42,26 @@ static	int sDSF_Objs = 0;
 static	int sDSF_Chains = 0;
 static	int sDSF_ShapePoints = 0;
 
+static	double	sWest = 180.0;
+static	double	sEast = -180.0;
+static	double	sNorth = -90.0;
+static	double	sSouth = 90.0;
+
+static int sBad = 0;
 #if CHECK_IT
 
 static	int	sDSF_CheckType = -1;
 static	int sDSF_VertNum = 0;
 static	double	sTri_SaveLast[2];
 static	double	sTri_SaveFirst[2];
+#endif
+
+#if OBJ_HISTO
+
+static vector<string>	obj_names;
+static vector<int>		obj_usages;
+static int				obj_total;
+
 #endif
 
 #define	REF	(FILE *) inRef
@@ -65,6 +80,11 @@ void DSFPrint_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 
 void DSFPrint_AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
+#if OBJ_HISTO
+obj_names.push_back(inPartialPath);
+obj_usages.push_back(0);
+#endif
+
 #if PRINT_IT_DEF
 	fprintf(REF, "Object Def: %s\n", inPartialPath);
 #endif	
@@ -86,6 +106,10 @@ void DSFPrint_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 
 void DSFPrint_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 {
+	if (strcmp(inProp,"sim/west")==0)	sWest = atoi(inValue);
+	if (strcmp(inProp,"sim/east")==0)	sEast = atoi(inValue);
+	if (strcmp(inProp,"sim/north")==0)	sNorth = atoi(inValue);
+	if (strcmp(inProp,"sim/south")==0)	sSouth = atoi(inValue);
 #if PRINT_IT_DEF
 	fprintf(REF, "Property %s=%s\n", inProp, inValue);
 #endif	
@@ -129,6 +153,13 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 	fprintf(REF, "\n");
 #endif	
 	++sDSF_Tris;
+
+	if (inData[0] < sWest || inData[0] > sEast ||
+		inData[1] < sSouth || inData[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inData[0], inData[1]);	
+		sBad = true;
+	}
 
 #if CHECK_IT
 	// DSF triangle validity checks.
@@ -234,6 +265,17 @@ void DSFPrint_AddObject(
 				double			inRotation,
 				void *			inRef)
 {
+#if OBJ_HISTO
+	obj_usages[inObjectType]++;
+	obj_total++;
+#endif
+	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
+		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		sBad = true;
+	}
+
 #if PRINT_IT
 	fprintf(REF, "Got object type %d, loc %lf,%lf rotate %lf\n",
 		inObjectType, inCoordinates[0],inCoordinates[1],inRotation);
@@ -249,6 +291,12 @@ void DSFPrint_BeginSegment(
 				bool			inCurved,
 				void *			inRef)
 {
+	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
+		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		sBad = true;
+	}
 	++sDSF_Chains;
 #if PRINT_IT
 	fprintf(REF,"Start segment type=%d,subtype=%d, from %d ",
@@ -265,6 +313,12 @@ void DSFPrint_AddSegmentShapePoint(
 				bool			inCurved,
 				void *			inRef)
 {
+	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
+		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		sBad = true;
+	}
 	++sDSF_ShapePoints;
 #if PRINT_IT
 	if (inCurved)
@@ -280,6 +334,12 @@ void DSFPrint_EndSegment(
 				bool			inCurved,
 				void *			inRef)
 {
+	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
+		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		sBad = true;
+	}
 #if PRINT_IT
 	fprintf(REF,"   End segment to %d ",inEndNodeID);
 	if (inCurved)
@@ -311,6 +371,12 @@ void DSFPrint_AddPolygonPoint(
 				double *		inCoordinates,
 				void *			inRef)
 {
+	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
+		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
+	{
+		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);	
+		sBad = true;
+	}
 #if PRINT_IT
 	fprintf(REF, "       ");
 	for (int n = 0; n < dsf_print_depth; ++n)
@@ -336,7 +402,7 @@ void DSFPrint_EndPolygon(
 }
 #undef REF
 
-void	PrintDSFFile(const char * inPath, FILE * output)
+int	PrintDSFFile(const char * inPath, FILE * output, bool print_it)
 {
 	sDSF_Patches = 0;
 	sDSF_Tris = 0;
@@ -344,8 +410,15 @@ void	PrintDSFFile(const char * inPath, FILE * output)
 	sDSF_Objs = 0;
 	sDSF_Chains = 0;
 	sDSF_ShapePoints = 0;
+	sBad = 0;
 
-	fprintf(output, "Dumping file %s\n", inPath);
+#if OBJ_HISTO
+obj_names.clear();
+obj_usages.clear();
+obj_total = 0;
+#endif
+	
+	if (print_it) fprintf(output, "Dumping file %s\n", inPath);
 	DSFCallbacks_t	callbacks;
 	callbacks.NextPass_f = DSFPrint_NextPass;
 	callbacks.AcceptTerrainDef_f = DSFPrint_AcceptTerrainDef;
@@ -378,8 +451,26 @@ void	PrintDSFFile(const char * inPath, FILE * output)
 #else
 	int err = DSFReadFile(inPath, &callbacks, NULL, output);	
 #endif	
-	fprintf(output,"Done - error = %d (%s) ", err, dsfErrorMessages[err]);
-	fprintf(output,"Patches=%d, Tris=%d, polys=%d, objs=%d ",
+	if (print_it) fprintf(output,"Done - error = %d (%s) ", err, dsfErrorMessages[err]);
+	if (print_it) fprintf(output,"Patches=%d, Tris=%d, polys=%d, objs=%d ",
 				sDSF_Patches,sDSF_Tris / 3,sDSF_Polys,sDSF_Objs);
-	fprintf(output, "Chains=%d, Shape Points=%d\n",sDSF_Chains, sDSF_ShapePoints);
-}
+	if (print_it) fprintf(output, "Chains=%d, Shape Points=%d\n",sDSF_Chains, sDSF_ShapePoints);
+	if (err == 0 && sBad) return 1;
+
+#if OBJ_HISTO
+	if (obj_total)
+	{
+		multimap<int, string>	histo;
+		for (int n = 0; n < obj_names.size(); ++n)
+		{
+			histo.insert(multimap<int, string>::value_type(obj_usages[n], obj_names[n]));
+		}
+		
+		for (multimap<int, string>::iterator iter = histo.begin(); iter != histo.end(); ++iter)
+		{
+			printf("%5d %3.2f %s\n", iter->first, (float) iter->first / (float) obj_total, iter->second.c_str());
+		}
+	}
+#endif
+	return err;
+}	

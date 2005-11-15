@@ -108,7 +108,7 @@ void	FindConnectedWetFaces(GISFace * inFace, set<GISFace *>& outFaces);
  * of per-side weights (0th weight is the CCB edge passed in) are also built up.
  *
  */
-void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge));
+void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double> * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds);
 
 /*
  * FaceToComplexPolygon
@@ -117,7 +117,7 @@ void		CCBToPolygon(const GISHalfedge * ccb, Polygon2& outPolygon, vector<double>
  * Like above a weighting function is used.
  *
  */
-void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge));
+void		FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, vector<vector<double> > * road_types, double (* weight_func)(const GISHalfedge * edge), Bbox2 * outBounds);
 
 /*
  * ComplexPolygonToPmwx
@@ -263,7 +263,7 @@ void ReduceToWaterBodies(Pmwx& ioMap);
  * of halfedges in a CCB.
  *
  */
-int SimplifyMap(Pmwx& ioMap);
+int SimplifyMap(Pmwx& ioMap, bool inKillRivers);
 
 /*
  * TODO - DOC THIS 

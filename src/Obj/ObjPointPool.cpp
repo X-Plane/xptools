@@ -79,3 +79,20 @@ const float *	ObjPointPool::get(int index) const
 {
 	return &mData[index * mDepth];
 }
+
+void ObjPointPool::get_minmax(float minCoords[3], float maxCoords[3]) const
+{
+	if (mData.empty()) return;
+	if (mDepth < 3) return;
+	
+	minCoords[0] = maxCoords[0] = mData[0];
+	minCoords[1] = maxCoords[1] = mData[1];
+	minCoords[2] = maxCoords[2] = mData[2];
+	
+	for (int n = mDepth; n < mData.size(); n += mDepth)
+	{
+		maxCoords[0] = max(maxCoords[0], mData[n+0]);	minCoords[0] = min(minCoords[0], mData[n+0]);
+		maxCoords[1] = max(maxCoords[1], mData[n+1]);	minCoords[1] = min(minCoords[1], mData[n+1]);
+		maxCoords[2] = max(maxCoords[2], mData[n+2]);	minCoords[2] = min(minCoords[2], mData[n+2]);
+	}
+}

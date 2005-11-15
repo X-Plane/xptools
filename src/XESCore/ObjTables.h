@@ -59,6 +59,9 @@ struct	RepInfo_t {
 //	float	freq;
 //	int		max_num;
 
+	int		road;
+	int		fill;
+
 	// OBJECT
 	int		obj_type;	
 	int		obj_name;
@@ -136,12 +139,21 @@ int QueryUsableObjsBySize(
 					float			inHeightMax,	// If min = max, we want an exact height!
 					
 //					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
-					int *			outResults,
-					
+					int				road,
+					int				fill,
+										
+					int *			outResults,					
 					int				inMaxResults);
 
 void IncrementRepUsage(int inRep);
 void ResetUsages(void);
 bool IsWellKnownFeature(int inFeat);
+bool IsFeatureObject(int inName);
+void GetObjTerrainTypes(set<int>& outTypes);
+
+void CheckObjTable(void);
+
+extern	string	gObjPlacementFile;
+extern string	gObjLibPrefix;
 	
 #endif /* OBJTABLES_H */

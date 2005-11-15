@@ -289,7 +289,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<
 	}
 }
 
-void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, ProgressFunc prog)
+void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
 {
 	int x1, x2, x, y1, y2, y;
 	Point2 p1, p2;
@@ -365,7 +365,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	if (crop)
 	{
 		CropMap(ioMap, p1.x, p1.y, p2.x, p2.y, false, prog);
-		SimplifyMap(ioMap);
+		SimplifyMap(ioMap, kill_rivers);
 	}
 	
 }

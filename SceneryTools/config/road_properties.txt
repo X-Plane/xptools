@@ -11,42 +11,42 @@
 #ROAD_GENERAL		ROAD TYPE			DENSITY FACTOR			ONE-WAY VARIANT
 ROAD_GENERAL		road_PrimaryLimUnsep		0.5				NO_VALUE
 ROAD_GENERAL		road_PrimaryLimUnsepRail	0.5				NO_VALUE
-ROAD_GENERAL		road_PrimaryLimSep		0.5				NO_VALUE
+ROAD_GENERAL		road_PrimaryLimSep			0.5				NO_VALUE
 ROAD_GENERAL		road_PrimaryLimSepRail		0.5				NO_VALUE
 ROAD_GENERAL		road_PrimaryLimOneway		0.5				NO_VALUE
 ROAD_GENERAL		road_PrimaryLimOnewayRail	0.5				NO_VALUE
 
-ROAD_GENERAL		road_PrimaryUnsep		0.25				NO_VALUE
-ROAD_GENERAL		road_PrimaryUnsepRail		0.25				NO_VALUE
-ROAD_GENERAL		road_PrimarySep			0.25				NO_VALUE
-ROAD_GENERAL		road_PrimarySepRail		0.25				NO_VALUE
+ROAD_GENERAL		road_PrimaryUnsep			0.25			NO_VALUE
+ROAD_GENERAL		road_PrimaryUnsepRail		0.25			NO_VALUE
+ROAD_GENERAL		road_PrimarySep				0.25			NO_VALUE
+ROAD_GENERAL		road_PrimarySepRail			0.25			NO_VALUE
 
-ROAD_GENERAL		road_SecondUnsep		0.2				NO_VALUE
+ROAD_GENERAL		road_SecondUnsep			0.2				NO_VALUE
 ROAD_GENERAL		road_SecondUnsepRail		0.2				NO_VALUE
-ROAD_GENERAL		road_SecondSep			0.2				NO_VALUE
-ROAD_GENERAL		road_SecondSepRail		0.2				NO_VALUE
+ROAD_GENERAL		road_SecondSep				0.2				NO_VALUE
+ROAD_GENERAL		road_SecondSepRail			0.2				NO_VALUE
 
-ROAD_GENERAL		road_LocalUnsep			0.1				NO_VALUE
-ROAD_GENERAL		road_LocalUnsepRail		0.1				NO_VALUE
-ROAD_GENERAL		road_LocalSep			0.1				NO_VALUE
-ROAD_GENERAL		road_LocalSepRail		0.1				NO_VALUE
+ROAD_GENERAL		road_LocalUnsep				0.1				NO_VALUE
+ROAD_GENERAL		road_LocalUnsepRail			0.1				NO_VALUE
+ROAD_GENERAL		road_LocalSep				0.1				NO_VALUE
+ROAD_GENERAL		road_LocalSepRail			0.1				NO_VALUE
 
-ROAD_GENERAL		road_Culdesac			0.1				NO_VALUE
-ROAD_GENERAL		road_TrafficCircle		0.1				NO_VALUE
+ROAD_GENERAL		road_Culdesac				0.1				NO_VALUE
+ROAD_GENERAL		road_TrafficCircle			0.1				NO_VALUE
 
-ROAD_GENERAL		road_4WDUnsep			0.005				NO_VALUE
-ROAD_GENERAL		road_Ramp			0.05 				NO_VALUE
-ROAD_GENERAL		road_Service			0.05 				NO_VALUE
-ROAD_GENERAL		road_Alley			0.05 				NO_VALUE
-ROAD_GENERAL		road_Driveway			0.05				NO_VALUE
+ROAD_GENERAL		road_4WDUnsep				0.005			NO_VALUE
+ROAD_GENERAL		road_Ramp					0.05 			NO_VALUE
+ROAD_GENERAL		road_Service				0.05 			NO_VALUE
+ROAD_GENERAL		road_Alley					0.05 			NO_VALUE
+ROAD_GENERAL		road_Driveway				0.05			NO_VALUE
 
-ROAD_GENERAL		walk_Unknown			0.001				NO_VALUE
-ROAD_GENERAL		walk_Trail			0.001				NO_VALUE
-ROAD_GENERAL		walk_Stairway			0.001				NO_VALUE
+ROAD_GENERAL		walk_Unknown				0.001			NO_VALUE
+ROAD_GENERAL		walk_Trail					0.001			NO_VALUE
+ROAD_GENERAL		walk_Stairway				0.001			NO_VALUE
 
-ROAD_GENERAL		train_Generic			0.1				NO_VALUE
-ROAD_GENERAL		train_Spur			0.2				NO_VALUE
-ROAD_GENERAL		powerline_Generic		0.01				NO_VALUE
+ROAD_GENERAL		train_Generic				0.1				NO_VALUE
+ROAD_GENERAL		train_Spur					0.2				NO_VALUE
+ROAD_GENERAL		powerline_Generic			0.01			NO_VALUE
 
 ####################################################################################################################################################################
 # ROAD PICKING
@@ -55,84 +55,84 @@ ROAD_GENERAL		powerline_Generic		0.01				NO_VALUE
 # Right now X-Plane only looks at urban density.
 #	
 ROAD_PICK	GENERIC TYPE				URBAN DENSITY		SPECIFIC TYPE
-ROAD_PICK	road_PrimaryLimUnsep			0%	50%		net_FourLaneUSHighway
+ROAD_PICK	road_PrimaryLimUnsep			0%	50%			net_FourLaneUSHighway
 ROAD_PICK	road_PrimaryLimUnsep			50%	100%		net_SixLaneUSHighway						
-ROAD_PICK	road_PrimaryLimUnsepRail		0%	50%		net_FourLaneUSHighwayWithTrain				
+ROAD_PICK	road_PrimaryLimUnsepRail		0%	50%			net_FourLaneUSHighwayWithTrain				
 ROAD_PICK	road_PrimaryLimUnsepRail		50%	100%		net_SixLaneUSHighwayWithTrain				
 
 #Experiment - use one-ways for unsep.
-#ROAD_PICK	road_PrimaryLimUnsep			0%	50%		net_FourLaneUSHighwayOneway
+#ROAD_PICK	road_PrimaryLimUnsep			0%	50%			net_FourLaneUSHighwayOneway
 #ROAD_PICK	road_PrimaryLimUnsep			50%	100%		net_SixLaneUSHighwayOneway						
-#ROAD_PICK	road_PrimaryLimUnsepRail		0%	50%		net_FourLaneUSHighwayOnewayWithTrain				
+#ROAD_PICK	road_PrimaryLimUnsepRail		0%	50%			net_FourLaneUSHighwayOnewayWithTrain				
 #ROAD_PICK	road_PrimaryLimUnsepRail		50%	100%		net_SixLaneUSHighwayOnewayWithTrain				
 
 
-ROAD_PICK	road_PrimaryLimSep			0%	30%		net_FourLaneUSHighwaySeparatedNoGuardRails	
-ROAD_PICK	road_PrimaryLimSep			30%	50%		net_FourLaneUSHighwaySeparated				
-ROAD_PICK	road_PrimaryLimSep			50%	100%		net_SixLaneUSHighwaySeparated				
-ROAD_PICK	road_PrimaryLimSepRail			0%	50%		net_FourLaneUSHighwaySeparatedWithTrain		
+ROAD_PICK	road_PrimaryLimSep				0%	30%			net_FourLaneUSHighwaySeparatedNoGuardRails	
+ROAD_PICK	road_PrimaryLimSep				30%	50%			net_FourLaneUSHighwaySeparated				
+ROAD_PICK	road_PrimaryLimSep				50%	100%		net_SixLaneUSHighwaySeparated				
+ROAD_PICK	road_PrimaryLimSepRail			0%	50%			net_FourLaneUSHighwaySeparatedWithTrain		
 ROAD_PICK	road_PrimaryLimSepRail			50%	100%		net_SixLaneUSHighwaySeparatedWithTrain		
-ROAD_PICK	road_PrimaryLimOneway			0%	50%		net_FourLaneUSHighwayOneway
+ROAD_PICK	road_PrimaryLimOneway			0%	50%			net_FourLaneUSHighwayOneway
 ROAD_PICK	road_PrimaryLimOneway			50%	100%		net_SixLaneUSHighwayOneway
-ROAD_PICK	road_PrimaryLimOnewayRail		0%	50%		net_FourLaneUSHighwayOnewayWithTrain
+ROAD_PICK	road_PrimaryLimOnewayRail		0%	50%			net_FourLaneUSHighwayOnewayWithTrain
 ROAD_PICK	road_PrimaryLimOnewayRail		50%	100%		net_SixLaneUSHighwayOnewayWithTrain
 
-ROAD_PICK	road_PrimaryUnsep			0%	50%		net_PrimaryUndivided
-ROAD_PICK	road_PrimaryUnsep			50%	100%		net_PrimaryUndividedWithSidewalks
-ROAD_PICK	road_PrimaryUnsepRail			0%	50%		net_PrimaryUndividedWithTrains
+ROAD_PICK	road_PrimaryUnsep				0%	50%			net_PrimaryUndivided
+ROAD_PICK	road_PrimaryUnsep				50%	100%		net_PrimaryUndividedWithSidewalks
+ROAD_PICK	road_PrimaryUnsepRail			0%	50%			net_PrimaryUndividedWithTrains
 ROAD_PICK	road_PrimaryUnsepRail			50%	100%		net_PrimaryUndividedWithSidewalksWithTrains
 
-ROAD_PICK	road_PrimarySep				0%	50%		net_PrimaryDivided
-ROAD_PICK	road_PrimarySep				50%	100%		net_PrimaryDividedWithSidewalks
-ROAD_PICK	road_PrimarySepRail			0%	50%		net_PrimaryDividedWithTrains
-ROAD_PICK	road_PrimarySepRail			50%	100%		net_PrimaryDividedWithSidewalksWithTrains
+ROAD_PICK	road_PrimarySep					0%	50%			net_PrimaryDivided
+ROAD_PICK	road_PrimarySep					50%	100%		net_PrimaryDividedWithSidewalks
+ROAD_PICK	road_PrimarySepRail				0%	50%			net_PrimaryDividedWithTrains
+ROAD_PICK	road_PrimarySepRail				50%	100%		net_PrimaryDividedWithSidewalksWithTrains
 
 # The presence of an embedded train line or separation promotes a secondary road to primary.
-ROAD_PICK	road_SecondUnsep			0%	30%		net_SecondaryRoadPassing
-ROAD_PICK	road_SecondUnsep			30%	50%		net_SecondaryRoad
-ROAD_PICK	road_SecondUnsep			50%	100%		net_SecondaryRoadWithSidewalks
-ROAD_PICK	road_SecondUnsepRail			0%	50%		net_PrimaryUndividedWithTrains
+ROAD_PICK	road_SecondUnsep				0%	30%			net_SecondaryRoadPassing
+ROAD_PICK	road_SecondUnsep				30%	50%			net_SecondaryRoad
+ROAD_PICK	road_SecondUnsep				50%	100%		net_SecondaryRoadWithSidewalks
+ROAD_PICK	road_SecondUnsepRail			0%	50%			net_PrimaryUndividedWithTrains
 ROAD_PICK	road_SecondUnsepRail			50%	100%		net_PrimaryUndividedWithSidewalksWithTrains
 
-ROAD_PICK	road_SecondSep				0%	50%		net_PrimaryDivided
-ROAD_PICK	road_SecondSep				50%	100%		net_PrimaryDividedWithSidewalks
-ROAD_PICK	road_SecondSepRail			0%	50%		net_PrimaryDividedWithTrains
-ROAD_PICK	road_SecondSepRail			50%	100%		net_PrimaryDividedWithSidewalksWithTrains
+ROAD_PICK	road_SecondSep					0%	50%			net_PrimaryDivided
+ROAD_PICK	road_SecondSep					50%	100%		net_PrimaryDividedWithSidewalks
+ROAD_PICK	road_SecondSepRail				0%	50%			net_PrimaryDividedWithTrains
+ROAD_PICK	road_SecondSepRail				50%	100%		net_PrimaryDividedWithSidewalksWithTrains
 
 # Local roads may be promoted to secondary roads if necessary, or even primaries.
 # This is both designed to keep big cities looking big and to cover for trains.
-ROAD_PICK	road_LocalUnsep				0%	50%		net_LocalRoad
-ROAD_PICK	road_LocalUnsep				50%	100%		net_SecondaryRoadWithSidewalks
-ROAD_PICK	road_LocalUnsepRail			0%	30%		net_LocalRoad
-ROAD_PICK	road_LocalUnsepRail			30%	100%		net_PrimaryUndividedWithTrains
-ROAD_PICK	road_LocalSep				0%	30%		net_LocalRoad
-ROAD_PICK	road_LocalSep				30%	100%		net_PrimaryDivided
-ROAD_PICK	road_LocalSepRail			0%	30%		net_LocalRoad
-ROAD_PICK	road_LocalSepRail			30%	100%		net_PrimaryDividedWithTrains
+ROAD_PICK	road_LocalUnsep					0%	50%			net_LocalRoad
+ROAD_PICK	road_LocalUnsep					50%	100%		net_SecondaryRoadWithSidewalks
+ROAD_PICK	road_LocalUnsepRail				0%	30%			net_LocalRoad
+ROAD_PICK	road_LocalUnsepRail				30%	100%		net_PrimaryUndividedWithTrains
+ROAD_PICK	road_LocalSep					0%	30%			net_LocalRoad
+ROAD_PICK	road_LocalSep					30%	100%		net_PrimaryDivided
+ROAD_PICK	road_LocalSepRail				0%	30%			net_LocalRoad
+ROAD_PICK	road_LocalSepRail				30%	100%		net_PrimaryDividedWithTrains
 
-ROAD_PICK	road_Culdesac				0%	100%		net_CulDeSac
-ROAD_PICK	road_TrafficCircle			0%	30%		net_AccessRamp
-ROAD_PICK	road_TrafficCircle			30%	70%		net_SecondaryRoad
-ROAD_PICK	road_TrafficCircle			70%	100%		net_PrimaryDivided
+ROAD_PICK	road_Culdesac					0%	100%		net_CulDeSac
+ROAD_PICK	road_TrafficCircle				0%	30%			net_AccessRamp
+ROAD_PICK	road_TrafficCircle				30%	70%			net_SecondaryRoad
+ROAD_PICK	road_TrafficCircle				70%	100%		net_PrimaryDivided
 
-ROAD_PICK	road_4WDUnsep				0%	100%		net_4WDRoad
-ROAD_PICK	road_Ramp				0%	80%		net_AccessRamp
-ROAD_PICK	road_Ramp				80%	100%		net_PrimaryDivided
-ROAD_PICK	road_Service				0%	20%		net_LocalRoad
-ROAD_PICK	road_Service				20%	100%		net_AccessRamp
-ROAD_PICK	road_Alley				0%	100%		net_Alley
-ROAD_PICK	road_Driveway				0%	100%		net_Driveway
+ROAD_PICK	road_4WDUnsep					0%	100%		net_4WDRoad
+ROAD_PICK	road_Ramp						0%	80%			net_AccessRamp
+ROAD_PICK	road_Ramp						80%	100%		net_PrimaryDivided
+ROAD_PICK	road_Service					0%	20%			net_LocalRoad
+ROAD_PICK	road_Service					20%	100%		net_AccessRamp
+ROAD_PICK	road_Alley						0%	100%		net_Alley
+ROAD_PICK	road_Driveway					0%	100%		net_Driveway
 
-ROAD_PICK	walk_Unknown				0%	50%		net_Walking
-ROAD_PICK	walk_Unknown				50%	100%		net_WalkingCity
-ROAD_PICK	walk_Trail				0%	50%		net_Walking
-ROAD_PICK	walk_Trail				50%	100%		net_WalkingCity
-ROAD_PICK	walk_Stairway				0%	100%		net_WalkingCitySteps
+ROAD_PICK	walk_Unknown					0%	50%			net_Walking
+ROAD_PICK	walk_Unknown					50%	100%		net_WalkingCity
+ROAD_PICK	walk_Trail						0%	50%			net_Walking
+ROAD_PICK	walk_Trail						50%	100%		net_WalkingCity
+ROAD_PICK	walk_Stairway					0%	100%		net_WalkingCitySteps
 
-ROAD_PICK	train_Generic				0%	100%		net_TrainsTwoWay
-ROAD_PICK	train_Spur				0%	100%		net_TrainsOneWay
+ROAD_PICK	train_Generic					0%	100%		net_TrainsTwoWay
+ROAD_PICK	train_Spur						0%	100%		net_TrainsOneWay
 
-ROAD_PICK	powerline_Generic			0%	100%		net_Powerlines
+ROAD_PICK	powerline_Generic				0%	100%		net_Powerlines
 
 
 
@@ -150,60 +150,55 @@ ROAD_PICK	powerline_Generic			0%	100%		net_Powerlines
 # X-Plane road net subtype - VERY IMPORTANT - this is the actual number in the .net file.  DO NOT CHANGE these values,
 # since X-Plane depends on them.
 #
-# ROAD_PROP	SPECIFIC ROAD TYPE				WIDTH	PADDING	BLDINGS	MAX	MAX	MIN 	MAX	USAGE		X-PLANE OVERPASS
-# 											SLOPE	HEIGHT	LENGTH	LENGTH	TYPE		TYPE	TYPE
-ROAD_PROP	NO_VALUE					0	0	0	0.1				use_Limited	0	0
-ROAD_PROP	net_SixLaneUSHighway				30	10	0	0.03				use_Limited	1	2
+# ROAD_PROP	SPECIFIC ROAD TYPE							WIDTH	PAD	BLD	MAX		MAX	MIN MAX	USAGE		SIM OVERPASS
+# 																		SLOPE	HGT	LEN	LEN	TYPE		TYP	TYPE
+ROAD_PROP	NO_VALUE									0		0	0	0.1					use_Limited	0	0
+ROAD_PROP	net_SixLaneUSHighway						30		10	0	0.03				use_Limited	1	2
+ROAD_PROP	net_SixLaneUSHighwaySeparated				35		10	0	0.03				use_Limited	3	4
+ROAD_PROP	net_SixLaneUSHighwayOneway					14.5	5	0	0.03				use_Limited	5	6
 
-ROAD_PROP	net_SixLaneUSHighwaySeparated			35	10	0	0.03				use_Limited	3	4
+ROAD_PROP	net_SixLaneUSHighwayWithTrain				37		10	0	0.03				use_Limited	7	8
+ROAD_PROP	net_SixLaneUSHighwaySeparatedWithTrain		42		10	0	0.03				use_Limited	9	10
+ROAD_PROP	net_SixLaneUSHighwayOnewayWithTrain			18.5	5	0	0.03				use_Limited	11	12
 
-ROAD_PROP	net_SixLaneUSHighwayOneway			14.5	5	0	0.03				use_Limited	5	6
+ROAD_PROP	net_FourLaneUSHighway						22		8	0	0.03				use_Limited	13	14
+ROAD_PROP	net_FourLaneUSHighwaySeparated				27		8	0	0.03				use_Limited	15	16
+ROAD_PROP	net_FourLaneUSHighwaySeparatedNoGuardRails	27		8	0	0.03				use_Limited	17	16
+ROAD_PROP	net_FourLaneUSHighwayOneway					10.5	4	0	0.03				use_Limited	18	19
 
-ROAD_PROP	net_SixLaneUSHighwayWithTrain			37	10	0	0.03				use_Limited	7	8
-
-ROAD_PROP	net_SixLaneUSHighwaySeparatedWithTrain		42	10	0	0.03				use_Limited	9	10
-
-ROAD_PROP	net_SixLaneUSHighwayOnewayWithTrain		18.5	5	0	0.03				use_Limited	11	12
-
-
-ROAD_PROP	net_FourLaneUSHighway				22	8	0	0.03				use_Limited	13	14
-ROAD_PROP	net_FourLaneUSHighwaySeparated			27	8	0	0.03				use_Limited	15	16
-ROAD_PROP	net_FourLaneUSHighwaySeparatedNoGuardRails	27	8	0	0.03				use_Limited	17	16
-ROAD_PROP	net_FourLaneUSHighwayOneway			10.5	4	0	0.03				use_Limited	18	19
-
-
-ROAD_PROP	net_FourLaneUSHighwayWithTrain			29	8	0	0.03				use_Limited	20	21
-ROAD_PROP	net_FourLaneUSHighwaySeparatedWithTrain		34	8	0	0.03				use_Limited	22	23
+ROAD_PROP	net_FourLaneUSHighwayWithTrain				29		8	0	0.03				use_Limited	20	21
+ROAD_PROP	net_FourLaneUSHighwaySeparatedWithTrain		34		8	0	0.03				use_Limited	22	23
 ROAD_PROP	net_FourLaneUSHighwayOnewayWithTrain		14.5	4	0	0.03				use_Limited	24	25
 
-ROAD_PROP	net_PrimaryUndivided				16	4	1	0.2				use_Street	26	27
-ROAD_PROP	net_PrimaryUndividedWithSidewalks		19	4	1	0.2				use_Street	28	29
-ROAD_PROP	net_PrimaryUndividedWithTrains			24	4	1	0.2				use_Street	30	31
-ROAD_PROP	net_PrimaryUndividedWithSidewalksWithTrains	27	4	1	0.2				use_Street	32	33
+
+ROAD_PROP	net_PrimaryUndivided						16		4	1	0.2					use_Street	26	27
+ROAD_PROP	net_PrimaryUndividedWithSidewalks			19		4	1	0.2					use_Street	28	29
+ROAD_PROP	net_PrimaryUndividedWithTrains				24		4	1	0.2					use_Street	30	31
+ROAD_PROP	net_PrimaryUndividedWithSidewalksWithTrains	27		4	1	0.2					use_Street	32	33
 																			 	
-ROAD_PROP	net_PrimaryDivided				20	4	1	0.2				use_Street	34	35
-ROAD_PROP	net_PrimaryDividedWithSidewalks			23	4	1	0.2				use_Street	36	37
-ROAD_PROP	net_PrimaryDividedWithTrains			28	4	1	0.2				use_Street	38	39
-ROAD_PROP	net_PrimaryDividedWithSidewalksWithTrains	31	4	1	0.2				use_Street	40	41
+ROAD_PROP	net_PrimaryDivided							20		4	1	0.2					use_Street	34	35
+ROAD_PROP	net_PrimaryDividedWithSidewalks				23		4	1	0.2					use_Street	36	37
+ROAD_PROP	net_PrimaryDividedWithTrains				28		4	1	0.2					use_Street	38	39
+ROAD_PROP	net_PrimaryDividedWithSidewalksWithTrains	31		4	1	0.2					use_Street	40	41
 	
-ROAD_PROP	net_SecondaryRoadWithSidewalks			11	3	1	0.3				use_Street	42	43
-ROAD_PROP	net_SecondaryRoad				8	3	1	0.3				use_Street	44	45
-ROAD_PROP	net_SecondaryRoadPassing			8	3	1	0.3				use_Street	46	45
-ROAD_PROP	net_LocalRoad					6	2	1	0.3				use_Street	47	48
-ROAD_PROP	net_CulDeSac					10	2	1	0.3				use_Street	49	49
-ROAD_PROP	net_AccessRamp					3	10	0	0.1				use_Ramp	50	50
-ROAD_PROP	net_4WDRoad					4.5	5	0.5	0.3				use_Street	51	51
-ROAD_PROP	net_Alley					2.5	0	1	0.3				use_Street	52	52
-ROAD_PROP	net_Driveway					2.5	0	1	0.3				use_Street	53	53
+ROAD_PROP	net_SecondaryRoadWithSidewalks				11		3	1	0.3					use_Street	42	43
+ROAD_PROP	net_SecondaryRoad							8		3	1	0.3					use_Street	44	45
+ROAD_PROP	net_SecondaryRoadPassing					8		3	1	0.3					use_Street	46	45
+ROAD_PROP	net_LocalRoad								6		2	1	0.3					use_Street	47	48
+ROAD_PROP	net_CulDeSac								10		2	1	0.3					use_Street	49	49
+ROAD_PROP	net_AccessRamp								3		10	0	0.1					use_Ramp	50	50
+ROAD_PROP	net_4WDRoad									4.5		5	0.5	0.3					use_Street	51	51
+ROAD_PROP	net_Alley									2.5		0	1	0.3					use_Street	52	52
+ROAD_PROP	net_Driveway								2.5		0	1	0.3					use_Street	53	53
 
-ROAD_PROP	net_TrainsTwoWay				8	10	0	0.1				use_Rail	54	55
-ROAD_PROP	net_TrainsOneWay				4	10	0	0.1				use_Rail	56	57
+ROAD_PROP	net_TrainsTwoWay							8		10	0	0.1					use_Rail	54	55
+ROAD_PROP	net_TrainsOneWay							4		10	0	0.1					use_Rail	56	57
 		
-ROAD_PROP	net_Walking					1.5	0	0.5	0.3				use_Street	58	58
-ROAD_PROP	net_WalkingCity					2	0	0.5	0.3				use_Street	59	60
-ROAD_PROP	net_WalkingCitySteps				2	0	0	0.3				use_Street	61	61
+ROAD_PROP	net_Walking									1.5		0	0.5	0.3					use_Street	58	58
+ROAD_PROP	net_WalkingCity								2		0	0.5	0.3					use_Street	59	60
+ROAD_PROP	net_WalkingCitySteps						2		0	0	0.3					use_Street	61	61
 
-ROAD_PROP	net_Powerlines					25	5	0	0.4				use_Power	62	62
+ROAD_PROP	net_Powerlines								25		5	0	0.4					use_Power	62	62
 
 #####################################################################################################################################################################
 
@@ -245,44 +240,91 @@ ROAD_PROP	net_Powerlines					25	5	0	0.4				use_Power	62	62
 #	X-Plane type		exported x-plane type
 #
 #
-#ROAD_BRIDGE	ROAD TYPE					MIN	MAX	MINSEG	MAXSEG	MINSEG	MAXSEG	MAX	SPLIT	SPLIT	SPLIT	MIN	MAX	SEARCH	PREF	MIN	MAX	HEIGHT	ROAD	X-PLANE
-#								LENGTH	LENGTH	LENGTH	LENGTH	COUNT	COUNT	CURVE	COUNT	LEN	ARCH	STRTAGL	STRTAGL	DIST	STRTAGL	CENAGL	CENAGL	RATIO	SLOPE	TYPE
-ROAD_BRIDGE	net_SixLaneUSHighway				0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	2
-ROAD_BRIDGE	net_SixLaneUSHighwaySeparated			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	4
-ROAD_BRIDGE	net_SixLaneUSHighwayOneway			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	6
-ROAD_BRIDGE	net_SixLaneUSHighwayWithTrain			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	8
-ROAD_BRIDGE	net_SixLaneUSHighwaySeparatedWithTrain		0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	90
+#ROAD_BRIDGE	ROAD TYPE									MIN		MAX		MINSEG	MAXSEG	MINSEG	MAXSEG	MAX		SPLIT	SPLIT	SPLIT	MIN		MAX		SEARCH	PREF	MIN		MAX		HEIGHT	ROAD	X-PLANE
+#															LENGTH	LENGTH	LENGTH	LENGTH	COUNT	COUNT	CURVE	COUNT	LEN		ARCH	STRTAGL	STRTAGL	DIST	STRTAGL	CENAGL	CENAGL	RATIO	SLOPE	TYPE
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-ROAD_BRIDGE	net_SixLaneUSHighwayOnewayWithTrain		0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	12
-ROAD_BRIDGE	net_FourLaneUSHighway				0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	14
-ROAD_BRIDGE	net_FourLaneUSHighwaySeparated			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	16
-ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedNoGuardRails	0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	16
-ROAD_BRIDGE	net_FourLaneUSHighwayOneway			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	19
-ROAD_BRIDGE	net_FourLaneUSHighwayWithTrain			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	21
-ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedWithTrain		0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	23
-ROAD_BRIDGE	net_FourLaneUSHighwayOnewayWithTrain		0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	25
+# HIGHWAYS - SUSPENSION BRIDGES
+# Notes:
+# Min length of 300 + seg length of 300 prevent short spans.
+# Max length of 2000 (seg length of 2000 is needed for consistency) keeps from having insane bridges.
+# Split len of 500 to produce reasonable looking segments...ideally at least.
+ROAD_BRIDGE	net_SixLaneUSHighway							300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	76
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparated					300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	78
+ROAD_BRIDGE	net_SixLaneUSHighwayOneway						300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	80
+ROAD_BRIDGE	net_SixLaneUSHighwayWithTrain					300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	82
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparatedWithTrain			300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	84
+ROAD_BRIDGE	net_SixLaneUSHighwayOnewayWithTrain				300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	86
 
-ROAD_BRIDGE	net_PrimaryUndivided				0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	63
-ROAD_BRIDGE	net_PrimaryUndividedWithSidewalks		0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	64
-ROAD_BRIDGE	net_PrimaryUndividedWithTrains			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	65
-ROAD_BRIDGE	net_PrimaryUndividedWithSidewalksWithTrains   	0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	66
-ROAD_BRIDGE	net_PrimaryDivided				0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	67
-ROAD_BRIDGE	net_PrimaryDividedWithSidewalks			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	68
-ROAD_BRIDGE	net_PrimaryDividedWithTrains			0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	69
-ROAD_BRIDGE	net_PrimaryDividedWithSidewalksWithTrains	0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	70
-ROAD_BRIDGE	net_SecondaryRoadWithSidewalks			0	0	0	0	0	0	90	0	0	1	5	20	500	5	5	20	0.0	0.1	71
-ROAD_BRIDGE	net_SecondaryRoad				0	0	0	0	0	0	90	0	0	1	5	20	500	5	5	20	0.0	0.1	72
-ROAD_BRIDGE	net_SecondaryRoadPassing			0	0	0	0	0	0	90	0	0	1	5	20	500	5	5	20	0.0	0.1	72
-ROAD_BRIDGE	net_LocalRoad					0	0	0	0	0	0	90	0	0	1	5	8	500	5	5	20	0.0	0.1	73
+ROAD_BRIDGE	net_FourLaneUSHighway							300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	88
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparated					300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	90
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedNoGuardRails		300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	92
+ROAD_BRIDGE	net_FourLaneUSHighwayOneway						300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	92
+ROAD_BRIDGE	net_FourLaneUSHighwayWithTrain					300		2000	300		2000	0		10 		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	94
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedWithTrain			300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	96
+ROAD_BRIDGE	net_FourLaneUSHighwayOnewayWithTrain			300		2000	300		2000	0		10		10		0		500		0		0		60		1000	15		20		60		0.1		0.05	99
 
-ROAD_BRIDGE	net_Walking					0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	60
-ROAD_BRIDGE	net_WalkingCity					0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	60
-ROAD_BRIDGE	net_WalkingCitySteps				0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	60
 
-ROAD_BRIDGE	net_TrainsTwoWay				0	0	0	0	0	0	90	0	0	1	5	20	500	5	5	20	0.0	0.1	74
-ROAD_BRIDGE	net_TrainsOneWay				0	0	0	0	0	0	90	0	0	1	5	20	500	5	5	20	0.0	0.1	75
 
-ROAD_BRIDGE	net_AccessRamp					0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.1	0.1	50
+# HIGHWAYS - REINFORCED STD BRIDGES
+ROAD_BRIDGE	net_SixLaneUSHighway							30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		77
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparated					30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		79
+ROAD_BRIDGE	net_SixLaneUSHighwayOneway						30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		81
+ROAD_BRIDGE	net_SixLaneUSHighwayWithTrain					30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		83
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparatedWithTrain			30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		85
+ROAD_BRIDGE	net_SixLaneUSHighwayOnewayWithTrain				30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		87
 
-ROAD_BRIDGE	net_Powerlines					0	0	0	0	0	0	90	0	0	1	0	20	500	5	5	20	0.0	0.0	62
+ROAD_BRIDGE	net_FourLaneUSHighway							30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		89
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparated					30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		91
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedNoGuardRails		30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		93
+ROAD_BRIDGE	net_FourLaneUSHighwayOneway						30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		93
+ROAD_BRIDGE	net_FourLaneUSHighwayWithTrain					30		9000	20		0		0		0 		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		95	
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedWithTrain			30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		97
+ROAD_BRIDGE	net_FourLaneUSHighwayOnewayWithTrain			30		9000	20		0		0		0		60		0		0		1		0		20		1000	8		5		20		0.1		0.1		99
+
+
+# HIGHWAYS OVERPASS-TYPE BRIDGES
+# Notes: am I INSANE to allow a 40 km bridge?  NO!  Causeways and other over-water highways can be
+# huge.  The longest causeway is 38 km long!  So do NOT limit these!
+ROAD_BRIDGE	net_SixLaneUSHighway							0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		2
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparated					0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		4
+ROAD_BRIDGE	net_SixLaneUSHighwayOneway						0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		6
+ROAD_BRIDGE	net_SixLaneUSHighwayWithTrain					0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		8
+ROAD_BRIDGE	net_SixLaneUSHighwaySeparatedWithTrain			0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		10
+ROAD_BRIDGE	net_SixLaneUSHighwayOnewayWithTrain				0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		12
+
+ROAD_BRIDGE	net_FourLaneUSHighway							0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		14
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparated					0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		16
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedNoGuardRails		0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		16
+ROAD_BRIDGE	net_FourLaneUSHighwayOneway						0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		19
+ROAD_BRIDGE	net_FourLaneUSHighwayWithTrain					0		40000	0		0		0		0 		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		21
+ROAD_BRIDGE	net_FourLaneUSHighwaySeparatedWithTrain			0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		23
+ROAD_BRIDGE	net_FourLaneUSHighwayOnewayWithTrain			0		40000	0		0		0		0		80		0		0		1		0		20		1000	5		5		20		0.1		0.1		25
+
+# PRIMARY AND SECONDARY - GENERAL BRIDGES
+ROAD_BRIDGE	net_PrimaryUndivided							0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		63
+ROAD_BRIDGE	net_PrimaryUndividedWithSidewalks				0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		64
+ROAD_BRIDGE	net_PrimaryUndividedWithTrains					0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		65
+ROAD_BRIDGE	net_PrimaryUndividedWithSidewalksWithTrains   	0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		66
+ROAD_BRIDGE	net_PrimaryDivided								0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		67
+ROAD_BRIDGE	net_PrimaryDividedWithSidewalks					0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		68
+ROAD_BRIDGE	net_PrimaryDividedWithTrains					0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		69
+ROAD_BRIDGE	net_PrimaryDividedWithSidewalksWithTrains		0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		70
+ROAD_BRIDGE	net_SecondaryRoadWithSidewalks					0		40000	0		0		0		0		60		0		0		1		5		20		500		5		5		20		0.0		0.1		71
+ROAD_BRIDGE	net_SecondaryRoad								0		40000	0		0		0		0		60		0		0		1		5		20		500		5		5		20		0.0		0.1		72
+ROAD_BRIDGE	net_SecondaryRoadPassing						0		40000	0		0		0		0 		60		0		0		1		5		20		500		5		5		20		0.0		0.1		72
+ROAD_BRIDGE	net_AccessRamp									0		40000	0		0		0		0		60		0		0		1		0		20		500		5		5		20		0.1		0.1		50
+
+# LOCAL - GENERAL BRIDGES
+ROAD_BRIDGE	net_LocalRoad									0		40000	0		0		0		0		80		0		0		1		5		8		500		5		5		8		0.0		0.1		73
+ROAD_BRIDGE	net_Walking										0		40000	0		0		0		0		80		0		0		1		0		8		500		5		5		8		0.1		0.1		60
+ROAD_BRIDGE	net_WalkingCity									0		40000	0		0		0		0		80		0		0		1		0		8		500		5		5		8		0.1		0.1		60
+ROAD_BRIDGE	net_WalkingCitySteps							0		40000	0		0		0		0		80		0		0		1		0		8		500		5		5		8		0.1		0.1		60
+
+# TRAINS - GENERAL BRIDGES
+ROAD_BRIDGE	net_TrainsTwoWay								0		40000	0		0		0		0		60		0		0		1		5		20		500		10		5		20		0.0		0.1		74
+ROAD_BRIDGE	net_TrainsOneWay								0		40000	0		0		0		0		60		0		0		1		5		20		500		10		5		20		0.0		0.1		75
+
+# POWER LINES - CAN SPAN WATER OVER CERTAIN DISTANCES
+ROAD_BRIDGE	net_Powerlines									0		500		0		0		0		0		90		0		0		1		0		20		500		5		5		20		0.0		0.0		62
 

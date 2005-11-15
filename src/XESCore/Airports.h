@@ -42,6 +42,7 @@ void ProcessAirports(
 				DEMGeo& 			ioTransport,
 				bool				inCrop,
 				bool				inProcessDEMs,
+				bool				kill_rivers,
 				ProgressFunc		inProgress);
-
+				
 #endif /* AIRPORTS_H */

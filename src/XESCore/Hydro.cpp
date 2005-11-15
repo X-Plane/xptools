@@ -1121,13 +1121,9 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, Pro
 	{
 		f->mTerrainType = terrain_Natural;
 	}
-	for (Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
-		e->mParams.erase(he_IsRiver);
 	
-	SimplifyMap(ioMap);
-	
+	SimplifyMap(ioMap, true);
 	TopoIntegrateMaps(&ioMap, &water);
-
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap.swap(water);
 	
@@ -1177,7 +1173,7 @@ void insert_add_one(GISHalfedge * oh, GISHalfedge * nh, void * ref)
 // from fairly big polygons.
 void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc func)
 {
-	SimplifyMap(ioMap);
+	SimplifyMap(ioMap, false);
 	Pmwx::Halfedge_iterator he;
 	GISHalfedge * next;
 	bool	did_work;
@@ -1288,7 +1284,7 @@ void	OLD_SimplifyCoastlines(Pmwx& ioMap, double max_annex_area, ProgressFunc fun
 	} while (did_work);
 	
 	// clean up any additional map crap??
-	SimplifyMap(ioMap);
+	SimplifyMap(ioMap, false);
 	PROGRESS_DONE(func, 0, 1, "Simplifying coastlines...")
 	printf("End result: %d simplifies, %d before, %d after.\n", nuke, total, ioMap.number_of_halfedges());
 }

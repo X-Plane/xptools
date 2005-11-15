@@ -120,6 +120,9 @@ int	main(int argc, char * argv[])
 //	char * args[] = { "./GISTool","-extent","-75","45","-60","60","-vpf","/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/","bnd","-75","45","-bbox","-cropsave","/Volumes/GIS/data/world_xes/" };
 
 //	char * args[] = { "./GISTool_d","-extent","-73","40","-72","41","-wetmask","/Volumes/GIS/data/swbd/","/Volumes/GIS/data/srtm_masks/" };
+//
+//	char * args[] = { "./GISTool_d","-floatdem","/Volumes/GIS/more_data/DEM3/+30-120/+36-113.DEM","-markoverlay","-readmask","test.raw","-oz","/Volumes/GIS/data/DEM output-earth/+30-120/+36-114.oz","-applyoverlay","-hgtzip","test.hgt.zip" };
+
 //	argv = args;
 //	argc = sizeof(args) / sizeof(args[0]);
 

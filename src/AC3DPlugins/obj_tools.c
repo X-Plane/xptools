@@ -4,6 +4,7 @@
 #include "obj_radius.h"
 #include "obj_export.h"
 #include "XObjDefs.h"
+#include "obj8_export.h"
 
 #include <ac_plugin.h>
 /***************************************************************************************************
@@ -206,3 +207,179 @@ void do_animation_group(void)
 	object_add_child(*parents.begin(), new_obj);	
 	tcl_command("hier_update");
 }
+
+void do_tree_extrude(void)
+{
+	add_undoable_all("Make trees");
+
+	List * objs_l = ac_selection_get_objects();
+	for (List * iter = objs_l; iter != NULL; iter = iter->next)
+	{
+		ACObject * obj = (ACObject *) iter->data;
+
+		List 	*vertices, *surfaces, *kids;
+		int numvert, numsurf, numkids;
+
+	    ac_object_get_contents(obj, &numvert, &numsurf, &numkids, &vertices, &surfaces, &kids); 
+	    
+	    if (numsurf == 1)
+	    {
+	    	Surface *s = (Surface *) surfaces->data;
+			if (s->numvert == 4)
+			{
+				SVertex * s1, * s2, *s3, *s4;
+
+				s1 = ((SVertex *)s->vertlist->data);
+				s2 = ((SVertex *)s->vertlist->next->data);
+				s3 = ((SVertex *)s->vertlist->next->next->data);
+				s4 = ((SVertex *)s->vertlist->next->next->next->data);
+
+				float min_x = min(min(s1->v->x,s2->v->x),min(s3->v->x,s4->v->x));
+				float max_x = max(max(s1->v->x,s2->v->x),max(s3->v->x,s4->v->x));
+
+				float min_y = min(min(s1->v->y,s2->v->y),min(s3->v->y,s4->v->y));
+				float max_y = max(max(s1->v->y,s2->v->y),max(s3->v->y,s4->v->y));
+
+				float min_z = min(min(s1->v->z,s2->v->z),min(s3->v->z,s4->v->z));
+				float max_z = max(max(s1->v->z,s2->v->z),max(s3->v->z,s4->v->z));
+
+				float smin = min(min(s1->tx, s2->tx),min(s3->tx,s4->tx));
+				float smax = max(max(s1->tx, s2->tx),max(s3->tx,s4->tx));
+				float tmin = min(min(s1->ty, s2->ty),min(s3->ty,s4->ty));
+				float tmax = max(max(s1->ty, s2->ty),max(s3->ty,s4->ty));
+
+				float ctr_x = (min_x + max_x) * 0.5;
+				float ctr_z = (min_z + max_z) * 0.5;				
+				float hwidth = (max_x - min_x) * 0.5;
+				
+				Point3 p1 = { ctr_x, min_y, ctr_z - hwidth };
+				Point3 p2 = { ctr_x, max_y, ctr_z - hwidth };
+				Point3 p3 = { ctr_x, max_y, ctr_z + hwidth };
+				Point3 p4 = { ctr_x, min_y, ctr_z + hwidth };
+				
+				Vertex * v1 = object_add_new_vertex(obj, &p1);
+				Vertex * v2 = object_add_new_vertex(obj, &p2);
+				Vertex * v3 = object_add_new_vertex(obj, &p3);
+				Vertex * v4 = object_add_new_vertex(obj, &p4);
+				
+				Surface * ns = new_surface();
+				surface_add_vertex(ns, v1, smin, tmin);
+				surface_add_vertex(ns, v2, smin, tmax);
+				surface_add_vertex(ns, v3, smax, tmax);
+				surface_add_vertex(ns, v4, smax, tmin);
+
+				object_add_surface(obj, ns);
+				double angle = rand() % 360;
+				angle *= (3.1415926 / 180.0);				
+				
+				set_global_matrix_rotate(0.0, angle, 0.0);
+				Point3 ndiff = { -ctr_x, 0, -ctr_z };				
+				Point3 diff = { ctr_x, 0, ctr_z };				
+				translate_object(obj, &ndiff);				
+				
+				rotate_object(obj);
+				translate_object(obj, &diff);				
+				
+			}
+	    }
+	}
+	objectlist_calc_normals(objs_l);
+	list_free(&objs_l);
+	redraw_all(); 
+}
+
+void do_bulk_export(void)
+{
+	char * objs[] = { "Object files", ".obj", NULL };
+	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
+	if (fn == NULL) return;
+	if (*fn == 0) return;
+		
+	ACObject * wrl = ac_get_world();
+
+	int numvert, numsurf, numkids;
+	List *vertices, *surfaces, *kids;
+	List *iter;
+
+    ac_object_get_contents(wrl, &numvert, &numsurf, &numkids,
+        &vertices, &surfaces, &kids); 
+
+    for (iter = kids; iter != NULL; iter = iter->next)
+    {
+    	ACObject * child = (ACObject *)iter->data;
+		char * exp_name = pull_str_attr (child, "_EXPORT=");
+		if (exp_name && ac_object_is_visible(child))
+		{
+			char path[1024];
+			strcpy(path, fn);
+			strcat(path, "/");
+			strcat(path, exp_name);
+			do_obj8_save(path, child);
+		}
+	}
+	
+	myfree(fn);
+}
+
+typedef	set<Vertex *>					SurfSig;
+typedef multimap<SurfSig, Surface *>	SurfMap;
+
+static void make_surf_sig(Surface * surf, SurfSig& sig)
+{
+	sig.clear();
+	List * iter;
+	for (iter = surf->vertlist; iter != NULL; iter = iter->next)
+	{
+		SVertex * v = (SVertex *) iter->data;
+		sig.insert(v->v);
+	}
+}
+
+static void obj_accum_downface(ACObject * obj, SurfMap& down, SurfMap& up)
+{
+	if (!ac_object_is_visible(obj)) return;
+	int numvert, numsurf, numkids;
+	List *vertices, *surfaces, *kids;
+	List *iter;
+
+    ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
+        &vertices, &surfaces, &kids); 
+
+	for (iter = surfaces; iter != NULL; iter = iter->next)
+	{
+ 	 	Surface * surf = (Surface *)iter->data;
+ 	 	SurfSig sig;
+ 	 	make_surf_sig(surf, sig);
+    	if (surf->normal.y < 0.0)
+			down.insert(SurfMap::value_type(sig, surf));
+		else
+			up.insert(SurfMap::value_type(sig, surf));
+	}
+	
+	for (iter = kids; iter != NULL; iter = iter->next)
+		obj_accum_downface((ACObject *)iter->data, down, up);
+	
+}
+
+void do_select_downfacing(void)
+{
+	ACObject * wrl = ac_get_world();
+	
+	SurfMap down, up;
+	obj_accum_downface(wrl, down, up);
+	List * bad = NULL;
+	
+	for (SurfMap::iterator i = down.begin(); i != down.end(); ++i)
+	{
+		if (up.count(i->first) > 0)
+		list_add_item_head(&bad, i->second);
+	}
+	
+	clear_selection();
+	if (bad)
+	{
+		ac_selection_select_surfacelist(bad);
+		list_free(&bad);	
+	}	
+}
+

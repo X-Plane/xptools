@@ -26,6 +26,8 @@
 #include "ParamDefs.h"
 #include "DemDefs.h"
 
+class GISFace;
+
 #include <CGAL/Simple_cartesian.h>
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -59,7 +61,7 @@ struct	MeshVertexInfo {
 };
 
 struct	MeshFaceInfo {
-	MeshFaceInfo() : terrain(NO_DATA),feature(NO_VALUE),flag(0) { }
+	MeshFaceInfo() : terrain(NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
 	MeshFaceInfo(const MeshFaceInfo& rhs) : 
 								terrain(rhs.terrain),
 								feature(rhs.feature), 
@@ -67,7 +69,9 @@ struct	MeshFaceInfo {
 								terrain_border(rhs.terrain_border) { 
 								normal[0] = rhs.normal[0]; 
 								normal[1] = rhs.normal[1]; 
-								normal[2] = rhs.normal[2]; }								
+								normal[2] = rhs.normal[2];
+								orig_face = rhs.orig_face; }
+								
 								
 	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) { 
 								terrain = rhs.terrain; 
@@ -77,6 +81,7 @@ struct	MeshFaceInfo {
 								normal[0] = rhs.normal[0]; 
 								normal[1] = rhs.normal[1]; 
 								normal[2] = rhs.normal[2];
+								orig_face = rhs.orig_face;
 								return *this; }
 
 	int				insert_x;
@@ -92,16 +97,17 @@ struct	MeshFaceInfo {
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
 
+	const GISFace *	orig_face;				// If a face caused us to get the terrain we did, this is who!
+
 	FaceQueue::iterator	self;					// Queue ref to self!
-	
-#if DEV
+
+// BENTODO - clean this up	
 	float			debug_slope_dem;
 	float			debug_slope_tri;
 	float			debug_temp;
 	float			debug_temp_range;
 	float			debug_rain;
 	float			debug_heading;
-#endif	
 };
 
 typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, FastKernel>		Vb;

@@ -106,7 +106,7 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, float color[3])
 	
 	if (border)
 		SetColor(color,1.0, 0.0, 1.0);
-	else  if (!i->mSegments.empty())
+	if (!i->mSegments.empty())
 	{
 		int	tp = i->mSegments[0].mFeatType;
 		SetColor(color,1.0, 0.0, 1.0);

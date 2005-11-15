@@ -317,7 +317,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 6, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 16, buf)) return;
 				SHPHandle file = SHPOpen(buf, "rb");
 				if (file == NULL)
 					return;
@@ -452,6 +452,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			LoadObjTables();
 			LoadNetFeatureTables();
 			WED_ProgressFunc(0, 1, "Reloading config files...", 1.0);
+			CheckObjTable();
 			break;
 		case specCmd_Wizard:
 			WED_ShowSpreadsheetWizard();

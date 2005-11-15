@@ -100,6 +100,7 @@ struct	NaturalTerrainInfo_t {
 	int				xon_hack;
 	// 2-D Texturing
 	string			base_tex;
+	string			lit_tex;
 //	string			comp_tex;
 	float			base_res;
 //	float			comp_res;
@@ -186,14 +187,18 @@ struct BeachInfo_t {
 	float		max_slope;
 	float		min_sea;
 	float		max_sea;
-	float		max_turn;
+	float		max_turn_convex;
+	float		max_turn_concave;
 	float		min_len;
+	int			require_open;
+	float		min_area;
 	int			x_beach_type;
+	int			x_backup;
 };
 typedef vector<BeachInfo_t>		BeachInfoTable;
 extern BeachInfoTable			gBeachInfoTable;
-typedef map<int, int>			BeachPriorityTable;
-extern BeachPriorityTable		gBeachPriorityTable;
+typedef map<int, int>			BeachIndex;
+extern BeachIndex				gBeachIndex;
 
 /************************************************************************
  * BEACH TERRAIN INFO
@@ -206,7 +211,6 @@ extern LandUseTransTable	gLandUseTransTable;
 // However please note that there is no equality of priority, e.g. 
 // priority(a) == priorty((b) -> a == b
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs);			// Returns true if lhs is lower prio than rhs.  Lower prio is from lower layer or earlier rule if layers equal
-inline bool	LowerPriorityBeachType(int lhs, int rhs);				// Return true if lhs is lower prio beach type than rhs.
 bool	IsForestType(int inType);								// Returns true if enum is for a forest
 inline bool 	IncompatibleProjection(int lhs, int rhs);				// Returns true if terrains are not projected the same way
 inline bool	AreVariants(int lhs, int rhs);							// Returns true if two terrains are variants of each other
@@ -251,14 +255,6 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 	// results when we try to sort by layer priority.  So simply use their
 	// index numbers as priority.  Better than nothing.
 	return lhs < rhs;
-}
-
-inline bool	LowerPriorityBeachType(int lhs, int rhs)
-{
-	DebugAssert(gBeachPriorityTable.count(lhs) > 0);
-	DebugAssert(gBeachPriorityTable.count(rhs) > 0);
-	
-	return gBeachPriorityTable[lhs] < gBeachPriorityTable[rhs];
 }
 
 

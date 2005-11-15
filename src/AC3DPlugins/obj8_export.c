@@ -361,6 +361,8 @@ static void obj8_output_light(ACObject *ob)
 
 void obj8_output_object(ACObject *ob, set<ACObject *> * stopset)
 {
+	if (!ac_object_is_visible(ob)) return;
+	
 		int 	numvert, numsurf, numkids;
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;

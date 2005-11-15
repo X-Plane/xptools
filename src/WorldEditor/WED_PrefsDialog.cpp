@@ -8,6 +8,7 @@
 #include "WED_MapView.h"
 #include "MeshAlgs.h"
 #include "DEMAlgs.h"
+#include "ObjTables.h"
 #include "DEMTables.h"
 #include "WED_ProcessingCmds.h"
 #include "DSFBuilder.h"

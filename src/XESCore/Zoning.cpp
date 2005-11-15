@@ -34,6 +34,8 @@
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
 
+#define MAX_OBJ_SPREAD 100000
+
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap, 
 				const DEMGeo& 		inLanduse, 
@@ -43,7 +45,7 @@ void	ZoneManMadeAreas(
 {
 		Pmwx::Face_iterator face;
 		
-	PROGRESS_START(inProg, 0, 2, "Zoning terrain...")
+	PROGRESS_START(inProg, 0, 3, "Zoning terrain...")
 
 	int total = ioMap.number_of_faces() * 2;
 	int check = total / 100;
@@ -55,11 +57,16 @@ void	ZoneManMadeAreas(
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
 	{
-		PROGRESS_CHECK(inProg, 0, 1, "Zoning terrain...", ctr, total, check)
+		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
+		
+		double mfam = GetMapFaceAreaMeters(face);
 		
 		double	max_height = 0.0;
+		
+		if (mfam < MAX_OBJ_SPREAD)
 		for (GISPointFeatureVector::iterator feat = face->mPointFeatures.begin(); feat != face->mPointFeatures.end(); ++feat)
 		{
+			if (feat->mFeatType == feat_Building)
 			if (feat->mParams.count(pf_Height))
 			{
 				max_height = max(max_height, feat->mParams[pf_Height]);
@@ -89,8 +96,8 @@ void	ZoneManMadeAreas(
 
 	}
 
-	PROGRESS_DONE(inProg, 0, 2, "Zoning terrain...")
-	PROGRESS_START(inProg, 1, 2, "Checking approach paths...")
+	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
+	PROGRESS_START(inProg, 1, 3, "Checking approach paths...")
 
 	ctr = 0;	
 	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
@@ -98,7 +105,7 @@ void	ZoneManMadeAreas(
 	if (face->mTerrainType != terrain_Airport)
 	if (!face->IsWater())
 	{
-		PROGRESS_CHECK(inProg, 0, 1, "Checking approach paths...", ctr, total, check)
+		PROGRESS_CHECK(inProg, 1, 3, "Checking approach paths...", ctr, total, check)
 		set<GISFace *>	neighbors;
 		FindAdjacentFaces(face, neighbors);
 		Polygon2 me;
@@ -146,5 +153,30 @@ void	ZoneManMadeAreas(
 		my_agl = max(my_agl, max_agl);
 		face->mParams[af_Height] = max_agl;
 	}
-	PROGRESS_DONE(inProg, 1, 2, "Checking approach paths...")
+	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
+
+	PROGRESS_START(inProg, 2, 3, "Checking Water")
+	ctr = 0;
+	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
+	if (face->IsWater())
+	{
+		bool is_open = false;
+		PROGRESS_CHECK(inProg, 2, 3, "Checking Water", ctr, total, check)
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			if (circ->twin()->face()->is_unbounded())
+			{
+				is_open = true;
+				break;
+			}			
+			++circ;
+		} while (circ != stop);
+		
+		face->mParams[af_WaterOpen] = is_open ? 1.0 : 0.0;		
+		face->mParams[af_WaterArea] = GetMapFaceAreaMeters(face);
+		
+	}
+	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
 }

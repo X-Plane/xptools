@@ -87,6 +87,9 @@
 	
 	TOKEN(af_Height)
 	TOKEN(af_HeightObjs)
+	
+	TOKEN(af_WaterArea)				// square area in sq meters
+	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
 
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.

@@ -75,7 +75,7 @@ XObjWin *	gReceiver = NULL;
 float	gCamDist = 200;
 
 map<string, pair<string, GLenum> >		gDayTextures;
-map<string, pair<string, GLenum> >		gNightTextures;
+//map<string, pair<string, GLenum> >		gNightTextures;
 
 static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
 static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
@@ -233,6 +233,7 @@ void			XObjWin::GLDraw(void)
 	glFrontFace(GL_CW);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_ALPHA_TEST);
 	glAlphaFunc		(GL_GREATER,0						);	// when ALPHA-TESTING  is enabled, we display the GREATEST alpha
 	glBlendFunc		(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);	// when ALPHA-BLENDING is enabled, we blend normally
 	glDepthFunc		(GL_LEQUAL							);	// less than OR EQUAL plots on top
@@ -542,6 +543,9 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		{
 			float	mins[3];
 			float	maxs[3];
+			if (mIsObj8)
+			GetObjDimensions8(mObj8, mins, maxs);
+			else
 			GetObjDimensions(mObj, mins, maxs);
 			char	buf[1024];
 			sprintf(buf, "%f x %f x %f", maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]);		
@@ -716,16 +720,22 @@ GLenum		FindTexture(const string& inName, bool inNight)
 
 	string 	name(inName);
 	StringToUpper(name);
+
+	map<string, pair<string, GLenum> >::iterator i = gDayTextures.find(name);
+	if (!inNight)
+	{
+		if (i != gDayTextures.end()) return i->second.second;
+	}
+
 	if (inNight)
 	{
-		map<string, pair<string, GLenum> >::iterator i = gNightTextures.find(name);
-		if (i == gNightTextures.end()) return 0;
-		return i->second.second;
-	} else {
-		map<string, pair<string, GLenum> >::iterator i = gDayTextures.find(name);
-		if (i == gDayTextures.end()) return 0;
-		return i->second.second;
+		i = gDayTextures.find(name + "_LIT");
+		if (i != gDayTextures.end()) return i->second.second;
+
+		i = gDayTextures.find(name + "LIT");
+		if (i != gDayTextures.end()) return i->second.second;
 	}
+	return 0;
 }
 
 void		AccumTexture(const string& inFileName)
@@ -733,16 +743,16 @@ void		AccumTexture(const string& inFileName)
 	static	GLenum	gCounter = 1;	
 	bool	lit = HasExtNoCase(inFileName, "LIT.bmp") || HasExtNoCase(inFileName, "LIT.png") || HasExtNoCase(inFileName, "LIT.tif");
 	bool	lit_new = HasExtNoCase(inFileName, "_LIT.bmp") || HasExtNoCase(inFileName, "_LIT.png") || HasExtNoCase(inFileName, "_LIT.tif");
-	map<string, pair<string, GLenum> >&	texDB = lit ? gNightTextures : gDayTextures;
+	map<string, pair<string, GLenum> >&	texDB = gDayTextures;
 	string	shortName = inFileName;
 	if (!HasExtNoCase(inFileName, ".bmp") && !HasExtNoCase(inFileName, ".png") && !HasExtNoCase(inFileName, ".tif"))
 		return;
 
-	if (lit_new)
-		shortName = shortName.substr(0, shortName.length() - 8);	
-	else if (lit)	
-		shortName = shortName.substr(0, shortName.length() - 7);
-	else 
+//	if (lit_new)
+//		shortName = shortName.substr(0, shortName.length() - 8);	
+//	else if (lit)	
+//		shortName = shortName.substr(0, shortName.length() - 7);
+//	else 
 		shortName = shortName.substr(0, shortName.length() - 4);
 		
 	StripPathCP(shortName);	
@@ -775,9 +785,9 @@ void		ReloadTexture(const string& inName)
 	if (i != gDayTextures.end())
 		LoadTextureFromFile(i->second.first.c_str(), i->second.second, tex_Wrap + tex_MagentaAlpha, NULL, NULL, NULL, NULL);
 
-	i = gNightTextures.find(name);
-	if (i != gNightTextures.end())
-		LoadTextureFromFile(i->second.first.c_str(), i->second.second, tex_Wrap, NULL, NULL, NULL, NULL);
+//	i = gNightTextures.find(name);
+//	if (i != gNightTextures.end())
+//		LoadTextureFromFile(i->second.first.c_str(), i->second.second, tex_Wrap, NULL, NULL, NULL, NULL);
 
 }
 
@@ -957,6 +967,7 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 		GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
 											glMaterialf (GL_FRONT,GL_SHININESS,   0);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_ALPHA_TEST);
 		glDepthMask(GL_TRUE);
 		glEnable(GL_CULL_FACE);
 		glPointSize(4);		
@@ -976,6 +987,7 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 	GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
 										glMaterialf (GL_FRONT,GL_SHININESS,   0);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_ALPHA_TEST);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glPointSize(4);		
@@ -1005,8 +1017,7 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 		string tex_night = inObj.texture_lit;
 		if (tex_night.size() > 4)	tex_night.erase(tex_night.size() - 4);
 		StripPathCP(tex_night);	
-								info.tex_lit = FindTexture(tex_night, true);
-		if (info.tex_lit == 0)	info.tex_lit = FindTexture(tex_night, false);
+								info.tex_lit = FindTexture(tex_night, false);
 		if (info.tex_lit)
 		{
 			glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1053,6 +1064,7 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 		GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
 											glMaterialf (GL_FRONT,GL_SHININESS,   0);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_ALPHA_TEST);
 		glDepthMask(GL_TRUE);
 		glEnable(GL_CULL_FACE);
 		glPointSize(4);		
@@ -1074,6 +1086,7 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 	GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
 										glMaterialf (GL_FRONT,GL_SHININESS,   0);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_ALPHA_TEST);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glPointSize(4);		

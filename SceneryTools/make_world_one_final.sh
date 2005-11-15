@@ -37,6 +37,7 @@ output="$3Earth nav data/$folder/$file.dsf"
 hydro_cmd=
 hydro_file=
 logdir=$datadir/logs/$folder/$file.txt
+obj_src=config/obj_properties_us.txt
 
 if [ -e "$output" ]; then
 	echo "Skipping $output - already created."
@@ -60,6 +61,7 @@ if [ ! -e $xes_dir ]; then
 	else
 		hydro_cmd="-hydro -hydrosimplify"
 	fi
+	obj_src=
 fi
 
 if [ ! -e $xes_dir ]; then
@@ -81,6 +83,12 @@ obs_mode=deg
 obs_file=$datadir/faa_obs/$file.obs
 
 if [ ! -e $obs_file ]; then
+obs_cmd=-obs
+obs_mode=old
+obs_file="$datadir/Objects/$folder/$file"_obj
+fi
+
+if [ ! -e $obs_file ]; then
 obs_cmd=
 obs_mode=
 obs_file=
@@ -94,24 +102,22 @@ $tool \
 	-load $xes_dir \
 	-glcc $datadir/glcc/lu_new.raw oge2_import.txt \
 	-oz $datadir/"DEM output-earth"/$folder/$file.oz \
-	$obs_cmd $obs_mode $obs_file \
 	$apt_cmd $apt_file \
 	-bbox \
 	-simplify \
 	-validate \
-	-spreadsheet "$artdir"/spreadsheets/master_terrain.txt \
-	-upsample \
+	-spreadsheet "$artdir"/spreadsheets/master_terrain.txt $obj_src \
 	-calcslope \
+	-upsample \
 	$hydro_cmd \
+	$obs_cmd $obs_mode $obs_file \
 	-derivedems \
 	-buildroads \
 	-burnapts \
 	-zoning \
 	-calcmesh \
 	-assignterrain \
-	-exportdsf "$3" | tee $logdir
-
-
-#	-instobjs \
-#	-removedupes \
+	-instobjs \
+	-exportdsf "$3" | tee $logdir || echo 
+	
 #	-forests \

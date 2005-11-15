@@ -95,3 +95,15 @@ int pull_int_attr(ACObject * ob, const char * attr, int * value)
 //	printf("Value was: %d\n", *value);
 	return 1;
 }
+
+char * pull_str_attr(ACObject * ob, const char * attr)
+{
+	char * title = ac_object_get_name(ob);
+//	printf("Title = %s\n", title);
+	char * token = strstr(title, attr);
+//	printf("token = %s\n", token);
+	if (token == NULL) return NULL;
+	if (strlen(token) <= strlen(attr))	return NULL;
+	token += strlen(attr);
+	return token;
+}

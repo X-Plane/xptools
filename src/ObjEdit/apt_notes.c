@@ -16,7 +16,7 @@ BUILDING THE LAYOUT:
 4a. We can triangulate in N^2 time for a given polygon using a greedy triangulation method: for each consecutive pair - 
 	cut off to a tri-fan IF no other vertex is inside the polygon and if it's not a sliver.)
 4b. "Y- monotone curve" a line segment where aby vertical line will always hit the segment at most once.
-	A polygon made of 2 Y monotone curves is a Y monotone poly and can be triangulated in linear time by
+	A polygon made of 2 Y monotone curves is a Y mconotone poly and can be triangulated in linear time by
 	sort the vertices vertically (subsort horizontally) then just build strips and fans down the list by vertex.
 	
 	You can reduce a polygon to a y-monotone polygon by breaking it into trapezoids via horizontal lines through all

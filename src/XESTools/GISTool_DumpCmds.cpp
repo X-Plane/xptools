@@ -11,7 +11,7 @@
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
 
-extern void	PrintDSFFile(const char * inPath, FILE * output);
+extern int	PrintDSFFile(const char * inPath, FILE * output, bool print_it);
 
 
 static void	dump_sdts(const char *  ifs_name, const char * modName)
@@ -138,9 +138,12 @@ static int DoDumpObs(const vector<const char *>& args)
 		
 static int DoDumpDSF(const vector<const char *>& args)
 {
+	int err = 0;
 	for (int n = 0; n < args.size(); ++n)
 	{
-		PrintDSFFile(args[n], stdout);
+		err = PrintDSFFile(args[n], stdout, gVerbose);
+		if (err != 0)
+			fprintf(stderr, "Bad DSF %s.\n", args[n]);
 	}
 	return 0;
 }

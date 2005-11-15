@@ -112,5 +112,5 @@ void	AddEuroRoads(
 		}
 	}
 
-	SimplifyMap(ioBase);
+	SimplifyMap(ioBase, false);
 }

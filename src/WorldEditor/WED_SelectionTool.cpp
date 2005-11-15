@@ -285,10 +285,12 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 				ComplexPolygonWeight 	insets;
 				vector<ComplexPolygon2>	inset;
 				
-				FaceToComplexPolygon(the_face, orig, &insets, GetInsetForEdgeDegs);
+				FaceToComplexPolygon(the_face, orig, &insets, GetInsetForEdgeDegs, NULL);
 
 				try {
-					SK_InsetPolygon(orig, insets, inset, gStopPt);
+					int result = SK_InsetPolygon(orig, insets, inset, gStopPt);
+					if (result != skeleton_OK)
+						fail.insert(the_face);
 				} catch(...) {
 					fail.insert(the_face);
 				}
@@ -333,7 +335,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		}
 		break;
 	case 6:
-		SimplifyMap(gMap);
+		SimplifyMap(gMap, true);
 		gEdgeSelection.clear();
 		gFaceSelection.clear();
 		gVertexSelection.clear();
@@ -420,8 +422,14 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 	case 9:
 		for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
 		{
-			(*f)->mTerrainType = terrain_Water;
+//			(*f)->mTerrainType = terrain_Water;
+			(*f)->mAreaFeature.mFeatType = feat_Park;
 		}
+		for (set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+		{
+//			(*e)->mSegments.clear();
+		}
+		
 		break;
 	}
 	DebugAssert(gMap.is_valid());

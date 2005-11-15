@@ -124,7 +124,7 @@ static int DoAptTest(const vector<const char *>& args)
 			DEMGeo		bar(foo);
 			one.push_back(gApts[a]);
 
-			ProcessAirports(one, victim, foo, bar, false, false, NULL);
+			ProcessAirports(one, victim, foo, bar, false, false, false, NULL);
 //			if (gVerbose) printf("OK '%s' %s\n",
 //				gApts[a].icao.c_str(), gApts[a].name.c_str());
 			++ok;

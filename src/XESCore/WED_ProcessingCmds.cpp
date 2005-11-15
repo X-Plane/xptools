@@ -43,6 +43,8 @@
 #include "DSFBuilder.h"
 #include "PerfUtils.h"
 #include "Zoning.h"
+#include "ObjPlacement.h"
+#include "ObjTables.h"
 #include "Airports.h"
 #include "Beaches.h"
 #include "WED_Assert.h"
@@ -177,7 +179,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoAirports:
-			ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, WED_ProgressFunc);
+			ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, true, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
@@ -268,33 +270,39 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_InstantiateGT:
 			{
+				vector<PreinsetFace>	insets;
+				set<int>				the_types;
+
+				GetObjTerrainTypes		(the_types);
+				
+				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+				
+				
 				if (gFaceSelection.empty())
-					InstantiateGTPolygonAll(gMap, gDem, gTriangulationHi, WED_ProgressFunc);
-				else {
-					for (set<Pmwx::Face_handle>::iterator i = gFaceSelection.begin(); i != gFaceSelection.end(); ++i)
-					if (!(*i)->IsWater())
-					if (!(*i)->is_unbounded())
-						InstantiateGTPolygon(*i, gDem, gTriangulationHi);
-					
+				{
+					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
+				} else {
+					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
+				InstantiateGTPolygonAll(insets, gDem, gTriangulationHi , WED_ProgressFunc);
 			}
 			DumpPlacementCounts();
 			break;
 		case procCmd_InstantiateFor:
 			{
 				StElapsedTime	timer("Total forest time.\n");
-				int c = gFaceSelection.size();
-				if (c == 0)
+				
+				vector<PreinsetFace>	insets;
+				set<int>				the_types;
+				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+				if (gFaceSelection.empty())
 				{
-					set<GISFace *> faces;
-					for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-					if (!f->is_unbounded())
-					if (!f->IsWater())
-						faces.insert(f);
-					GenerateForests(gMap, faces			, gTriangulationHi, WED_ProgressFunc);
+					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
 				} else {
-					GenerateForests(gMap, gFaceSelection, gTriangulationHi, WED_ProgressFunc);
+					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
+
+				GenerateForests(gMap, insets, gTriangulationHi, WED_ProgressFunc);
 			}
 			break;
 		case procCmd_BuildRoads:

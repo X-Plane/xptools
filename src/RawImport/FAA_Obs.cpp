@@ -483,7 +483,7 @@ bool	LoadLegacyObjectArchive(const char * inFile)
 			} while (c != 0);
 		} else {
 			FAAObs_t	obs;
-			obs.agl = ele;
+			obs.agl = ele * FT_TO_MTR;
 			obs.msl = NO_DATA;
 			obs.lat = lat;
 			obs.lon = lon;

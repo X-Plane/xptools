@@ -80,6 +80,12 @@ obs_mode=deg
 obs_file=$datadir/faa_obs/$file.obs
 
 if [ ! -e $obs_file ]; then
+obs_cmd=-obs
+obs_mode=old
+obs_file="$datadir/Objects/$folder/$file"_obj
+fi
+
+if [ ! -e $obs_file ]; then
 obs_cmd=
 obs_mode=
 obs_file=

@@ -15,5 +15,6 @@ void	latlonel2xyz(double latlonel[3],
 					double xyz[3]);
 
 int pull_int_attr(ACObject * ob, const char * attr, int * value);
+char * pull_str_attr(ACObject * ob, const char * attr);
 
 #endif

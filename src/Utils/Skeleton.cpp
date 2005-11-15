@@ -95,15 +95,16 @@
 
 */
 
-#define GRAPHIC_LOGGING DEV
-#define LOG_SKELETONS DEV
+#define GRAPHIC_LOGGING 0
+#define LOG_SKELETONS 0
+#define HEAVY_VALIDATION 0
 
 #if GRAPHIC_LOGGING
 #include "WED_Globals.h"
 #endif
 
 #if DEV
-static	Bbox2	sVertexLimit;
+//static	Bbox2	sVertexLimit;
 #endif
 
 #if DEV
@@ -122,6 +123,9 @@ static bool	SK_SafeIntersect(SK_Edge * plane1, SK_Edge * plane2, const Point3& c
 static bool	SK_SafeIntersect2(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner, Point3& cross);
 static bool	SK_SafeIntersect3(SK_Edge * plane1, SK_Edge * plane2, SK_Edge * plane3, const Point3& common_corner1, const Point3& common_corner2, Point3& cross);
 static void	SK_DestroyEventsForEdge(SK_Edge * the_edge, EventMap& ioMap, bool inReflex);
+
+static void AssertThrowQuiet(const char * msg, const char * file, int line) { throw msg; }
+
 
 
 /* Edge Structure
@@ -663,7 +667,7 @@ static SK_Polygon * SK_PolygonCreateComplex(SK_Polygon * parent, const ComplexPo
 	return ret;
 }
 
-static void SK_InsetPolyIntoComplexPolygonList(SK_Polygon * world, vector<ComplexPolygon2>& outPolys)
+static void SK_InsetPolyIntoComplexPolygonList(SK_Polygon * world, ComplexPolygonVector& outPolys)
 {
 	outPolys.clear();
 	
@@ -691,7 +695,7 @@ static void SK_InsetPolyIntoComplexPolygonList(SK_Polygon * world, vector<Comple
 
 		for (set<SK_Polygon *>::iterator holes = (*outers)->children.begin(); holes != (*outers)->children.end(); ++holes)
 		{
-			DebugAssert((*holes)->children.empty());
+			Assert((*holes)->children.empty());
 			Assert((*holes)->ccb != NULL);
 			outerResult.push_back(Polygon2());
 			Polygon2& hole(outerResult.back());
@@ -747,8 +751,8 @@ static void DebugValidatePoly(SK_Polygon * p)
 		DebugAssert(v->owner == p);
 		DebugAssert(iter->owner == p);
 		
-		if (!sVertexLimit.empty())
-			DebugAssert(sVertexLimit.contains(v->location));
+//		if (!sVertexLimit.empty())
+//			DebugAssert(sVertexLimit.contains(v->location));
 		
 		iter = iter->next->next;
 		
@@ -904,10 +908,11 @@ static void SK_PolygonMitreReflexVertices(SK_Polygon * poly)
 }
 
 /* Reset all vertices in the polygon to a given time. */
-static void SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
+static bool SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
 {
 	for (set<SK_Polygon *>::iterator c = poly->children.begin(); c != poly->children.end(); ++c)
-		SK_AdvanceVertices(*c, advance_time);
+		if (!SK_AdvanceVertices(*c, advance_time))
+			return false;
 
 	SK_Vertex * iter, * stop;
 	if (poly->ccb)
@@ -918,8 +923,9 @@ static void SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
 			if (!SK_SafeIntersect(iter->prev,iter->next, Point3(iter->location.x, iter->location.y, 0), advance_time, i))
 #if DEV
 				i = Point3(iter->location.x, iter->location.y, advance_time);
-#else			
-				AssertPrintf("Time intercept failed.\n");
+#else	
+				return false;		
+//				AssertPrintf("Time intercept failed.\n");
 #endif				
 			else
 				iter->location = Point2(i.x, i.y);
@@ -927,6 +933,7 @@ static void SK_AdvanceVertices(SK_Polygon * poly, double advance_time)
 			iter = iter->next->next;
 		} while (iter != stop);
 	}
+	return true;
 }
 
 /* Delete any empty polygons. */
@@ -947,7 +954,7 @@ static void SK_RemoveEmptyPolygons(SK_Polygon * who, EventMap& ioMap)
 			SK_DestroyEventsForEdge(who->ccb, ioMap, false);
 			SK_DestroyEventsForEdge(who->ccb->next->next, ioMap, true);
 			SK_DestroyEventsForEdge(who->ccb->next->next, ioMap, false);
-			DebugAssert(who->children.empty());
+			Assert(who->children.empty());
 			who->parent->children.erase(who);
 			SK_PolygonDestroy(who);
 		}
@@ -1250,26 +1257,27 @@ static void SK_CreateReflexEventsForPolygon(SK_Polygon * poly, SK_Polygon * worl
 bool	SK_InsetPolygon(
 					const ComplexPolygon2&		inPolygon,
 					const ComplexPolygonWeight&	inWeight,
-					vector<ComplexPolygon2>&	outHoles,
+					ComplexPolygonVector&		outHoles,
 					int							steps)	// -1 or step limit!
 {
-#if DEV 
-	try {
-#endif
+	if (steps == -1) steps = -2;	// we need this to NOT be -1 or when we fall trhough with 0 events we think we timed out.  Gross!  This could really use some cleanup
+
+	AssertHandler_f dbg = InstallDebugAssertHandler(AssertThrowQuiet);
+	AssertHandler_f rel = InstallAssertHandler(AssertThrowQuiet);
+
+	try {	
 
 #if GRAPHIC_LOGGING
 	gMeshPoints.clear();
 	gMeshLines.clear();
 #endif
 
-#if DEV
-	{
-		sVertexLimit = inPolygon[0][0];
-		for (int n = 0; n < inPolygon.size(); ++n)
-		for (int m = 0; m < inPolygon[n].size(); ++m)
-			sVertexLimit += inPolygon[n][m];
-	}
-#endif
+//	Bbox2	vertex_limit;
+//	vertex_limit = inPolygon[0][0];
+//	for (int n = 0; n < inPolygon.size(); ++n)
+//	for (int m = 0; m < inPolygon[n].size(); ++m)
+//		vertex_limit += inPolygon[n][m];
+
 
 	SK_Polygon *	world = SK_PolygonCreate(NULL, Polygon2(), NULL);
 	SK_Polygon * 	poly = SK_PolygonCreateComplex(world, inPolygon, inWeight);
@@ -1604,7 +1612,7 @@ bool	SK_InsetPolygon(
 		}
 			
 
-#if DEV	
+#if HEAVY_VALIDATION
 		DebugValidatePoly(world);
 		DebugValidateEventMap(events);
 #endif		
@@ -1612,7 +1620,7 @@ bool	SK_InsetPolygon(
 		if (made_change)
 		{
 			SK_RemoveEmptyPolygons(world, events);		
-#if DEV	
+#if HEAVY_VALIDATION
 			DebugValidatePoly(world);
 			DebugValidateEventMap(events);
 #endif
@@ -1630,10 +1638,12 @@ bool	SK_InsetPolygon(
 	}
 #endif			
 
+	bool valid = true;
+
 	if (events.empty())
-		SK_AdvanceVertices(world, 1.0);
+		valid = SK_AdvanceVertices(world, 1.0);
 	else
- 		SK_AdvanceVertices(world, base_time);
+ 		valid = SK_AdvanceVertices(world, base_time);
 
 #if LOG_SKELETONS 		
  	for (set<SK_Polygon *>::iterator i = world->children.begin(); i != world->children.end(); ++i)
@@ -1643,23 +1653,44 @@ bool	SK_InsetPolygon(
 	 		printf("   Hole has %d sides.\n", (*j)->num_sides());
  	}
 #endif 	
-	
-	
-	
-	SK_InsetPolyIntoComplexPolygonList(world, outHoles);
+		
+	if (valid)
+		SK_InsetPolyIntoComplexPolygonList(world, outHoles);
+
+	if (steps != -1 && valid)
+	{
+		for (ComplexPolygonVector::iterator poly = outHoles.begin(); poly != outHoles.end(); ++poly)
+		for (ComplexPolygon2::iterator part = poly->begin(); part != poly->end(); ++part)
+		for (Polygon2::iterator pt = part->begin(); pt != part->end(); ++pt)
+		{
+			if (!inPolygon.front().inside(*pt))
+			{
+				valid = false;
+				goto bail;
+			}
+		}
+	}
+bail:	
+
 
 #if DEV	
-	DebugValidatePoly(world);
+	if (valid)
+		DebugValidatePoly(world);
 #endif		
 
 	SK_PolygonDestroy(world);
+
+		InstallDebugAssertHandler(dbg);
+		InstallAssertHandler(rel);
 	
-	return steps != -1;
-#if DEV 
+	return steps != -1 ? (valid ? skeleton_OK : skeleton_InvalidResult) : skeleton_OutOfSteps;
 	} catch (...) {
-		return false;
+
+	InstallDebugAssertHandler(dbg);
+	InstallAssertHandler(rel);
+
+		return skeleton_Exception;
 	}
-#endif
 }
 
 

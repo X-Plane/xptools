@@ -70,6 +70,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	string 	package(inPackage);
 	FILE *	lib;
 	FILE *	ter;
+	int image_ctr = 0, border_ctr = 0;
 
 	MakeDirExist(package.c_str());
 
@@ -100,6 +101,8 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		ter = fopen(lib_path.c_str(), "w");
 		fprintf(ter, "%c" CRLF "800" CRLF "TERRAIN" CRLF CRLF, APL ? 'A' : 'I');
 		fprintf(ter, "BASE_TEX %s" CRLF, gNaturalTerrainTable[n].base_tex.c_str());
+		if (!gNaturalTerrainTable[n].lit_tex.empty())
+			fprintf(ter, "LIT_TEX %s" CRLF, gNaturalTerrainTable[n].lit_tex.c_str());		
 		fprintf(ter, "BORDER_TEX %s" CRLF, gNaturalTerrainTable[n].border_tex.c_str());
 		fprintf(ter, "PROJECTED %d %d" CRLF, (int) gNaturalTerrainTable[n].base_res, (int) gNaturalTerrainTable[n].base_res);
 //		if (gNaturalTerrainTable[n].base_alpha_invert)
@@ -144,6 +147,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		canonical_path(dir_path);
 
 		imageFiles.insert(dir_path+gNaturalTerrainTable[n].base_tex);
+		if (!gNaturalTerrainTable[n].lit_tex.empty())	imageFiles.insert(dir_path+gNaturalTerrainTable[n].lit_tex);
 //		imageFiles.insert(dir_path+gNaturalTerrainTable[n].comp_tex);
 		borderFiles.insert(dir_path+gNaturalTerrainTable[n].border_tex);
 
@@ -186,6 +190,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if (exists) 
 				fclose(exists);
 			else {
+				++image_ctr;
 				WriteBitmapToPNG(&image_data, path.c_str(), NULL, 0);
 			}
 		}
@@ -207,6 +212,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if (exists) 
 				fclose(exists);
 			else {
+				++border_ctr;
 				WriteBitmapToPNG(&border, path.c_str(), NULL, 0);
 			}
 		}
@@ -214,7 +220,11 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 
 		DestroyBitmap(&image_data);
 		DestroyBitmap(&border);
-	}
+		
+		char buf[1024];
+		sprintf(buf,"Made %d images and %d borders that were missing.", image_ctr, border_ctr);
+		DoUserAlert(buf);
+	}	
 }
 
 void	CreatePackageForDSF(const char * inPackage, int lon, int lat, char * outDSFDestination)

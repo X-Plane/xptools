@@ -447,8 +447,8 @@ void	GetObjDimensions(const XObj& inObj,
 						float	minCoords[3],
 						float	maxCoords[3])
 {	
-	minCoords[0] = minCoords[1] = minCoords[2] = 0.0;
-	maxCoords[0] = maxCoords[1] = maxCoords[2] = 0.0;
+	minCoords[0] = minCoords[1] = minCoords[2] =  0.0;
+	maxCoords[0] = maxCoords[1] = maxCoords[2] =  0.0;
 
 	bool assigned = false;
 	
@@ -493,6 +493,50 @@ void	GetObjDimensions(const XObj& inObj,
 		}
 	}
 }
+
+void	GetObjDimensions8(const XObj8& inObj,
+						float	minCoords[3],
+						float	maxCoords[3])
+{	
+	float	mintemp[3], maxtemp[3];
+	
+	bool has = false;
+	
+	if (inObj.geo_tri.count() > 0)
+	{
+		inObj.geo_tri.get_minmax(minCoords, maxCoords);
+		has = true;
+	} else {
+		minCoords[0] = minCoords[1] = minCoords[2] = maxCoords[0] = maxCoords[1] = maxCoords[2] = 0;
+	}
+
+	if (inObj.geo_lines.count() > 0)
+	{
+		if (has) {
+			inObj.geo_lines.get_minmax(mintemp, maxtemp);
+			minCoords[0] = min(minCoords[0], mintemp[0]);	maxCoords[0] = max(maxCoords[0], maxtemp[0]);
+			minCoords[1] = min(minCoords[1], mintemp[1]);	maxCoords[0] = max(maxCoords[1], maxtemp[1]);
+			minCoords[2] = min(minCoords[2], mintemp[2]);	maxCoords[0] = max(maxCoords[2], maxtemp[2]);
+		} else 
+			inObj.geo_lines.get_minmax(minCoords, maxCoords);
+		has = true;
+	}
+
+	if (inObj.geo_lights.count() > 0)
+	{
+		if (has) {
+			inObj.geo_lights.get_minmax(mintemp, maxtemp);
+			minCoords[0] = min(minCoords[0], mintemp[0]);	maxCoords[0] = max(maxCoords[0], maxtemp[0]);
+			minCoords[1] = min(minCoords[1], mintemp[1]);	maxCoords[0] = max(maxCoords[1], maxtemp[1]);
+			minCoords[2] = min(minCoords[2], mintemp[2]);	maxCoords[0] = max(maxCoords[2], maxtemp[2]);
+		} else 
+			inObj.geo_lights.get_minmax(minCoords, maxCoords);
+		has = true;
+	}
+}
+
+
+
 
 #if 0
 // Given two points that will be the minimum and max X

@@ -278,7 +278,7 @@ static int DoCropSave(const vector<const char *>& args)
 		Pmwx	cutout;		
 		CropMap(gMap, cutout, pts, gProgress);
 		
-		SimplifyMap(cutout);
+		SimplifyMap(cutout, false);
 		
 		int nland = 0;
 		for (Pmwx::Face_iterator f = cutout.faces_begin(); f != cutout.faces_end(); ++f)
@@ -311,7 +311,7 @@ static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
 		printf("Halfedges before simplify: %d\n", gMap.number_of_halfedges());		
-	SimplifyMap(gMap);
+	SimplifyMap(gMap, false);
 	if (gVerbose)	
 		printf("Halfedges after simplify: %d\n", gMap.number_of_halfedges());			
 	return 0;

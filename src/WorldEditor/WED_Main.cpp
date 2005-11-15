@@ -31,6 +31,7 @@
 #include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
 #include "DEMTables.h"
+#include "ObjTables.h"
 #include <CGAL/assertions.h>
 
 #include "XPWidgets.h"
@@ -156,6 +157,7 @@ void	XGrindInit(string& outName)
 	WED_LoadPrefs();
 	
 	LoadDEMTables();
+	LoadObjTables();
 	
 	int w, h;
 	XPLMGetScreenSize(&w, &h);

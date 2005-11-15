@@ -22,6 +22,7 @@
  */
 #include "ObjTables.h"
 #include "ConfigSystem.h"
+#include "DEMTables.h"
 #include "EnumSystem.h"
 #include "ParamDefs.h"
 
@@ -32,12 +33,16 @@ FeatureInfoTable				gFeatures;
 //set<int>						gFeatureAsFacade;
 
 static set<int>					sKnownFeatures;
+static set<int>					sFeatureObjs;
 
 //RepAreaIndex					gFacadeAreaIndex;
 //RepAreaIndex					gObjectAreaIndex;
 RepUsageTable					gRepUsage;
 int								gRepUsageTotal = 0;
 RepTableTerrainIndex			gRepTableTerrainIndex;
+
+string							gObjPlacementFile;
+string							gObjLibPrefix;
 
 static int ObjScheduleJump(int height)
 {
@@ -47,13 +52,19 @@ static int ObjScheduleJump(int height)
 					   return height+10; 	// 200+    meters: 50 meter jumps
 }
 
+bool	ReadPrefixLine(const vector<string>& tokens, void * ref)
+{
+	gObjLibPrefix = tokens[1];
+	return true;
+}
+
 bool	ReadRepLine(const vector<string>& tokens, void * ref)
 {
 	RepInfo_t	info;
 	int row_num;
 	if (tokens[0] == "OBJ_PROP")
 	{
-		if (TokenizeLine(tokens, " eefffe",
+		if (TokenizeLine(tokens, " eefffiie",
 			&info.feature, &info.terrain,
 
 //			&info.temp_min, &info.temp_max, 
@@ -68,15 +79,18 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			&info.width_min, 
 			&info.depth_min, 
 			&info.height_max,
-			&info.obj_name) != 7) return false;
+			&info.road,
+			&info.fill,
+			&info.obj_name) != 9) return false;
 		
 		info.obj_type = rep_Obj;
 		info.width_max = info.width_min;
 		info.depth_max = info.depth_min;
-		info.height_max;
 		info.height_min = 0;
 		row_num = gRepTable.size();
 		gRepTable.push_back(info);
+
+		if (info.feature != NO_VALUE)	sFeatureObjs.insert(info.obj_name);
 		
 		if (gRepFeatureIndex.count(info.obj_name) > 0)
 		{
@@ -93,13 +107,12 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			if (master.obj_type != info.obj_type	)	printf("WARNING: inconsistent type for object %s\n", FetchTokenString(info.obj_name));
 		} else
 			gRepFeatureIndex[info.obj_name] = row_num;
-		
 	}
 	else if (tokens[0] == "OBS_PROP")
 	{
 		string base_name;
 		int		height_min, height_max;
-		if (TokenizeLine(tokens, " eeffiis",
+		if (TokenizeLine(tokens, " eeffiiiis",
 			&info.feature, &info.terrain,
 
 //			&info.temp_min, &info.temp_max, 
@@ -112,8 +125,11 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			
 //			&info.freq, &info.max_num,
 			&info.width_min, 
-			&info.depth_min, 
-			&height_min, &height_max, &base_name) != 8) return false;
+			&info.depth_min, 			
+			&height_min, &height_max, 
+			&info.road,
+			&info.fill,
+			&base_name) != 10) return false;
 		
 		info.obj_type = rep_Obj;
 		info.width_max = info.width_min;
@@ -122,8 +138,14 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 		if (height_min % 10) printf("WARNING: object %s min height %d not multiple of 10 meters.\n", base_name.c_str(), height_min);
 		if (height_max % 10) printf("WARNING: object %s max height %d not multiple of 10 meters.\n", base_name.c_str(), height_max);
 		
-		for (int h = height_min; h <= height_max; h = ObjScheduleJump(h))
+		vector<int>	heights;
+		int h;
+		for (h = height_min; h <= height_max; h = ObjScheduleJump(h))
+			heights.push_back(h);
+			
+		for (vector<int>::reverse_iterator riter = heights.rbegin(); riter != heights.rend(); ++riter)
 		{
+			h = *riter;
 			info.height_max = h;
 			info.height_min = 0;
 			char	obj_name[256];
@@ -131,7 +153,9 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			info.obj_name = LookupTokenCreate(obj_name);
 			row_num = gRepTable.size();
 			gRepTable.push_back(info);
-			
+
+			if (info.feature != NO_VALUE)	sFeatureObjs.insert(info.obj_name);
+				
 			if (gRepFeatureIndex.count(info.obj_name) > 0)
 			{
 				RepInfo_t& master(gRepTable[gRepFeatureIndex[info.obj_name]]);
@@ -151,7 +175,7 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 	}
 	else 
 	{
-		if (TokenizeLine(tokens, " eeffffffe",
+		if (TokenizeLine(tokens, " eeffffffiie",
 			&info.feature, &info.terrain,
 
 //			&info.temp_min, &info.temp_max, 
@@ -166,11 +190,15 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 			&info.width_min, &info.width_max, 
 			&info.depth_min, &info.depth_max, 
 			&info.height_min, &info.height_max,
-			&info.obj_name) != 10) return false;
+			&info.road,
+			&info.fill,			
+			&info.obj_name) != 12) return false;
 		
 		info.obj_type = rep_Fac;	
 		row_num = gRepTable.size();
 		gRepTable.push_back(info);
+
+		if (info.feature != NO_VALUE)	sFeatureObjs.insert(info.obj_name);
 
 		if (gRepFeatureIndex.count(info.obj_name) > 0)
 		{
@@ -191,8 +219,7 @@ bool	ReadRepLine(const vector<string>& tokens, void * ref)
 	}
 	
 		
-	if (info.feature != NO_VALUE)
-		sKnownFeatures.insert(info.feature);
+	if (info.feature != NO_VALUE)	sKnownFeatures.insert(info.feature);
 
 	return true;
 }
@@ -227,16 +254,19 @@ void	LoadObjTables(void)
 	gRepFeatureIndex.clear();
 	gFeatures.clear();
 	sKnownFeatures.clear();
+	sFeatureObjs.clear();
 //	gFacadeAreaIndex.clear();
 //	gObjectAreaIndex.clear();
 //	gRepUsage.clear();
 
 	RegisterLineHandler("OBJ_PROP", ReadRepLine, NULL);
+	RegisterLineHandler("OBJ_PREFIX", ReadPrefixLine, NULL);
 	RegisterLineHandler("OBS_PROP", ReadRepLine, NULL);
 	RegisterLineHandler("FAC_PROP", ReadRepLine, NULL);
 	RegisterLineHandler("FEAT_PROP", ReadFeatureProps, NULL);	
 //	RegisterLineHandler("FEAT_2_OBJ", ReadFeatureToRep, NULL);
-	LoadConfigFile("obj_properties.txt");
+	if (gObjPlacementFile.empty())	LoadConfigFile("obj_properties.txt");
+	else							LoadConfigFileFullPath(gObjPlacementFile.c_str());
 	LoadConfigFile("feat_properties.txt");
 //	LoadConfigFile("feat_2_obj.txt");
 	
@@ -343,6 +373,9 @@ int QueryUsableObjsBySize(
 					float			inWidth,
 					float			inDepth,
 					float			inHeightMax,	// If min = max, we want an exact height!
+
+					int				road,
+					int				fill,
 					
 //					bool			inLimitUsage,	// True if we DO want to apply freq rule limits.
 					int *			outResults,
@@ -386,7 +419,10 @@ int QueryUsableObjsBySize(
 			(inWidth == -1 || (inWidth >= rec.width_max)) &&					// FOR OBJECTS: give an object if (1) we have NO idea how big this slot is (try 'em all)
 			(inDepth == -1 || (inDepth >= rec.depth_max)) &&					// or if the lot is at least as bigger than the obj
 
-			(inHeightMax >= rec.height_min && inHeightMax <= rec.height_max))			
+			(inHeightMax >= rec.height_max) &&				// For objs - obj height less than max!
+			
+			(!fill || rec.fill) &&
+			(!road || rec.road))
 		{
 			outResults[ret] = row;
 			++ret;
@@ -412,4 +448,24 @@ void ResetUsages(void)
 bool IsWellKnownFeature(int inFeat)
 {
 	return sKnownFeatures.count(inFeat);
+}
+
+bool IsFeatureObject(int inName)
+{
+	return sFeatureObjs.count(inName);
+}
+
+void CheckObjTable(void)
+{
+	for (int n = 0; n < gRepTable.size(); ++n)
+		if (gRepTable[n].terrain != NO_VALUE && gNaturalTerrainIndex.count(gRepTable[n].terrain) == 0)
+			printf("WARNING: object %s references unknown terrain %s\n",FetchTokenString(gRepTable[n].obj_name), FetchTokenString(gRepTable[n].terrain));
+}
+
+void GetObjTerrainTypes(set<int>& outTypes)
+{
+	outTypes.clear();
+	for (int n = 0; n < gRepTable.size(); ++n)
+	if (gRepTable[n].terrain != NO_VALUE)
+		outTypes.insert(gRepTable[n].terrain);
 }

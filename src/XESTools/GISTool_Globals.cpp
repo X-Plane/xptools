@@ -13,7 +13,7 @@ vector<Point2>		gMeshPoints;
 vector<Point2>		gMeshLines;
 
 bool				gVerbose = true;
-bool				gTiming = true;
+bool				gTiming = false;
 ProgressFunc		gProgress = ConsoleProgressFunc;
 
 int					gMapWest  = -180;

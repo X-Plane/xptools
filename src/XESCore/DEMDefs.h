@@ -146,6 +146,7 @@ struct	DEMGeo {
 	inline int		radial_dist(int x, int y, int max, float key) const;		// Get dist to nearest value or -1 if not in range!  0 if we have that val
 	inline float	get_lowest(int x, int y, int r) const;						// Get lowest value within 1 dem point
 	inline float	get_lowest(int x, int y, int r, int& xo, int& yo) const;	// Get lowest value within 1 dem point
+	inline float	get_lowest_heuristic(int x, int y, int r) const;
 	inline float	kernelN(int x, int y, int dim, float * k) const;			// Get value of kernel applied at N
 	inline float	kernelmaxN(int x, int y, int dim, float * k) const;			// Get value of kernel applied at N, taking max instead of average
 	inline float	kernelN_Normalize(int x, int y, int dim, float * k) const;	// ...
@@ -373,6 +374,32 @@ inline int	DEMGeo::radial_dist(int x, int y, int max, float key) const
 	}
 	return -1;
 }
+
+inline float	DEMGeo::get_lowest_heuristic(int x, int y, int r) const
+{	
+	int xo, yo, 
+			x1 = x-r, 
+			x2 = x+r, 
+			y1 = y-r, 
+			y2 = y+r;
+		
+	vector<float>	es;
+	float real = get(x,y);
+	es.reserve((r+1)*(r+1));
+	for (yo = y1; yo <= y2; ++yo)
+	for (xo = x1; xo <= x2; ++xo)
+	{
+		float e = get(xo,yo);
+		if (e != NO_DATA)
+			es.push_back(e);
+	}
+	if (es.empty()) return NO_DATA;
+	sort(es.begin(), es.end());
+
+	if(es.size() < 9) return es[0];
+	return es[3];
+}
+
 
 
 inline float	DEMGeo::get_lowest(int x, int y, int r) const

@@ -44,6 +44,10 @@ void	GetObjDimensions(const XObj& inObj,
 						float	minCoords[3],
 						float	maxCoords[3]);
 
+void	GetObjDimensions8(const XObj8& inObj,
+						float	minCoords[3],
+						float	maxCoords[3]);
+
 // Given two points that will be the minimum and max X
 // locations for a given object at the min and max Y locations
 // this routine extrudes them in an axis opposite the wall 

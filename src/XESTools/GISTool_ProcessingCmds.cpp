@@ -12,6 +12,7 @@
 #include "Forests.h"
 #include "Zoning.h"
 #include "DEMDefs.h"
+#include "ObjTables.h"
 #include "Hydro.h"
 #include "DEMTables.h"
 #include "MapAlgs.h"
@@ -20,7 +21,13 @@ static int DoSpreadsheet(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Setting spreadsheet to %s\n", args[0]);
 	gNaturalTerrainFile = args[0];
+	if (args.size() > 1)
+		gObjPlacementFile = args[1];
 	LoadDEMTables();
+	if (args.size() > 1)
+		LoadObjTables();
+	if (args.size() > 1 && gVerbose)
+		printf("New prefix is: %s\n",gObjLibPrefix.c_str());
 	return 0;
 }
 
@@ -49,7 +56,7 @@ static int DoCalcMesh(const vector<const char *>& args)
 static int DoBurnAirports(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Burning airports into vector map...\n");
-	ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, gProgress);
+	ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, true, gProgress);
 	return 0;
 }
 
@@ -94,7 +101,15 @@ static int DoRemoveDupeObjs(const vector<const char *>& args)
 static int DoInstantiateObjs(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Instantiating objects...\n");
-	InstantiateGTPolygonAll(gMap, gDem, gTriangulationHi, gProgress);
+	vector<PreinsetFace>	insets;
+
+	set<int>				the_types;
+				GetObjTerrainTypes		(the_types);
+	
+	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+	GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, gProgress);
+
+	InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
 	DumpPlacementCounts();
 	return 0;
 	
@@ -104,12 +119,10 @@ static int DoInstantiateForests(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Instantiating forests...\n");
 
-	set<GISFace *> faces;
-	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-	if (!f->is_unbounded())
-	if (!f->IsWater())
-		faces.insert(f);
-	GenerateForests(gMap, faces			, gTriangulationHi, gProgress);
+				
+	vector<PreinsetFace>	insets;
+//	GenerateInsets(gMap, insets, gProgress);
+//	GenerateForests(gMap, insets			, gTriangulationHi, gProgress);
 	return 0;
 }
 
@@ -139,7 +152,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sProcessCmds[] = {
-{ "-spreadsheet",	1, 1, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
+{ "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
 { "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		0, 0, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },

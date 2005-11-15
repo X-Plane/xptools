@@ -1616,6 +1616,7 @@ GISHalfedge *			Pmwx::split_edge(GISHalfedge * inEdge, const Point2& split)
 {
 	DebugAssert(split != inEdge->source()->point());
 	DebugAssert(split != inEdge->target()->point());
+	DebugAssert(mVertexIndex.count(split) == 0);
 	// Edge split.  The following items are affected:
 	// There are 4 halfedges around this point.  Each of them may be affected.
 	
