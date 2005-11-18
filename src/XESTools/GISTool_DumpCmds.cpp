@@ -8,6 +8,7 @@
 #include "GISTool_Globals.h"
 #include <shapefil.h>
 #include "VPFTable.h"
+#include "MapDefs.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
 
@@ -166,12 +167,44 @@ static int DoDumpShapeFile(const vector<const char *>& args)
 	return dump_shape_file(args[0]);
 }
 
+static void print_ccb(GISHalfedge * e)
+{
+	GISHalfedge * circ = e, * stop = e;
+	int ctr = 0;
+	do {
+		++ctr;
+		circ = circ->next();
+	} while (circ != stop);
+	circ = e, stop = e;
+	printf("%d\n", ctr);
+	do {
+		printf("%lf %lf\n", circ->target()->point().x, circ->target()->point().y);
+		circ = circ->next();
+	} while (circ != stop);
+}
+
+static int DoDumpMap(const vector<const char *>& args)
+{
+	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	{
+		printf("%d\n", f->holes_count() + 1);
+		if (f->is_unbounded())
+			printf("0\n");
+		else
+			print_ccb(f->outer_ccb());
+		for (Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+			print_ccb(*h);
+	}
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sDumpCmds[] = {
 { "-dumpobs", 		0, 0, DoDumpObs, 		"Dump current FAA objects.", "" },
 { "-dumpdsf", 		1, -1, DoDumpDSF, 		"Dump contents of a DSF file.", "" },
 { "-dumpvpf", 		1, 1, DoDumpVPF, 		"Dump a VPF table.", "" },
 { "-dumpsdts", 		2, 2, DoDumpSDTS, 		"Dump an SDTS module.", "" },
 { "-dumpshp",		1, 1, DoDumpShapeFile,	"Dump an ESRI shape file.", "" },
+{ "-dumpmap",		0, 0, DoDumpMap,		"Dump current map as text.", "" },
 
 { 0, 0, 0, 0, 0, 0 }
 };
