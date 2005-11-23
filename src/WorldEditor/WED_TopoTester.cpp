@@ -4,6 +4,7 @@
 #include "WED_MapZoomer.h"
 #include "WED_DrawMap.h"
 #include "WED_Globals.h"
+#include "WED_Document.h"
 #include "WED_Selection.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
@@ -53,14 +54,14 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		
 		while (st_p != mTarget)
 		{
-			mFoundHint = gMap.ray_shoot(st_p, st_l, st_h,
+			mFoundHint = gDocument->gMap.ray_shoot(st_p, st_l, st_h,
 									mTarget, mFound, mFoundLoc);
 			
 			
 			if (mFoundHint != NULL)
 			switch(mFoundLoc) {
 			case Pmwx::locate_Face:	
-				if (mFoundHint->face() != gMap.unbounded_face())
+				if (mFoundHint->face() != gDocument->gMap.unbounded_face())
 					gFaceSelection.insert(mFoundHint->face());
 				gSelectionMode = wed_Select_Face;
 				break;
@@ -83,7 +84,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 	{
 		mAnchor.x = GetZoomer()->XPixelToLon(mx);
 		mAnchor.y = GetZoomer()->YPixelToLat(my);
-		mAnchorHint = gMap.locate_point(mAnchor, mAnchorLoc);
+		mAnchorHint = gDocument->gMap.locate_point(mAnchor, mAnchorLoc);
 
 		gVertexSelection.clear();						
 		gFaceSelection.clear();						
@@ -92,7 +93,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		if (mAnchorHint != NULL)
 		switch(mAnchorLoc) {
 		case Pmwx::locate_Face:	
-			if (mAnchorHint->face() != gMap.unbounded_face())
+			if (mAnchorHint->face() != gDocument->gMap.unbounded_face())
 				gFaceSelection.insert(mAnchorHint->face());
 			gSelectionMode = wed_Select_Face;
 			break;
@@ -145,7 +146,7 @@ bool	WED_TopoTester::HandleClick(
 	case xplm_MouseUp:   
 		if (XPLMGetModifiers() & xplm_OptionAltFlag)
 		{
-			gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
+			gDocument->gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		}
 		mRayShoot = false; 

@@ -39,6 +39,7 @@
 #include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
 #include "PlatformUtils.h"
+#include "WED_Document.h"
 
 /****************************************************************************************
  * FILE MENU UI
@@ -163,11 +164,11 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char	buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick an apt.dat file to open", "Open", 10, buf)) return;
-				gApts.clear();
-				if (!ReadAptFile(buf, gApts))
+				gDocument->gApts.clear();
+				if (!ReadAptFile(buf, gDocument->gApts))
 					DoUserAlert("Could not open file.\n");
 				else
-					IndexAirports(gApts,gAptIndex);
+					IndexAirports(gDocument->gApts,gDocument->gAptIndex);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
 			}
 			break;
@@ -220,15 +221,18 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			break;
 			
 		case fileCmd_Save:
-			if (gDirty)
+			if (gDocument->GetDirty())
 			{
-				if (gFilePath.empty())
-				{
-					char buf[1024];
-					buf[0] = 0;
-					if (!GetFilePathFromUser(getFile_Save, "Please name your .XES file", "Save", 1, buf)) return;
-					gFilePath = buf;
-				}
+//				if (gFilePath.empty())
+//				{
+//					char buf[1024];
+//					buf[0] = 0;
+//					if (!GetFilePathFromUser(getFile_Save, "Please name your .XES file", "Save", 1, buf)) return;
+//					gFilePath = buf;
+//				}
+	#if !DEV
+		uh need save naming on new?
+	#endif
 				WED_FileSave();
 			}
 			break;
@@ -237,19 +241,20 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				char buf[1024];
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Save, "Please rename your .XES file", "Save As", 1, buf)) return;
-				gFilePath = buf;
-				gDirty = true;
-				WED_FileSave();
+//				gFilePath = buf;
+//				gDirty = true;
+//				WED_FileSave();
+				gDocument->SaveAs(buf, true);
 			}
 			break;
 		case fileCmd_Revert:
-			if (gDirty && !gFilePath.empty())
+			if (gDocument->GetDirty())
 			{
 				char	buf[1024];			
 				sprintf(buf, "Are you sure you want to revert the file '%s'?  you will lose all changes since you last saved.",
-					gFilePath.c_str());
+					gDocument->GetFilePath().c_str());
 				if (ConfirmMessage(buf, "Revert", "Cancel"))
-					WED_FileOpen(gFilePath);
+					gDocument->Load();
 			}
 			break;			
 		case fileCmd_Import:
@@ -281,9 +286,9 @@ void	WED_NotifyFileMenus(int catagory, int message, void * param)
 
 void	WED_RecalcFileMenus(void)
 {
-	XPLMSetMenuItemName(sFileMenu, fileCmd_Save, gFilePath.empty() ? "Save..." : "Save", 1);
-	XPLMEnableMenuItem(sFileMenu,fileCmd_Save,   gDirty);
-	XPLMEnableMenuItem(sFileMenu,fileCmd_Revert, gDirty);
+	XPLMSetMenuItemName(sFileMenu, fileCmd_Save, gDocument->GetFilePath().empty() ? "Save..." : "Save", 1);
+	XPLMEnableMenuItem(sFileMenu,fileCmd_Save,   gDocument->GetDirty());
+	XPLMEnableMenuItem(sFileMenu,fileCmd_Revert, gDocument->GetDirty());
 }
 
 /****************************************************************************************
@@ -294,73 +299,29 @@ void	WED_RecalcFileMenus(void)
 
 void	WED_FileNew(void)
 {
-	gMap.clear();
-	gMap.is_valid();
-	gDem.clear();
-	gMeshPoints.clear();
-	gMeshLines.clear();
-	gFilePath.clear();
-	gDirty = false;
-//	gTriangulationLo.clear();
-	gTriangulationHi.clear();
-	gFaceSelection.clear();
-	gEdgeSelection.clear();
-	gVertexSelection.clear();
-	gPointFeatureSelection.clear();
+	#if !DEV
+		uh filename?!?
+	#endif
+	delete gDocument;
+	gDocument = new WED_Document("");
 	
-	float mapWest = -180.0;
-	float mapSouth = -90.0;
-	float mapEast = 180.0;
-	float mapNorth = 90.0;
-	
-	gMap.Index();
+	gDocument->gMap.Index();
 
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
 }
 
 bool	WED_FileOpen(const string& inPath)
 {
-	MFMemFile *	memFile = MemFile_Open(inPath.c_str());
-	if (memFile)
-	{
-		gMap.clear();
-		gDem.clear();
-		gMeshPoints.clear();
-		gMeshLines.clear();
-		gFilePath.clear();
-		gDirty = false;
-//		gTriangulationLo.clear();
-		gTriangulationHi.clear();
-		gFaceSelection.clear();
-		gEdgeSelection.clear();
-		gVertexSelection.clear();
-		gPointFeatureSelection.clear();
+	gMeshPoints.clear();
+	gMeshLines.clear();
+	gFaceSelection.clear();
+	gEdgeSelection.clear();
+	gVertexSelection.clear();
+	gPointFeatureSelection.clear();
 
-		ReadXESFile(memFile, &gMap, &gTriangulationHi, &gDem, &gApts, WED_ProgressFunc);
-		IndexAirports(gApts, gAptIndex);
-		MemFile_Close(memFile);
-	} else
-		return false;		
-
-	Point2	sw, ne;
-	CalcBoundingBox(gMap, sw, ne);
-	double mapNorth = (ne.y);
-	double mapSouth = (sw.y);
-	double mapEast = (ne.x);
-	double mapWest = (sw.x);
-
-//	ReduceToWaterBodies(gMap);
-
-	if (!gMap.is_valid())
-	{
-		gMap.clear();
-		gFilePath.clear();
-		gDirty = false;
-		return false;;
-	}	
-	
-	gFilePath = inPath;
-	gDirty = false;
+	delete gDocument;
+	gDocument = new WED_Document(inPath);
+	gDocument->Load();
 
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
 	return true;
@@ -368,13 +329,9 @@ bool	WED_FileOpen(const string& inPath)
 
 void	WED_FileSave(void)
 {
-	if (gDirty && !gFilePath.empty())
+	if (gDocument->GetDirty())
 	{
-#if TODO
-	TODO SAFE FILE SAVE AND SWAP!
-#endif
-		WriteXESFile(gFilePath.c_str(), gMap, gTriangulationHi, gDem, gApts, WED_ProgressFunc);
-		gDirty = false;
+		gDocument->Save();
 		WED_RecalcFileMenus();
 	}
 }

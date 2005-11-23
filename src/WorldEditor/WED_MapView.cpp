@@ -24,6 +24,7 @@
 
 #include "DEMTables.h"
 #include "XPLMMenus.h"
+#include "WED_Document.h"
 #include "XPLMGraphics.h"
 #include "XPLMProcessing.h"
 #include "XPWidgets.h"
@@ -429,15 +430,15 @@ void	WED_MapView::DrawSelf(void)
 		if (mNeedRecalcMapFull)
 		{
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
-			gMap.Index();
+			gDocument->gMap.Index();
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
-			PrecalcOGL(gMap,WED_ProgressFunc);
+			PrecalcOGL(gDocument->gMap,WED_ProgressFunc);
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
 		} 
 		else if (mNeedRecalcMapMeta)
 		{
 			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
-			RecalcOGLColors(gMap,WED_ProgressFunc);
+			RecalcOGLColors(gDocument->gMap,WED_ProgressFunc);
 			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
 		}
 		
@@ -461,12 +462,12 @@ void	WED_MapView::DrawSelf(void)
 				glBegin(GL_LINES);
 				mEdges[n] = 0;
 
-				for (CDT::Finite_edges_iterator eit = gTriangulationHi.finite_edges_begin(); eit != gTriangulationHi.finite_edges_end(); ++eit)
+				for (CDT::Finite_edges_iterator eit = gDocument->gTriangulationHi.finite_edges_begin(); eit != gDocument->gTriangulationHi.finite_edges_end(); ++eit)
 				if (GetBucketForEdge(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, eit) == n)
 				{
 					++mEdges[n];
 					GLfloat	color[4] = { 1.0, 1.0, 1.0, 1.0 };
-					if (!gTriangulationHi.is_constrained(*eit))
+					if (!gDocument->gTriangulationHi.is_constrained(*eit))
 					{
 						if (sDEMType)
 							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
@@ -514,7 +515,7 @@ void	WED_MapView::DrawSelf(void)
 				glBegin(GL_TRIANGLES);
 				mTris[n] = 0;
 		
-				for (CDT::Finite_faces_iterator fit = gTriangulationHi.finite_faces_begin(); fit != gTriangulationHi.finite_faces_end(); ++fit)
+				for (CDT::Finite_faces_iterator fit = gDocument->gTriangulationHi.finite_faces_begin(); fit != gDocument->gTriangulationHi.finite_faces_end(); ++fit)
 				if (GetBucketForFace(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, fit) == n)
 				{
 					++mTris[n];
@@ -651,7 +652,7 @@ fix this
 	
 	if (sShowMap)
 	{		
-		DrawMapBucketed(gMap, 
+		DrawMapBucketed(gDocument->gMap, 
 			ll, lb, lr, lt,
 //			pl, pb, pr, pt,
 			gVertexSelection,
@@ -731,11 +732,11 @@ fix this
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBegin(GL_QUADS);
 		set<int>	apts;
-		FindAirports(vis_area, gAptIndex, apts);
+		FindAirports(vis_area, gDocument->gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
 		{
 			int n = *e;			
-			if (vis_area.overlap(gApts[n].bounds))
+			if (vis_area.overlap(gDocument->gApts[n].bounds))
 			{
 				glColor3f(1.0, 0.0, 1.0);
 //				DebugAssert(gApts[n].bounds.xmin() <= gApts[n].bounds.xmax());
@@ -749,14 +750,14 @@ fix this
 //				glVertex2f((gApts[n].bounds.xmax()),
 //							(gApts[n].bounds.ymin()));
 			
-				for (int m = 0; m < gApts[n].pavements.size(); ++m)
+				for (int m = 0; m < gDocument->gApts[n].pavements.size(); ++m)
 				{
-					for (int i = 0, j = 0; i < gApts[n].pavements[m].quad_coords.size(); i += 2, j += 3)
+					for (int i = 0, j = 0; i < gDocument->gApts[n].pavements[m].quad_coords.size(); i += 2, j += 3)
 					{
-						glColor3f(gApts[n].pavements[m].quad_colors[j],gApts[n].pavements[m].quad_colors[j+1],gApts[n].pavements[m].quad_colors[j+2]);
+						glColor3f(gDocument->gApts[n].pavements[m].quad_colors[j],gDocument->gApts[n].pavements[m].quad_colors[j+1],gDocument->gApts[n].pavements[m].quad_colors[j+2]);
 						glVertex2f(
-							(gApts[n].pavements[m].quad_coords[i]),
-							(gApts[n].pavements[m].quad_coords[i+1]));
+							(gDocument->gApts[n].pavements[m].quad_coords[i]),
+							(gDocument->gApts[n].pavements[m].quad_coords[i+1]));
 					}
 				}
 //				glEnd();
@@ -949,9 +950,9 @@ put in  color enums?
 			}
 			else if (sShowDEMData[n-1] || n == sDEMType)
 			{	
-				if (gDem.count(	kDEMs[n].dem ))
+				if (gDocument->gDem.count(	kDEMs[n].dem ))
 				{	
-					float hh = gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
+					float hh = gDocument->gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
 					
 					// HACK city - for certain DEMs, do the trig on the fly.
 					
@@ -1084,10 +1085,10 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 			mNeedRecalcMeshHi = true;
 			mNeedRecalcMeshHiAlpha = true;
 			Bbox2		full;
-			if (gDem.empty())
+			if (gDocument->gDem.empty())
 			{
 				Point2 sw, ne;
-				CalcBoundingBox(gMap, full.p1, full.p2);
+				CalcBoundingBox(gDocument->gMap, full.p1, full.p2);
 				mZoomer->SetMapLogicalBounds(
 							full.p1.x,
 							full.p1.y,
@@ -1095,14 +1096,14 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 							full.p2.y);
 				mZoomer->SetAspectRatio(1.0 / cos((full.p1.y + full.p2.y) * 0.5 * PI / 180.0));
 			} else {
-				int e = gDem.begin()->first;
+				int e = gDocument->gDem.begin()->first;
 				mZoomer->SetMapLogicalBounds(
-							gDem[e].mWest,
-							gDem[e].mSouth,
-							gDem[e].mEast,
-							gDem[e].mNorth);
-				mZoomer->SetAspectRatio(1.0 / cos((gDem[e].mSouth + gDem[e].mNorth) * 0.5 * PI / 180.0));
-				full = Bbox2(gDem[e].mWest, gDem[e].mSouth, gDem[e].mEast, gDem[e].mNorth);
+							gDocument->gDem[e].mWest,
+							gDocument->gDem[e].mSouth,
+							gDocument->gDem[e].mEast,
+							gDocument->gDem[e].mNorth);
+				mZoomer->SetAspectRatio(1.0 / cos((gDocument->gDem[e].mSouth + gDocument->gDem[e].mNorth) * 0.5 * PI / 180.0));
+				full = Bbox2(gDocument->gDem[e].mWest, gDocument->gDem[e].mSouth, gDocument->gDem[e].mEast, gDocument->gDem[e].mNorth);
 			}		
 			mZoomer->ZoomShowAll();		
 			
@@ -1316,13 +1317,13 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	int mode = 	kDEMs[sDEMType].view_mode;
 	bool nearest = !kDEMs[sDEMType].interpolate;
 
-	if (gDem.find(param) == gDem.end())
+	if (gDocument->gDem.find(param) == gDocument->gDem.end())
 	{
 		mHasTex = false;
 		return false;
 	}
 
-	const DEMGeo&	master = gDem[param];
+	const DEMGeo&	master = gDocument->gDem[param];
 	
 	if (DEMToBitmap(master, image, mode) == 0)
 	{
@@ -1340,10 +1341,10 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	
 	if (do_relief)
 	{
-		if (gDem.count(dem_Elevation) == 0)
+		if (gDocument->gDem.count(dem_Elevation) == 0)
 			mHasRelief = false;
 		else {
-			const DEMGeo&	master = gDem[dem_Elevation];
+			const DEMGeo&	master = gDocument->gDem[dem_Elevation];
 			
 			if (DEMToBitmap(master, image, dem_Normals) == 0)
 			{
@@ -1463,12 +1464,12 @@ void	WED_MapView_UpdateCommandStatus(void)
 	
 	for (int n = 0; n < DEMChoiceCount; ++n) {
 		XPLMCheckMenuItem(sDEMMenu, n, (sDEMType == n) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (gDem.find(kDEMs[n].dem) != gDem.end()));
+		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (gDocument->gDem.find(kDEMs[n].dem) != gDocument->gDem.end()));
 		
 		if (n != 0)
 		{
 			XPLMCheckMenuItem(sDEMDataMenu, n-1, sShowDEMData[n-1] ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-			XPLMEnableMenuItem(sDEMDataMenu, n-1, (gDem.find(kDEMs[n].dem) != gDem.end()));
+			XPLMEnableMenuItem(sDEMDataMenu, n-1, (gDocument->gDem.find(kDEMs[n].dem) != gDocument->gDem.end()));
 		}
 	}
 }
@@ -1485,7 +1486,7 @@ char * WED_MapView::MonitorCaption(void)
 	float fps = (elapsed == 0.0) ? 60.0 : 1.0 / elapsed;
 	n += sprintf(buf+n, "Framerate: %03d ", (int) fps);
 
-	n += sprintf(buf+n,"Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+	n += sprintf(buf+n,"Hires: %d ", gDocument->gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
 
 	
 	CDT::Face_handle	recent;
@@ -1498,7 +1499,7 @@ char * WED_MapView::MonitorCaption(void)
 	static int hint_id = CDT::gen_cache_key();
 	int i;
 	CDT::Locate_type lt;
-	recent = gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
+	recent = gDocument->gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
 	if (lt == CDT::FACE)
 	{
 		int ts = recent->info().terrain;

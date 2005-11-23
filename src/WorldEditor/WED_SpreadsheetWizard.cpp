@@ -4,6 +4,7 @@
 #include "WED_Globals.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
+#include "WED_Document.h"
 
 static	XPWidgetID		sWizard = NULL;
 
@@ -70,9 +71,9 @@ inline float	FetchEquiv(const DEMGeo& master, const DEMGeo& slave, int x, int y)
 }
 
 #define	TEST_RULE(__DEM, __MIN, __MAX)							\
-			if (gDem.count(__DEM) == 0 ||						\
+			if (gDocument->gDem.count(__DEM) == 0 ||						\
 			sWizardParams.__MIN == sWizardParams.__MAX ||		\
-			InRange(sWizardParams.__MIN, sWizardParams.__MAX, FetchEquiv(wizard, gDem[__DEM], x, y)))
+			InRange(sWizardParams.__MIN, sWizardParams.__MAX, FetchEquiv(wizard, gDocument->gDem[__DEM], x, y)))
 	
 
 inline double cosdeg(double deg)
@@ -102,13 +103,13 @@ void	WED_WizardAction(XPWidgetID)
 	
 
 	DEMGeo *	widest = NULL;
-	for (DEMGeoMap::iterator dem = gDem.begin(); dem != gDem.end(); ++dem)
+	for (DEMGeoMap::iterator dem = gDocument->gDem.begin(); dem != gDocument->gDem.end(); ++dem)
 	{
 		if (widest == NULL || (widest->mWidth * widest->mHeight) < (dem->second.mWidth * dem->second.mHeight))
 			widest = &dem->second;			
 	}
 	if (widest == NULL) return;
-	DEMGeo&	wizard(gDem[dem_Wizard]);
+	DEMGeo&	wizard(gDocument->gDem[dem_Wizard]);
 	wizard = *widest;
 	
 	for (int y = 0; y < wizard.mHeight; ++y)

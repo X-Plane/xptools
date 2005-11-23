@@ -26,6 +26,7 @@
 #include "XESInit.h"
 #include "WED_ProcessingCmds.h"
 #include "WED_FileCommands.h"
+#include "WED_Document.h"
 #include "WED_SpecialCommands.h"
 #include "WED_MapView.h"
 #include "WED_PrefsDialog.h"
@@ -85,8 +86,8 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 	{
 		if (i->find(".elv") != string::npos)		
 		{
-			BuildDifferentialDegree(i->c_str(), gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, 1201, 1201, gDem[dem_Elevation], false);
-			BuildDifferentialDegree(i->c_str(), gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, 241, 241, gDem[dem_UrbanDensity], true);
+			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 1201, 1201, gDocument->gDem[dem_Elevation], false);
+			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 241, 241, gDocument->gDem[dem_UrbanDensity], true);
 			continue;
 		}
 
@@ -158,6 +159,8 @@ void	XGrindInit(string& outName)
 	
 	LoadDEMTables();
 	LoadObjTables();
+	
+	gDocument = new WED_Document("");
 	
 	int w, h;
 	XPLMGetScreenSize(&w, &h);
@@ -274,4 +277,5 @@ bool	XGrindCanQuit(void)
 void	XGrindDone(void)
 {
 	WED_SavePrefs();
+	delete gDocument;
 }

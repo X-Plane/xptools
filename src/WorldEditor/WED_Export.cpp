@@ -5,6 +5,7 @@
 #include "WED_Notify.h"
 #include "EnumSystem.h"
 #include "WED_Msgs.h"
+#include "WED_Document.h"
 #include "WED_DEMGraphics.h"
 #include "PlatformUtils.h"
 #include "SimpleIO.h"
@@ -119,11 +120,11 @@ void	WED_ShowExportDialog(void)
 void	DoExport(XPWidgetID inWidget, int inResult)
 {
 	if (inResult != xpDialog_ResultOK) return;
-	DEMGeoMap::iterator layer = gDem.begin();
+	DEMGeoMap::iterator layer = gDocument->gDem.begin();
 	int n = sExportState.dem;
-	while (n > 0 && layer != gDem.end())
+	while (n > 0 && layer != gDocument->gDem.end())
 		++layer, --n;
-	if (layer == gDem.end()) return;
+	if (layer == gDocument->gDem.end()) return;
 	
 	bool	enum_layer = layer->first == dem_LandUse || layer->first == dem_Climate;	// || layer->first == dem_NudeColor;
 	
@@ -241,9 +242,9 @@ void	ResyncExportDialog(void)
 {
 	XPWidgetID demPopup = XPFindWidgetByTag(sExport, WED_EXPORT_RASTERS);
 	string	names;
-	for (DEMGeoMap::iterator layer = gDem.begin(); layer != gDem.end(); ++layer)
+	for (DEMGeoMap::iterator layer = gDocument->gDem.begin(); layer != gDocument->gDem.end(); ++layer)
 	{
-		if (layer != gDem.begin()) names += ';';
+		if (layer != gDocument->gDem.begin()) names += ';';
 		names += FetchTokenString(layer->first);
 	}
 	if (names.empty()) names = "-No Raster Layers to Export-";
@@ -262,13 +263,13 @@ void	CalculateRescaling(XPWidgetID)
 	if (sExport == NULL) return;
 	XPDataFromItem(sExport, WED_EXPORT_RASTERS);
 	
-	DEMGeoMap::iterator layer = gDem.begin();
+	DEMGeoMap::iterator layer = gDocument->gDem.begin();
 	int n = sExportState.dem;
-	while (n > 0 && layer != gDem.end())
+	while (n > 0 && layer != gDocument->gDem.end())
 		++layer, --n;
 	sExportState.offset = 0.0;
 	sExportState.scale = 1.0;
-	if (layer != gDem.end())
+	if (layer != gDocument->gDem.end())
 	{
 		float	minv, maxv;
 		minv = maxv = NO_DATA;

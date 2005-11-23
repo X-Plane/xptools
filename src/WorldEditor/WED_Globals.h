@@ -23,28 +23,15 @@
 #ifndef WED_GLOBALS_H
 #define WED_GLOBALS_H
 
-#include "MapDefs.h"
-//#include "MapBuckets.h"
-#include "DEMDefs.h"
-#include "MeshDefs.h"
-#include "AptDefs.h"
+#include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
+class	WED_Document;
 
-extern Pmwx					gMap;
-extern DEMGeoMap			gDem;
-//extern MapFaceBuckets		gFaceBuckets;
-//extern MapHalfedgeBuckets	gHalfedgeBuckets;
-//extern MapVertexBuckets	gVertexBuckets;
-//extern CDT				gTriangulationLo;
-extern CDT					gTriangulationHi;
 
 extern vector<pair<Point2,Point3> >		gMeshPoints;
 extern vector<pair<Point2,Point3> >		gMeshLines;
-//extern int					gLayer;
 
-extern string				gFilePath;
-extern bool					gDirty;
-extern AptVector			gApts;
-extern AptIndex				gAptIndex;
+extern WED_Document *					gDocument;
+
 
 #endif

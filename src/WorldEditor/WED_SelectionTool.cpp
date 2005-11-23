@@ -24,6 +24,7 @@
 
 #include "WED_MapZoomer.h"
 #include "WED_Globals.h"
+#include "WED_Document.h"
 #include "WED_Selection.h"
 #include "WED_Progress.h"
 
@@ -249,15 +250,15 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					nuke.insert((*sel)->twin());
 			for (set<GISHalfedge *>::iterator nukeme = nuke.begin(); nukeme != nuke.end(); ++nukeme)
 			{
-				gMap.remove_edge(*nukeme);
-				DebugAssert(gMap.is_valid());
+				gDocument->gMap.remove_edge(*nukeme);
+				DebugAssert(gDocument->gMap.is_valid());
 			}
 		}
 		break;
 	case 1:
 		for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 		{
-			CleanFace(gMap, *fsel);
+			CleanFace(gDocument->gMap, *fsel);
 		}
 		break;
 	case 2:
@@ -335,7 +336,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		}
 		break;
 	case 6:
-		SimplifyMap(gMap, true);
+		SimplifyMap(gDocument->gMap, true);
 		gEdgeSelection.clear();
 		gFaceSelection.clear();
 		gVertexSelection.clear();
@@ -357,10 +358,10 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			PROGRESS_START(WED_ProgressFunc, 1, 3, "Accumulating Edges")
 			set<GISHalfedge *> kill_e;			
 			ctr = 0;
-			for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
+			for (Pmwx::Halfedge_iterator e = gDocument->gMap.halfedges_begin(); e != gDocument->gMap.halfedges_end(); ++e, ++ctr)
 			if (e->mDominant)
 			{
-				PROGRESS_CHECK(WED_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gMap.number_of_halfedges(), gMap.number_of_halfedges() / 200)
+				PROGRESS_CHECK(WED_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gDocument->gMap.number_of_halfedges(), gDocument->gMap.number_of_halfedges() / 200)
 				if (kill_f.count(e->face()) &&
 					kill_f.count(e->twin()->face()))
 				kill_e.insert(e);
@@ -372,7 +373,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			for (set<GISHalfedge *>::iterator kill = kill_e.begin(); kill != kill_e.end(); ++kill, ++ctr)
 			{
 				PROGRESS_CHECK(WED_ProgressFunc, 2, 3, "Deleting Edges", ctr, kill_e.size(), kill_e.size() / 200)
-				gMap.remove_edge(*kill);
+				gDocument->gMap.remove_edge(*kill);
 			}			
 			PROGRESS_DONE(WED_ProgressFunc, 2, 3, "Deleting Edges")
 		}		
@@ -394,7 +395,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 					ReadXESFile(fi, &overMap, NULL, NULL, NULL, WED_ProgressFunc);
 
                     Point2 master1, master2, slave1, slave2;
-                    CalcBoundingBox(gMap, master1, master2);
+                    CalcBoundingBox(gDocument->gMap, master1, master2);
                     CalcBoundingBox(overMap, slave1, slave2);
                     
                     Vector2 delta(slave1, master1);
@@ -408,7 +409,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
                     for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
                     	overMap.ReindexVertex(i);
 					
-					SwapFace(gMap, overMap, *gFaceSelection.begin(), WED_ProgressFunc);
+					SwapFace(gDocument->gMap, overMap, *gFaceSelection.begin(), WED_ProgressFunc);
 					
 					WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 					MemFile_Close(fi);
@@ -432,7 +433,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 		
 		break;
 	}
-	DebugAssert(gMap.is_valid());
+	DebugAssert(gDocument->gMap.is_valid());
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 	gEdgeSelection.clear();
 }
@@ -456,10 +457,10 @@ char *	WED_SelectionTool::GetStatusText(void)
 		
 		n += sprintf(buf+n, "%dm %dmx%dm=%d sq m ", (int) d, (int) l1, (int) l2, (int) a);
 		
-		if (gDem.count(dem_Elevation) != 0)
+		if (gDocument->gDem.count(dem_Elevation) != 0)
 		{
-			double p1 = gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseX), 	 GetZoomer()->YPixelToLat(mMouseY	  ));
-			double p2 = gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY));
+			double p1 = gDocument->gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseX), 	 GetZoomer()->YPixelToLat(mMouseY	  ));
+			double p2 = gDocument->gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY));
 			if (p1 != NO_DATA && p2 != NO_DATA)
 			{
 				double drop = fabs(p2 - p1);
@@ -533,13 +534,13 @@ char *	WED_SelectionTool::GetStatusText(void)
 		XPLMGetMouseLocation(&mx, &my);
 		Bbox2	vis_area(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)));
 		set<int>	apts;
-		FindAirports(vis_area, gAptIndex, apts);
+		FindAirports(vis_area, gDocument->gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
 		{
 			int k = *e;			
-			if (vis_area.overlap(gApts[k].bounds))
+			if (vis_area.overlap(gDocument->gApts[k].bounds))
 			{
-				n += sprintf(buf+n, "%s %s ", gApts[k].icao.c_str(), gApts[k].name.c_str());
+				n += sprintf(buf+n, "%s %s ", gDocument->gApts[k].icao.c_str(), gDocument->gApts[k].name.c_str());
 			}
 		}
 	}
@@ -685,13 +686,13 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindFaceFullyInRect(
+				gDocument->gMap.FindFaceFullyInRect(
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			} else {
-				gMap.FindFaceTouchesPt(
+				gDocument->gMap.FindFaceTouchesPt(
 							Point2(bounds[0], bounds[1]), faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & xplm_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			}
@@ -704,7 +705,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindHalfedgeFullyInRect(
+				gDocument->gMap.FindHalfedgeFullyInRect(
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), 
 							halfedgeitems);
@@ -714,7 +715,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				t.found = false;
 				t.lon = bounds[0];
 				t.lat = bounds[1];			
-				gMap.FindHalfedgeTouchesRect(
+				gDocument->gMap.FindHalfedgeTouchesRect(
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), halfedgeitems);
 				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(),
@@ -737,7 +738,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				gMap.FindVerticesFullyInRect(
+				gDocument->gMap.FindVerticesFullyInRect(
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -748,7 +749,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				t.found = false;
 				t.lon = bounds[0];
 				t.lat = bounds[1];
-				gMap.FindVerticesFullyInRect(
+				gDocument->gMap.FindVerticesFullyInRect(
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -772,7 +773,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 			if (GetRectMapCoords(bounds))
 			{
 				vector<Pmwx::Face_handle>	faces;
-				gMap.FindFaceTouchesRect(
+				gDocument->gMap.FindFaceTouchesRect(
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)
@@ -797,7 +798,7 @@ void	WED_SelectionTool::DoSelectionPreview()
 				t.lon = bounds[0];
 				t.lat = bounds[1];
 				vector<Pmwx::Face_handle>	faces;
-				gMap.FindFaceTouchesRect(
+				gDocument->gMap.FindFaceTouchesRect(
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)

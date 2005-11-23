@@ -26,6 +26,7 @@
 #include "XPLMMenus.h"
 #include "PlatformUtils.h"
 #include "SceneryPackages.h"
+#include "WED_Document.h"
 #include "WED_Assert.h"
 #include <ShapeFil.h>
 #include "MapAlgs.h"
@@ -211,7 +212,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				for (set<Pmwx::Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
 				if (!(*f)->is_unbounded())
 				{
-					n += GetParamHistogram(*f, gDem[dem_Elevation], hist);
+					n += GetParamHistogram(*f, gDocument->gDem[dem_Elevation], hist);
 				}
 			
 				if (n == 0) 
@@ -288,7 +289,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				char buf[1024];
 				map<float, int>	hist;
 				map<float, int>::iterator iter;
-				int n = CalcMeshError(gTriangulationHi, gDem[dem_Elevation], hist, WED_ProgressFunc);
+				int n = CalcMeshError(gDocument->gTriangulationHi, gDocument->gDem[dem_Elevation], hist, WED_ProgressFunc);
 
 				float minv = hist.begin()->first;
 				float maxv = hist.begin()->first;
@@ -369,9 +370,9 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_TempMSL:
 			{
-				gDem[dem_TemperatureSeaLevel] = gDem[dem_Temperature];
-				DEMGeo& temp(gDem[dem_TemperatureSeaLevel]);
-				const DEMGeo& elev(gDem[dem_Elevation]);
+				gDocument->gDem[dem_TemperatureSeaLevel] = gDocument->gDem[dem_Temperature];
+				DEMGeo& temp(gDocument->gDem[dem_TemperatureSeaLevel]);
+				const DEMGeo& elev(gDocument->gDem[dem_Elevation]);
 				
 				if (elev.mWidth == temp.mWidth && elev.mHeight == temp.mHeight)
 				{
@@ -397,7 +398,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_FixMSL:
 			{
-				DEMGeo& msl(gDem[dem_TemperatureSeaLevel]);
+				DEMGeo& msl(gDocument->gDem[dem_TemperatureSeaLevel]);
 				
 				float k[25];
 
@@ -413,7 +414,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_FixRain:
 			{
-				DEMGeo& rain(gDem[dem_Rainfall]);
+				DEMGeo& rain(gDocument->gDem[dem_Rainfall]);
 				
 				float k[25];
 				//Sergio sez: not too much rain smoothing - for reasons that only the master can understand! ;-)
@@ -430,17 +431,17 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_SplatClimate:
 			{
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.0);
-				while (SpreadDEMValuesIterate(gDem[dem_Temperature	  	 ])) { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_Temperature	  	 ])) { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.15);
-				while (SpreadDEMValuesIterate(gDem[dem_TemperatureRange	 ]))	 { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_TemperatureRange	 ]))	 { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.3);
-				while (SpreadDEMValuesIterate(gDem[dem_Rainfall			 ])) { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_Rainfall			 ])) { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.45);
-				while (SpreadDEMValuesIterate(gDem[dem_Biomass			 ])) { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_Biomass			 ])) { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.6);
-				while (SpreadDEMValuesIterate(gDem[dem_TemperatureSeaLevel ])) { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_TemperatureSeaLevel ])) { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 0.75);
-				while (SpreadDEMValuesIterate(gDem[dem_Climate			 ])) { }
+				while (SpreadDEMValuesIterate(gDocument->gDem[dem_Climate			 ])) { }
 				WED_ProgressFunc(0, 1, "Spreading climate.", 1.0);
 
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
@@ -460,7 +461,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 		case specCmd_CountBorders:
 			{
 				int b = 0, c = 0;
-				for (CDT::Face_iterator f = gTriangulationHi.finite_faces_begin(); f != gTriangulationHi.finite_faces_end(); ++f)
+				for (CDT::Face_iterator f = gDocument->gTriangulationHi.finite_faces_begin(); f != gDocument->gTriangulationHi.finite_faces_end(); ++f)
 				{
 					c++;
 					b += f->info().terrain_border.size();
@@ -479,12 +480,12 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			break;
 		case specCmd_ClimateRange:
 			{
-				DEMGeo& temp(gDem[dem_Temperature]);
-				DEMGeo& temps(gDem[dem_TemperatureSeaLevel]);
-				DEMGeo& rain(gDem[dem_Rainfall]);
-				DEMGeo& elev(gDem[dem_Elevation]);
-				DEMGeo& lu(gDem[dem_LandUse]);
-				DEMGeo&	old_lu(gDem[dem_OrigLandUse]);
+				DEMGeo& temp(gDocument->gDem[dem_Temperature]);
+				DEMGeo& temps(gDocument->gDem[dem_TemperatureSeaLevel]);
+				DEMGeo& rain(gDocument->gDem[dem_Rainfall]);
+				DEMGeo& elev(gDocument->gDem[dem_Elevation]);
+				DEMGeo& lu(gDocument->gDem[dem_LandUse]);
+				DEMGeo&	old_lu(gDocument->gDem[dem_OrigLandUse]);
 				DEMGeo	rain_diff, temp_diff;
 				DEMMakeDifferential(temps, temp_diff);
 				DEMMakeDifferential(rain, rain_diff);
