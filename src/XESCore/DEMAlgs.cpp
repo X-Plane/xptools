@@ -29,6 +29,7 @@
 #include "DEMTables.h"
 #include "MeshAlgs.h"
 #include "PolyRasterUtils.h"
+#include "WED_Document.h"
 #include "XUtils.h"
 #include "DEMAlgs.h"
 #include "WED_Globals.h"
@@ -1138,10 +1139,10 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 
 	set<int>	apts;
 
-	FindAirports(Bbox2(landuse.mWest, landuse.mSouth, landuse.mEast, landuse.mNorth), gAptIndex, apts);
+	FindAirports(Bbox2(landuse.mWest, landuse.mSouth, landuse.mEast, landuse.mNorth), gDocument->gAptIndex, apts);
 	for (set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
-	if (gApts[*apt].kind_code == apt_Type_Airport)
-	for (AptPavementVector::iterator rwy = gApts[*apt].pavements.begin(); rwy != gApts[*apt].pavements.end(); ++rwy)
+	if (gDocument->gApts[*apt].kind_code == apt_Type_Airport)
+	for (AptPavementVector::iterator rwy = gDocument->gApts[*apt].pavements.begin(); rwy != gDocument->gApts[*apt].pavements.end(); ++rwy)
 	if (rwy->surf_code == rwy_Surf_Asphalt || rwy->surf_code == rwy_Surf_Concrete)
 	{
 		Point2 p = rwy->ends.midpoint();

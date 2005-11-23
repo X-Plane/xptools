@@ -32,6 +32,7 @@
 #include "XPLMMenus.h"
 #include "PlatformUtils.h"
 #include "MapAlgs.h"
+#include "WED_Document.h"
 #include "WED_Progress.h"
 #include "SceneryPackages.h"
 #include "WED_Msgs.h"
@@ -175,27 +176,27 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 //			TriangulateMesh(gMap, gTriangulationLo, gDem, WED_ProgressFunc, false);		
 //			break;
 		case procCmd_HiResTri:
-			TriangulateMesh(gMap, gTriangulationHi, gDem, WED_ProgressFunc);		
+			TriangulateMesh(gDocument->gMap, gDocument->gTriangulationHi, gDocument->gDem, WED_ProgressFunc);		
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoAirports:
-			ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, true, WED_ProgressFunc);
+			ProcessAirports(gDocument->gApts, gDocument->gMap, gDocument->gDem[dem_Elevation], gDocument->gDem[dem_UrbanTransport], true, true, true, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_DoZoning:
-			ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_Slope],gApts, WED_ProgressFunc);
+			ZoneManMadeAreas(gDocument->gMap, gDocument->gDem[dem_LandUse], gDocument->gDem[dem_Slope],gDocument->gApts, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorMetaChange, NULL);
 			break;
 //		case procCmd_DoBeaches:
 //			CreateBeaches(gMap);
 //			break;
 		case procCmd_UpsampleEnviro:
-			UpsampleEnvironmentalParams(gDem,WED_ProgressFunc);
+			UpsampleEnvironmentalParams(gDocument->gDem,WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;	
 		case procCmd_CalcSlope:
-			CalcSlopeParams(gDem, true, WED_ProgressFunc);
+			CalcSlopeParams(gDocument->gDem, true, WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_HydroCorrect:
@@ -204,7 +205,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				f1[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1)) break;
 						
-				HydroReconstruct(gMap,  gDem,f1,WED_ProgressFunc);
+				HydroReconstruct(gDocument->gMap,  gDocument->gDem,f1,WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			}
@@ -212,13 +213,13 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 		case procCmd_HydroSimplfiy:
 			{
 				Bbox2	bounds;
-				CalcBoundingBox(gMap, bounds.p1, bounds.p2);
-				SimplifyCoastlines(gMap, bounds, WED_ProgressFunc);
+				CalcBoundingBox(gDocument->gMap, bounds.p1, bounds.p2);
+				SimplifyCoastlines(gDocument->gMap, bounds, WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 			}
 			break;
 		case procCmd_DeriveDEMs:
-			DeriveDEMs(gMap, gDem,WED_ProgressFunc);			
+			DeriveDEMs(gDocument->gMap, gDocument->gDem,WED_ProgressFunc);			
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
 		case procCmd_AddUrbanRoads:
@@ -235,7 +236,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 						ReadXESFile(fi, &overMap, NULL, NULL, NULL, WED_ProgressFunc);
 
                         Point2 master1, master2, slave1, slave2;
-                        CalcBoundingBox(gMap, master1, master2);
+                        CalcBoundingBox(gDocument->gMap, master1, master2);
                         CalcBoundingBox(overMap, slave1, slave2);
                         
                         Vector2 delta(slave1, master1);
@@ -249,7 +250,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
                         for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
                         	overMap.ReindexVertex(i);
  						
-						AddEuroRoads(gMap, overMap, gDem[dem_Slope], gDem[dem_LandUse], lu_usgs_URBAN_IRREGULAR, WED_ProgressFunc);
+						AddEuroRoads(gDocument->gMap, overMap, gDocument->gDem[dem_Slope], gDocument->gDem[dem_LandUse], lu_usgs_URBAN_IRREGULAR, WED_ProgressFunc);
 						WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 						MemFile_Close(fi);
 					}					
@@ -259,7 +260,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 		case procCmd_RemoveDupes:
 			{
 				if (gFaceSelection.empty())
-					RemoveDuplicatesAll(gMap, WED_ProgressFunc);
+					RemoveDuplicatesAll(gDocument->gMap, WED_ProgressFunc);
 				else {
 					for (set<Pmwx::Face_handle>::iterator i = gFaceSelection.begin(); i != gFaceSelection.end(); ++i)
 					if (!(*i)->IsWater())
@@ -275,16 +276,16 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 
 				GetObjTerrainTypes		(the_types);
 				
-				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+				Bbox2	lim(gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, gDocument->gDem[dem_Elevation].mEast, gDocument->gDem[dem_Elevation].mNorth);
 				
 				
 				if (gFaceSelection.empty())
 				{
-					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
+					GenerateInsets(gDocument->gMap, gDocument->gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
 				} else {
 					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
-				InstantiateGTPolygonAll(insets, gDem, gTriangulationHi , WED_ProgressFunc);
+				InstantiateGTPolygonAll(insets, gDocument->gDem, gDocument->gTriangulationHi , WED_ProgressFunc);
 			}
 			DumpPlacementCounts();
 			break;
@@ -294,23 +295,23 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				
 				vector<PreinsetFace>	insets;
 				set<int>				the_types;
-				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+				Bbox2	lim(gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, gDocument->gDem[dem_Elevation].mEast, gDocument->gDem[dem_Elevation].mNorth);
 				if (gFaceSelection.empty())
 				{
-					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
+					GenerateInsets(gDocument->gMap, gDocument->gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
 				} else {
 					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
 
-				GenerateForests(gMap, insets, gTriangulationHi, WED_ProgressFunc);
+				GenerateForests(gDocument->gMap, insets, gDocument->gTriangulationHi, WED_ProgressFunc);
 			}
 			break;
 		case procCmd_BuildRoads:
-			CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],WED_ProgressFunc);
+			CalcRoadTypes(gDocument->gMap, gDocument->gDem[dem_Elevation], gDocument->gDem[dem_UrbanDensity],WED_ProgressFunc);
 			break;
 		case procCmd_AssignLUToMesh:
-			AssignLandusesToMesh(gDem,gTriangulationHi,WED_ProgressFunc);
-//			AssignLandusesToMesh(gDem,gTriangulationLo,false,WED_ProgressFunc);
+			AssignLandusesToMesh(gDocument->gDem,gDocument->gTriangulationHi,WED_ProgressFunc);
+//			AssignLandusesToMesh(gDocument->gDem,gTriangulationLo,false,WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoProcessing:		
@@ -340,8 +341,8 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 										(cmd == procCmd_ExportDSFExisting) ? "Update" : "Create", 5, buf))
 				{
 					if (cmd != procCmd_ExportDSFExisting) strcat(buf, DIR_STR);
-					CreatePackageForDSF(buf, (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
-					BuildDSF(buf2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, WED_ProgressFunc);
+					CreatePackageForDSF(buf, (int) gDocument->gDem[dem_LandUse].mWest,(int) gDocument->gDem[dem_LandUse].mSouth, buf2);				
+					BuildDSF(buf2, gDocument->gDem[dem_LandUse],gDocument->gTriangulationHi, /*gTriangulationLo,*/ gDocument->gMap, WED_ProgressFunc);
 				}
 			}
 			break;
@@ -364,14 +365,14 @@ void WED_NotifyProcCmds(int catagory, int message, void * param)
 
 void WED_UpdateProcCmds(void)
 {
-	bool	has_enviro = gDem.count(dem_Climate);
-	bool	has_enviro_hi = has_enviro && gDem[dem_Climate].mWidth > 10;
-	bool	has_slope = gDem.count(dem_Slope);
-	bool	has_elev = gDem.count(dem_Elevation);
-	bool	has_deriv_raster = gDem.count(dem_UrbanDensity);
-	bool	has_lu = gDem.count(dem_LandUse);
+	bool	has_enviro = gDocument->gDem.count(dem_Climate);
+	bool	has_enviro_hi = has_enviro && gDocument->gDem[dem_Climate].mWidth > 10;
+	bool	has_slope = gDocument->gDem.count(dem_Slope);
+	bool	has_elev = gDocument->gDem.count(dem_Elevation);
+	bool	has_deriv_raster = gDocument->gDem.count(dem_UrbanDensity);
+	bool	has_lu = gDocument->gDem.count(dem_LandUse);
 //	bool	has_tri_lo = gTriangulationLo.number_of_faces() > 0;
-	bool	has_tri_hi = gTriangulationHi.number_of_faces() > 0;
+	bool	has_tri_hi = gDocument->gTriangulationHi.number_of_faces() > 0;
 	bool	mesh_set = true;
 	bool	has_roads = true;
 	bool	has_zoning = true;	// ???
@@ -379,7 +380,7 @@ void WED_UpdateProcCmds(void)
 #if TODO
 	This could use some more inspection!
 #endif	
-	for (CDT::Finite_faces_iterator f = gTriangulationHi.finite_faces_begin(); f != gTriangulationHi.finite_faces_end(); ++f)
+	for (CDT::Finite_faces_iterator f = gDocument->gTriangulationHi.finite_faces_begin(); f != gDocument->gTriangulationHi.finite_faces_end(); ++f)
 	{
 		if (f->info().terrain == NO_VALUE || f->info().terrain == terrain_Natural)
 		{
@@ -387,7 +388,7 @@ void WED_UpdateProcCmds(void)
 			break;
 		}
 	}
-	for (Pmwx::Halfedge_const_iterator e(gMap.halfedges_begin()); e != gMap.halfedges_end(); ++e)
+	for (Pmwx::Halfedge_const_iterator e(gDocument->gMap.halfedges_begin()); e != gDocument->gMap.halfedges_end(); ++e)
 	{
 		if (!e->mSegments.empty())
 		{
@@ -402,7 +403,7 @@ void WED_UpdateProcCmds(void)
 	XPLMEnableMenuItem(sProcessMenu, procCmd_HydroSimplfiy,		has_lu && has_slope && has_enviro_hi);	
 	XPLMEnableMenuItem(sProcessMenu, procCmd_DeriveDEMs,		has_lu && has_slope && has_enviro_hi);
 	XPLMEnableMenuItem(sProcessMenu, procCmd_BuildRoads,		has_deriv_raster);
-	XPLMEnableMenuItem(sProcessMenu, procCmd_DoAirports,		!gApts.empty());
+	XPLMEnableMenuItem(sProcessMenu, procCmd_DoAirports,		!gDocument->gApts.empty());
 	XPLMEnableMenuItem(sProcessMenu, procCmd_DoZoning,			has_roads);
 //	XPLMEnableMenuItem(sProcessMenu, procCmd_DoBeaches,			has_zoning);
 //	XPLMEnableMenuItem(sProcessMenu, procCmd_LowResTri,			has_deriv_raster && has_roads && has_zoning);
