@@ -1,3 +1,4 @@
+THIS FILE IS OBSOLETE
 #ifndef OBJ_EXPORT_H
 #define OBJ_EXPORT_H
 

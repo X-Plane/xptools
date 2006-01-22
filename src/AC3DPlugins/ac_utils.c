@@ -1,4 +1,5 @@
 #include "ac_utils.h"
+#include <math.h>
 
 void	find_all_objects(ACObject * root, vector<ACObject *>& output)
 {
@@ -106,4 +107,68 @@ char * pull_str_attr(ACObject * ob, const char * attr)
 	if (strlen(token) <= strlen(attr))	return NULL;
 	token += strlen(attr);
 	return token;
+}
+
+void rotate_surface_y(Surface * surface, float angle, float x_ctr, float z_ctr)
+{
+	float cosr = cos(angle * 3.14159265 / 180.0);
+	float sinr = sin(angle * 3.14159265 / 180.0);
+	
+	for (List * vlist = surface->vertlist; vlist; vlist = vlist->next)
+	{
+		SVertex * sv = (SVertex *) vlist->data;
+		Vertex * v = sv->v;
+		float ox = v->x - x_ctr;
+		float oz = v->z - z_ctr;
+		v->x = x_ctr + cosr * ox + sinr * oz;
+		v->z = z_ctr + sinr * ox - cosr * oz;
+	}
+}
+
+void surface_set_normals(Surface * surface, Point3* nrml)
+{
+	ac_surface_set_normal(surface, nrml);
+	for (List * vlist = surface->vertlist; vlist; vlist = vlist->next)
+	{
+		SVertex * sv = (SVertex *) vlist->data;
+		sv->normal.x = nrml->x;
+		sv->normal.y = nrml->y;
+		sv->normal.z = nrml->z;
+	}
+}
+
+int get_selection_bounds(float minv[3], float maxv[3])
+{
+	int inited = 0;
+	List * surf_l = ac_selection_get_whole_surfaces_all();
+	
+	for (List * iter = surf_l; iter; iter = iter->next)
+	{
+		Surface * surf = (Surface *) iter->data;
+		for (List * vlist = surf->vertlist; vlist; vlist = vlist->next)
+		{
+			SVertex * sv = (SVertex *) vlist->data;
+			Vertex * v = sv->v;
+			if (inited)
+			{
+				minv[0] = min(minv[0], v->x);
+				minv[1] = min(minv[1], v->y);
+				minv[2] = min(minv[2], v->z);
+
+				maxv[0] = max(maxv[0], v->x);
+				maxv[1] = max(maxv[1], v->y);
+				maxv[2] = max(maxv[2], v->z);
+			} else {
+				minv[0] = v->x;
+				minv[1] = v->y;
+				minv[2] = v->z;
+				maxv[0] = v->x;
+				maxv[1] = v->y;
+				maxv[2] = v->z;
+				inited = 1;
+			}
+		}
+	}
+	list_free(&surf_l);
+	return inited;
 }

@@ -17,4 +17,9 @@ void	latlonel2xyz(double latlonel[3],
 int pull_int_attr(ACObject * ob, const char * attr, int * value);
 char * pull_str_attr(ACObject * ob, const char * attr);
 
+void rotate_surface_y(Surface * surface, float angle, float x_ctr, float z_ctr);
+void surface_set_normals(Surface * surface, Point3* rml);
+int get_selection_bounds(float minv[3], float maxv[3]);
+
+
 #endif

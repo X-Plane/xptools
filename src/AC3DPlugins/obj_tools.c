@@ -2,10 +2,12 @@
 #include "ac_utils.h"
 #include "bitmap_match.h"
 #include "obj_radius.h"
-#include "obj_export.h"
 #include "XObjDefs.h"
+#include "ac_utils.h"
 #include "obj8_export.h"
+#include "obj8_import.h"
 
+#include <math.h>
 #include <ac_plugin.h>
 /***************************************************************************************************
  * TOOL COMMANDS
@@ -147,31 +149,17 @@ void do_change_tex(void)
 
 void do_calc_lod(void)
 {
-	gObj.cmds.clear();	
-//	gTexName.clear();
-//	gSmooth = true;
-//	gTwoSided = false;
-
-	// This gets all of the top level objects that are selected...no object will be
-	// a child (removed or direct) of another...
-	List *	objs = ac_selection_get_objects();
-	if (objs)
-	{	
-		for (List * i = objs; i; i=i->next)
-		{
-			obj7_output_object((ACObject *) i->data, NULL);
-		}
-		list_free(&objs);
+	float minv[3], maxv[3];
+	if (get_selection_bounds(minv, maxv))
+	{
+		float radius = GetObjectLesserRadius(minv, maxv);
 		
-		if (!gObj.cmds.empty())
-		{
-			float radius = GetObjectLesserRadius(gObj);
-			
-			// resolution * radius / tan (half of field of view)
-			float LOD = 1024.0 / 2.0 * radius / tan(70.0 / 2.0);		
-			message_dialog("Recommended LOD distance: %d meters.", (int) LOD);
-		}
+		// resolution * radius / tan (half of field of view)
+		float LOD = 1024.0 / 2.0 * radius / tan(70.0 / 2.0);		
+		message_dialog("Recommended LOD distance: %d meters.", (int) LOD);		
 	}
+
+
 }
 
 void do_animation_group(void)
@@ -222,75 +210,78 @@ void do_tree_extrude(void)
 
 	    ac_object_get_contents(obj, &numvert, &numsurf, &numkids, &vertices, &surfaces, &kids); 
 	    
-	    if (numsurf == 1)
-	    {
+		vector<Surface *>	svec;
+		
+		while(numsurf > 0 && surfaces != NULL)
+		{
 	    	Surface *s = (Surface *) surfaces->data;
 			if (s->numvert == 4)
+				svec.push_back(s);
+			surfaces = surfaces->next;
+		}
+	    
+//	    	object_set_twosided_faces(obj, 0);
+//	    	object_set_surface_shading(obj, 1);
+
+		for (vector<Surface *>::iterator siter = svec.begin(); siter != svec.end(); ++siter)	
+		{
+	    	Surface *s = *siter;
+			Surface *	faces[4] = { s, NULL, NULL, NULL };				
+			SVertex * s1, * s2, *s3, *s4;
+
+			s1 = ((SVertex *)s->vertlist->data);
+			s2 = ((SVertex *)s->vertlist->next->data);
+			s3 = ((SVertex *)s->vertlist->next->next->data);
+			s4 = ((SVertex *)s->vertlist->next->next->next->data);
+			
+			for (int n = 1; n < 4; ++n)
 			{
-				SVertex * s1, * s2, *s3, *s4;
-
-				s1 = ((SVertex *)s->vertlist->data);
-				s2 = ((SVertex *)s->vertlist->next->data);
-				s3 = ((SVertex *)s->vertlist->next->next->data);
-				s4 = ((SVertex *)s->vertlist->next->next->next->data);
-
-				float min_x = min(min(s1->v->x,s2->v->x),min(s3->v->x,s4->v->x));
-				float max_x = max(max(s1->v->x,s2->v->x),max(s3->v->x,s4->v->x));
-
-				float min_y = min(min(s1->v->y,s2->v->y),min(s3->v->y,s4->v->y));
-				float max_y = max(max(s1->v->y,s2->v->y),max(s3->v->y,s4->v->y));
-
-				float min_z = min(min(s1->v->z,s2->v->z),min(s3->v->z,s4->v->z));
-				float max_z = max(max(s1->v->z,s2->v->z),max(s3->v->z,s4->v->z));
-
-				float smin = min(min(s1->tx, s2->tx),min(s3->tx,s4->tx));
-				float smax = max(max(s1->tx, s2->tx),max(s3->tx,s4->tx));
-				float tmin = min(min(s1->ty, s2->ty),min(s3->ty,s4->ty));
-				float tmax = max(max(s1->ty, s2->ty),max(s3->ty,s4->ty));
-
-				float ctr_x = (min_x + max_x) * 0.5;
-				float ctr_z = (min_z + max_z) * 0.5;				
-				float hwidth = (max_x - min_x) * 0.5;
-				
-				Point3 p1 = { ctr_x, min_y, ctr_z - hwidth };
-				Point3 p2 = { ctr_x, max_y, ctr_z - hwidth };
-				Point3 p3 = { ctr_x, max_y, ctr_z + hwidth };
-				Point3 p4 = { ctr_x, min_y, ctr_z + hwidth };
-				
+				Point3	p1 = { s1->v->x, s1->v->y, s1->v->z };
+				Point3	p2 = { s2->v->x, s2->v->y, s2->v->z };
+				Point3	p3 = { s3->v->x, s3->v->y, s3->v->z };
+				Point3	p4 = { s4->v->x, s4->v->y, s4->v->z };
 				Vertex * v1 = object_add_new_vertex(obj, &p1);
 				Vertex * v2 = object_add_new_vertex(obj, &p2);
 				Vertex * v3 = object_add_new_vertex(obj, &p3);
 				Vertex * v4 = object_add_new_vertex(obj, &p4);
-				
-				Surface * ns = new_surface();
-				surface_add_vertex(ns, v1, smin, tmin);
-				surface_add_vertex(ns, v2, smin, tmax);
-				surface_add_vertex(ns, v3, smax, tmax);
-				surface_add_vertex(ns, v4, smax, tmin);
 
-				object_add_surface(obj, ns);
-				double angle = rand() % 360;
-				angle *= (3.1415926 / 180.0);				
-				
-				set_global_matrix_rotate(0.0, angle, 0.0);
-				Point3 ndiff = { -ctr_x, 0, -ctr_z };				
-				Point3 diff = { ctr_x, 0, ctr_z };				
-				translate_object(obj, &ndiff);				
-				
-				rotate_object(obj);
-				translate_object(obj, &diff);				
-				
+				faces[n] = new_surface();
+				surface_add_vertex(faces[n], v1, s1->tx, s1->ty);
+				surface_add_vertex(faces[n], v2, s2->tx, s2->ty);
+				surface_add_vertex(faces[n], v3, s3->tx, s3->ty);
+				surface_add_vertex(faces[n], v4, s4->tx, s4->ty);
+
+				object_add_surface(obj, faces[n]);					
 			}
-	    }
+			
+			float min_x = min(min(s1->v->x,s2->v->x),min(s3->v->x,s4->v->x));
+			float max_x = max(max(s1->v->x,s2->v->x),max(s3->v->x,s4->v->x));
+			float min_z = min(min(s1->v->z,s2->v->z),min(s3->v->z,s4->v->z));
+			float max_z = max(max(s1->v->z,s2->v->z),max(s3->v->z,s4->v->z));
+
+			float ctr_x = (min_x + max_x) * 0.5;
+			float ctr_z = (min_z + max_z) * 0.5;				
+
+			double angle = rand() % 360;
+			Point3	up = { 0.0, 1.0, 0.0 };
+			for (int n = 0; n < 4; ++n)
+			{
+				surface_set_shading(faces[n], 1);
+				surface_set_twosided(faces[n], 0);
+				rotate_surface_y(faces[n], angle, ctr_x, ctr_z);
+				surface_set_normals(faces[n], &up);
+				angle += 90;
+			}
+		}
+		
 	}
-	objectlist_calc_normals(objs_l);
 	list_free(&objs_l);
 	redraw_all(); 
 }
 
 void do_bulk_export(void)
 {
-	char * objs[] = { "Object files", ".obj", NULL };
+//	char * objs[] = { "Object files", ".obj", NULL };
 	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
 	if (fn == NULL) return;
 	if (*fn == 0) return;
@@ -321,65 +312,71 @@ void do_bulk_export(void)
 	myfree(fn);
 }
 
-typedef	set<Vertex *>					SurfSig;
-typedef multimap<SurfSig, Surface *>	SurfMap;
-
-static void make_surf_sig(Surface * surf, SurfSig& sig)
+void do_make_onesided(void)
 {
-	sig.clear();
-	List * iter;
-	for (iter = surf->vertlist; iter != NULL; iter = iter->next)
-	{
-		SVertex * v = (SVertex *) iter->data;
-		sig.insert(v->v);
-	}
-}
+	add_undoable_all("Make One-sided");
 
-static void obj_accum_downface(ACObject * obj, SurfMap& down, SurfMap& up)
+	List * surf_l = ac_selection_get_whole_surfaces_all();
+	
+	vector<Surface *>	surfs; 
+	
+	for (List * iter = surf_l; iter != NULL; iter = iter->next)
+	{
+		Surface * surf = (Surface *) iter->data;
+		if (surface_get_twosided(surf))
+		if (surface_get_type(surf) == SURFACE_POLYGON)
+			surfs.push_back(surf);
+	}
+	list_free(&surf_l);
+	
+	for (vector<Surface *>::iterator si = surfs.begin(); si != surfs.end(); ++si)
+	{
+		Surface * sold = *si;
+		ACObject * obj = object_of_surface(sold);
+		
+		Surface * snew = new_surface();
+			
+		for (List * svi = sold->vertlist; svi; svi = svi->next)
+		{
+			SVertex * svo = (SVertex *) svi->data;
+			SVertex * svn = surface_add_vertex_head(snew, svo->v, svo->tx, svo->ty);
+			svn->normal.x = -svo->normal.x;
+			svn->normal.y = -svo->normal.y;
+			svn->normal.z = -svo->normal.z;
+		}
+		
+		snew->normal.x = -sold->normal.x;
+		snew->normal.y = -sold->normal.y;
+		snew->normal.z = -sold->normal.z;
+		
+		object_add_surface(obj, snew);
+		
+		surface_set_twosided(sold, 0);
+		surface_set_twosided(snew, 0);
+		surface_set_shading(snew,surface_get_shading(sold));
+		surface_set_col(snew, sold->col);
+	}
+}	
+
+void do_make_upnormal(void)
 {
-	if (!ac_object_is_visible(obj)) return;
-	int numvert, numsurf, numkids;
-	List *vertices, *surfaces, *kids;
-	List *iter;
+	add_undoable_all("Make Up Normals");
 
-    ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
-        &vertices, &surfaces, &kids); 
-
-	for (iter = surfaces; iter != NULL; iter = iter->next)
+	List * surf_l = ac_selection_get_whole_surfaces_all();
+	
+	vector<Surface *>	surfs; 
+	
+	for (List * iter = surf_l; iter != NULL; iter = iter->next)
 	{
- 	 	Surface * surf = (Surface *)iter->data;
- 	 	SurfSig sig;
- 	 	make_surf_sig(surf, sig);
-    	if (surf->normal.y < 0.0)
-			down.insert(SurfMap::value_type(sig, surf));
-		else
-			up.insert(SurfMap::value_type(sig, surf));
+		Surface * surf = (Surface *) iter->data;
+		if (surface_get_type(surf) == SURFACE_POLYGON)
+			surfs.push_back(surf);
 	}
+	list_free(&surf_l);
 	
-	for (iter = kids; iter != NULL; iter = iter->next)
-		obj_accum_downface((ACObject *)iter->data, down, up);
-	
-}
-
-void do_select_downfacing(void)
-{
-	ACObject * wrl = ac_get_world();
-	
-	SurfMap down, up;
-	obj_accum_downface(wrl, down, up);
-	List * bad = NULL;
-	
-	for (SurfMap::iterator i = down.begin(); i != down.end(); ++i)
+	Point3 up = { 0.0, 1.0, 0.0 };
+	for (vector<Surface *>::iterator si = surfs.begin(); si != surfs.end(); ++si)
 	{
-		if (up.count(i->first) > 0)
-		list_add_item_head(&bad, i->second);
+		surface_set_normals(*si, &up);
 	}
-	
-	clear_selection();
-	if (bad)
-	{
-		ac_selection_select_surfacelist(bad);
-		list_free(&bad);	
-	}	
-}
-
+}	

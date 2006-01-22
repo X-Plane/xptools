@@ -5,6 +5,7 @@
  * CompGeomUtils.h which includes CompGeomDefs2.h, whose Point2 definition conflicts
  * with AC3D's plugin header.  */
 
+#if 0
 void	GetObjDimensions(const XObj& inObj,
 						float	minCoords[3],
 						float	maxCoords[3])
@@ -55,6 +56,7 @@ void	GetObjDimensions(const XObj& inObj,
 		}
 	}
 }
+#endif
 
 /*
  * GetObjectLesserRadius
@@ -93,10 +95,9 @@ void	GetObjDimensions(const XObj& inObj,
  * as a fudge factor for now. 
  *
  */
-float GetObjectLesserRadius(const XObj& inObj)
+float GetObjectLesserRadius(float mins[3], float maxes[3])
 {
-	float	mins[3], maxes[3], difs[3], views[3];
-	GetObjDimensions(inObj, mins, maxes);
+	float	difs[3], views[3];
 	for (int n = 0; n < 3; ++n)
 		difs[n] = maxes[n] - mins[n];
 		

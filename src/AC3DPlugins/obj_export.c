@@ -1,3 +1,4 @@
+THIS FILE IS OBSOLETE
 /** OBJ7 exporter for AC3D **/
 
 /*
@@ -806,7 +807,7 @@ ACObject *	do_obj7_load(char *filename)
 					p3.x = cmd->rgb[0].v[0];
 					p3.y = cmd->rgb[0].v[1];
 					p3.z = cmd->rgb[0].v[2];
-					Vertex * lightVertex = object_add_new_vertex_head(target, &p3);
+					/*Vertex * lightVertex = */object_add_new_vertex_head(target, &p3);
 				}
 				break;
 			case obj_Line:
