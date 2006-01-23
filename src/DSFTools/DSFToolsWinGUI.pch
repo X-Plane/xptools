@@ -2,7 +2,7 @@
 
 #define APL 0
 #define IBM 1
-#define DEV 1
+#define DEV 0
 #define _WIN32_WINNT 0x400
 #include <Windows.h>
 #include "DSFToolsPrefix.h"

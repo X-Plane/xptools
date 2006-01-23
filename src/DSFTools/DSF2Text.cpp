@@ -284,7 +284,11 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	if (west >= 180.0 || west < -180.0 ||
 		east > 180.0 || east <= -180.0 ||
 		south >= 90.0 || south < -90.0 ||
-		north > 90.0 || north <= -90.0) return false;
+		north > 90.0 || north <= -90.0) 
+	{
+		fprintf(stderr, "ERROR: the DSF boundaries are out of range.  This can indicate a missing or corrupt sim/dimension properties.\n");
+		return false;
+	}
 
 	printf("Got dimension properties, establishing file writer...\n");
 		
@@ -318,13 +322,14 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (!strncmp(buf, "BEGIN_WINDING", strlen("BEGIN_WINDING")))					cbs.BeginPolygonWinding_f(writer);
 		else if (!strncmp(buf, "END_WINDING", strlen("END_WINDING")))						cbs.EndPolygonWinding_f(writer);
 		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==3)			cbs.BeginPolygon_f(ptype, param, depth, writer);
+		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param)		 ==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
 		else if (!strncmp(buf, "END_POLYGON", strlen("END_POLYGON")))						cbs.EndPolygon_f(writer);
 
 
-		else if (sscanf(buf, "TERRAIN_DEF %s", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
-		else if (sscanf(buf, "OBJECT_DEF %s", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
-		else if (sscanf(buf, "POLYGON_DEF %s", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
-		else if (sscanf(buf, "NETWORK_DEF %s", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
+		else if (sscanf(buf, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
+		else if (sscanf(buf, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
+		else if (sscanf(buf, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
+		else if (sscanf(buf, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
 
 		else if (sscanf(buf,"BEGIN_SEGMENT_CURVED %d %d %d %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &nodeid, &coords[0],&coords[1],&coords[2],&coords[3],&coords[4],&coords[5]) == 9) cbs.BeginSegment_f(ptype, subtype, nodeid, coords, true, writer);
 		else if (sscanf(buf,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);

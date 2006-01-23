@@ -2,6 +2,6 @@
 
 #define APL 0
 #define IBM 1
-#define DEV 1
+#define DEV 0
 #define WINDOWS_LEAN_AND_MEAN
 #include "DSFToolsPrefix.h"

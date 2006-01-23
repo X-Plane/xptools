@@ -1,4 +1,4 @@
-#pragma precompile_target "DSFToolsMacGUI"
+#pragma precompile_target "DSFToolsMacGUIMacho"
 
 #define APL 1
 #define IBM 0

@@ -26,8 +26,6 @@
 
 extern "C"      int strcasecmp(const char *s1, const char *s2);
 
-bool DSF2Text(const char * inDSF, const char * inFileName);
-bool Text2DSF(const char * inFileName, const char * inDSF);
 bool ENV2Overlay(const char * inFileName, const char * inDSF);
 
 void	XGrindFile(const char * inFileName);
@@ -42,7 +40,7 @@ void	XGrindFiles(const vector<string>& files)
 
 void	XGrindInit(string& t)
 {
-	t = "DSF2Text";
+	t = "ENV2Overlay";
 	XGrinder_ShowMessage("Drag a DSF or text file here to convert it.");
 }	
 
@@ -56,7 +54,6 @@ void	XGrindFile(const char * inFileName)
 {
 	char	newname[512];
 	int l = strlen(inFileName);
-	
 	if (!strcasecmp(inFileName+l-4, ".env"))
 	{
 		strcpy(newname,inFileName);
@@ -65,25 +62,5 @@ void	XGrindFile(const char * inFileName)
 			XGrinder_ShowMessage("Env -> overlay Conversion successful.");
 		else
 			XGrinder_ShowMessage("Env -> overlay Conversion Failure.");
-	}
-	
-	if (!strcasecmp(inFileName+l-4, ".dsf"))
-	{
-		strcpy(newname,inFileName);
-		strcat(newname,".txt");
-		if (DSF2Text(inFileName, newname))
-			XGrinder_ShowMessage("DSF -> text Conversion successful.");
-		else
-			XGrinder_ShowMessage("DSF -> text Conversion Failure.");
-	}
-
-	if (!strcasecmp(inFileName+l-4, ".txt"))
-	{
-		strcpy(newname,inFileName);
-		strcat(newname,".dsf");
-		if (Text2DSF(inFileName, newname))
-			XGrinder_ShowMessage("text->DSF Conversion successful.");
-		else
-			XGrinder_ShowMessage("text->DSF Conversion Failure.");
 	}
 }

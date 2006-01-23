@@ -21,12 +21,24 @@
  *
  */
 #include <stdio.h>
+#include "AssertUtils.h"
+
+void AssertShellBail(const char * condition, const char * file, int line)
+{
+	fprintf(stderr,"ERROR: %s\n", condition);
+	fprintf(stderr,"(%s, %d.)\n", file, line);
+	exit(1);
+}
 
 bool DSF2Text(const char * inDSF, const char * inFileName);
 bool Text2DSF(const char * inFileName, const char * inDSF);
+bool ENV2Overlay(const char * inFileName, const char * inDSF);
 
 int main(int argc, char * argv[])
 {
+	InstallDebugAssertHandler(AssertShellBail);
+	InstallAssertHandler(AssertShellBail);
+
 
 /*
 	if (argc < 2)
@@ -42,6 +54,23 @@ int main(int argc, char * argv[])
 	
 	for (int n = 1; n < argc; ++n)
 	{
+		if (!strcmp(argv[n], "-env2overlay"))
+		{
+			++n;
+			if (n >= argc) goto help;
+			const char * f1 = argv[n];
+			++n;
+			if (n >= argc) goto help;
+			const char * f2 = argv[n];
+			
+			printf("Converting %s from ENV to DSF overlay as %s\n", f1, f2);
+			if (ENV2Overlay(f1, f2))
+				printf("Converted %s to %s\n",f1, f2);
+			else
+				{ fprintf(stderr,"ERROR: Error converting %s to %s\n", f1, f2); exit(1); }
+		}
+
+
 		if (!strcmp(argv[n], "-dsf2text"))
 		{
 			++n;
@@ -51,11 +80,11 @@ int main(int argc, char * argv[])
 			if (n >= argc) goto help;
 			const char * f2 = argv[n];
 			
-			printf("Converting %s from DSF to text as %s\n", f1, f2);
+			fprintf(stderr,"Converting %s from DSF to text as %s\n", f1, f2);
 			if (DSF2Text(f1, f2))
-				printf("Converted %s to %s\n",f1, f2);
+				fprintf(stderr,"Converted %s to %s\n",f1, f2);
 			else
-				printf("Error convertiong %s to %s\n", f1, f2);
+				{ fprintf(stderr,"ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}
 		
 		if (!strcmp(argv[n], "-text2dsf"))
@@ -71,7 +100,7 @@ int main(int argc, char * argv[])
 			if (Text2DSF(f1, f2))
 				printf("Converted %s to %s\n",f1, f2);
 			else
-				printf("Error convertiong %s to %s\n", f1, f2);
+				{ fprintf(stderr, "ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}		
 	}
 	
@@ -79,5 +108,6 @@ int main(int argc, char * argv[])
 help:
 	fprintf(stderr, "Usage: dsftool -dsf2text [dsffile] [textfile]\n");
 	fprintf(stderr, "		dsftool -text2dsf [textfile] [dsffile]\n");
+	fprintf(stderr, "       dsftool -env2overlay [envfile] [dsffile]\n");
 	return 1;
 }

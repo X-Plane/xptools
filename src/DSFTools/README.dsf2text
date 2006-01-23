@@ -6,26 +6,33 @@ Version History
 	12/20/04 - Alpha 2		Fixed file-close bug.
 	 1/12/05 - Alpha 3		Fixed crash bug!
 	 1/23/05 - Alpha 4		Added pipe support.
-	
+	12/19/05 - 1.0.1		Fixed support for global DSFs. (Change to polygon 
+							command to support arbitrary coord depth)
+							Allowed spaces in DEF filenames.
+							Mach-O native Mac Grinder
+	 1/05/06 - 1.1			Added ENV->Overlay Conversion
+							Fixed crashes and hung files on Windows
+							Fixed return codes for command-line tool
+							Changed output for clean piping
 -------------------------------------------------------------------------------
 OVERVIEW
 -------------------------------------------------------------------------------
 
 DSF2Text is a utility that converts X-plane Distribution Scenery Format (DSF)
-files to a text format and back again.  This has two purposes:
+files to a text format and back again.
 
-(1) Authors can transfer objects and other simple data into and out of DSF
-    files using a text editor or word processor.
-(2) Programmers who do not want to have to deal with the complications of DSF
-    can create simple text files and then run them through DSF2Text to create
-    finished scenery.
-    
+DSF2Text can also extract the custom objects from an ENV file and build an
+overlay DSF.
+
+WARNING: Working with DSF files as tex tDSF2Text is intended primarily for
+programmers who want to create DSF files.
+
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
 -------------------------------------------------------------------------------
 
 DSF2Text is provided for Windows and Mac OS X.  To install DSF2Text, simply
-unzip/unstuff the compressed archive.  The applications can be used anywhere.
+unzip the compressed archive.  The applications can be used anywhere.
 
 -------------------------------------------------------------------------------
 USING DSF2TEXT
@@ -43,9 +50,16 @@ WARNING: If DSF crashes, check your line endings!  I have had reports that
 TextEdit on the Mac ruines line endings.
 
 To use the drag-and-drop version of DSF2Text, simply double click it, then drag
-a text (.txt) or DSF (.dsf) file into the window.  DSF2Text will convert the
-file based on its line endings and create a new file with the opposite
+a text (.txt) or DSF (.dsf) or ENV (.env) file into the window.  DSF2Text will 
+convert the file based on its suffix and create a new file with a new
 extension appended, in the same directory as the source file.
+
+SUFFIX			CONVERSION
+TXT				Text -> DSF*
+DSF				DSF* -> Text
+ENV				ENV -> Overlay DSF
+
+* DSFs can be converted to text and back for full or overlay DSFs.
 
 WARNING: DSF2Text is slow, especially when converting text back to a DSF file.
 Conversion can take ten minutes or more.  DSF2Text will be unresponsive while
@@ -59,8 +73,21 @@ to convert from DSF to text and
 
 DSFTool -text2dsf <text file> <dsf file>
 
-to convert the other way.  For <text file> you can specify a single dash (-)
-to read from stdin/stdout instead of a text file.
+to convert the other way.  To convert an ENV to an overlay use:
+
+DSFTool -env2overlay <env file> <dsf file>
+
+For <text file> you can specify a single dash (-)
+to read from stdin/stdout instead of a text file.  This allows for piped usage
+of DSFTool, e.g. 
+
+cat file.txt | ./DSFTool -text2dsf - output.dsf
+./DSFTool -dsf2text foo.dsf - | grep OBJECT_DEF | wc -l
+
+Piping is not available for DSF and ENV files.  When converting to a binary
+file, status messages are sent to stdout and error messages to stderr.  When
+converting to text, all messages are sent to stderr so that piped output is
+strictly the DSF contents.  The result code indicates a successful conversion.
 
 -------------------------------------------------------------------------------
 DSF2TEXT FILE FORMAT
@@ -115,7 +142,9 @@ NETWORK_DEF <filename>
 
 	These commands define a new type of building block.  Order is significant:
 	the first building block of each type has index zero and they then count
-	upward sequentially.  File extensions must be included.
+	upward sequentially.  File extensions must be included.  The entire line
+	is utilized, so you may have whitespace in your filenames, although it 
+	is not recommended.
 
 BEGIN_PATCH <primitive type> <near LOD> <far LOD> <flags> <# point coords>
 
@@ -181,11 +210,12 @@ END_SEGMENT_CURVED <node id> <longitude> <latitude> <elevation> <longitude>
 	
 	These end a vector segment, with similar parameters to the above commands.
 
-BEGIN_POLYGON <type> <param>
+BEGIN_POLYGON <type> <param> [<coords>]
 
 	This begins a polygon primitive, which is usually a facade in X-Plane.
 	The parameter's meaning depends on the primitive - for facades it is the
-	height in meters.
+	height in meters.  If coords is specified any number of points can
+	follow in the poylgon_point command, otherwise they must be lon/lat.
 
 BEGIN_WINDING
 
@@ -193,7 +223,7 @@ BEGIN_WINDING
 	a nested polygon.  This command is mandatory even if the polygon is
 	not nested.
 	
-POLYGON_POINT <longitude> <latitude>
+POLYGON_POINT <longitude> <latitude> [<more coords>]
 
 	This adds a point to the polygon.
 	
