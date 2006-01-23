@@ -22,6 +22,7 @@
  */
 #include "ObjConvert.h"
 #include "XObjDefs.h"
+#include <math.h>
 
 static bool operator==(const vec_tex& lhs, const vec_tex& rhs);
 bool operator==(const vec_tex& lhs, const vec_tex& rhs) 
