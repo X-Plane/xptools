@@ -24,7 +24,9 @@
 #include "WED_MapZoomer.h"
 
 #include "PCSBSocket.h"
+#include "PlatformUtils.h"
 #include "TerraServer.h"
+#include "BitmapUtils.h"
 #include "XPLMGraphics.h"
 #include <gl.h>
 class AsyncImage;
@@ -134,7 +136,7 @@ void	WED_TerraTool::SetNthPropertyValue(int, double v)
 
 int		WED_TerraTool::GetNumButtons(void)
 {
-	return 5;
+	return 6;
 }
 void	WED_TerraTool::GetNthButtonName(int n, string& s)
 {
@@ -144,6 +146,7 @@ void	WED_TerraTool::GetNthButtonName(int n, string& s)
 	case 2:		s = "Photo";		break;
 	case 3:		s = "Ortho";		break;
 	case 4:		s = "Urban";		break;
+	case 5:		s = "Save ";		break;
 	}
 }
 
@@ -180,7 +183,44 @@ void	WED_TerraTool::NthButtonPressed(int n)
 			}
 		}
 		break;
-	}	
+	case 5:
+		{	
+			double	s, n, e, w;
+			char	buf[1024];
+			buf[0] = 0;
+			GetZoomer()->GetMapVisibleBounds(w, s, e, n);		
+			if (mLocator && mLocator->GetLocation(ResString(), mData.c_str(), w, s, e, n, mX1, mX2, mY1, mY2, mDomain))
+			if (GetFilePathFromUser(getFile_Save, "Please Name Your PNG File", "Save", 11, buf))
+			{
+				ImageInfo	img;
+
+				if (CreateNewBitmap((mX2-mX1)*200,(mY2-mY1)*200,3,&img)==0)
+				{
+					for (int x = mX1; x < mX2; ++x)
+					for (int y = mY1; y < mY2; ++y)
+					{
+						long long h = hash_xy(x,y);
+						if (mImages.count(h) != 0)
+						{
+							AsyncImage * i = mImages[h];
+						
+							if (!i->HasErr())
+							{
+								ImageInfo * bits = i->GetImage();
+								if (bits)
+								{
+									CopyBitmapSectionDirect(*bits, img, 0, 0, (x-mX1)*200,(y-mY1)*200,200,200);
+								}
+							}
+						}
+					}
+					WriteBitmapToPNG(&img, buf, NULL, NULL);
+					DestroyBitmap(&img);
+				}
+			}	
+		}
+		break;
+	}
 }
 
 char *	WED_TerraTool::GetStatusText(void)
@@ -196,7 +236,7 @@ char *	WED_TerraTool::GetStatusText(void)
 	
 	static char buf[1024];
 	if (mHas)
-		sprintf(buf, "Domain=%d, X=%d-%d,Y=%d-%d Done=%d Pending=%d Bad=%d Total=%d Sockets=%d", mDomain, mX1,mX2,mY1,mY2, done, pending, bad, total, AsyncImage::TotalPending());
+		sprintf(buf, "Domain=%d, X=%d-%d,Y=%d-%d %dx%d Done=%d Pending=%d Bad=%d Total=%d Sockets=%d", mDomain, mX1,mX2,mY1,mY2, (mX2-mX1)*200,(mY2-mY1)*200,done, pending, bad, total, AsyncImage::TotalPending());
 	else 
 		sprintf(buf, "No area established.");
 	return buf;
