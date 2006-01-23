@@ -26,6 +26,7 @@
 #include <vector>
 #include <list>
 #include <hash_map>
+#include <hash_fun>
 
 #include "AssertUtils.h"
 
