@@ -23,6 +23,19 @@
 #ifndef XDEFS_H
 #define XDEFS_H
 
+#if __MACH__
+	#pragma c99 on
+	
+	#define _MSL_USING_MW_C_HEADERS 1
+	
+	#define __dest_os __mac_os_x
+#elif APL
+	#define __dest_os __mac_os
+#endif
+
+#define __MSL_LONGLONG_SUPPORT__
+
+
 #ifdef WINVER
 	#define APL 0
 	#define IBM 1
