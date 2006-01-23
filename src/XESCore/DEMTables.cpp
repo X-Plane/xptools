@@ -371,6 +371,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (info.slope_min < 30.0)
 		printf("WARNING: base tex %s is projected but min slope is %f\n", ter_name.c_str(), info.slope_min);
 
+	if (info.base_res == 0.0)
+		printf("WARNING: bad base res on texture %s\n", ter_name.c_str());
+
 	if (info.proj_angle == proj_NorthSouth)
 	if (!(info.slope_heading_min == 0.0 && info.slope_heading_max == 0.0 ||
 		info.slope_heading_min == 0.0 && info.slope_heading_max == 45.0 ||
