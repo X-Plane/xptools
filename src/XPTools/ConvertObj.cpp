@@ -20,6 +20,14 @@
  * THE SOFTWARE.
  *
  */
+ 
+/*
+	Ben's TODO list:
+		Alias Wavefront OBJects
+		DOF support (uh what's DOF?)
+		auto merge of textures????
+*/
+
 #include "XGrinderApp.h"
 #include "PlatformUtils.h"
 #include "XObjReadWrite.h"

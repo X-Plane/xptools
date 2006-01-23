@@ -42,12 +42,22 @@
 #if FACADES
 #include "FacadeObj.h"
 #endif
+#include <gl/gl.h>
+#if APL
+#include <gl/glext.h>
+#endif
 //#include <glut.h>
 #include <glu.h>
 
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 
+static float gStopTime = 0.0;
+
+inline float float_clock(void)
+{
+	return (float) clock() / (float) CLOCKS_PER_SEC;
+}
 
 static	bool	gHasMultitexture = false;
 static	bool	gHasEnvAdd = false;
@@ -581,6 +591,10 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		break;
 	case 'A':
 	case 'a':
+		if (!mAnimate)
+			gStopTime = float_clock() - gStopTime;
+		else
+			gStopTime = float_clock();
 		mAnimate = !mAnimate;
 		break;
 	case 'n':
@@ -898,9 +912,9 @@ static void	ObjView_TexCoordPointer(int size, unsigned long type, long stride, c
 static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void * ref)
 {
 	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
-	if (!i->animate) return (v1 + v2) * 0.5;
+//	if (!i->animate) return (v1 + v2) * 0.5;
 	if (v1 == v2) return v1;
-	double	now = (float) clock() / (float) CLOCKS_PER_SEC;
+	double	now = (i->animate) ? (float_clock() - gStopTime) : gStopTime;
 	
 	now *= 0.1;
 	now -= (float) ((int) now);

@@ -28,6 +28,9 @@
 #endif
 
 #if APL
+#if defined(__MACH__)
+#define _STDINT_H_
+#endif
 #include <Carbon.h>
 #define xmenu MenuRef
 #endif

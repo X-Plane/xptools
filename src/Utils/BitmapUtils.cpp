@@ -75,10 +75,10 @@ extern "C" {
 #include <Carbon.h>
 #endif
 
-#include <png.h>
-
-#include <tiffio.h>
 #endif
+
+#include <png.h>
+#include <tiffio.h>
 
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
@@ -881,6 +881,8 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 	}
 }
 
+#endif /* !defined(__MACH_) */
+
 
 void my_error  (png_structp,png_const_charp err){}
 void my_warning(png_structp,png_const_charp err){}
@@ -1150,4 +1152,3 @@ bail:
 	return -1;    
 }
 
-#endif /* !defined(__MACH_) */

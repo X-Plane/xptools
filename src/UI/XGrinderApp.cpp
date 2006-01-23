@@ -34,7 +34,7 @@ static	XGrinderWin * 	gWin = NULL;
 HINSTANCE	gInstance = NULL;
 #endif
 
-#if APL
+#if APL && !defined(__MACH__)
 #include <sioux.h>
 static pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
 #endif
@@ -139,10 +139,12 @@ xmenu	XGrinder_AddMenu(const char * title, const char ** items)
 #if APL
 int		main(int argc, char ** argv)
 {
-	SIOUXSettings.stubmode = true;
+#if !defined(__MACH__)
 	SetMenuBar(GetNewMBar(128));
+	SIOUXSettings.stubmode = true;
 	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
 		NewAEEventHandlerUPP(HandleOpenDoc), 0, FALSE);
+#endif	
 
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
@@ -160,6 +162,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR     lpCmdLine,
                      int       nCmdShow)
 {
+	printf("Cmd line was: %s\n", lpCmdLine);	
 	gInstance = hInstance;
 	
 	MSG msg;

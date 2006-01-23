@@ -24,7 +24,7 @@
 #include "trackball.h"
 #include "MatrixUtils.h"
 #include "GEoUtils.h"
-
+#include <gl/glu.h>
 const	float	kCamDist = 500;
 const	float	kNear = 50.0;
 const	float	kFar = 2000.0;

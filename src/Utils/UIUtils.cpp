@@ -21,7 +21,7 @@
  *
  */
 #include "UIUtils.h"
-
+#include <gl/gl.h>
 
 DragHandleSet::DragHandleSet(
 							int 					inNumHandles, 

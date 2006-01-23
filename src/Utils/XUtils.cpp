@@ -30,9 +30,9 @@
 //#include <time.h>
 #include <hash_map>
 
-#if !defined(XUTILS_EXCLUDE_MAC_CRAP) && defined(__MACH__)
-#define XUTILS_EXCLUDE_MAC_CRAP 1
-#endif
+//#if !defined(XUTILS_EXCLUDE_MAC_CRAP) && defined(__MACH__)
+//#define XUTILS_EXCLUDE_MAC_CRAP 1
+//#endif
 
 #if APL || IBM
 using namespace Metrowerks;
@@ -236,6 +236,9 @@ void		StripPathCP(string& ioPath)
 	sep = ioPath.rfind('\\');
 	if (sep != ioPath.npos)
 		ioPath = ioPath.substr(sep+1,ioPath.npos);
+	sep = ioPath.rfind('/');
+	if (sep != ioPath.npos)
+		ioPath = ioPath.substr(sep+1,ioPath.npos);
 }
 
 void		ExtractPath(string& ioPath)
@@ -249,6 +252,7 @@ void		ExtractPath(string& ioPath)
 
 #if !defined(XUTILS_EXCLUDE_MAC_CRAP)
 
+#define _STDINT_H_
 #include <Processes.h>
 
 OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder)
@@ -287,7 +291,19 @@ void	AppPath(string& outString)
 void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
 {
 	outString.clear();
-	
+#if defined(__MACH__)
+
+		FSRef	fsref;
+	if (FSpMakeFSRef(&inSpec, &fsref) == noErr)	
+	{
+		char	path[1024];
+		if (FSRefMakePath(&fsref, (UInt8*) path, sizeof(path))==noErr)
+		{
+			outString = path;
+		}
+	}
+
+#else	
 	FSSpec	foo(inSpec);
 	FSSpec	foo2;
 	
@@ -301,6 +317,7 @@ void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
 			break;
 		foo = foo2;
 	}
+#endif
 }
 
 #endif
