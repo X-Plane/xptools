@@ -2,1007 +2,557 @@
 
 
 
-
-
-
-
                  A C 3 D   X - P L A N E   P L U G I N
 
 
 
-
-
-
-
 -------------------------------------------------------------------------------
-
 CHANGE HISTORY:
-
 -------------------------------------------------------------------------------
-
 KNOWN BUGS:
-
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 
-
-
+Version 2.1b1 1/20/05
+	- Reorganized attribute handling
+	- New commands: group export, make trees, one-sided geometry, downward normals
+	- Bug fix for crash on OS X 10.4.4 with QuickTime 7.0.4
 Version 2.0b2 9/27/05
-
 	- Bug fix for animation export.
-
 Version 2.0b1 9/20/05
-
 	- Pretty much a total rewrite of Obj I/O code for XP7.
-
 	- Support of the annotation system for non-AC3D native properties.
-
 	- Addition of the Animation-group command.
-
 	- Supports light import/export
-
-
 
 Version 1.1 11/30/04
 
-
-
 	- Support for cockpit quads.
-
 	- Bug fix: ATTR_nocull renamed to ATTR_no_cull
-
 	- Bug fix: Objects are treated as smooth shaded by default.
-
 	- Bug fix: Smooth shading and culling reset at the end of each LOD.
-
 		(Note: this is only needed for older versions of x-plane.)
-
 	
-
 The X-Plane import/export plugin for AC3D (XPlaneSupport.p) is a plugin for
-
 AC3D that supports the reading of X-Plane Object version 7-8files.  These 
-
 files should be compatible with all versions of X-Plane  (although some 
-
 features are only supported in version 7.40 and beyond for OBJ7 and 8.20
-
 and beyond for OBJ8).
 
-
-
 This plugin provides both import and export of X-Plane Object 7/8 files into
-
 and out of AC3D, and also a few useful commands for working with Objects.
 
-
-
 This plugin requires AC3D version 5 for Mac or PC.  AC3D 4 users can upgrade to
-
 AC3D version 5 for free.
 
-
-
 -------------------------------------------------------------------------------
-
 INSTALLING
-
 -------------------------------------------------------------------------------
-
 Simply copy the AC3D plugin file XPlaneSupportWin.p or XPlaneSupportMac.p
-
 (depending on your operating system) into the "plugins" folder for AC3D while
-
 it is not running, then start AC3D.
 
-
-
 You'll also want to download the standard suite of plugins from the AC3D
-
 website if you do not already have them; this includes two plugins to support
-
 reading and writing the .PNG graphics file format.  (AC3D supports .bmp files 
-
 by default.)
 
-
-
 WARNING: the X-Plane epxorter plugin is not compatible with the Alias Wavefront
-
 OBJ import/export plugin, because they share a similar file name extension.  
-
 Remove the alias wavefront importers (obj_import.p, obj_export.p) from the 
-
 plugins folder before working with this plugin.
 
-
-
 -------------------------------------------------------------------------------
-
 USING THE PLUGIN
-
 -------------------------------------------------------------------------------
-
-
 
 When the plugin is installed the export menu gains atwo new options: 
-
 "X-Plane 7 Object File..." and "X-Plane 8 Object File..." and the Import dialog
-
 will have a file type "X-Plane 7/8 Objerct File (*.obj)" in it.  (Note: if you
-
 have the Alias  Wavefront Object importer plugin installed this may not work.)
 
-
-
 To import an object, simply choose import and select your .obj file.  It will
-
 be imported and appear in the main windows.
 
-
-
 To export an object, simply pick the export menu item for the version you want
-
 to save and save your file.
 
-
-
 -------------------------------------------------------------------------------
-
 LIMITATIONS
-
 -------------------------------------------------------------------------------
-
-
 
 This importer/exporter does not support:
 
-
-
  - Materials.
-
  - ATTR_no_depth (you shouldn't use it anyway!)
-
  - It will not build quad strips, tri strips, or tri fans for version 7 
-
    objects. (Please note that these are not supported in OBJ8.)
-
  - There is not yet a way to preview night lighting inside AC3D.
-
  - Movie quads (for OBJ7 - these are not supported in OBJ8.)
-
  - Smoke puff actions.
 
-
-
 Please note that the color of a line will be exported from the material in
-
 AC3D; materials are only not supported for polygons.
 
-
-
 WARNING: Importing and Exporting can lose information.  Your best bet is to
-
 save your work in AC3D format (.ac) and export to OBJ; do not use OBJ as your
-
 master format for editing, rather just as a final output format.
 
-
-
 -------------------------------------------------------------------------------
-
 TEXTURES AND AC3D
-
 -------------------------------------------------------------------------------
-
-
 
 Object 7 and 8 files can have only one texture; make sure you use the same texture
-
 for every object in your model.  The easiest way to do this is to select all
-
 objects via the Object Hierarchy window (click on 'World') and then pick your
-
 texture from the Object->Texture submenu.
-
-
 
 AC3D requires a plugin to read .png files; it can read .bmp files by default.
 
-
-
 When an object file is loaded, the texture will be loaded if it is in the same
-
 directory as the .obj file itself.
 
-
-
 Textures are always saved without any relative path information.  For example,
-
 if the texture file for my object is "jetway.bmp", only "jetway" is written to
-
 the OBJ7 file, and the texture must be directly in the "Custom Object Textures"
-
 folder within your custom scenery package.  If you want to specify a texture
-
 in a subfolder for X-Plane, you will have to edit the beginning of your OBJ7
-
 file manually with a text editor; AC3D cannot write out textures in sub-
-
 directories automatically.
 
-
-
 For X-Plane 8 users the recommended practice is to keep your OBJ and texture
-
 file in the same directory, so this should not present a problem.
 
-
-
 For X-Plane 7 users: Because this texture handling is different from X-plane's, 
-
 you may want to keep textures with your objects until you are done editing your 
-
 object, then move the bitmap or png file and change the path for your object 
-
 when you are ready to package up the object in your custom scenery package.
 
-
-
 -------------------------------------------------------------------------------
-
 COCKPIT OBJECTS AND PANEL TEXTURES
-
 -------------------------------------------------------------------------------
-
-
 
 AC3D will also let you use a panel texture to create a cockpit object with
-
 instruments that animate.  To do this, make sure that you have a panel bitmap
-
 called "Panel.png" in a folder path of cockpit/-PANELS- relative to your object
-
 file.  In other words:
 
-
-
     my object.obj
-
     cockpit
-
       -PANELS-
-
         Panel.png
 
-
-
 If your object and panel texture follow this convention, Panel.png will
-
 automatically be used as a panel texture and produce an animated cockpit.
 
-
-
 PERFORMANCE WARNING: changing between the panel and regular texture in an 
-
 object hurts framerate; see the section on performance for how to avoid this
-
 problem.
 
-
-
 WARNING: for OBJ7 objects, you can only place the panel texture on quads.  AC3D
-
 will warn you if you try to export an OBJ7 object that violates this rule.
 
-
-
 -------------------------------------------------------------------------------
-
 ONE-VS-TWO-SIDED GEOMETRY AND FLAT-VS-SMOOTH SHADING
-
 -------------------------------------------------------------------------------
-
 X-Plane objects are by default one-sided and smooth-shaded.  The 
-
 importer/exporter correctly handles two-sided and smooth shaded objects in 
+AC3D and OBJ7 files.  Warnings:
 
-AC3D and OBJ7 files.  Two warnings:
+ - Two sided polygons are slower than one-sided polygons; only set a surface
+   or object to be two-sided when it is necessary.  In particular, the cost of
+   changing from one-sided to two-sided polygons is expensive.  It may be
+   better to simply use one-sided polygons and duplicate any geometry that must
+   be visible from both sides.
 
-
-
- - Two sided polygons are significantly slower than one-sided polygons; only
-
-   set a surface or object to be two-sided when it is necessary.
-
- - Smooth shading in x-plane only works on triangle strips and quad strips.
-
-   in X-Plane 7.  Since the exporter never builds these, smooth-shading is not 
-
-   visbible in x-plane.
-
+ - Smooth shading is not always smooth; the actual shading is a function of the
+   3-d program.  But changing the shading model is slow, so it may be best to
+   only use smooth sahding and use AC3D's crease-agnle function to tune the look
+   of your object.  What you see in AC3D is what you will get with an OBJ8.
    
-
+ - OBJ7 shading is always flat looking, regardless of AC3D look and shading
+   settings.  Since OBJ7 shading cannot be changed, tune your object for its
+   best OBJ8 look.
+   
 Also there are some serious performance considerations regarding these features
-
 so be sure to read the PERFORMANCE section carefully before using them!
 
-
-
 -------------------------------------------------------------------------------
-
 ANNOTATION AND EXPORT ORDER
-
 -------------------------------------------------------------------------------
-
-
 
 The AC3D exporter exports your object in the order that the hierarchy window
-
 reads vertically.  In other words if your hierarchy window shows:
 
-
-
 -World
-
     Group1
-
        Obj1
-
        Box
-
     Rect
-
     Group2
-
        Disk
-
     Sphere
 
-
-
 Then the objects are exported in the order: Obj1, Box, Rect, Disk, Sphere.  The
-
 order of your object is very important both for correct rendering of
-
 translucent textures and for performance; see the PERFORMANCE section for more
-
 info.  Use groups, objects, and the hiearchy window to control ordering.
 
-
-
 For OBJ features that AC3D does not support natively, the export plugin uses
-
 the ANNOTATION system.  The idea is simple: you label your AC3D objects and
-
 groups with special names and/or put text in the "User data..." area and the
-
 export plugin reads this data to do special tricks.
 
-
-
 AC3D Objects and groups have text names - they can be set using the text field
-
 in the  lower left corner of the screen when in selection mode.
 
-
-
 Objects and groups also have "user text".  Pick "Object Property Editor..." 
-
 from the Tools menu to edit this text.  For groups within groups (where the
-
 group cannot be selected, you can right-click (Windows) or mouse-wheel-click
-
 (Mac) to get a contextual menu with an "Edit Object Data..." command.
 
-
-
 NOTE: Macintosh users will need a mouse with a clickable scroll wheel to edit
-
 the object data for nested groups.  This editing is only required to make
-
 objects with multiple levels of detail or nested animations.
 
-
-
 -------------------------------------------------------------------------------
-
 HARD POLYGONS, POLYGON OFFSET, AND BLENDING CONTROL
-
 -------------------------------------------------------------------------------
-
-
 
 Polygon hardness (whether the polygon interacts physically with the plane
-
 causing collisions) polygon offset (a method for making polygons on the ground
-
 draw properly) and blending control (turning off and on translucency) can all
-
 be set using annotation, but not previewed in AC3D.
 
-
-
 The exporter looks for objects with the following words inside the object name
-
 to control these attributes:
 
-
-
 	_POLY_OS=0
-
 	_HARD=0
-
 	_BLEND=0
 
-
-
 Legal values are 0 or 1 for _HARD and _BLEND (default is 0 for hard, 1 for
-
 blend since OBJs default to having blending on) and 0 or a positive integer
-
 for polygon offset.  All can be used together and the object may have 
-
 additional text that is ignored.  So you may name an object something like:
-
-
 
 Terminal C Wing _POLY_OS=0 _HARD=0 _BLEND=0
 
-
-
 When you import objects, these names will be added automatically to preserve
-
 these properties.  When you export, remember that the AC3D exporter goes in
-
 order...all objects exported after an object with these names (including
-
 surfaces within the object with these names) will be affected.  However 
-
 changing LOD (see below) resets all properties.
 
-
-
 Also make sure to read the PERFORMANCE section for notes on changing these 
-
 attributes.
 
-
-
 -------------------------------------------------------------------------------
-
 LIGHT COLORS
-
 -------------------------------------------------------------------------------
-
-
 
 AC3D will export light objects as X-Plane lights.  Use the naem _RGB=r,g,b 
-
 where r, g and b are fractions from 0-1 to set the light color.  You can set
-
 these to negative for a flashing light or use the following special effects:
 
-
-
 R   G   B    Effect
-
 9.9 9.9 9.9  Pulsing red (for radio towers)
-
 9.8 9.8 9.8  Strobe light (for radio toweres)
-
 9.7 9.7 9.7  Traffic light (cycles red-green-yellow)
 
-
-
 -------------------------------------------------------------------------------
-
 LEVEL OF DETAIL
-
 -------------------------------------------------------------------------------
-
-
 
 OBJs are imported into AC3D with groups for each level of detail of the object.
-
 For anything but an object with no LODs, the LOD is represented via a string
-
 name of the form:
-
-
 
 LOD xxxx/yyyyy
 
-
-
 where xxxx and yyyy are the range in meters.  So if you see this:
 
-
-
 -World
-
    LOD 0/3000
-
      Disk1
-
      Disk2
-
    LOD 3000/6000
-
      Disk3
 
-
-
 Then disk1 and disk2 will be in the first LOD of the object (range 0 to 3000 
-
 meters) and the second LOD contain disk 3 (in the range of 3000-6000 meters).
 
-
-
 To get a feel for how this works, try importing the KSBD sample object.  Note
-
 that after import, multiple versions of the object are visible; you may want 
-
 to hide a version of the object (this can be done by right-clicking on an 
-
 object in the hierarchy window and picking 'hide') to reduce clutter on the 
-
 screen.
 
-
-
 -------------------------------------------------------------------------------
-
 ANIMATION
-
 -------------------------------------------------------------------------------
-
-
 
 While AC3D does not support animation directly, you can make animated OBJ8
-
 files by using animation.  Animation works as follows:
 
-
-
 To animate a series of objects in AC3D, place them within a group with the
-
 name ANIMATION.  A command exists to simplify this - see below.
 
-
-
 Place the actual animation steps you want into the user data of the ANIMATION
-
 group, one action per line.  The supported syntax is:
 
-
-
 ROTATE x y z r1 r2 v1 v2 dataref
-
 TRANSLATE x1 y1 z1 x2 y2 z2 v1 v2 dataref
 
-
-
 Where all of these parameters except for 'dataref' are numbers and 'dataref'
-
 is a string name of an X-Plane dataref without spaces.  See the X-Plane plugin
-
 web page (http://www.xsquawkbox.net/xpskd/) and click on Documentation to find
-
 the full set of datarefs.  (A dataref is a flight simulator variable.)
 
-
-
 For the rotate command, x y z form an axis to rotate around; the roation is
-
 counterclockwise when looking down the axis.  (So 0 1 0 means counterclockwise
-
 when viewed from above.)  r1 and r2 are the start and end angles, and v1 and v2
-
 are the range of values for the dataref that will give you a rotation of r1 and
-
 r2 respectively.
 
-
-
 For the TRANSLATE command x1,y1,z1 and x2,y2,z2 are distances to offset when
-
 the dataref is at the values v1 and v2 respectively.
 
-
-
 There is a tutorial on AC3D animation on the scenery SDK website: 
-
 http://www.xsquawkbox.net/scenery/ - click on tutorials.
 
-
-
 -------------------------------------------------------------------------------
-
 PERFORMANCE
-
 -------------------------------------------------------------------------------
-
-
 
 Performance of your OBJ model dependes on the number of times that you change
-
 state, whether that be due to animation, attributes, etc.  X-Plane does not
-
 change the order of the object, and AC3D exports the object in order of the
-
 hiearchy window.  It is therefore important that you organize your hierarchy to
-
 minimize the number of state changes.
-
-
 
 You will get a state change whenever the following things change:
 
-
-
 - Polygon hardness, polygon offset, blending on/off.
-
 - One vs two sided geometry, smooth shading.
-
 - Panel vs normal texture.
-
 - Any animation command (both the beginning and ending.
 
-
-
 So it is best to group these things together.  Please note that you will not
-
 get a state change if a property doesn't change; having two objects in a row
-
 with the names
 
-
-
 _POLY_OS=1
-
 _POLY_OS=1
-
-
 
 will not cause a change between them because the _POLY_OS has been specified
-
 in both, but does not change from the first to the second.
 
-
-
 Be careful with 1/2 sided geometry and smooth shading - since these are set per
-
 surface, it is possible to have a huge number of changes of these without
-
 noticing!  Your best bet: set all of your objects at once to have the mode
-
 you want.
 
-
-
 Also if you use smooth shading but an object does not look smooth due to crease
-
 angle, it will look exactly the same in AC3D and X-Plane.  Therefore your best
-
 bet is to ALWAYS use smooth shading and use the crease-angle function in AC3D
-
 to decide what looks round and what looks like it has flat sides.
 
-
-
 Changing to the panel texture is the most expensive state chagne, so be sure
-
 to group all of your panel textured objects together!
 
-
-
 One good way to see how much state change you have is to look at your OBJ file
-
 in TextEdit or WordPad after exporting it.  Skip to the end; each "TRIS"
-
 command means that state was changed and drawing restarted.  Ideally you will
-
 have only one TRIS command for the whole file, or at least as few as possible.
 
-
-
 -------------------------------------------------------------------------------
-
 CALCULATE X-PLANE LOD COMMAND
-
 -------------------------------------------------------------------------------
-
-
 
 This command attempts to calculate the farthest level of detail distance that
-
 is appropriate for your object, based on it its approximate size.  Select the
-
 entire object and select "Calculate X-Plane LOD" from the tools menu.  A 
-
 message box will suggest an LOD such as "Recommended LOD Distance: 1134 
-
 meters."   This is just a recommendation; you may want to increase or decrease
-
 this  distance for your preferences.
 
-
-
 To actually apply the level of detail, create a group around your object with
-
 a name like "LOD xxxx/yyyyy" where xxxx and yyyy are the distances in meters.
-
 If you have multiple top level groups you will have multiple versions of your
-
 object.  Make sure that no two LOD ranges overlap, the first number is smaller
-
 than the second, and that the smallest LOD start at 0.  For example;
 
-
-
 - World
-
    - Group 'jetway_747.obj'
-
       - Object 'LOD 0.0000/3000.0'
-
       - Object 'LOD 0.0300/6000.0'
 
-
-
 This hierarchy window shows an object with two versions, one visible from 0-3
-
 km and one from 3-6 km.  After 6 km the object will not be drawn, even if the
-
 atmospheric visibility is better than 6 km.
 
-
-
 -------------------------------------------------------------------------------
-
 CHANGE TEXTURE COMMAND
-
 -------------------------------------------------------------------------------
-
 You can use the change texture command to change the texture of your object
-
 without disturbing the texturing of each polygon.  In order to do this, the
-
 new texture (the _replacing_ texture) must fully contain the image of the
-
 object's current texture (the _replaced_ texture).  This image of the current
-
 texture cannot be squished, stretched, color adjusted, or rotated in the new
-
 texture.  However, the space in the new image around the old texture can 
-
 contain anything.  The new and old textures must both have (or not have) alpha.
 
-
-
 Select the object(s) you want to do the texture replace on and select the
-
 "Change Texture..." command from the tools menu, and pick a .BMP or .PNG file
-
 that will be the new texture.  For every selected object whose texture is
-
 contained in the new texture, two things will happen:
 
-
-
 1. That object will now use the new texture as its texture.
-
 2. The texture coordinates of every surface in that object will be adjusted so
-
 that the object's appearance does not change, even though the layout of the
-
 new object is different.
-
-
 
 Two example uses of this command:
 
-
-
 1. You have a house object with a 256x256 texture, and you want to add some
-
 trees, but you do not have room in the texture to add the tree bitmaps.  You
-
 create a new 512x256 bitmap, with the old 256x256 bitmap on the left side.
-
 Select your house and pick Change Texture and select the new 512x256 bitamp.
-
 All texture coordinates are modified so that the house uses the new bitmap.
-
 You now have the whole right side of the 256x256 bitmap to use for tree 
-
 bitmaps.
 
-
-
 2. You have a house object with a 256x256 bitmap, and a car object with a
-
 different 256x256 bitmap.  You want to combine them into a house with a car
-
 parked as one object, but they use different bitmap files.  You create a new
-
 bitmap in photoshop with the house on top, the car on the bottom, that is 256
-
 x512 pixels tall.  You then import both the car and house into AC3D and 
-
 position them where you want.  You select all of these objects and do a
-
 Change Texture to the new 256x512 combined bitmap, and now the house and car
-
 use one big bitmap.  You can then export this new house adn car scene as a
-
 single object with a single bitmap and use it in x-plane.
 
-
-
 (This second technique is powerful when you are working with a lot of detail
-
 in an urban setting and you want to reduce the object count to increase 
-
 framerate.)
 
-
-
 -------------------------------------------------------------------------------
-
 MAKE TRANSPARENT COMMAND
-
 -------------------------------------------------------------------------------
-
-
 
 This command changes the magenta color of a .bmp-based texture into
-
 transparent pixels to simulate what you would see in x-plane.  Select the
-
 object and pick "Make Transparent" from the tools menu.  All textures used
-
 in the selected objects are changed.  This command may only be used on
-
 RGB textures without alpha.  Like X-Plane, this command only converts perfect
-
 matching #FF00FF magenta.
 
-
-
 -------------------------------------------------------------------------------
-
 MAKE NIGHT LIGHTING COMMAND
-
 -------------------------------------------------------------------------------
-
-
 
 This command attempts to merge the texture of an object with its night 
-
 lighting counterpart to show you what it would look like lit.  Select
-
 an object and pick "Show Night Lighting" from the tools menu.  All textures
-
 used in the selected objects are changed to look like night lighting.
 
-
-
 You can use the 'reload texture' command from AC3D's texture menu (under
-
 the object menu) to reload the normal daytime texture.
 
-
-
 -------------------------------------------------------------------------------
-
 MAKE ANIMATION GROUP COMMAND
-
 -------------------------------------------------------------------------------
-
-
 
 You can easily make animation groups in AC3D as follows: select all of the 
-
 objects you want to contain within the group and then pick "Make Animation
-
 Group" from the Tools menu.  This will make a new group called ANIMATION and
-
 nest the objects inside.  Unlike the AC3D group command, this command will
-
 run in "Object" selection mdoe, and it will let you place a single object into
-
 an animation group.
 
-
-
+-------------------------------------------------------------------------------
+MAKE TREES COMMAND
 -------------------------------------------------------------------------------
 
+The make trees command provides a quick way to make "3-d trees" from quads.
+For each quad selected, the make-trees command makes four one-sided copies 
+rotated 90 degrees each around the middle of the quad to form a + shape.  The 
+whole configuration is then rotated a random amount.  The quads are marked as 
+1-sided.
+
+NOTE: the reason that four one-sided quads are used (rather than two two-sided)
+quads is two-fold:
+
+- This allows the whole object to be one-sided, avoiding the use of ATTRibutes.
+  See the one-sided command for more info on the advantage of smooth shading.
+- When the geometry is two-sided, one half of the tree texture will be visible
+  on both sides of the tree.  With two one-sided quads, less repetition is
+  visible.
+
+The normal vectors of the trees are pointed straight up.  See the up-normals
+command for more informatino on the advantage of up-facing normals.
+
+The quads are set to smooth shading.  Generally you should set the entire
+object's shading to be smooth.
+
+-------------------------------------------------------------------------------
+MAKE ONE-SIDED COMMAND
+-------------------------------------------------------------------------------
+
+There is an advantage to keeping an entire object one-sided or two-sided; one-
+sided geometry offers more flexibility, more realistic lighting, and faster
+performance assuming that not too many polygons need to be duplicated.
+
+The "make one-sided" command copies every selected two-sided surface, 
+
+-------------------------------------------------------------------------------
+MAKE UP NORMALS COMMAND
+-------------------------------------------------------------------------------
+
+TBD
+
+-------------------------------------------------------------------------------
 WARNING MESSAGES
-
 -------------------------------------------------------------------------------
-
-
 
 The AC3D may spit out some warning messages when you export an object:
 
-
-
 "Warning: 3 objects did not have textures assigned.  You must assign a 
-
 texture to every object for X-Plane output."
 
-
-
 	This warning happens when one or more polgon surface is missing a texture.
-
 	X-Plane draws all polygons with textures, so if you don't assign a texture
-
 	and adjust that surface's texture coordinates, you will probably see 
-
 	random junk in x-plane.  Select all objects and pick a texture from the
-
 	Object -> Texture menu to fix this.
 
-
-
 "This model uses more than one texture.  You may only use one texture for an 
-
 X-Plane OBJ."
 
-
-
 	Not counting a special panel texture for cockpit objects, you can only use
-
 	one texture per X-Plane object.  Pick one texture and assign it to all non-
-
 	panel surfaces to pick this.
-
 	
-
 	WARNING: if you have a texture assigned to line geometry, it must be the
-
 	same textures as polygons have, even though this texture is ignored.
 
-
-
 "This model has non-quad surfaces that use the panel texture.  Only quad 
-
 surfaces may use the panel texture in OBJ7."
 
-
-
 "This model has non-quad surfaces that rae marked as hard.  Only quad surfaces
-
 may be hard in OBJ7."
-
     
-
 	Hard polygons and panel-textured polygons are only available for quads in
-
 	OBJ7.  In OBJ8 this is not an issue.  One note: this warning message will
-
 	come up any time you may possibly have triangles without these properties.
-
 	However since the AC3D exporter does its best to combine triangles into 
-
 	quads when exporting to OBJ7 and they are hard or panels, you may find that
-
 	while you got this warning, the actual OBJ is partly or fully okay.  It is
-
 	always safest to use quads though if you need to export to OBJ7.
 
-
-
 With all of these warnings, AC3D will try to select any offending surfaces or
-
 obojects to help you locate the problem.  AC3D may not be able to select all
-
 of the problem areas at once; so it may take repeated exports to diagnose all
-
 problems.  Also, you may need to put AC3D into Surface or Object selection
-
 mode to get a better selection for diagnostic purposes.
-
-
 
