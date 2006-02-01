@@ -503,13 +503,32 @@ There is an advantage to keeping an entire object one-sided or two-sided; one-
 sided geometry offers more flexibility, more realistic lighting, and faster
 performance assuming that not too many polygons need to be duplicated.
 
-The "make one-sided" command copies every selected two-sided surface, 
+The "make one-sided" command copies every selected two-sided surface and 
+reverses its vertex order to form a one-sided surface.
 
 -------------------------------------------------------------------------------
 MAKE UP NORMALS COMMAND
 -------------------------------------------------------------------------------
 
-TBD
+A "normal" vector is an arrow attached to each vertex or surface of your model
+that tells X-Plane how the sun lights up your object.  Usually the normals
+point directly away from your surfaces, causing realistic lighting.  (For
+example, if you create a building, the sides will be brighter at sunrise and
+sunset, while the top will be brighter during the day.)
+
+If the normals are changed other lighting effects can be achieved.  In
+particular, a normal that points straight up will cause a variation of 
+brigthness based on the overall time of day, with the brightest times at noon.
+
+One problem with typical 3-d trees (formed by the crossing of two vertical
+rectangles) is that at sunset one of the quads will be very brightly lit
+(because it is facing the sun) and the other will be quite dark (because it is
+not).  The result is a mismatch in the color of the tree quads (light vs dark
+green) and a strange looking tree.
+
+By setting the normals of the entire tree to point straight up, the entire tree
+picks up a general brightness from the time of day, but does not have 
+incongruent lighting.
 
 -------------------------------------------------------------------------------
 WARNING MESSAGES
