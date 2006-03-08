@@ -70,6 +70,9 @@ public:
 			
 			void			GetBounds(int * outX, int * outY);
 			void			GetMouseLoc(int * outX, int * outY);
+			
+			void			SetVisible(bool visible);
+			bool			GetVisible(void);
 
 	// Callbacks
 	virtual	void			Timer(void)=0;
@@ -77,6 +80,7 @@ public:
 	virtual	void			Resized(int inWidth, int inHeight)=0;
 
 	virtual	void			Update(XContext ctx)=0;
+	virtual void			Activate(int inActive)=0;
 	virtual	void			ClickDown(int inX, int inY, int inButton)=0;
 	virtual	void			ClickUp(int inX, int inY, int inButton)=0;
 	virtual	void			ClickDrag(int inX, int inY, int inButton)=0;	// 0 = left

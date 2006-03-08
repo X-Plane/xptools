@@ -24,6 +24,8 @@
 #define XWINGL_H
 
 #if APL
+// hack for conflict with DebugAssert!
+#define __DEBUGGING__
 #include <AGL.h>
 #endif
 #include "XWin.h"
@@ -99,6 +101,7 @@ public:
 	virtual	void			Resized(int inWidth, int inHeight);
 	virtual	void			Update(XContext ctx);
 	virtual	int				HandleMenuCmd(xmenu inMenu, int inCommand) { return 0; }
+	virtual void			Activate(int active) { }
 
 private:
 

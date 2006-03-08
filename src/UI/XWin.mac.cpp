@@ -56,6 +56,8 @@ XWin::XWin()
 			kEventClassWindow,	kEventWindowResizeCompleted,
 			kEventClassWindow,	kEventWindowClose,
 			kEventClassWindow,	kEventWindowClosed,
+			kEventClassWindow,	kEventWindowActivated,
+			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
 			kEventClassCommand,	kEventCommandProcess
 		};			
@@ -158,6 +160,21 @@ void			XWin::SetTitle(const char * inTitle)
 	memcpy(title+1,inTitle, title[0]);
 	::SetWTitle(mWindow, title);
 }
+
+
+void	XWin::SetVisible(bool visible)
+{
+	if (visible)
+		::ShowWindow(mWindow);
+	else
+		::HideWindow(mWindow);
+}
+
+bool	XWin::GetVisible(void)
+{
+	return ::IsWindowVisible(mWindow);	
+}
+
 
 void			XWin::MoveTo(int inX, int inY)
 {
@@ -273,6 +290,12 @@ pascal OSStatus	XWin::MacEventHandler(
 		break;
 	case kEventClassWindow:
 		switch(kind) {
+		case kEventWindowActivated:
+			me->Activate(true);
+			return noErr;
+		case kEventWindowDeactivated:
+			me->Activate(false);
+			return noErr;			
 		case kEventWindowHandleContentClick:
 			if ((btn == 1) && (modifiers & controlKey))	btn = 2;
 			got_down = true;
