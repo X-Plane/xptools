@@ -1104,6 +1104,64 @@ static int getoct(char *p,int width)
   return result;
 }
 
+int
+MF_GetDirectoryBulk(
+		const char *		path,
+		bool (* 			cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * refcon),
+		void *				refcon)
+{
+#if APL
+		FSSpec			spec;
+		FSRef			ref;
+		OSErr			err;
+		Str255			pStr;
+		FSIterator		iter;
+		int				total = 0;
+		ItemCount		fetched;
+		FSCatalogInfo	infos[256];
+		HFSUniStr255	names[256];
+		
+	pStr[0] = strlen(path);
+	memcpy(pStr+1,path,pStr[0]);
+	err = FSMakeFSSpec(0,0,pStr,&spec);
+	if (err != 0) return 0;
+	err = FSpMakeFSRef(&spec, &ref);
+	if (err != 0) return 0;
+	
+	err = FSOpenIterator(&ref, kFSIterateFlat, &iter);
+	if (err != noErr) return 0;
+
+	while (1)
+	{
+		err = FSGetCatalogInfoBulk(iter, 256, &fetched, NULL, kFSCatInfoNodeFlags | kFSCatInfoContentMod, infos, NULL, NULL, names);
+		if (err != noErr)
+			break;
+			
+		for (int n = 0; n < fetched; ++n)
+		{
+			int m = names[n].length;
+			char * d = (char *) names[n].unicode;
+			UniChar * s = names[n].unicode;
+			while(m--)
+				*d++ = *s++;
+			if (!cbFunc((const char *) names[n].unicode, infos[n].nodeFlags & kFSNodeIsDirectoryMask, *((unsigned long long *) &infos[n].contentModDate), refcon))
+			{
+				FSCloseIterator(iter);
+				return total;
+			}
+			++total;
+		}
+	}
+	
+	FSCloseIterator(iter);
+	return total;
+			
+#else
+#error not implemented
+#endif
+}
+
+
 bool	MF_Untar(		const char * 	path,
 						bool			unzip,
 						void * 	(* TarOpenFile_f)	(const char * filename, int filesize, void * tarRef),

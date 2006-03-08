@@ -271,3 +271,40 @@ OSErr	FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname)
 	return err;
 }
 
+int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
+{
+	OSErr	err;
+	Str255	pstr1, pstr2;
+	SInt16	item;
+	AlertStdAlertParamRec	rec;
+	
+	pstr1[0] = strlen(inMessage1);
+	pstr2[0] = strlen(inMessage2);
+	memcpy(pstr1+1,inMessage1,pstr1[0]);
+	memcpy(pstr2+1,inMessage2,pstr2[0]);
+	
+	rec.movable = false;
+	rec.helpButton = false;
+	rec.filterProc = NULL;
+	rec.defaultText = (ConstStringPtr) kAlertDefaultOKText;
+	rec.cancelText = (ConstStringPtr) kAlertDefaultCancelText;
+	rec.otherText = (ConstStringPtr)  kAlertDefaultOtherText;
+	rec.defaultButton = kAlertStdAlertOKButton;
+	rec.cancelButton = kAlertStdAlertCancelButton;
+	rec.position = kWindowDefaultPosition;
+	
+	err = StandardAlert(
+					kAlertCautionAlert,
+					pstr1,
+					pstr2,
+					&rec,
+					&item);
+
+	if (err != noErr) return close_Cancel;
+	switch(item) {
+	case kAlertStdAlertOKButton: 		return close_Save;
+	case kAlertStdAlertCancelButton: 	return close_Cancel;
+	case kAlertStdAlertOtherButton: 	return close_Discard;
+	default: return close_Cancel;
+	}
+}

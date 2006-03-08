@@ -103,4 +103,15 @@ void	ShowProgressMessage(const char * inMsg, float * progress);
  */
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn);
 
+enum {
+	close_Save,
+	close_Discard,
+	close_Cancel
+};
+/*
+ * 
+ *
+ */
+int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);
+
 #endif

@@ -152,6 +152,19 @@ MF_GetFileType(
 		const char * 	path, 
 		int 			analysis_level);
 
+
+/*
+ * MF_GetDirectoryBulk
+ *
+ * Given a directory, gets the entire contents of the directory, including modification dates.
+ *
+ */
+int
+MF_GetDirectoryBulk(
+		const char *		path,
+		bool (* 			cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * ref),
+		void *				ref);
+
 /*
  * MF_Untar
  *
