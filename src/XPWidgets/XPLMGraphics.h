@@ -337,6 +337,47 @@ XPLM_API void                 XPLMGetFontDimensions(
                                    int *                outCharWidth,    /* Can be NULL */
                                    int *                outCharHeight,    /* Can be NULL */
                                    int *                outDigitsOnly);    /* Can be NULL */
+                                   
+/*
+ * XPLMMeasureString
+ *
+ * This returns the total width of a string.  Works for proportional fonts.
+ *
+ */
+XPLM_API int				XPLMMeasureString(
+									const char *		inChar,
+									XPLMFontID			inFont,
+									int					inCount);	// -1 to go to end, or positive number to limit measuring
+
+/*
+ * XPLMFitStringForward
+ *
+ *
+ * Returns the number of characters that can fully fit into a given number of pixels.  Given a character range,
+ * this starts forwrd from the beginning.
+ *
+ */
+XPLM_API int				XPLMFitStringForward(
+									const char *		inStartPtr,
+									const char *		inEndPtr,
+									XPLMFontID			inFont,
+									int					inWidth);
+
+/*
+ * XPLMFitStringBackward
+ *
+ *
+ * Returns the number of characters that can fully fit into a given number of pixels.  Given a character range,
+ * this starts backward from the end,
+ *
+ */
+XPLM_API int				XPLMFitStringBackward(
+									const char *		inStartPtr,
+									const char *		inEndPtr,
+									XPLMFontID			inFont,
+									int					inWidth);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -36,8 +36,20 @@
 int	gProportional = 0;
 int	gInterface = 1;
 
+#include "FontMgr.h"
 
-
+#define UI_FONT_SIZE 10
+static FontMgr * 		sMgr = NULL;
+static FontHandle		sFont = NULL;
+static void MyGenerateTextures(int n,			int* textures) { glGenTextures (n, (unsigned long *) textures); }
+static void MyBindTexture		(int target,	int texture)   { XPLMBindTexture2d(texture,target); }
+static void InitFonts(void) {
+		sMgr = new FontMgr;
+		FontFuncs funcs = { MyGenerateTextures, MyBindTexture };
+		sMgr->InstallCallbacks(&funcs);
+		sFont = sMgr->LoadFont(/*"LucidaGrande.ttf"*/"Arial", UI_FONT_SIZE, true);
+}
+		
 void                 XPLMDrawString(
                                    float *              inColorRGB,    
                                    int                  inXOffset,    
@@ -45,40 +57,26 @@ void                 XPLMDrawString(
                                    const char *         inChar,    
                                    int *                inWordWrapWidth,    /* Can be NULL */
                                    XPLMFontID           inFontID)
-{	
-#if IBM
-	static	bool	firstTime = true;
-	static	GLuint	listBase = glGenLists(255);
-	if (firstTime)
-	{
-		firstTime = false;
-
-		HDC	dc = gWidgetWin->GetDC();
-
-		SelectObject (dc, GetStockObject (SYSTEM_FONT)); 
- 		wglUseFontBitmaps(dc, 0, 255, listBase);
-	}
+{
+	if (sFont == NULL) InitFonts();
+	GLfloat	col[4] = { inColorRGB[0],inColorRGB[1],inColorRGB[2],1.0f };
+	XPLMSetGraphicsState(0,1,0, 1,1,  0,0);
+	sMgr->DrawString(sFont, col, inXOffset, inYOffset,inChar);
 	
-#endif
 
-	XPLMSetGraphicsState(0,0,0, 0,0,  0,0);
-	glColor3fv(inColorRGB);
-	glRasterPos2i(inXOffset, inYOffset);
-#if APL
-	while (*inChar)
-	{
-		glutBitmapCharacter(gProportional ? GLUT_BITMAP_HELVETICA_12 : GLUT_BITMAP_8_BY_13,
-			*inChar);
-		++inChar;
-	}
-#endif
-
-#if IBM
-	glListBase (listBase); 
-	glCallLists (strlen(inChar), GL_UNSIGNED_BYTE, inChar);
-	glListBase (0);
-#endif
-	
+/*	float desc = sMgr->GetLineDescent(sFont, UI_FONT_SIZE);
+	float asc = sMgr->GetLineAscent(sFont, UI_FONT_SIZE);
+	XPLMSetGraphicsState(0,0,0, 1,1,  0,0);
+	glColor4f(0,1,0,0.3);
+	glBegin(GL_LINES);
+	glVertex2f(inXOffset, inYOffset-desc);
+	glVertex2f(inXOffset+1000, inYOffset-desc);
+	glVertex2f(inXOffset, inYOffset+asc);
+	glVertex2f(inXOffset+1000, inYOffset+asc);
+	glVertex2f(inXOffset, inYOffset);
+	glVertex2f(inXOffset+1000, inYOffset);
+	glEnd();
+*/
 }
 
 void                 XPLMGetFontDimensions(
@@ -87,10 +85,43 @@ void                 XPLMGetFontDimensions(
                                    int *                outCharHeight,    /* Can be NULL */
                                    int *                outDigitsOnly)
 {
-	if (outCharWidth) *outCharWidth = 8;
-	if (outCharHeight) *outCharHeight = 13;
+	if (sFont == NULL) InitFonts();
+	
+	if (outCharWidth) *outCharWidth = sMgr->MeasureString(sFont,sMgr->GetLineHeight(sFont,UI_FONT_SIZE),"O");
+	if (outCharHeight) *outCharHeight = sMgr->GetLineHeight(sFont,UI_FONT_SIZE);
 	if (outDigitsOnly) *outDigitsOnly = 0;
 }	
+
+int				XPLMMeasureString(
+									const char *		inChar,
+									XPLMFontID			inFont,
+									int					inCount)
+{
+	if (sFont == NULL) InitFonts();	
+	return sMgr->MeasureRange(sFont,sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inChar,inChar+inCount);
+
+}
+
+int				XPLMFitStringForward(
+									const char *		inStartPtr,
+									const char *		inEndPtr,
+									XPLMFontID			inFont,
+									int					inWidth)
+{
+	if (sFont == NULL) InitFonts();	
+	return sMgr->FitForward(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inStartPtr, inEndPtr, inWidth);
+}
+
+int				XPLMFitStringBackward(
+									const char *		inStartPtr,
+									const char *		inEndPtr,
+									XPLMFontID			inFont,
+									int					inWidth)
+{
+	if (sFont == NULL) InitFonts();	
+	return sMgr->FitReverse(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inStartPtr, inEndPtr, inWidth);
+}
+
 
 void                 XPLMBindTexture2d(
                                    int                  inTextureNum,    
@@ -110,74 +141,41 @@ void                 XPLMSetGraphicsState(
                                    int                  inEnableDepthTesting,    
                                    int                  inEnableDepthWriting)
 {
-	static	int	oldFog = 0;
-	static	int	oldTexUnits = 0;
-	static	int	oldLights = 0;
-	static	int	oldAlphaT = 0;
-	static	int	oldAlphaB = 0;
-	static	int	oldDepthR = 0;
-	static	int	oldDepthW = 0;
-	
-	if (oldFog != inEnableFog)
-	{
-		if (inEnableFog)
-			glEnable(GL_FOG);
-		else
-			glDisable(GL_FOG);
-		oldFog = inEnableFog;
-	}
-	
+	if (inEnableFog)
+		glEnable(GL_FOG);
+	else
+		glDisable(GL_FOG);
+
 	for (int p = 0; p < 4; ++p)
 	{
-		if (inNumberTexUnits > p && oldTexUnits <= p)	{ glActiveTextureARB(GL_TEXTURE0_ARB + p); glEnable (GL_TEXTURE_2D); glActiveTextureARB(GL_TEXTURE0_ARB); }
-		if (inNumberTexUnits <= p && oldTexUnits > p)	{ glActiveTextureARB(GL_TEXTURE0_ARB + p); glDisable(GL_TEXTURE_2D); glActiveTextureARB(GL_TEXTURE0_ARB); }
+		if (inNumberTexUnits > p)	{ glActiveTextureARB(GL_TEXTURE0_ARB + p); glEnable (GL_TEXTURE_2D); glActiveTextureARB(GL_TEXTURE0_ARB); }
+		if (inNumberTexUnits <= p)	{ glActiveTextureARB(GL_TEXTURE0_ARB + p); glDisable(GL_TEXTURE_2D); glActiveTextureARB(GL_TEXTURE0_ARB); }
 	}	
-	oldTexUnits = inNumberTexUnits;		
-	
-	if (oldLights != inEnableLighting)
-	{
-		if (inEnableLighting)
-			glEnable(GL_LIGHTING);
-		else
-			glDisable(GL_LIGHTING);
-		oldLights = inEnableLighting;
-	}
-	
-	if (oldAlphaT != inEnableAlphaTesting)
-	{
-		if (inEnableAlphaTesting)
-			glEnable(GL_ALPHA_TEST);
-		else
-			glDisable(GL_ALPHA_TEST);
-		oldAlphaT = inEnableAlphaTesting;
-	}
-	
-	if (oldAlphaB != inEnableAlphaBlending)
-	{
-		if (inEnableAlphaBlending)
-			glEnable(GL_BLEND);
-		else
-			glDisable(GL_BLEND);
-		oldAlphaB = inEnableAlphaBlending;
-	}
-	
-	if (oldDepthR != inEnableDepthTesting)
-	{
-		if (inEnableDepthTesting)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
-		oldDepthR = inEnableDepthTesting;
-	}
-	
-	if (oldDepthW != inEnableDepthWriting)
-	{
-		if (inEnableDepthWriting)
-			glDepthMask(GL_TRUE);
-		else		
-			glDepthMask(GL_FALSE);
-		oldDepthW = inEnableDepthWriting;
-	}
+
+	if (inEnableLighting)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
+
+	if (inEnableAlphaTesting)
+		glEnable(GL_ALPHA_TEST);
+	else
+		glDisable(GL_ALPHA_TEST);
+
+	if (inEnableAlphaBlending)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
+
+	if (inEnableDepthTesting)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+
+	if (inEnableDepthWriting)
+		glDepthMask(GL_TRUE);
+	else		
+		glDepthMask(GL_FALSE);
 }                                   
 
 void                 XPLMGenerateTextureNumbers(

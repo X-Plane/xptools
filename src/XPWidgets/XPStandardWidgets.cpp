@@ -126,7 +126,7 @@ int		XPMainWindow(
 	// First get our geometry and font size; we need this to know if our drag bar
 	// is being dispatched.
 	
-		int fh, fv;
+		int fv;
 		int 		l, t, r, b;
 		int			dragBarHeight;
 		int			cbh, cbv;
@@ -134,7 +134,7 @@ int		XPMainWindow(
 	XPGetElementDefaultDimensions(xpElement_WindowDragBar, NULL, &dragBarHeight, NULL);
 	XPGetElementDefaultDimensions(xpElement_WindowCloseBox, &cbh, &cbv, NULL);
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
-	XPLMGetFontDimensions(xplmFont_Basic, &fh, &fv, NULL);
+	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
 	
 
 	// Next dispatch built-in behavior: selection to front, dragging the title bar,
@@ -154,7 +154,8 @@ int		XPMainWindow(
 				int			dragging = XPGetWidgetProperty(inWidget, xpProperty_Dragging, NULL);
 
 			char	buf[100];
-			long	titleLen = XPGetWidgetDescriptor(inWidget, buf, 100) * fh;
+			XPGetWidgetDescriptor(inWidget, buf, 100);
+			long	titleLen = XPLMMeasureString(buf,xplmFont_Basic, -1);
 
 			if (XPGetWidgetProperty(inWidget, xpProperty_MainWindowType, NULL) == xpMainWindowStyle_Translucent)
 			{
@@ -269,11 +270,11 @@ int		XPButton(
 	// Select if we're in the background.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
 	
-	int fh, fv;
+	int fv;
 	int l, t, r, b;
 		
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
-	XPLMGetFontDimensions(xplmFont_Basic, &fh, &fv, NULL);
+	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
 	
 	int	ButtonBehaviour = XPGetWidgetProperty(inWidget, xpProperty_ButtonBehavior, NULL);
 
@@ -345,7 +346,7 @@ int		XPButton(
 							buf, NULL, xplmFont_Basic);
 			} else // for al others, center justify the caption.  Note that a caption for something like a window close box is a bit silly....
 
-			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, (l + r) / 2 - (fh * titleLen / 2), 
+			XPLMDrawString(XPGetWidgetProperty(inWidget, xpProperty_Enabled, 0) ? white : gray, (l + r) / 2 - (XPLMMeasureString(buf,xplmFont_Basic,-1) / 2), 
 						(t + b) / 2 - (fv / 2) + 2,
 						buf, NULL, xplmFont_Basic);
 			SetProportional(0);						
@@ -404,18 +405,19 @@ int		XPTextField(
 	// require a second click to do something useful.  So don't eat the click.
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 0/*eat*/))	return 1;
 
-		int fh, fv;
+		int fv;
 		int 		l, t, r, b;
 		int			focused = (XPGetWidgetWithFocus() == inWidget);
-		long		charWidth, scrollPos, scrollLim, descLen;
+		long		/*charWidth,*/ scrollPos, scrollLim, descLen;
 		char		buf[512];
 		
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
-	XPLMGetFontDimensions(xplmFont_Basic, &fh, &fv, NULL);
-	charWidth = (r - l - 10) / fh;
+	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
+//	charWidth = (r - l - 10) / fh;	// can't calc this anymore - depends on the real string used
 	scrollPos = XPGetWidgetProperty(inWidget, xpProperty_ScrollPosition, NULL);
 	descLen = XPGetWidgetDescriptor(inWidget, buf, 512);
-	scrollLim = descLen - charWidth;
+	scrollLim = descLen - XPLMFitStringBackward(buf, buf+descLen, xplmFont_Basic, r - l - 10);
+//	scrollLim = descLen - charWidth;		// how many chars can we scroll in.  Compute by: reverse measure the whole string to the field width.
 	if (scrollLim < 0)
 		scrollLim = 0;
 
@@ -447,8 +449,8 @@ int		XPTextField(
 
 			if (focused)
 			{
-				int	selStart = l + 5 + fh * (XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, NULL)-scrollPos);
-				int	selEnd = l + 5 + fh * (XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd, NULL)-scrollPos);
+				int	selStart = l + 5 + XPLMMeasureString(buf+scrollPos, xplmFont_Basic, XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, NULL));
+				int	selEnd   = l + 5 + XPLMMeasureString(buf+scrollPos, xplmFont_Basic, XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelEnd  , NULL));
 				if (selStart < l)
 					selStart = l;
 				if (selEnd > r)
@@ -492,9 +494,12 @@ int		XPTextField(
 					}
 				}
 			}
-			
-			if ((descLen-scrollPos) > charWidth)
-				descLen = charWidth + scrollPos;
+
+#if !DEV
+um?
+#endif			
+//			if ((descLen-scrollPos) > charWidth)
+//				descLen = charWidth + scrollPos;
 				
 			buf[descLen] = 0;
 			
@@ -524,7 +529,9 @@ int		XPTextField(
 					return 1;
 			
 			// If we can, collapse the selection and register the start of a drag.		
-			long	selPos = (MOUSE_X(inParam1) - l - 5) / fh;
+			
+			long	selPos = XPLMFitStringForward(buf + scrollPos, buf + descLen, xplmFont_Basic, MOUSE_X(inParam1) - l - 5);
+//			long	selPos = (MOUSE_X(inParam1) - l - 5) / fh;
 			selPos += scrollPos;
 
 			selPos = WIDGET_TMAX(0L, WIDGET_TMIN(selPos, descLen));
@@ -539,7 +546,8 @@ int		XPTextField(
 		{
 			// Update the selection based on the drag.
 			long 	selStart = XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, NULL);
-			long	selEnd = (MOUSE_X(inParam1) - l - 5) / fh;
+//			long	selEnd = (MOUSE_X(inParam1) - l - 5) / fh;
+			long	selEnd = XPLMFitStringForward(buf + scrollPos, buf + descLen, xplmFont_Basic, MOUSE_X(inParam1) - l - 5);
 			selEnd += scrollPos;
 			if (selEnd < scrollPos)
 			{
@@ -549,7 +557,8 @@ int		XPTextField(
 					XPSetWidgetProperty(inWidget, xpProperty_ScrollPosition, scrollPos);
 				}
 			}
-			if (selEnd > (scrollPos + charWidth))
+//			if (selEnd > (scrollPos + charWidth))
+			if (MOUSE_X(inParam1) > r)
 			{
 				if (scrollPos < scrollLim)
 				{
@@ -575,7 +584,8 @@ int		XPTextField(
 		{
 			// Update and terminate the selection based on the drag.
 			long selStart = XPGetWidgetProperty(inWidget, xpProperty_EditFieldSelDragStart, NULL);
-			long	selEnd = (MOUSE_X(inParam1) - l - 5) / fh;
+//			long	selEnd = (MOUSE_X(inParam1) - l - 5) / fh;
+			long	selEnd = XPLMFitStringForward(buf + scrollPos, buf + descLen, xplmFont_Basic, MOUSE_X(inParam1) - l - 5);
 			selEnd += scrollPos;
 
 			selEnd = WIDGET_TMAX(0L, WIDGET_TMIN(selEnd, descLen));
@@ -726,21 +736,27 @@ int		XPTextField(
 							
 			if (XPGetWidgetProperty(inWidget, xpProperty_ActiveEditSide, NULL))
 			{
-				if (insertStart < scrollPos)
-					scrollPos = insertStart;
-				if ((scrollPos + charWidth) < insertEnd)
-					scrollPos = insertEnd - charWidth;
+#if !DEV
+um?
+#endif			
+//				if (insertStart < scrollPos)
+//					scrollPos = insertStart;
+//				if ((scrollPos + charWidth) < insertEnd)
+//					scrollPos = insertEnd - charWidth;
 			} else {
-				if ((scrollPos + charWidth) < insertEnd)
-					scrollPos = insertEnd - charWidth;
-				if (insertStart < scrollPos)
-					scrollPos = insertStart;
+//				if ((scrollPos + charWidth) < insertEnd)
+//					scrollPos = insertEnd - charWidth;
+//				if (insertStart < scrollPos)
+//					scrollPos = insertStart;
 			}
 			
 			if (me.empty())
 				scrollPos = 0;
-			else if (scrollPos >= (me.size() - charWidth))
-				scrollPos = me.size() - charWidth;
+#if !DEV
+um?	Use scrollLim?
+#endif
+//			else if (scrollPos >= (me.size() - charWidth))
+//				scrollPos = me.size() - charWidth;
 
 			XPSetWidgetDescriptor(inWidget, me.c_str());
 			XPSetWidgetProperty(inWidget, xpProperty_EditFieldSelStart, insertStart);
@@ -937,12 +953,12 @@ int		XPCaption(
 {
 	if (XPUSelectIfNeeded(inMessage, inWidget, inParam1, inParam2, 1/*eat*/))	return 1;
 
-		int fh, fv;
+		int fv;
 		int 		l, t, r, b;
 		int			focused = (XPGetWidgetWithFocus() == inWidget);
 		
 	XPGetWidgetGeometry(inWidget, &l, &t, &r, &b);
-	XPLMGetFontDimensions(xplmFont_Basic, &fh, &fv, NULL);
+	XPLMGetFontDimensions(xplmFont_Basic, NULL, &fv, NULL);
 
 	switch(inMessage) {
 	case xpMsg_Create:
