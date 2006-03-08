@@ -143,22 +143,24 @@ NETWORK_DEF <filename>
 	These commands define a new type of building block.  Order is significant:
 	the first building block of each type has index zero and they then count
 	upward sequentially.  File extensions must be included.  The entire line
-	is utilized, so you may have whitespace in your filenames, although it 
-	is not recommended.
+	is utilized, so you may have whitespace in your filenames, although it
+	is not recommended. These comands are mandatory if related commands are
+	used, TERRAIN_DEF is mandatory if BEGIN_PATCH is used and etc.
 
 BEGIN_PATCH <primitive type> <near LOD> <far LOD> <flags> <# point coords>
 
-	This command begins a new terrain patch.  The LOD range is the distance it
-	is visible - use 0..-1 to make it be always visible.  The flag values
-	are:
-	
-		1 - This patch should be used in the physics/collision engine.
-		2 - This patch is an overlay and should be Z-buffer-offset.
-		
+	This command begins a new terrain patch. Terrain definition index is
+	number of terrain definition to use on patch, starting from 0. The LOD
+	range is the distance it is visible - use 0..-1 to make it be always
+	visible.  The flag values are:
+
+	       1 - This patch should be used in the physics/collision engine.
+	       2 - This patch is an overlay and should be Z-buffer-offset.
+
 	These flags correspond to the patch flags in the DSF spec.  You also
-	specify the number of coordinates for the patch.  At least 5 coordinates
-	are required for X-Plane: longitude, latitude, elevation, and two normal
-	coordinates.
+	specify the number of coordinates used in vertices for the patch.  At
+	least 5 coordinates are required for X-Plane: longitude, latitude,
+	elevation, and two normal coordinates.
 
 BEGIN_PRIMITIVE <type>
 
