@@ -21,6 +21,8 @@
  *
  */
 #include "ObjPointPool.h"
+using std::min;
+using std::max;
 
 ObjPointPool::ObjPointPool() : mDepth(8)
 {

@@ -36,6 +36,8 @@ struct	XObjLOD8;
  	void	BeginLOD(float inNear, float inFar);
  	void	EndLOD(void);
  	
+	void	SetTexRepeatParams(float repeat_s, float repeat_t, float offset_s, float offset_t);
+	
  	void	SetAttribute(int inAttribute);
  	void	SetAttribute1(int inAttribute, float v);
  	void	SetAttribute3(int inAttribute, float v[3]);
@@ -49,30 +51,41 @@ struct	XObjLOD8;
  	// X Y Z R G B
  	void	AccumLight(float inPoint[6]);
  
- 	void	AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref);
- 	
+	void	AccumAnimBegin(void);
+	void	AccumAnimEnd(void);
+ 	void	AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref); 	
  	void	AccumRotate(float axis[3], float r1, float r2, float v1, float v2, const char * ref);
+ 
+	// A few status checks
+	inline int		IsHard(void) const		{ return hard;		}
+	inline int		IsCockpit(void) const	{ return cockpit;	}
  
  private:
  
  	void	AssureLOD(void);
  	void	SetDefaultState(void);
+	void	SyncAttrs(void);
  
  	XObj8 *		obj;
  	XObjLOD8 *	lod;
- 	int			hard;
-// 	int			no_depth;
- 	int			flat;
- 	int			two_sided;
- 	int			no_blend;
- 	int			cockpit;
- 	float		offset;
 
-//	float		ambient[3];			// Ambient not used - no ambient control in x-plane
-	float		diffuse[3];			// Diffuse STRONGLY not recommended!  Use texture
-	float		emission[3];		// Used for self-lit signs
-//	float		specular[3];		// Specular not used - set automatically by shiny-rat!
-	float		shiny;				// Used for metal
+ 	int			hard;				int		o_hard;
+ 	int			flat;				int		o_flat;
+ 	int			two_sided;			int		o_two_sided;
+ 	int			no_blend;			int		o_no_blend;
+ 	int			cockpit;			int		o_cockpit;
+
+ 	float		offset;				float	o_offset;
+	float		shiny;				float	o_shiny;
+
+	float		diffuse[3];			float	o_diffuse[3];
+	float		emission[3];		float	o_emission[3];
+	
+	float		tex_repeat_s;
+	float		tex_repeat_t;
+	float		tex_offset_s;
+	float		tex_offset_t;
+	
 
 };
  

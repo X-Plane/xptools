@@ -25,9 +25,11 @@
 
 #include <vector>
 #include <map>
+#include <functional>
 
 using std::map;
 using std::vector;
+using std::binary_function;
 
 template <class T>
 struct lex_compare_vector : public binary_function<vector<T>, vector<T>, bool> {

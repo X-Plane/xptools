@@ -23,9 +23,14 @@
  
 #include "XObjBuilder.h"
 #include "XObjDefs.h"
- 
+
 XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 {
+	tex_repeat_s = 1.0;
+	tex_repeat_t = 1.0;
+	tex_offset_s = 0.0;
+	tex_offset_t = 0.0;
+
 	SetDefaultState();
 }
 
@@ -55,24 +60,24 @@ void	XObjBuilder::EndLOD(void)
 void	XObjBuilder::SetAttribute(int attr)
 {
 	switch(attr) {
-	case attr_Shade_Flat:	if (!flat) { flat = 1; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Shade_Smooth:	if ( flat) { flat = 0; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;		
-	case attr_NoCull:		if (!two_sided) { two_sided = 1; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Cull:			if ( two_sided) { two_sided = 0; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Tex_Cockpit:	if (!cockpit) { cockpit = 1; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Tex_Normal:	if ( cockpit) { cockpit = 0; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_No_Blend:		if (!no_blend) { no_blend = 1; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Blend:		if ( no_blend) { no_blend = 0; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_Hard:			if (!hard) { hard = 1; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
-	case attr_No_Hard:		if ( hard) { hard = 0; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; }	break;
+	case attr_Shade_Flat:	flat = 1;		break;
+	case attr_Shade_Smooth:	flat = 0;		break;
+	case attr_NoCull:		two_sided = 1;	break;
+	case attr_Cull:			two_sided = 0;	break;
+	case attr_Tex_Cockpit:	cockpit = 1;	break;
+	case attr_Tex_Normal:	cockpit = 0;	break;
+	case attr_No_Blend:		no_blend = 1;	break;
+	case attr_Blend:		no_blend = 0;	break;
+	case attr_Hard:			hard = 1;		break;
+	case attr_No_Hard:		hard = 0;		break;
 	}
 }
 
 void	XObjBuilder::SetAttribute1(int attr, float v)
 {
 	switch(attr) {
-	case attr_Offset: 	if (v != offset) { offset = v; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; lod->cmds.back().params[0] = v; } break;
-	case attr_Shiny_Rat:if (v != shiny ) { shiny = v; AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr; lod->cmds.back().params[0] = v; } break;
+	case attr_Offset: 	offset = v; break;
+	case attr_Shiny_Rat:shiny  = v; break;
 	}
 }
 
@@ -80,26 +85,23 @@ void	XObjBuilder::SetAttribute3(int attr, float v[3])
 {
 	switch(attr) {
 	case attr_Emission_RGB: 
-		if (v[0] != emission[0] || v[1] != emission[1] || v[2] != emission[2])
-		{
-			emission[0] = v[0]; emission[1] = v[1]; emission[2] = v[2];
-			AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr;
-			lod->cmds.back().params[0] = v[0]; lod->cmds.back().params[1] = v[1]; lod->cmds.back().params[2] = v[2];
-		}
+		emission[0] = v[0]; emission[1] = v[1]; emission[2] = v[2];
 		break;
 	case attr_Diffuse_RGB: 
-		if (v[0] != diffuse[0] || v[1] != diffuse[1] || v[2] != diffuse[2])
-		{
-			diffuse[0] = v[0]; diffuse[1] = v[1]; diffuse[2] = v[2];
-			AssureLOD(); lod->cmds.push_back(XObjCmd8()); lod->cmds.back().cmd = attr;
-			lod->cmds.back().params[0] = v[0]; lod->cmds.back().params[1] = v[1]; lod->cmds.back().params[2] = v[2];
-		}
+		diffuse[0] = v[0]; diffuse[1] = v[1]; diffuse[2] = v[2];
 		break;
 	}
 }
 
 void	XObjBuilder::AccumTri(float inTri[24])
 {
+	inTri[6 ] = inTri[6 ] * tex_repeat_s + tex_offset_s;
+	inTri[7 ] = inTri[7 ] * tex_repeat_t + tex_offset_t;
+	inTri[14] = inTri[14] * tex_repeat_s + tex_offset_s;
+	inTri[15] = inTri[15] * tex_repeat_t + tex_offset_t;
+	inTri[22] = inTri[22] * tex_repeat_s + tex_offset_s;
+	inTri[23] = inTri[23] * tex_repeat_t + tex_offset_t;
+
 	int		idx1 = obj->geo_tri.accumulate(inTri   );
 	int		idx2 = obj->geo_tri.accumulate(inTri+8 );
 	int		idx3 = obj->geo_tri.accumulate(inTri+16);
@@ -113,6 +115,7 @@ void	XObjBuilder::AccumTri(float inTri[24])
 	int		end_i = obj->indices.size();
 	
 	AssureLOD();
+	SyncAttrs();
 		
 	if (lod->cmds.empty() || 
 		lod->cmds.back().cmd != obj8_Tris ||
@@ -175,6 +178,20 @@ void	XObjBuilder::AccumLight(float inPoint[6])
 	}	
 }
 
+void	XObjBuilder::AccumAnimBegin(void)
+{
+	AssureLOD(); 
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = anim_Begin;	
+}
+
+void	XObjBuilder::AccumAnimEnd(void)
+{
+	AssureLOD(); 
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = anim_End;
+}
+
 void	XObjBuilder::AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref)
 {
 	AssureLOD(); 
@@ -208,27 +225,117 @@ void	XObjBuilder::AccumRotate(float axis[3], float r1, float r2, float v1, float
 	lod->cmds.back().idx_offset = obj->animation.size()-1;	
 }
 
-#if 0
- 
- private:
- 
- 	void	AssureLOD(void);
- 
- 	XObj8 *		obj;
- 	int			hard;
-// 	int			no_depth;
- 	int			flat;
- 	int			two_sided;
- 	int			no_blend;
- 	int			cockpit;
- 	float		offset;
+void	XObjBuilder::AssureLOD(void)
+{
+	if (lod == NULL)
+	{
+		obj->lods.push_back(XObjLOD8());
+		obj->lods.back().lod_near = 0;
+		obj->lods.back().lod_far  = 0;	
+		lod = &obj->lods.back();
+	}
 
-//	float		ambient[3];			// Ambient not used - no ambient control in x-plane
-	float		diffuse[3];			// Diffuse STRONGLY not recommended!  Use texture
-	float		emission[3];		// Used for self-lit signs
-//	float		specular[3];		// Specular not used - set automatically by shiny-rat!
-	float		shiny;				// Used for metal
+}
 
-};
- 
- #endif
+void	XObjBuilder::SetDefaultState(void)
+{
+	o_hard = hard = 0;
+	o_flat = flat = 0;
+	o_two_sided = two_sided = 0;
+	o_no_blend = no_blend = 0;
+	o_cockpit = cockpit = 0;
+	o_offset = offset = 0.0;
+
+	diffuse[0] = 1.0; diffuse[1] = 1.0; diffuse[2] = 1.0;
+	o_diffuse[0] = 1.0; o_diffuse[1] = 1.0; o_diffuse[2] = 1.0;
+	emission[0] = 0.0; emission[1] = 0.0; emission[2] = 0.0;
+	o_emission[0] = 0.0; o_emission[1] = 0.0; o_emission[2] = 0.0;
+	o_shiny = shiny = 0.0;
+}
+
+void XObjBuilder::SyncAttrs(void)
+{
+	if (flat != o_flat)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = flat ? attr_Shade_Flat : attr_Shade_Smooth;
+		o_flat = flat;
+	}
+	
+	if (hard != o_hard)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = hard ? attr_Hard : attr_No_Hard;
+		o_hard = hard;
+	}
+	
+	if (two_sided != o_two_sided)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = two_sided ? attr_NoCull : attr_Cull;
+		o_two_sided = two_sided;
+	}
+	
+	if (cockpit != o_cockpit)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = cockpit ? attr_Tex_Cockpit: attr_Tex_Normal;
+		o_cockpit = cockpit;
+	}
+	
+	if (no_blend != o_no_blend)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = no_blend ? attr_No_Blend : attr_Blend;
+		o_no_blend = no_blend;
+	}
+
+	if (shiny != o_shiny)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Shiny_Rat;
+		lod->cmds.back().params[0] = shiny;
+		o_shiny = shiny;
+	}
+
+	if (offset != o_offset)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Offset;
+		lod->cmds.back().params[0] = offset;
+		o_offset = offset;
+	}
+
+	if (emission[0] != o_emission[0] || emission[1] != o_emission[1] || emission[2] != o_emission[2])
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Emission_RGB;
+		lod->cmds.back().params[0] = emission[0];
+		lod->cmds.back().params[1] = emission[1];
+		lod->cmds.back().params[2] = emission[2];
+		o_emission[0] = emission[0];
+		o_emission[1] = emission[1];
+		o_emission[2] = emission[2];
+	}
+
+	if (diffuse[0] != o_diffuse[0] || diffuse[1] != o_diffuse[1] || diffuse[2] != o_diffuse[2])
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Diffuse_RGB;
+		lod->cmds.back().params[0] = diffuse[0];
+		lod->cmds.back().params[1] = diffuse[1];
+		lod->cmds.back().params[2] = diffuse[2];
+		o_diffuse[0] = diffuse[0];
+		o_diffuse[1] = diffuse[1];
+		o_diffuse[2] = diffuse[2];
+	}
+}
+
+void	XObjBuilder::SetTexRepeatParams(float repeat_s, float repeat_t, float offset_s, float offset_t)
+{
+	tex_repeat_s = repeat_s;
+	tex_repeat_t = repeat_t;
+	tex_offset_s = offset_s;
+	tex_offset_t = offset_t;
+}
+

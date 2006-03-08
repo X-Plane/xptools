@@ -29,6 +29,18 @@
 
 #include <math.h>
 
+#ifndef CRLF
+	#if APL
+		#define CRLF "\n"
+	#elif LIN
+		#define CRLF "\n"
+	#elif IBM
+		#define CRLF "\r\n"
+	#else
+		#error no platform defined
+	#endif
+#endif
+
 /****************************************************************************************
  * FILE SCANNING UTILS
  ****************************************************************************************/
