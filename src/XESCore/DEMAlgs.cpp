@@ -1044,7 +1044,12 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
  *  nude terrain color, x-plane terrain type.
  *
  */
-void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
+void	DeriveDEMs(
+			const Pmwx& 	inMap, 
+			DEMGeoMap& 		ioDEMs, 
+			AptVector&		ioApts,
+			AptIndex&		ioAptIndex,			
+			ProgressFunc 	inProg)
 {
 	int x, y;
 
@@ -1139,10 +1144,10 @@ void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 
 	set<int>	apts;
 
-	FindAirports(Bbox2(landuse.mWest, landuse.mSouth, landuse.mEast, landuse.mNorth), gDocument->gAptIndex, apts);
+	FindAirports(Bbox2(landuse.mWest, landuse.mSouth, landuse.mEast, landuse.mNorth), ioAptIndex, apts);
 	for (set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
-	if (gDocument->gApts[*apt].kind_code == apt_Type_Airport)
-	for (AptPavementVector::iterator rwy = gDocument->gApts[*apt].pavements.begin(); rwy != gDocument->gApts[*apt].pavements.end(); ++rwy)
+	if (ioApts[*apt].kind_code == apt_Type_Airport)
+	for (AptPavementVector::iterator rwy = ioApts[*apt].pavements.begin(); rwy != ioApts[*apt].pavements.end(); ++rwy)
 	if (rwy->surf_code == rwy_Surf_Asphalt || rwy->surf_code == rwy_Surf_Concrete)
 	{
 		Point2 p = rwy->ends.midpoint();

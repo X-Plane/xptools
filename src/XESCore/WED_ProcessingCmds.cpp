@@ -144,6 +144,10 @@ static	const char	kCmdKeys [] = {
 	0,	0
 };
 
+#if !DEV
+put these back
+
+
 static	XPLMMenuID	sProcessMenu = NULL;
 
 static	void	WED_HandleProcMenuCmd(void *, void * i);
@@ -428,3 +432,9 @@ void WED_UpdateProcCmds(void)
 
 }
 
+
+#endif
+
+void RegisterProcessingCommands()
+{
+}

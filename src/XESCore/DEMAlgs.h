@@ -27,6 +27,7 @@ struct	DEMGeo;
 class	DEMGeoMap;
 class	Pmwx;
 
+#include "AptDefs.h"
 #include "ProgressUtils.h"
 
 enum {
@@ -66,6 +67,6 @@ void	DEMMakeDifferential(const DEMGeo& inSrc, DEMGeo& dst);
 
 void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg);
 void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg);
-void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg);
+void	DeriveDEMs(const Pmwx& inMap, DEMGeoMap& ioDEMs, AptVector& ioApts, AptIndex& ioAptIndex, ProgressFunc inProg);
 
 #endif

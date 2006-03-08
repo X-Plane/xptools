@@ -388,6 +388,7 @@ bool VerticalOkay(vector<Polygon2>& bounds, const Point2& p, CoordTranslator& tr
 
 inline double remap_tval(double t)
 {
+//		return t;
 	t += 0.5;
 	if (t > 1.0) t -= 1.0;
 	return t;
@@ -1676,7 +1677,7 @@ double	GetInsetForEdgeMeters(const GISHalfedge * inEdge)
 	
 	double width = (is_coast && !is_edge_of_map) ? 30.0 : 5.0;
 	if (best_road != NO_VALUE)
-		width = max(width, gNetEntities[best_road].width + gNetEntities[best_road].pad + 2.0);
+		width = max(width, (double) gNetEntities[best_road].width + gNetEntities[best_road].pad);
 	return width;
 }
 
