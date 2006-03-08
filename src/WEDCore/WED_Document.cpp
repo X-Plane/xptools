@@ -7,12 +7,20 @@
 // migrate all old stuff
 // wire dirty to obj persistence
 
-WED_Document::WED_Document(const string& path) : 
+WED_Document::WED_Document(
+								const string& 		path, 
+								WED_Package * 		inPackage,
+								double				inBounds[4]) :
 	mArchive(),
 	mUndo(&mArchive),
 	mFilePath(path),
-	mDirty(false)
+	mDirty(false),
+	mPackage(inPackage)
 {
+	mBounds[0] = inBounds[0];
+	mBounds[1] = inBounds[1];
+	mBounds[2] = inBounds[2];
+	mBounds[3] = inBounds[3];
 }
 
 WED_Document::~WED_Document()
@@ -68,11 +76,4 @@ void				WED_Document::Load(void)
 	mDirty = false;
 }
 
-void				WED_Document::SaveAs(const string& inName, bool migrate)
-{
-	WriteXESFile(inName.c_str(), gMap, gTriangulationHi, gDem, gApts, WED_ProgressFunc);
-	mDirty = false;
-	if (migrate) mFilePath = inName;
-	
-}
 

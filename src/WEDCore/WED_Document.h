@@ -9,11 +9,15 @@
 #include "MapDefs.h"
 #include "DEMDefs.h"
 
+class	WED_Package;
 
 class	WED_Document {
 public:
 
-						WED_Document(const string& path);
+						WED_Document(
+								const string& 		path, 
+								WED_Package * 		inPackage,
+								double				inBounds[4]);
 						~WED_Document();
 
 	// Management
@@ -22,7 +26,6 @@ public:
 	
 	void				Save(void);
 	void				Load(void);
-	void				SaveAs(const string& inName, bool migrate);
 
 	// OBJECT PLACEMENT
 	
@@ -38,6 +41,9 @@ private:
 
 	WED_Archive		mArchive;
 	WED_UndoMgr		mUndo;
+
+	WED_Package *		mPackage;
+	double				mBounds[4];
 
 
 	string				mFilePath;
