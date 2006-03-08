@@ -1,6 +1,6 @@
 #include "bitmap_match.h"
-
-#include "ac_plugin.h"
+#include <ac_plugin.h>
+#include <stdio.h>
 
 static unsigned char * get_image_data(ACImage * im);
 static unsigned char * get_image_data(ACImage * im)

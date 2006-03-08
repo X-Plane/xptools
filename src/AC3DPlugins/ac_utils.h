@@ -2,6 +2,8 @@
 #define AC_UTILS_H
 
 #include <ac_plugin.h>
+#include <vector>
+using std::vector;
 
 const char * strstrnocase(const char * haystack, const char * needle);
 
@@ -16,6 +18,8 @@ void	latlonel2xyz(double latlonel[3],
 					double latref, double lonref, double cos_scale,
 					double xyz[3]);
 
+
+int 	pull_int_attr_recursive(ACObject * obj, const char * attr, int defv, ACObject * root);
 
 int 	pull_int_attr(ACObject * ob, const char * attr, int * value);
 char * 	pull_str_attr(ACObject * ob, const char * attr);

@@ -3,6 +3,7 @@
 #include "obj8_import.h"
 #include "obj_tools.h"
 #include <ac_plugin.h>
+#include <stdio.h>
 
 /* Plugin main routines */
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d);
@@ -74,6 +75,6 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
-    return("OBJ8 Import/Export Plugin v2.0b2 - by Ben Supnik");
+    return("OBJ8 Import/Export Plugin v2.1b1 - by Ben Supnik");
 }
 

@@ -12,7 +12,9 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 
-Version 2.1b1 1/20/05
+Version 2.1b2 2/15/06
+	- Fixed texture repeat-offset export (was ignored since 2.0).
+Version 2.1b1 1/20/06
 	- Reorganized attribute handling
 	- New commands: group export, make trees, one-sided geometry, downward normals
 	- Bug fix for crash on OS X 10.4.4 with QuickTime 7.0.4

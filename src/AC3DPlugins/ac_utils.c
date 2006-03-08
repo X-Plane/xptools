@@ -1,5 +1,9 @@
 #include "ac_utils.h"
 #include <math.h>
+#include <string>
+using std::string;
+using std::min;
+using std::max;
 
 void	find_all_objects(ACObject * root, vector<ACObject *>& output)
 {
@@ -83,26 +87,33 @@ void	latlonel2xyz(double latlonel[3],
 	xyz[2] = lat * 60.0 * 1852.0;
 }
 
+int 	pull_int_attr_recursive(ACObject * obj, const char * attr, int defv, ACObject * root)
+{
+	if (obj == NULL) return defv;
+	int r;
+	if (pull_int_attr(obj, attr, &r))
+		return r;
+	ACObject * parent = ac_object_get_parent(obj);
+	if (parent == root || parent == NULL) return defv;
+	return pull_int_attr_recursive(parent, attr, defv, root);	
+}
+
+
 int pull_int_attr(ACObject * ob, const char * attr, int * value)
 {
 	char * title = ac_object_get_name(ob);
-//	printf("Title = %s\n", title);
 	char * token = strstr(title, attr);
-//	printf("token = %s\n", token);
 	if (token == NULL) return 0;
 	if (strlen(token) <= strlen(attr))	return 0;
 	token += strlen(attr);
 	if (value) *value = atoi(token);
-//	printf("Value was: %d\n", *value);
 	return 1;
 }
 
 char * pull_str_attr(ACObject * ob, const char * attr)
 {
 	char * title = ac_object_get_name(ob);
-//	printf("Title = %s\n", title);
 	char * token = strstr(title, attr);
-//	printf("token = %s\n", token);
 	if (token == NULL) return NULL;
 	if (strlen(token) <= strlen(attr))	return NULL;
 	token += strlen(attr);
