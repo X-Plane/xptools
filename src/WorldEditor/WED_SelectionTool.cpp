@@ -1,3 +1,6 @@
+#if !DEV
+put this back
+
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -820,3 +823,5 @@ void	WED_SelectionTool::DoSelectionPreview()
 		}					
 	}
 }
+
+#endif

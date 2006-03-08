@@ -27,4 +27,5 @@
 vector<pair<Point2,Point3> >		gMeshPoints;
 vector<pair<Point2,Point3> >		gMeshLines;
 
-WED_Document *					gDocument = NULL;
+WED_Package *					gPackage = NULL;
+//WED_Document *					gDocument = NULL;

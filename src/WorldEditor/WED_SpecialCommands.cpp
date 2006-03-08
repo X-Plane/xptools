@@ -1,3 +1,5 @@
+#if !DEV
+put this back
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -598,4 +600,9 @@ void DoScreenshot(void)
 		WriteBitmapToPNG(&cap, buf, NULL, 0);
 		DestroyBitmap(&cap);
 	}	
+}
+#endif
+
+void RegisterSpecialCommands()
+{
 }

@@ -1,3 +1,5 @@
+#if !DEV
+put this back
 #include "WED_TopoTester.h"
 #include "MapDefs.h"
 #include "XPLMGraphics.h"
@@ -183,3 +185,4 @@ char *	WED_TopoTester::GetStatusText(void)
 	
 	return NULL;
 }
+#endif

@@ -34,6 +34,12 @@
 #include "DEMTables.h"
 #include "ObjTables.h"
 #include <CGAL/assertions.h>
+#include "WED_Package.h"
+
+#include "GUI_Pane.h"
+#include "GUI_Fonts.h"
+#include "XPLMGraphics.h"
+#include "GUI_Window.h"
 
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
@@ -48,14 +54,58 @@
 #include "WED_Globals.h"
 #include "ParamDefs.h"
 
+#include "GUI_Application.h"
 
-// This is stuff only needed to hack around with TIGER files.
-#if 0
-//#include <Profiler.h>
-#include "TigerRead.h"
-#include "TigerImport.h"
-#include "TigerProcess.h"
-#endif
+class	WED_App : public GUI_Application {
+public:
+	virtual ~WED_App() { }
+	virtual	void	OpenFiles(const vector<string>& inFiles) { }
+};
+
+class	GUI_Hack : public GUI_Pane {
+public:
+
+	GUI_Hack() { n = 0; p = 0; }
+
+	virtual void		Draw(GUI_GraphState * state)
+	{
+		int b[4];
+		GetBounds(b);
+		state->SetState(0,0,0,  0, 0,   0, 0);
+		glColor3f(0,1,0);
+		if (this == GetFocus()) glColor3f(1,1,0);
+		glBegin(GL_LINE_LOOP);
+		glVertex2i(b[0], b[1]);
+		glVertex2i(b[0], b[3]);
+		glVertex2i(b[2], b[3]);
+		glVertex2i(b[2], b[1]);
+		glEnd();
+		
+		if (p)
+		{
+			glPointSize(5);
+			glBegin(GL_POINTS);
+			glVertex2i(x,y);
+			glEnd();
+			glPointSize(1);
+		}
+		
+		float c[3] = { 1, 0, 1 };
+		char buf[50];
+		sprintf(buf,"V=%d %s\n", n, str.c_str());
+		GUI_FontDrawScaled(state, font_UI_Basic, c, b[0], b[1], b[2], b[3], buf, buf + strlen(buf), (n < 0) ? align_Left : ((n == 0) ? align_Center: align_Right));
+	}
+	virtual int			MouseDown(int ix, int iy, int button) { x = ix; y = iy; b = button; p = 1; Refresh(); if (GetFocus() == this) this->LoseFocus(0); else this->TakeFocus(); return 1; }
+	virtual void		MouseDrag(int ix, int iy, int button) { x = ix; y = iy; b = button; Refresh(); }
+	virtual void		MouseUp(int ix, int iy, int button) { x = ix; y = iy; b = button; p = 0; Refresh(); }
+	virtual int			ScrollWheel(int x, int y, int dist, int axis) { if (axis == 0) n += dist; Refresh(); return 1; }
+	virtual int			KeyPress(char c, int v, int f) { if (!(f & gui_UpFlag)) str += c; Refresh(); return 1; }
+	
+	virtual int	AcceptTakeFocus(void) { return 1; }
+	
+	string str;
+	int n, p, x, y, b;
+};	
 
 
 CGAL::Failure_function	gFailure = NULL;
@@ -86,12 +136,15 @@ void	XGrindFiles(const vector<string>& fileList, int x, int y)
 	{
 		if (i->find(".elv") != string::npos)		
 		{
-			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 1201, 1201, gDocument->gDem[dem_Elevation], false);
-			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 241, 241, gDocument->gDem[dem_UrbanDensity], true);
+//			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 1201, 1201, gDocument->gDem[dem_Elevation], false);
+//			BuildDifferentialDegree(i->c_str(), gDocument->gDem[dem_Elevation].mWest, gDocument->gDem[dem_Elevation].mSouth, 241, 241, gDocument->gDem[dem_UrbanDensity], true);
 			continue;
 		}
 
-		WED_FileOpen(*i);
+#if !DEV
+restore this
+#endif
+//		WED_FileOpen(*i);
 	}
 }
 
@@ -143,7 +196,8 @@ void	import_tiger_repository(const string& rt)
 }
 #endif
 
-void	XGrindInit(string& outName)
+//void	XGrindInit(string& outName)
+int main(int argc, const char * argv[])
 {
 #if APL
 //	SIOUXSettings.stubmode = true;
@@ -152,6 +206,9 @@ void	XGrindInit(string& outName)
 	SIOUXSettings.autocloseonquit = false;
 	SIOUXSettings.asktosaveonclose = false;
 #endif
+
+	WED_App	app;
+
 	gFailure = CGAL::set_error_handler(cgal_failure);
 	XESInit();
 
@@ -160,112 +217,79 @@ void	XGrindInit(string& outName)
 	LoadDEMTables();
 	LoadObjTables();
 	
-	gDocument = new WED_Document("");
+	gPackage = new WED_Package("Master:code:XPTools:SceneryTools:TestPackage1", true);
+	WED_Document * doc = gPackage->NewTile(-72, 42);
 	
-	int w, h;
-	XPLMGetScreenSize(&w, &h);
+//	int w, h;
+//	XPLMGetScreenSize(&w, &h);
 	RegisterFileCommands();
-	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL);
+//	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL, doc);
 	RegisterProcessingCommands();
 	RegisterSpecialCommands();
 	
 	WED_AssertInit();
 	
 	XPInitDefaultMargins();
-#if 0
-	XPWidgetID	foo = XPCreateWidgetLayout(0, XP_DIALOG_BOX, "Title", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
-									XP_TABS, "Tab 1;Tab 2;Tab 3", NULL,
-											XP_COLUMN,
-												XP_CAPTION, "This is a very nice long caption that I made.",
-												XP_ROW, XP_POPUP_MENU, "Item a; item B;huge item C is long", NULL, XP_END,
-												XP_ROW, XP_CHECKBOX, "Check this", NULL, XP_END,
-												XP_ROW, XP_CHECKBOX, "Or Check this", NULL, XP_END,
-											XP_END,
-											XP_COLUMN,
-												XP_ROW,
-													XP_CAPTION, "String:",
-													XP_EDIT_STRING, XP_EDIT_PASSWORD, 15, 6, NULL, 
-												XP_END,
-												XP_ROW,
-													XP_CAPTION, "Int:",
-													XP_EDIT_INT, 6, 6, NULL,
-												XP_END,
-												XP_ROW,
-													XP_CAPTION, "Float:",
-													XP_EDIT_FLOAT_, 8, 6, NULL, 
-												XP_END,
-												XP_ROW,														
-													XP_BUTTON_ACTION, "Test 1", NULL,
-													XP_BUTTON_ACTION, "Test 2 Very Long Dude", NULL,
-												XP_END,
-												XP_ROW,
-													XP_BUTTON_OK, "OK", 
-													XP_BUTTON_CANCEL, "CANCEL",
-												XP_END,
-											XP_END,
-											XP_COLUMN,
-												XP_RADIOBUTTON, "Radio Button 1", NULL, 1,
-												XP_RADIOBUTTON, "Radio Button 2", NULL, 2,
-												XP_RADIOBUTTON, "Radio Button 3", NULL, 3,
-												XP_RADIOBUTTON, "Radio Button 4", NULL, 4,
-											XP_END,
-										XP_END, XP_END);
-												
-	XPShowWidget(foo);
-	XPBringRootWidgetToFront(foo);	
-#endif
-#if 0	
-//////
-		TigerMap	tigerMap;
+	
+	{
+	int wb[4] = { 100, 100, 500, 500 };
+	GUI_Window * test_win = new GUI_Window("Test", wb);
+	GUI_Hack * h1 = new GUI_Hack;
+	GUI_Hack * h2 = new GUI_Hack;
+	GUI_Hack * h3 = new GUI_Hack;
+	
+	h1->SetParent(test_win);
+	h1->SetBounds(10, 10, 390, 25);
+	h1->SetSticky(1, 1, 1, 0);
+	h1->Show();
 
-			tigerMap.clear();
-			ReadTigerIndex("GIS:data:tiger:tiger_index.txt", tigerMap);
-			if (tigerMap.empty())
-				printf("Could not open tiger index.\n");
-			else {
-//				StProfile	profRead("\pProfileRead");
-				int	hashNum = 42 * 360 + -72;
-				FileList& fl = tigerMap[hashNum];
-				if (fl.empty())
-					printf("No tiger files available for %d,%d\n", 42, -72);
-				string	partial("GIS:data:tiger:");
-//				string::size_type div = partial.rfind('/');
-//				if (div != partial.npos)
-//					partial.erase(div+1);
-				for (int n = 0; n < fl.size(); ++n)
-				{
-					string	full = partial + fl[n].name;
-					for (int c = 0; c < full.size(); ++c)
-						if (full[c] == '/') full[c] = ':';
-					import_tiger_repository(full);
-				}
-			}
-			
-			{
-//				StProfile	profRead("\pRoughCull");				
-				TIGER_RoughCull(-72, 42, -71, 43);
-			}
-			printf("Sorting...\n");
-			{
-				StElapsedTime	timer("Sorting");
-//				StProfile	postProf("\pPostSort");				
-				TIGER_PostProcess(gMap);
-			}
-			
-			printf("Read: %d chains, %d landmarks, %d polygons.\n",
-				gChains.size(), gLandmarks.size(), gPolygons.size());
+	h2->SetParent(test_win);
+	h2->SetBounds(10, 30, 390, 370);
+	h2->SetSticky(1, 1, 1, 1);
+	h2->Show();
 
-			{
-//				StProfile	importProf("\pImport");				
-				StElapsedTime	timer("Importing");
-				TIGERImport(gChains, gLandmarks, gPolygons, gMap, ConsoleProgressFunc);
-			}
+	h3->SetParent(test_win);
+	h3->SetBounds(10, 375, 390, 390);
+	h3->SetSticky(1, 0, 1, 1);
+	h3->Show();
 
-			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
-				gMap.number_of_faces(),
-				gMap.number_of_halfedges(),
-				gMap.number_of_vertices());				
-#endif	
+	float c[4] = { 0.4, 0.4, 0.4, 0.0 };
+	test_win->SetClearSpecs(true, false, c);
+	
+	test_win->SetBounds(80, 80, 500, 500);
+	test_win->SetDescriptor("w1.\n");
+	}
+	{
+	int wb[4] = { 100, 100, 500, 500 };
+	GUI_Window * test_win = new GUI_Window("Test", wb);
+	GUI_Hack * h1 = new GUI_Hack;
+	GUI_Hack * h2 = new GUI_Hack;
+	GUI_Hack * h3 = new GUI_Hack;
+	
+	h1->SetParent(test_win);
+	h1->SetBounds(10, 10, 25, 390);
+	h1->SetSticky(1, 1, 0, 1);
+	h1->Show();
+
+	h2->SetParent(test_win);
+	h2->SetBounds(30, 10, 370, 390);
+	h2->SetSticky(1, 1, 1, 1);
+	h2->Show();
+
+	h3->SetParent(test_win);
+	h3->SetBounds(375, 10, 390, 390);
+	h3->SetSticky(0, 1, 1, 1);
+	h3->Show();
+
+	float c[4] = { 0.4, 0.4, 0.4, 0.0 };
+	test_win->SetClearSpecs(true, false, c);
+	
+	test_win->SetBounds(80, 80, 500, 500);
+	test_win->SetDescriptor("w2.\n");
+	}
+//	test_win->Show();
+
+	app.Run();
 }
 
 
@@ -277,5 +301,5 @@ bool	XGrindCanQuit(void)
 void	XGrindDone(void)
 {
 	WED_SavePrefs();
-	delete gDocument;
+	delete gPackage;
 }

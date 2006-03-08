@@ -1,3 +1,5 @@
+#if !DEV
+put this back
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -235,3 +237,4 @@ void		WED_CropTool::MoveHandleY(int handle, double deltaY)
 	if (y_ind < 4)
 		mBounds[y_ind] += deltaY;
 }
+#endif

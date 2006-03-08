@@ -1,3 +1,5 @@
+#if !DEV
+PUT THIS BACK IN
 #include "WED_SpreadsheetWizard.h"
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
@@ -138,4 +140,9 @@ void	WED_WizardAction(XPWidgetID)
 	sWizardParams.sdir_max = old_sdir_max;
 	
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);	
+}
+#endif
+
+void	WED_ShowSpreadsheetWizard(void)
+{
 }

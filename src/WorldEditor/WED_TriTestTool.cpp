@@ -1,3 +1,5 @@
+#if !DEV
+put this back
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -110,3 +112,5 @@ char *	WED_TriTestTool::GetStatusText(void)
 		sprintf(buf, "Hires: %d ", gDocument->gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
 	return buf;
 }
+
+#endif

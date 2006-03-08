@@ -1,3 +1,7 @@
+#if !DEV
+put this back
+
+
 #include "WED_Export.h"
 #include "XPWidgetDialogs.h"
 #include "XPWidgets.h"
@@ -347,4 +351,10 @@ void SetEnables(XPWidgetID)
 	
 	// Colorization - only available for image formats.
 	XPEnableByTag(sExport, WED_EXPORT_COLOR, is_image);
+}
+
+#endif
+
+void	WED_ShowExportDialog(void)
+{
 }

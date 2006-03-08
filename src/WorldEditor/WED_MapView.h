@@ -27,6 +27,7 @@
 #include "WED_Pane.h"
 #include "WED_Notify.h"
 
+class	WED_Document;
 class	WED_MapZoomer;
 class	WED_MapTool;
 
@@ -49,7 +50,8 @@ public:
                                    int                  inRight,    
                                    int                  inBottom,    
                                    int                  inVisible,
-                                   WED_Pane *			inSuper);
+                                   WED_Pane *			inSuper,
+                                   WED_Document *		inDocument);
 	virtual			~WED_MapView();
 	
 	virtual	void	DrawSelf(void);
@@ -80,6 +82,7 @@ private:
 	WED_MapZoomer *			mZoomer;
 	int						mCurTool;
 	vector<WED_MapTool *>	mTools;
+	WED_Document *			mDocument;
 	
 	vector<XPWidgetID>		mToolFuncBtns;		// Buttons that do tool-specific cmds
 	vector<XPWidgetID>		mToolProperties;	// Editing of tool properties
@@ -116,12 +119,12 @@ private:
 	int						mDLMeshFill;
 	int						mTris[MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1];
 	int						mEdges[MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1];
-	
-	
+		
 	//TODO: make these private static!
 	friend	void	WED_MapView_HandleMenuCommand(void *, void *);
 	friend	void	WED_MapView_HandleDEMMenuCommand(void *, void *);
 	friend	void	WED_MapView_UpdateCommandStatus(void);
+	friend	void	WED_MapView_HandleDEMDataMenuCommand(void *, void *);
 };
 
 #endif

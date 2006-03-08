@@ -26,12 +26,14 @@
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 class	WED_Document;
+class	WED_Package;
 
 
 extern vector<pair<Point2,Point3> >		gMeshPoints;
 extern vector<pair<Point2,Point3> >		gMeshLines;
 
-extern WED_Document *					gDocument;
+extern WED_Package *					gPackage;
+//extern WED_Document *					gDocument;
 
 
 #endif

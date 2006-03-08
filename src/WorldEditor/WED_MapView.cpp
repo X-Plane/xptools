@@ -36,13 +36,12 @@
 #include "WED_MapTool.h"
 #include "ObjTables.h"
 #include "WED_Progress.h"
-#include "WED_SelectionTool.h"
-#include "WED_CropTool.h"
+//#include "WED_CropTool.h"
 #include "WED_ImageTool.h"
 #include "WED_TerraTool.h"
-#include "WED_TopoTester.h"
-#include "WED_MeshTester.h"
-#include "WED_Selection.h"
+//#include "WED_TopoTester.h"
+//#include "WED_MeshTester.h"
+//#include "WED_Selection.h"
 #include "WED_Globals.h"
 //#include "WED_TriTestTool.h"
 #include "WED_Msgs.h"
@@ -208,7 +207,7 @@ static int			sShowDEMData[DEMChoiceCount-1] = { 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0,
 void	WED_MapView_HandleMenuCommand(void *, void *);
 void	WED_MapView_HandleDEMMenuCommand(void *, void *);
 void	WED_MapView_HandleDEMDataMenuCommand(void *, void *);
-void	WED_MapView_UpdateCommandStatus(void);
+void	WED_MapView_UpdateCommandStatus(WED_Document * inDocument);
 
 inline const char * QuickToFile(const string& s)
 {
@@ -273,14 +272,16 @@ WED_MapView::WED_MapView(
                        int                  inRight,    
                        int                  inBottom,    
                        int                  inVisible,
-                       WED_Pane *			inSuper) :
+                       WED_Pane *			inSuper,
+                       WED_Document *		inDocument) :
 	WED_Pane(inLeft, inTop , inRight, inBottom, inVisible, "Map", inSuper),
 	mNeedRecalcMapFull(true),
 	mNeedRecalcMapMeta(true),
 	mNeedRecalcDEM(true),
 	mNeedRecalcRelief(true),
 	mNeedRecalcMeshHi(true),
-	mNeedRecalcMeshHiAlpha(true)
+	mNeedRecalcMeshHiAlpha(true),
+	mDocument(inDocument)
 {
 	for (int n = 0; n < (MESH_BUCKET_SIZE * MESH_BUCKET_SIZE); ++n)
 		mDLBuckets[n] = Bbox2(0, 0, 0, 0);
@@ -310,7 +311,7 @@ WED_MapView::WED_MapView(
 		if (n >= 10 && n <= 19)
 			XPLMSetMenuItemKey(sDEMMenu, n, '0' + n - 10, xplm_ControlFlag + xplm_ShiftFlag);			
 	}
-	WED_MapView_UpdateCommandStatus();
+	WED_MapView_UpdateCommandStatus(mDocument);
 
 	XPLMGenerateTextureNumbers(&mTexID, 1);
 	XPLMGenerateTextureNumbers(&mReliefID, 1);
@@ -350,12 +351,12 @@ WED_MapView::WED_MapView(
 	}	
 	mToolBtnsOffset += 10;
 
-	mTools.push_back(new WED_SelectionTool(mZoomer));	
-	mTools.push_back(new WED_CropTool(mZoomer));	
+//	mTools.push_back(new WED_SelectionTool(mZoomer));	
+//	mTools.push_back(new WED_CropTool(mZoomer));	
 	mTools.push_back(new WED_ImageTool(mZoomer));	
 	mTools.push_back(new WED_TerraTool(mZoomer));	
-	mTools.push_back(new WED_TopoTester(mZoomer));	
-	mTools.push_back(new WED_MeshTester(mZoomer));	
+//	mTools.push_back(new WED_TopoTester(mZoomer));	
+//	mTools.push_back(new WED_MeshTester(mZoomer));	
 	
 	SetupForTool();
 	
@@ -430,15 +431,15 @@ void	WED_MapView::DrawSelf(void)
 		if (mNeedRecalcMapFull)
 		{
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.0);
-			gDocument->gMap.Index();
+			mDocument->gMap.Index();
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
-			PrecalcOGL(gDocument->gMap,WED_ProgressFunc);
+			PrecalcOGL(mDocument->gMap,WED_ProgressFunc);
 			WED_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
 		} 
 		else if (mNeedRecalcMapMeta)
 		{
 			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 0.0);
-			RecalcOGLColors(gDocument->gMap,WED_ProgressFunc);
+			RecalcOGLColors(mDocument->gMap,WED_ProgressFunc);
 			WED_ProgressFunc(0, 1, "Updating graphics for vector map...", 1.0);
 		}
 		
@@ -462,12 +463,12 @@ void	WED_MapView::DrawSelf(void)
 				glBegin(GL_LINES);
 				mEdges[n] = 0;
 
-				for (CDT::Finite_edges_iterator eit = gDocument->gTriangulationHi.finite_edges_begin(); eit != gDocument->gTriangulationHi.finite_edges_end(); ++eit)
+				for (CDT::Finite_edges_iterator eit = mDocument->gTriangulationHi.finite_edges_begin(); eit != mDocument->gTriangulationHi.finite_edges_end(); ++eit)
 				if (GetBucketForEdge(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, eit) == n)
 				{
 					++mEdges[n];
 					GLfloat	color[4] = { 1.0, 1.0, 1.0, 1.0 };
-					if (!gDocument->gTriangulationHi.is_constrained(*eit))
+					if (!mDocument->gTriangulationHi.is_constrained(*eit))
 					{
 						if (sDEMType)
 							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
@@ -515,7 +516,7 @@ void	WED_MapView::DrawSelf(void)
 				glBegin(GL_TRIANGLES);
 				mTris[n] = 0;
 		
-				for (CDT::Finite_faces_iterator fit = gDocument->gTriangulationHi.finite_faces_begin(); fit != gDocument->gTriangulationHi.finite_faces_end(); ++fit)
+				for (CDT::Finite_faces_iterator fit = mDocument->gTriangulationHi.finite_faces_begin(); fit != mDocument->gTriangulationHi.finite_faces_end(); ++fit)
 				if (GetBucketForFace(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, fit) == n)
 				{
 					++mTris[n];
@@ -652,7 +653,7 @@ fix this
 	
 	if (sShowMap)
 	{		
-		DrawMapBucketed(gDocument->gMap, 
+		DrawMapBucketed(mDocument->gMap, 
 			ll, lb, lr, lt,
 //			pl, pb, pr, pt,
 			gVertexSelection,
@@ -732,11 +733,11 @@ fix this
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBegin(GL_QUADS);
 		set<int>	apts;
-		FindAirports(vis_area, gDocument->gAptIndex, apts);
+		FindAirports(vis_area, mDocument->gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
 		{
 			int n = *e;			
-			if (vis_area.overlap(gDocument->gApts[n].bounds))
+			if (vis_area.overlap(mDocument->gApts[n].bounds))
 			{
 				glColor3f(1.0, 0.0, 1.0);
 //				DebugAssert(gApts[n].bounds.xmin() <= gApts[n].bounds.xmax());
@@ -750,14 +751,14 @@ fix this
 //				glVertex2f((gApts[n].bounds.xmax()),
 //							(gApts[n].bounds.ymin()));
 			
-				for (int m = 0; m < gDocument->gApts[n].pavements.size(); ++m)
+				for (int m = 0; m < mDocument->gApts[n].pavements.size(); ++m)
 				{
-					for (int i = 0, j = 0; i < gDocument->gApts[n].pavements[m].quad_coords.size(); i += 2, j += 3)
+					for (int i = 0, j = 0; i < mDocument->gApts[n].pavements[m].quad_coords.size(); i += 2, j += 3)
 					{
-						glColor3f(gDocument->gApts[n].pavements[m].quad_colors[j],gDocument->gApts[n].pavements[m].quad_colors[j+1],gDocument->gApts[n].pavements[m].quad_colors[j+2]);
+						glColor3f(mDocument->gApts[n].pavements[m].quad_colors[j],mDocument->gApts[n].pavements[m].quad_colors[j+1],mDocument->gApts[n].pavements[m].quad_colors[j+2]);
 						glVertex2f(
-							(gDocument->gApts[n].pavements[m].quad_coords[i]),
-							(gDocument->gApts[n].pavements[m].quad_coords[i+1]));
+							(mDocument->gApts[n].pavements[m].quad_coords[i]),
+							(mDocument->gApts[n].pavements[m].quad_coords[i+1]));
 					}
 				}
 //				glEnd();
@@ -946,13 +947,13 @@ put in  color enums?
 				sprintf(buf, "Viewing: %s", kDEMs[sDEMType].cmdName);
 				XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
 				XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
-				k -= (h+1);
+				k -= (h);
 			}
 			else if (sShowDEMData[n-1] || n == sDEMType)
 			{	
-				if (gDocument->gDem.count(	kDEMs[n].dem ))
+				if (mDocument->gDem.count(	kDEMs[n].dem ))
 				{	
-					float hh = gDocument->gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
+					float hh = mDocument->gDem[kDEMs[n].dem].xy_nearest(lon, lat, x, y);
 					
 					// HACK city - for certain DEMs, do the trig on the fly.
 					
@@ -967,7 +968,7 @@ put in  color enums?
 						sprintf(buf,kDEMs[n].format_string,hh);
 					XPLMDrawTranslucentDarkBox(l+3, k + h, l + 5 + strlen(buf) * w, k -1);
 					XPLMDrawString(white, l + 5, k, buf, NULL, xplmFont_Basic);
-					k -= (h+1);				
+					k -= (h);				
 				}
 			}
 		}
@@ -1085,10 +1086,10 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 			mNeedRecalcMeshHi = true;
 			mNeedRecalcMeshHiAlpha = true;
 			Bbox2		full;
-			if (gDocument->gDem.empty())
+			if (mDocument->gDem.empty())
 			{
 				Point2 sw, ne;
-				CalcBoundingBox(gDocument->gMap, full.p1, full.p2);
+				CalcBoundingBox(mDocument->gMap, full.p1, full.p2);
 				mZoomer->SetMapLogicalBounds(
 							full.p1.x,
 							full.p1.y,
@@ -1096,14 +1097,14 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 							full.p2.y);
 				mZoomer->SetAspectRatio(1.0 / cos((full.p1.y + full.p2.y) * 0.5 * PI / 180.0));
 			} else {
-				int e = gDocument->gDem.begin()->first;
+				int e = mDocument->gDem.begin()->first;
 				mZoomer->SetMapLogicalBounds(
-							gDocument->gDem[e].mWest,
-							gDocument->gDem[e].mSouth,
-							gDocument->gDem[e].mEast,
-							gDocument->gDem[e].mNorth);
-				mZoomer->SetAspectRatio(1.0 / cos((gDocument->gDem[e].mSouth + gDocument->gDem[e].mNorth) * 0.5 * PI / 180.0));
-				full = Bbox2(gDocument->gDem[e].mWest, gDocument->gDem[e].mSouth, gDocument->gDem[e].mEast, gDocument->gDem[e].mNorth);
+							mDocument->gDem[e].mWest,
+							mDocument->gDem[e].mSouth,
+							mDocument->gDem[e].mEast,
+							mDocument->gDem[e].mNorth);
+				mZoomer->SetAspectRatio(1.0 / cos((mDocument->gDem[e].mSouth + mDocument->gDem[e].mNorth) * 0.5 * PI / 180.0));
+				full = Bbox2(mDocument->gDem[e].mWest, mDocument->gDem[e].mSouth, mDocument->gDem[e].mEast, mDocument->gDem[e].mNorth);
 			}		
 			mZoomer->ZoomShowAll();		
 			
@@ -1146,7 +1147,7 @@ void	WED_MapView::HandleNotification(int catagory, int message, void * param)
 		}
 		break;
 	}
-	WED_MapView_UpdateCommandStatus();
+	WED_MapView_UpdateCommandStatus(mDocument);
 }
 
 void	WED_MapView::SetupForTool(void)
@@ -1317,13 +1318,13 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	int mode = 	kDEMs[sDEMType].view_mode;
 	bool nearest = !kDEMs[sDEMType].interpolate;
 
-	if (gDocument->gDem.find(param) == gDocument->gDem.end())
+	if (mDocument->gDem.find(param) == mDocument->gDem.end())
 	{
 		mHasTex = false;
 		return false;
 	}
 
-	const DEMGeo&	master = gDocument->gDem[param];
+	const DEMGeo&	master = mDocument->gDem[param];
 	
 	if (DEMToBitmap(master, image, mode) == 0)
 	{
@@ -1341,10 +1342,10 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	
 	if (do_relief)
 	{
-		if (gDocument->gDem.count(dem_Elevation) == 0)
+		if (mDocument->gDem.count(dem_Elevation) == 0)
 			mHasRelief = false;
 		else {
-			const DEMGeo&	master = gDocument->gDem[dem_Elevation];
+			const DEMGeo&	master = mDocument->gDem[dem_Elevation];
 			
 			if (DEMToBitmap(master, image, dem_Normals) == 0)
 			{
@@ -1369,15 +1370,16 @@ void	WED_MapView_HandleDEMMenuCommand(void * r, void * i)
 	sDEMType = (int) i;
 	WED_MapView * me = (WED_MapView *) r;
 	me->mNeedRecalcDEM = true;
-	WED_MapView_UpdateCommandStatus();	
+	WED_MapView_UpdateCommandStatus(me->mDocument);	
 }
 
 void	WED_MapView_HandleDEMDataMenuCommand(void * r, void * i)
 {
+	WED_MapView * me = (WED_MapView *) r;
 	int item = (int) i - 1;
 	sShowDEMData[item] = 1 - sShowDEMData[item];
 
-	WED_MapView_UpdateCommandStatus();	
+	WED_MapView_UpdateCommandStatus(me->mDocument);	
 }
 
 void	WED_MapView_HandleMenuCommand(void * r, void * i)
@@ -1445,10 +1447,10 @@ void	WED_MapView_HandleMenuCommand(void * r, void * i)
 		}			
 		break;
 	}
-	WED_MapView_UpdateCommandStatus();
+	WED_MapView_UpdateCommandStatus(me->mDocument);
 }
 
-void	WED_MapView_UpdateCommandStatus(void)
+void	WED_MapView_UpdateCommandStatus(WED_Document * inDocument)
 {
 	XPLMCheckMenuItem(sViewMenu, viewCmd_VecMap	     ,sShowMap		? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_Airports	 ,sShowAirports ? xplm_Menu_Checked : xplm_Menu_Unchecked);
@@ -1464,12 +1466,12 @@ void	WED_MapView_UpdateCommandStatus(void)
 	
 	for (int n = 0; n < DEMChoiceCount; ++n) {
 		XPLMCheckMenuItem(sDEMMenu, n, (sDEMType == n) ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (gDocument->gDem.find(kDEMs[n].dem) != gDocument->gDem.end()));
+		XPLMEnableMenuItem(sDEMMenu, n, (n == 0) ? 1 : (inDocument->gDem.find(kDEMs[n].dem) != inDocument->gDem.end()));
 		
 		if (n != 0)
 		{
 			XPLMCheckMenuItem(sDEMDataMenu, n-1, sShowDEMData[n-1] ? xplm_Menu_Checked : xplm_Menu_Unchecked);
-			XPLMEnableMenuItem(sDEMDataMenu, n-1, (gDocument->gDem.find(kDEMs[n].dem) != gDocument->gDem.end()));
+			XPLMEnableMenuItem(sDEMDataMenu, n-1, (inDocument->gDem.find(kDEMs[n].dem) != inDocument->gDem.end()));
 		}
 	}
 }
@@ -1486,7 +1488,7 @@ char * WED_MapView::MonitorCaption(void)
 	float fps = (elapsed == 0.0) ? 60.0 : 1.0 / elapsed;
 	n += sprintf(buf+n, "Framerate: %03d ", (int) fps);
 
-	n += sprintf(buf+n,"Hires: %d ", gDocument->gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+	n += sprintf(buf+n,"Hires: %d ", mDocument->gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
 
 	
 	CDT::Face_handle	recent;
@@ -1499,7 +1501,7 @@ char * WED_MapView::MonitorCaption(void)
 	static int hint_id = CDT::gen_cache_key();
 	int i;
 	CDT::Locate_type lt;
-	recent = gDocument->gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
+	recent = mDocument->gTriangulationHi.locate_cache(CDT::Point(lon,lat), lt, i, hint_id);
 	if (lt == CDT::FACE)
 	{
 		int ts = recent->info().terrain;

@@ -1,3 +1,7 @@
+#if !DEV
+put this back
+
+
 #include "WED_Import.h"
 #include "XPWidgetDialogs.h"
 #include "XPWidgets.h"
@@ -457,4 +461,10 @@ void	DimsFromMap(XPWidgetID)
 	XPDataToItem(sImport, WED_IMPORT_NORTH);
 	XPDataToItem(sImport, WED_IMPORT_EAST );
 	XPDataToItem(sImport, WED_IMPORT_WEST );
+}
+
+#endif
+
+void	WED_ShowImportDialog(void)
+{
 }

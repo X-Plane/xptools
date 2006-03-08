@@ -20,6 +20,16 @@
  * THE SOFTWARE.
  *
  */
+ 
+#if !DEV
+put back in real commands!
+#endif 
+ 
+void	RegisterFileCommands(void)
+{
+}
+#if 0
+
 #include "WED_FileCommands.h"
 #include "XPLMMenus.h"
 #include "DEMTables.h"
@@ -335,3 +345,5 @@ void	WED_FileSave(void)
 		WED_RecalcFileMenus();
 	}
 }
+
+#endif

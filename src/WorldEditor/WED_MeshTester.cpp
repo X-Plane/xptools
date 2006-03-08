@@ -1,3 +1,5 @@
+#if !DEV
+put this back
 #include "WED_MeshTester.h"
 #include "MapDefs.h"
 #include "XPLMGraphics.h"
@@ -130,3 +132,4 @@ char *	WED_MeshTester::GetStatusText(void)
 {
 	return NULL;
 }
+#endif
