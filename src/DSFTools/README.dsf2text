@@ -24,8 +24,10 @@ files to a text format and back again.
 DSF2Text can also extract the custom objects from an ENV file and build an
 overlay DSF.
 
-WARNING: Working with DSF files as tex tDSF2Text is intended primarily for
+WARNING: Working with DSF files as text DSF2Text is intended primarily for
 programmers who want to create DSF files.
+
+WARNING: this utility does NOT work with Mars ENV files!
 
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
