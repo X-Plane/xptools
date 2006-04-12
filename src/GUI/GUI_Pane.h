@@ -39,10 +39,6 @@ public:
 			
 	virtual void		Refresh(void);
 
-			int			TakeFocus(void);
-			int			LoseFocus(int inForce);
-	virtual	GUI_Pane *	GetFocus(void);
-
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 	virtual	void		Draw(GUI_GraphState * state) { }
 	
@@ -50,13 +46,6 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button) { }
 	virtual	void		MouseUp(int x, int y, int button) { }
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis) { return 0; }
-
-	virtual	int			KeyPress(char inKey, int inVK, int inFlags) { return 0; }
-	virtual	int			AcceptTakeFocus(void) { return 0; }
-	virtual int			AcceptLoseFocus(int inForce) { return 1; }
-
-	virtual	int			CanHandleCommand(int command, string& ioName, int& ioCheck) { return 0; }
-	virtual	int			HandleCommand(int command) { return 0; }
 
 private:
 
@@ -68,9 +57,6 @@ private:
 			GUI_Pane *	InternalMouseDown(int x, int y, int button);
 			int			InternalMouseWheel(int x, int y, int dist, int axis);
 			void		ParentResized(int inOldBounds[4], int inNewBounds[4]);
-
-			void		InternalKeyPress(char inKey, int inVK, int inFlags);
-	virtual	int			InternalSetFocus(GUI_Pane * who);
 
 		int					mBounds[4];
 		int					mSticky[4];

@@ -1,5 +1,5 @@
 #ifndef GUI_DEFS_H
-#define GUI_DESF_H
+#define GUI_DEFS_H
 
 /***************************************************************************
  * KEY FLAGS

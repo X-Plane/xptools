@@ -5,23 +5,35 @@ HACCEL			gAccel = NULL;
 vector<ACCEL>	gAccelTable;
 #endif
 
-
 #if APL
 #include <Carbon.h>
 #include "XUtils.h"
-static pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
 #include <sioux.h>
 
-pascal OSStatus SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+
+static void	NukeAmpersand(string& ioString)
 {
+	string::size_type loc;
+	while ((loc = ioString.find('&')) != ioString.npos)
+	{
+		ioString.erase(loc);
+	}
+}
+
+pascal OSStatus GUI_Application::SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+{
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(inUserData);
+
 	EventRecord	rec;
 	if (ConvertEventRefToEventRecord(inEvent, &rec) && SIOUXHandleOneEvent(&rec))
 		return noErr;
 	return eventNotHandledErr;
 }
 
-pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
+pascal OSErr GUI_Application::HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
 {
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(handlerRefcon);
+	
 	string	fpath;
 	vector<string>	files;
 
@@ -51,11 +63,85 @@ pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, l
 		FSSpec_2_String(theFileSpec, fpath);
 		files.push_back(fpath);
 	}
-	((GUI_Application *)handlerRefcon)->OpenFiles(files);
+	me->OpenFiles(files);
 
 puke:
 	AEDisposeDesc(&inDocList);
 	return noErr;
+}
+
+
+pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+{
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(inUserData);
+
+	HICommand 	cmd;
+	OSStatus	status;
+	GUI_Menu	amenu;
+
+	UInt32	clss = ::GetEventClass(inEvent);	
+	UInt32	kind = ::GetEventKind(inEvent);
+	switch(clss) {
+	case kEventClassCommand:
+		switch(kind) {
+		case kEventCommandProcess:
+			{
+				status = GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand, NULL, sizeof(cmd), NULL, &cmd);
+				if (status != noErr) return status;
+
+				if (me->DispatchHandleCommand(cmd.commandID))
+					return noErr;
+				else
+					return eventNotHandledErr;
+			}
+		default:
+			return eventNotHandledErr;
+		}
+	case kEventClassMenu:
+		switch(kind) {
+		case kEventMenuEnableItems:
+			{
+				status = GetEventParameter(inEvent, kEventParamDirectObject, typeMenuRef, NULL, sizeof(amenu), NULL, &amenu);
+				if (status != noErr) return status;
+					
+				if (me->mMenus.count(amenu) == 0) return eventNotHandledErr;
+			
+				int item_count = ::CountMenuItems(amenu);
+				
+				for (int n = 1; n <= item_count; ++n)
+				{
+					MenuCommand	id;
+					GetMenuItemCommandID(amenu, n, &id);
+					
+					if (id != 0)
+					{
+						string	ioName;
+						int		ioCheck = 0;
+						if (me->DispatchCanHandleCommand(id, ioName, ioCheck))
+							EnableMenuItem(amenu, n);
+						else
+							DisableMenuItem(amenu, n);
+
+						if (!ioName.empty())
+						{
+							NukeAmpersand(ioName);
+							CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, ioName.c_str(), kCFStringEncodingMacRoman);
+							SetMenuItemTextWithCFString(amenu, n, cfstr);
+							CFRelease(cfstr);
+						}
+						
+						::CheckMenuItem(amenu, n, ioCheck > 0);
+					}
+				}
+								
+				return noErr;
+			}
+		default:
+			return eventNotHandledErr;
+		}
+	default:
+		return eventNotHandledErr;
+	}
 }
 
 
@@ -74,16 +160,19 @@ static	void		BuildAccels(void)
 #endif
 
 
-GUI_Application::GUI_Application()
+GUI_Application::GUI_Application() : GUI_Commander(NULL)
 {
 	mDone = false;
 #if APL
 	SetMenuBar(GetNewMBar(128));
 
-	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
-		NewAEEventHandlerUPP(HandleOpenDoc), (long) this, FALSE);
+	mMacEventHandlerUPP = NewEventHandlerUPP(MacEventHandler);
+	mSiouxSnifferUPP = NewEventHandlerUPP(SiouxSniffer);
+	mHandleOpenDocUPP = NewAEEventHandlerUPP(HandleOpenDoc);
 
-	EventTypeSpec events[] = {
+	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, mHandleOpenDocUPP, reinterpret_cast<long>(this), FALSE);
+
+	EventTypeSpec sioux_events[] = {
 		kEventClassMouse,			kEventMouseDown,
 		kEventClassMouse,			kEventMouseUp,
 		kEventClassMouse,			kEventMouseMoved,
@@ -117,9 +206,14 @@ GUI_Application::GUI_Application()
 		kEventClassWindow,			kEventWindowExpand,
 		kEventClassWindow,			kEventWindowZoom,
 		kEventClassWindow,			kEventWindowHandleContentClick };
-
-	InstallEventHandler(GetEventDispatcherTarget(), 
-		NewEventHandlerUPP(SiouxSniffer),GetEventTypeCount(events), events, NULL, NULL);	
+		
+	EventTypeSpec menu_events[] = {
+		kEventClassCommand,			kEventCommandProcess,
+		kEventClassMenu,			kEventMenuEnableItems };
+		
+	InstallEventHandler(GetApplicationEventTarget(), mMacEventHandlerUPP, GetEventTypeCount(menu_events), menu_events, reinterpret_cast<void *>(this), &mMacEventHandlerRef);
+	InstallEventHandler(GetEventDispatcherTarget(), mSiouxSnifferUPP, GetEventTypeCount(sioux_events), sioux_events, reinterpret_cast<void *>(this), &mSiouxSnifferRef);	
+	
 #endif
 #if IBM
 	// Note: GetModuleHandle(NULL) returns the process instance/module handle which
@@ -164,3 +258,96 @@ void			GUI_Application::Quit(void)
 	QuitApplicationEventLoop();
 #endif
 }
+
+GUI_Menu			GUI_Application::GetMenuBar(void)
+{
+	#if APL
+		return NULL;
+	#else
+		#error not impl
+	#endif
+}
+
+GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
+{
+
+#if APL
+	static MenuID	gIDs = 1000;
+#endif
+#if IBM
+	static int		gIDs = 1000;
+#endif
+
+#if APL
+	GUI_Menu	new_menu;
+	::CreateNewMenu(gIDs++, kMenuAttrAutoDisable, &new_menu);
+	::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
+	
+	string	title(inTitle);
+	NukeAmpersand(title);
+	CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, title.c_str(), kCFStringEncodingMacRoman);
+	::SetMenuTitleWithCFString(new_menu, cfstr);
+	CFRelease(cfstr);
+	
+	if (new_menu)
+	{
+		::SetMenuItemHierarchicalID(new_menu, parentItem + 1, ::GetMenuID(new_menu));
+	}
+
+	int n = 0;
+	while (items[n].name)
+	{
+		string	itemname(items[n].name);
+		NukeAmpersand(itemname);
+		CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
+		::AppendMenuItemTextWithCFString(new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
+		CFRelease(cfstr);
+		
+		switch(items[n].key) {
+		case GUI_KEY_UP:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuUpArrowGlyph);		break;
+		case GUI_KEY_DOWN:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuDownArrowGlyph);		break;
+		case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuRightArrowGlyph);	break;
+		case GUI_KEY_LEFT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuLeftArrowGlyph);		break;
+		case GUI_KEY_DELETE:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuDeleteLeftGlyph);	break;
+		case GUI_KEY_RETURN:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuReturnGlyph);		break;
+		default:				::SetItemCmd(new_menu, n+1, items[n].key);					break;
+		}
+
+		::SetMenuItemModifiers(new_menu, n+1,
+				((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
+				((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
+				((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
+				
+		++n;
+	}	
+	
+#endif
+
+#if IBM
+	#error check this!
+	GUI_Menu parent = (inParentMenu) ? 
+		(((MenuInfo_t *) inParentMenu)->menu) :
+		(gWidgetWin->GetMenuBar());
+
+	pMenu->menu = CreateMenu();
+
+	MENUITEMINFO	mif = { 0 };
+	mif.cbSize = sizeof(mif);
+	mif.hSubMenu = pMenu->menu;
+	mif.fType = MFT_STRING;
+	mif.dwTypeData = const_cast<char *>(inName);
+	mif.fMask = (inParentMenu) ? MIIM_SUBMENU : (MIIM_TYPE | MIIM_SUBMENU);
+
+	if (inParentMenu == NULL)
+	{
+		InsertMenuItem(parent, -1, true, &mif);
+	} else {
+		SetMenuItemInfo(parent, inParentItem, true, &mif);
+		
+	}		
+	
+#endif
+
+	mMenus.insert(new_menu);
+	return new_menu;	
+}                                    	

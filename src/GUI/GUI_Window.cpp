@@ -3,10 +3,9 @@
 
 static set<GUI_Window *>	sWindows;
 
-GUI_Window::GUI_Window(const char * inTitle, int inBounds[4]) :
+GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
-	mKeyFocus = this;
 	sWindows.insert(this);
 	mBounds[0] = 0;
 	mBounds[1] = 0;
@@ -158,7 +157,7 @@ void		GUI_Window::SetDescriptor(const string& inDesc)
 	XWinGL::SetTitle(inDesc.c_str());
 }
 
-
+/*
 int			GUI_Window::InternalSetFocus(GUI_Pane * who)
 {
 	mKeyFocus = who;
@@ -173,7 +172,7 @@ GUI_Pane *	GUI_Window::GetFocus(void)
 int			GUI_Window::AcceptTakeFocus(void)
 {
 	return 1;		// Window is the focuser of last resort -- like the federal reserve.
-}
+}*/
 
 #if APL
 
@@ -401,17 +400,14 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 
 	if ((flags == 0) && (charCode == 0) && (virtualCode == 0))
 		return 1;	
+	
+	if (this->DispatchKeyPress(charCode, virtualCode, flags)) return 1;
 		
-	if (mKeyFocus)
-	{
-		for (GUI_Pane * p = mKeyFocus; p != NULL; p = p->mParent)
-		{
-			if (p->KeyPress(charCode, virtualCode, flags))
-				return 1;
-		}
-	}
-	// unconsumed char?
-
 	return 0;		
 }
 
+void		GUI_Window::Activate(int active)
+{
+	if (active && !this->IsFocusedChain())
+		FocusChain(1);
+}

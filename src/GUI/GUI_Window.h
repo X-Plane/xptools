@@ -1,14 +1,15 @@
 #ifndef GUI_WINDOW_H
 #define GUI_WINDOW_H
 
+#include "GUI_Commander.h"
 #include "GUI_GraphState.h"
 #include "GUI_Pane.h"
 #include "XWinGL.h"
 
-class	GUI_Window : public GUI_Pane, public XWinGL {
+class	GUI_Window : public GUI_Pane, GUI_Commander, public XWinGL {
 public:
 	
-							GUI_Window(const char * inTitle, int inBounds[4]);
+							GUI_Window(const char * inTitle, int inBounds[4],GUI_Commander * inCommander);
 	virtual					~GUI_Window();
 	
 			void			SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4]);
@@ -20,9 +21,6 @@ public:
 	virtual void			SetBounds(int x1, int y1, int x2, int y2);
 	virtual void			SetBounds(int inBounds[4]);
 	virtual	void			SetDescriptor(const string& inDesc);
-	virtual	int				InternalSetFocus(GUI_Pane * who);
-	virtual	int				AcceptTakeFocus(void);
-	virtual	GUI_Pane *		GetFocus(void);
 
 	// From XWinGL
 	virtual	void			Timer(void) { }
@@ -32,9 +30,9 @@ public:
 	virtual	void			ClickUp(int inX, int inY, int inButton);
 	virtual	void			ClickDrag(int inX, int inY, int inButton);
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis);
-
 	virtual	int				KeyPressed(char inKey, long msg, long p1, long p2);
-
+	virtual void			Activate(int active);
+	
 	// TODO - we need non-stub impl of these!
 	virtual	void			DragEnter(int inX, int inY) { }
 	virtual	void			DragOver(int inX, int inY) { }
@@ -53,8 +51,6 @@ private:
 	bool			mClearColor;
 	GUI_Pane *		mMouseFocusPane;
 	
-	GUI_Pane *		mKeyFocus;
-
 };
 
 

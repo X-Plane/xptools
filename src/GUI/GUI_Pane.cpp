@@ -194,6 +194,8 @@ void		GUI_Pane::Refresh(void)
 	if (mParent != NULL) mParent->Refresh();
 }
 
+
+/*
 // Ben sez: big gotcha - it's really dangerous to let TakeFocus and LoseFocus call each
 // other -- the potential for infinite loops is, well, infinite!  So our strategy is:
 // each one of theese non-virtual routines is totally all-encompassing...guaranteeing
@@ -261,6 +263,7 @@ GUI_Pane *	GUI_Pane::GetFocus(void)
 	return NULL;
 }
 
+*/
 
 void		GUI_Pane::InternalDraw(GUI_GraphState * state)
 {
@@ -314,6 +317,7 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 	return NULL;
 }
 
+/*
 void		GUI_Pane::InternalKeyPress(char inKey, int inVK, int inFlags)
 {
 	if (!this->KeyPress(inKey, inVK, inFlags))
@@ -327,3 +331,4 @@ int			GUI_Pane::InternalSetFocus(GUI_Pane * who)
 	return false;	// no parent?  no focus!
 }
 
+*/
