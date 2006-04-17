@@ -22,45 +22,29 @@
  */
 
 // Stuff we need to init
-#include "XWidgetApp.h"
 #include "XESInit.h"
-#include "WED_ProcessingCmds.h"
-#include "WED_FileCommands.h"
 #include "WED_Document.h"
-#include "WED_SpecialCommands.h"
-#include "WED_MapView.h"
 #include "WED_PrefsDialog.h"
 #include "WED_Assert.h"
 #include "DEMTables.h"
 #include "ObjTables.h"
 #include <CGAL/assertions.h>
 #include "WED_Package.h"
+#include "WED_Application.h"
 
 #include "GUI_Pane.h"
 #include "GUI_Fonts.h"
-#include "XPLMGraphics.h"
 #include "GUI_Window.h"
 
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
 
+#include "WED_Menus.h"
+
 #if APL
 #include "SIOUX.h"
 #endif
 
-
-// This stuff is only needed for the hack open .elv code.
-#include "AptElev.h"
-#include "WED_Globals.h"
-#include "ParamDefs.h"
-
-#include "GUI_Application.h"
-
-class	WED_App : public GUI_Application {
-public:
-	virtual ~WED_App() { }
-	virtual	void	OpenFiles(const vector<string>& inFiles) { }
-};
 
 class	GUI_Hack : public GUI_Pane {
 public:
@@ -73,7 +57,7 @@ public:
 		GetBounds(b);
 		state->SetState(0,0,0,  0, 0,   0, 0);
 		glColor3f(0,1,0);
-		if (this == GetFocus()) glColor3f(1,1,0);
+//		if (this == GetFocus()) glColor3f(1,1,0);
 		glBegin(GL_LINE_LOOP);
 		glVertex2i(b[0], b[1]);
 		glVertex2i(b[0], b[3]);
@@ -95,7 +79,7 @@ public:
 		sprintf(buf,"V=%d %s\n", n, str.c_str());
 		GUI_FontDrawScaled(state, font_UI_Basic, c, b[0], b[1], b[2], b[3], buf, buf + strlen(buf), (n < 0) ? align_Left : ((n == 0) ? align_Center: align_Right));
 	}
-	virtual int			MouseDown(int ix, int iy, int button) { x = ix; y = iy; b = button; p = 1; Refresh(); if (GetFocus() == this) this->LoseFocus(0); else this->TakeFocus(); return 1; }
+	virtual int			MouseDown(int ix, int iy, int button) { x = ix; y = iy; b = button; p = 1; Refresh(); return 1; }
 	virtual void		MouseDrag(int ix, int iy, int button) { x = ix; y = iy; b = button; Refresh(); }
 	virtual void		MouseUp(int ix, int iy, int button) { x = ix; y = iy; b = button; p = 0; Refresh(); }
 	virtual int			ScrollWheel(int x, int y, int dist, int axis) { if (axis == 0) n += dist; Refresh(); return 1; }
@@ -125,6 +109,7 @@ void	XGrindDragOver(int x, int y)
 {
 }
 
+#if 0
 void	XGrindDragLeave(void)
 {
 }
@@ -147,53 +132,6 @@ restore this
 //		WED_FileOpen(*i);
 	}
 }
-
-#if 0
-void	import_tiger_repository(const string& rt)
-{
-	string root(rt);
-	int	fnum = -1;
-	if ((root.length() > 3) &&
-		(root.substr(root.length()-4)==".RT1" ||
-		 root.substr(root.length()-4)==".rt1"))
-	{
-		root = root.substr(0, root.length()-4);
-		fnum = atoi(root.c_str() + root.length() - 5);
-		root.erase(root.rfind('/'));
-	}
-	if ((root.length() > 3) &&
-		(root.substr(root.length()-4)==".zip" ||
-		 root.substr(root.length()-4)==".ZIP"))
-	{
-		fnum = atoi(root.c_str() + root.length() - 9);
-	}
-	
-	if (fnum == -1)
-	{
-		printf("Could not identify file %s as a TIGER file.\n", root.c_str());
-	} else {
-
-		MFFileSet * fs = FileSet_Open(root.c_str());
-		if (fs)
-		{	
-			printf("Reading %s/TGR%05d.RT1\n", root.c_str(), fnum);
-			TIGER_LoadRT1(fs, fnum);
-			printf("Reading %s/TGR%05d.RT2\n", root.c_str(), fnum);
-			TIGER_LoadRT2(fs, fnum);
-			printf("Reading %s/TGR%05d.RTP\n", root.c_str(), fnum);
-			TIGER_LoadRTP(fs, fnum);
-			printf("Reading %s/TGR%05d.RTI\n", root.c_str(), fnum);
-			TIGER_LoadRTI(fs, fnum);
-			printf("Reading %s/TGR%05d.RT7\n", root.c_str(), fnum);
-			TIGER_LoadRT7(fs, fnum);
-			printf("Reading %s/TGR%05d.RT8\n", root.c_str(), fnum);
-			TIGER_LoadRT8(fs, fnum);
-							
-			FileSet_Close(fs);
-		} else 
-			printf("Could not open %s as a file set.\n", root.c_str());
-	}
-}
 #endif
 
 //void	XGrindInit(string& outName)
@@ -207,8 +145,10 @@ int main(int argc, const char * argv[])
 	SIOUXSettings.asktosaveonclose = false;
 #endif
 
-	WED_App	app;
+	WED_Application	app;
 
+	WED_MakeMenus(&app);
+	
 	gFailure = CGAL::set_error_handler(cgal_failure);
 	XESInit();
 
@@ -217,15 +157,15 @@ int main(int argc, const char * argv[])
 	LoadDEMTables();
 	LoadObjTables();
 	
-	gPackage = new WED_Package("Master:code:XPTools:SceneryTools:TestPackage1", true);
-	WED_Document * doc = gPackage->NewTile(-72, 42);
+//	gPackage = new WED_Package("Macintosh HD:code:XPTools:SceneryTools:TestPackage1", true);
+//	WED_Document * doc = gPackage->NewTile(-72, 42);
 	
 //	int w, h;
 //	XPLMGetScreenSize(&w, &h);
-	RegisterFileCommands();
+//	RegisterFileCommands();
 //	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL, doc);
-	RegisterProcessingCommands();
-	RegisterSpecialCommands();
+//	RegisterProcessingCommands();
+//	RegisterSpecialCommands();
 	
 	WED_AssertInit();
 	
@@ -233,7 +173,7 @@ int main(int argc, const char * argv[])
 	
 	{
 	int wb[4] = { 100, 100, 500, 500 };
-	GUI_Window * test_win = new GUI_Window("Test", wb);
+	GUI_Window * test_win = new GUI_Window("Test", wb, &app);
 	GUI_Hack * h1 = new GUI_Hack;
 	GUI_Hack * h2 = new GUI_Hack;
 	GUI_Hack * h3 = new GUI_Hack;
@@ -261,7 +201,7 @@ int main(int argc, const char * argv[])
 	}
 	{
 	int wb[4] = { 100, 100, 500, 500 };
-	GUI_Window * test_win = new GUI_Window("Test", wb);
+	GUI_Window * test_win = new GUI_Window("Test", wb, &app);
 	GUI_Hack * h1 = new GUI_Hack;
 	GUI_Hack * h2 = new GUI_Hack;
 	GUI_Hack * h3 = new GUI_Hack;
@@ -292,7 +232,7 @@ int main(int argc, const char * argv[])
 	app.Run();
 }
 
-
+#if 0
 bool	XGrindCanQuit(void)
 {
 	return true;
@@ -303,3 +243,4 @@ void	XGrindDone(void)
 	WED_SavePrefs();
 	delete gPackage;
 }
+#endif
