@@ -3379,864 +3379,433 @@
 #endif
 
 
-
     { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0 }
-
   };
 
 
-
-
-
 #define T1_FIELD_COUNT                                           \
-
           ( sizeof ( t1_keywords ) / sizeof ( t1_keywords[0] ) )
 
 
-
-
-
   static FT_Error
-
   parse_dict( T1_Face    face,
-
               T1_Loader  loader,
-
               FT_Byte*   base,
-
               FT_Long    size,
-
               FT_Byte*   keyword_flags )
-
   {
-
     T1_Parser  parser = &loader->parser;
-
     FT_Byte   *limit, *start_binary = NULL;
-
     FT_Bool    have_integer = 0;
 
 
-
-
-
     parser->root.cursor = base;
-
     parser->root.limit  = base + size;
-
     parser->root.error  = T1_Err_Ok;
-
-
 
     limit = parser->root.limit;
 
-
-
     T1_Skip_Spaces( parser );
 
-
-
     while ( parser->root.cursor < limit )
-
     {
-
       FT_Byte*  cur;
-
-
-
 
 
       cur = parser->root.cursor;
 
-
-
       /* look for `FontDirectory' which causes problems for some fonts */
-
       if ( *cur == 'F' && cur + 25 < limit                    &&
-
            ft_strncmp( (char*)cur, "FontDirectory", 13 ) == 0 )
-
       {
-
         FT_Byte*  cur2;
 
 
-
-
-
         /* skip the `FontDirectory' keyword */
-
         T1_Skip_PS_Token( parser );
-
         T1_Skip_Spaces  ( parser );
-
         cur = cur2 = parser->root.cursor;
 
-
-
         /* look up the `known' keyword */
-
         while ( cur < limit )
-
         {
-
           if ( *cur == 'k' && cur + 5 < limit            &&
-
                ft_strncmp( (char*)cur, "known", 5 ) == 0 )
-
             break;
 
-
-
           T1_Skip_PS_Token( parser );
-
           if ( parser->root.error )
-
             goto Exit;
-
           T1_Skip_Spaces( parser );
-
           cur = parser->root.cursor;
-
         }
 
-
-
         if ( cur < limit )
-
         {
-
           T1_TokenRec  token;
 
 
-
-
-
           /* skip the `known' keyword and the token following it */
-
           T1_Skip_PS_Token( parser );
-
           T1_ToToken( parser, &token );
 
-
-
           /* if the last token was an array, skip it! */
-
           if ( token.type == T1_TOKEN_TYPE_ARRAY )
-
             cur2 = parser->root.cursor;
-
         }
-
         parser->root.cursor = cur2;
-
         have_integer = 0;
-
       }
-
-
 
       /* look for `eexec' */
-
       else if ( *cur == 'e' && cur + 5 < limit &&
-
                 ft_strncmp( (char*)cur, "eexec", 5 ) == 0 )
-
         break;
-
-
 
       /* look for `closefile' which ends the eexec section */
-
       else if ( *cur == 'c' && cur + 9 < limit &&
-
                 ft_strncmp( (char*)cur, "closefile", 9 ) == 0 )
-
         break;
 
-
-
       /* check whether we have an integer */
-
       else if ( ft_isdigit( *cur ) )
-
       {
-
         start_binary = cur;
-
         T1_Skip_PS_Token( parser );
-
         if ( parser->root.error )
-
           goto Exit;
-
         have_integer = 1;
-
       }
-
-
 
       /* in valid Type 1 fonts we don't see `RD' or `-|' directly */
-
       /* since those tokens are handled by parse_subrs and        */
-
       /* parse_charstrings                                        */
-
       else if ( *cur == 'R' && cur + 6 < limit && *(cur + 1) == 'D' &&
-
                 have_integer )
-
       {
-
         FT_Long   s;
-
         FT_Byte*  b;
 
 
-
-
-
         parser->root.cursor = start_binary;
-
         if ( !read_binary_data( parser, &s, &b ) )
-
           return T1_Err_Invalid_File_Format;
-
         have_integer = 0;
-
       }
-
-
 
       else if ( *cur == '-' && cur + 6 < limit && *(cur + 1) == '|' &&
-
                 have_integer )
-
       {
-
         FT_Long   s;
-
         FT_Byte*  b;
 
 
-
-
-
         parser->root.cursor = start_binary;
-
         if ( !read_binary_data( parser, &s, &b ) )
-
           return T1_Err_Invalid_File_Format;
-
         have_integer = 0;
-
       }
 
-
-
       /* look for immediates */
-
       else if ( *cur == '/' && cur + 2 < limit )
-
       {
-
         FT_PtrDist  len;
-
-
-
 
 
         cur++;
 
-
-
         parser->root.cursor = cur;
-
         T1_Skip_PS_Token( parser );
-
         if ( parser->root.error )
-
           goto Exit;
-
-
 
         len = parser->root.cursor - cur;
 
-
-
         if ( len > 0 && len < 22 && parser->root.cursor < limit )
-
         {
-
           /* now compare the immediate name to the keyword table */
-
           T1_Field  keyword      = (T1_Field)t1_keywords;
-
           FT_Byte*  keyword_flag = keyword_flags;
 
 
-
-
-
           for (;;)
-
           {
-
             FT_Byte*  name;
 
 
-
-
-
             name = (FT_Byte*)keyword->ident;
-
             if ( !name )
-
               break;
-
-
 
             if ( cur[0] == name[0]                                  &&
-
                  len == (FT_PtrDist)ft_strlen( (const char *)name ) &&
-
                  ft_memcmp( cur, name, len ) == 0                   )
-
             {
-
               /* We found it -- run the parsing callback! */
-
               /* We only record the first instance of any */
-
               /* field to deal adequately with synthetic  */
-
               /* fonts; /Subrs and /CharStrings are       */
-
               /* handled specially.                       */
-
               if ( keyword_flag[0] == 0                              ||
-
                    ft_strcmp( (const char*)name, "Subrs" ) == 0      ||
-
                    ft_strcmp( (const char*)name, "CharStrings") == 0 )
-
               {
-
                 parser->root.error = t1_load_keyword( face,
-
                                                       loader,
-
                                                       keyword );
-
                 if ( parser->root.error == T1_Err_Ok )
-
                   keyword_flag[0] = 1;
-
                 else
-
                 {
-
                   if ( FT_ERROR_BASE( parser->root.error ) == FT_Err_Ignore )
-
                     parser->root.error = T1_Err_Ok;
-
                   else
-
                     return parser->root.error;
-
                 }
-
               }
-
               break;
-
             }
 
-
-
             keyword++;
-
             keyword_flag++;
-
           }
-
         }
 
-
-
         have_integer = 0;
-
       }
-
       else
-
       {
-
         T1_Skip_PS_Token( parser );
-
         if ( parser->root.error )
-
           goto Exit;
-
         have_integer = 0;
-
       }
-
-
 
       T1_Skip_Spaces( parser );
-
     }
 
-
-
   Exit:
-
     return parser->root.error;
-
   }
 
 
-
-
-
   static void
-
   t1_init_loader( T1_Loader  loader,
-
                   T1_Face    face )
-
   {
-
     FT_UNUSED( face );
 
-
-
     FT_MEM_ZERO( loader, sizeof ( *loader ) );
-
     loader->num_glyphs = 0;
-
     loader->num_chars  = 0;
 
-
-
     /* initialize the tables -- simply set their `init' field to 0 */
-
     loader->encoding_table.init = 0;
-
     loader->charstrings.init    = 0;
-
     loader->glyph_names.init    = 0;
-
     loader->subrs.init          = 0;
-
     loader->swap_table.init     = 0;
-
     loader->fontdata            = 0;
-
   }
 
 
-
-
-
   static void
-
   t1_done_loader( T1_Loader  loader )
-
   {
-
     T1_Parser  parser = &loader->parser;
 
 
-
-
-
     /* finalize tables */
-
     T1_Release_Table( &loader->encoding_table );
-
     T1_Release_Table( &loader->charstrings );
-
     T1_Release_Table( &loader->glyph_names );
-
     T1_Release_Table( &loader->swap_table );
-
     T1_Release_Table( &loader->subrs );
 
-
-
     /* finalize parser */
-
     T1_Finalize_Parser( parser );
-
   }
 
 
-
-
-
   FT_LOCAL_DEF( FT_Error )
-
   T1_Open_Face( T1_Face  face )
-
   {
-
     T1_LoaderRec   loader;
-
     T1_Parser      parser;
-
     T1_Font        type1 = &face->type1;
-
     PS_Private     priv  = &type1->private_dict;
-
     FT_Error       error;
-
     FT_Byte        keyword_flags[T1_FIELD_COUNT];
-
-
 
     PSAux_Service  psaux = (PSAux_Service)face->psaux;
 
 
-
-
-
     t1_init_loader( &loader, face );
 
-
-
     /* default values */
-
     priv->blue_shift       = 7;
-
     priv->blue_fuzz        = 1;
-
     priv->lenIV            = 4;
-
     priv->expansion_factor = (FT_Fixed)( 0.06 * 0x10000L );
-
     priv->blue_scale       = (FT_Fixed)( 0.039625 * 0x10000L * 1000 );
 
-
-
     parser = &loader.parser;
-
     error  = T1_New_Parser( parser,
-
                             face->root.stream,
-
                             face->root.memory,
-
                             psaux );
-
     if ( error )
-
       goto Exit;
-
-
 
     {
-
       FT_UInt  n;
-
       
 
-
-
       for ( n = 0; n < T1_FIELD_COUNT; n++ )
-
         keyword_flags[n] = 0;
-
     }
 
-
-
     error = parse_dict( face, &loader, parser->base_dict, parser->base_len,
-
                         keyword_flags );
-
     if ( error )
-
       goto Exit;
-
-
 
     error = T1_Get_Private_Dict( parser, psaux );
-
     if ( error )
-
       goto Exit;
-
-
 
     error = parse_dict( face, &loader, parser->private_dict,
-
                         parser->private_len,
-
                         keyword_flags );
-
     if ( error )
-
       goto Exit;
-
-
 
 #ifndef T1_CONFIG_OPTION_NO_MM_SUPPORT
 
-
-
     /* the following can happen for MM instances; we then treat the */
-
     /* font as a normal PS font                                     */
-
     if ( face->blend                                             &&
-
          ( !face->blend->num_designs || !face->blend->num_axis ) )
-
       T1_Done_Blend( face );
 
-
-
     /* another safety check */
-
     if ( face->blend )
-
     {
-
       FT_UInt  i;
 
 
-
-
-
       for ( i = 0; i < face->blend->num_axis; i++ )
-
         if ( !face->blend->design_map[i].num_points )
-
         {
-
           T1_Done_Blend( face );
-
           break;
-
         }
-
     }
-
-
 
 #endif /* T1_CONFIG_OPTION_NO_MM_SUPPORT */
 
-
-
     /* now, propagate the subrs, charstrings, and glyphnames tables */
-
     /* to the Type1 data                                            */
-
     type1->num_glyphs = loader.num_glyphs;
 
-
-
     if ( loader.subrs.init )
-
     {
-
       loader.subrs.init  = 0;
-
       type1->num_subrs   = loader.num_subrs;
-
       type1->subrs_block = loader.subrs.block;
-
       type1->subrs       = loader.subrs.elements;
-
       type1->subrs_len   = loader.subrs.lengths;
-
     }
 
-
-
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-
     if ( !face->root.internal->incremental_interface )
-
 #endif
-
       if ( !loader.charstrings.init )
-
       {
-
         FT_ERROR(( "T1_Open_Face: no `/CharStrings' array in face!\n" ));
-
         error = T1_Err_Invalid_File_Format;
-
       }
 
-
-
     loader.charstrings.init  = 0;
-
     type1->charstrings_block = loader.charstrings.block;
-
     type1->charstrings       = loader.charstrings.elements;
-
     type1->charstrings_len   = loader.charstrings.lengths;
 
-
-
     /* we copy the glyph names `block' and `elements' fields; */
-
     /* the `lengths' field must be released later             */
-
     type1->glyph_names_block    = loader.glyph_names.block;
-
     type1->glyph_names          = (FT_String**)loader.glyph_names.elements;
-
     loader.glyph_names.block    = 0;
-
     loader.glyph_names.elements = 0;
 
-
-
     /* we must now build type1.encoding when we have a custom array */
-
     if ( type1->encoding_type == T1_ENCODING_TYPE_ARRAY )
-
     {
-
       FT_Int    charcode, idx, min_char, max_char;
-
       FT_Byte*  char_name;
-
       FT_Byte*  glyph_name;
 
 
-
-
-
       /* OK, we do the following: for each element in the encoding  */
-
       /* table, look up the index of the glyph having the same name */
-
       /* the index is then stored in type1.encoding.char_index, and */
-
       /* a the name to type1.encoding.char_name                     */
 
-
-
       min_char = +32000;
-
       max_char = -32000;
 
-
-
       charcode = 0;
-
       for ( ; charcode < loader.encoding_table.max_elems; charcode++ )
-
       {
-
         type1->encoding.char_index[charcode] = 0;
-
         type1->encoding.char_name [charcode] = (char *)".notdef";
 
-
-
         char_name = loader.encoding_table.elements[charcode];
-
         if ( char_name )
-
           for ( idx = 0; idx < type1->num_glyphs; idx++ )
-
           {
-
             glyph_name = (FT_Byte*)type1->glyph_names[idx];
-
             if ( ft_strcmp( (const char*)char_name,
-
                             (const char*)glyph_name ) == 0 )
-
             {
-
               type1->encoding.char_index[charcode] = (FT_UShort)idx;
-
               type1->encoding.char_name [charcode] = (char*)glyph_name;
 
-
-
               /* Change min/max encoded char only if glyph name is */
-
               /* not /.notdef                                      */
-
               if ( ft_strcmp( (const char*)".notdef",
-
                               (const char*)glyph_name ) != 0 )
-
               {
-
                 if ( charcode < min_char )
-
                   min_char = charcode;
-
                 if ( charcode > max_char )
-
                   max_char = charcode;
-
               }
-
               break;
-
             }
-
           }
-
       }
-
-
 
       /*
-
        *  Yes, this happens: Certain PDF-embedded fonts have only a
-
        *  `.notdef' glyph defined!
-
        */
 
-
-
       if ( min_char > max_char )
-
       {
-
         min_char = 0;
-
         max_char = loader.encoding_table.max_elems;
-
       }
 
-
-
       type1->encoding.code_first = min_char;
-
       type1->encoding.code_last  = max_char;
-
       type1->encoding.num_chars  = loader.num_chars;
-
     }
 
-
-
   Exit:
-
     t1_done_loader( &loader );
-
     return error;
-
   }
 
 
-
-
-
 /* END */
-
