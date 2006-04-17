@@ -1,6 +1,8 @@
 #ifndef WED_PACKAGE_H
 #define WED_PACKAGE_H
 
+#include "WED_Broadcaster.h"
+
 class	WED_Document;
 
 enum {
@@ -13,7 +15,8 @@ enum {
 	
 };
 
-class	WED_Package {
+
+class	WED_Package : public WED_Broadcaster{
 public:
 
 	WED_Package(const char * inPath, bool inCreate);

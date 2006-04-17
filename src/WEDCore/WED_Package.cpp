@@ -5,6 +5,7 @@
 #include "WED_Document.h"
 #include "GISUtils.h"
 #include "WED_Errors.h"
+#include "WED_Messages.h"
 
 #define		EDIT_DIR_NAME		"WED" DIR_STR
 #define		EARTH_DIR_NAME		"Earth nav data" DIR_STR
@@ -87,6 +88,8 @@ WED_Package::~WED_Package()
 	for (int n = 0; n < 360 * 180; ++n)
 	if (mTiles[n])
 		delete mTiles[n];
+
+	BroadcastMessage(msg_PackageDestroyed, 0);
 }
 
 int				WED_Package::GetTileStatus(int lon, int lat)
