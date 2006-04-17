@@ -268,7 +268,7 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 	#endif
 }
 
-GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
+GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
 {
 
 #if APL

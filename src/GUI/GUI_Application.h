@@ -32,7 +32,7 @@ public:
 
 	// MENU API
 	GUI_Menu		GetMenuBar(void);
-	GUI_Menu		CreateMenu(const char * inTitle, GUI_MenuItem_t	items[], GUI_Menu parent, int parent_item);
+	GUI_Menu		CreateMenu(const char * inTitle, const GUI_MenuItem_t	items[], GUI_Menu parent, int parent_item);
 	
 	virtual	void	OpenFiles(const vector<string>& inFiles)=0;
 
