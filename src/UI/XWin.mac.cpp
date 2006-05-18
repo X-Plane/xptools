@@ -117,6 +117,8 @@ XWin::XWin(
 			kEventClassWindow,	kEventWindowResizeCompleted,
 			kEventClassWindow,	kEventWindowClose,
 			kEventClassWindow,	kEventWindowClosed,
+			kEventClassWindow,	kEventWindowActivated,
+			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
 			kEventClassCommand,	kEventCommandProcess
 		};			
@@ -146,6 +148,9 @@ XWin::XWin(
 	
 XWin::~XWin()
 {
+	// BEN SEZ: note that disposeWindow calls our event handler, which calls closed() and deletes the obj.
+	// Prevent recursion here - don't ever re-bite on that one!
+	sIniting = true;	
 	RemoveEventLoopTimer(mTimer);
 	if (mWindow)
 		DisposeWindow(mWindow);
@@ -170,11 +175,15 @@ void	XWin::SetVisible(bool visible)
 		::HideWindow(mWindow);
 }
 
-bool	XWin::GetVisible(void)
+bool	XWin::GetVisible(void) const
 {
 	return ::IsWindowVisible(mWindow);	
 }
 
+bool	XWin::GetActive(void) const
+{
+	return ::IsWindowActive(mWindow);
+}
 
 void			XWin::MoveTo(int inX, int inY)
 {
@@ -216,9 +225,9 @@ void			XWin::GetBounds(int * outX, int * outY)
 void		XWin::GetMouseLoc(int * outX, int * outY)
 {
 	Point	pt;
-	GetMouse(&pt);
 	SetPortWindowPort(mWindow);
-	GlobalToLocal(&pt);
+	GetMouse(&pt);
+//	GlobalToLocal(&pt);
 	if (outX) *outX = pt.h;
 	if (outY) *outY = pt.v;
 }

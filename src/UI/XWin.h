@@ -72,7 +72,8 @@ public:
 			void			GetMouseLoc(int * outX, int * outY);
 			
 			void			SetVisible(bool visible);
-			bool			GetVisible(void);
+			bool			GetVisible(void) const;
+			bool			GetActive(void) const;
 
 	// Callbacks
 	virtual	void			Timer(void)=0;

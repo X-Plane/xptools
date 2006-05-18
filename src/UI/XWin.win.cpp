@@ -176,7 +176,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	switch (message) {
 	
 	case WM_ACTIVATE:
-		obj->activate(wParam != WA_INACTIVE);
+		obj->Activate(wParam != WA_INACTIVE);
 		break;
 	
 	case WM_CREATE:

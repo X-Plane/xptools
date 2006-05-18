@@ -48,6 +48,7 @@ public:
 	virtual	bool			Closed(void) { XGrinder_Quit(); return true; }
 	virtual	void			Resized(int inWidth, int inHeight) { }
 	virtual	void			Update(XContext ctx);
+	virtual void			Activate(int inActive) { }
 	virtual	void			ClickDown(int inX, int inY, int inButton) { }
 	virtual	void			ClickUp(int inX, int inY, int inButton) { }
 	virtual	void			ClickDrag(int inX, int inY, int inButton) { }
