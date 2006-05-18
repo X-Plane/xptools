@@ -2,11 +2,11 @@
 #define WED_PACKAGEWINDOW_H
 
 #include "GUI_Window.h"
-#include "WED_Listener.h"
+#include "GUI_Listener.h"
 
 class	WED_Package;
 
-class	WED_PackageWindow : public GUI_Window, public WED_Listener {
+class	WED_PackageWindow : public GUI_Window, public GUI_Listener {
 public:
 
 				 WED_PackageWindow(
@@ -21,10 +21,11 @@ public:
 	virtual	int	CanHandleCommand(int command, string& ioName, int& ioCheck);
 
 	virtual	void	ReceiveMessage(
-							WED_Broadcaster *		inSrc,
+							GUI_Broadcaster *		inSrc,
 							int						inMsg,
 							int						inParam);
 
+	virtual	bool	Closed(void);
 
 private:
 
