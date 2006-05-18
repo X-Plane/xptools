@@ -9,6 +9,7 @@
 #include "MapDefs.h"
 #include "DEMDefs.h"
 
+class	WED_ObjectRoot;
 class	WED_Package;
 
 class	WED_Document {
@@ -29,6 +30,8 @@ public:
 
 	// OBJECT PLACEMENT
 	
+	WED_ObjectRoot *	GetObjectRoot(void);
+	
 	// LEGACY STUFF
 	
 	Pmwx				gMap;
@@ -45,9 +48,10 @@ private:
 	WED_Package *		mPackage;
 	double				mBounds[4];
 
-
 	string				mFilePath;
 	bool				mDirty;
+
+	WED_ObjectRoot *	mObjectRoot;
 
 	WED_Document();
 	WED_Document(const WED_Document&);

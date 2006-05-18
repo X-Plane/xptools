@@ -7,11 +7,11 @@
 #include "WED_Errors.h"
 #include "WED_Messages.h"
 
-#define		EDIT_DIR_NAME		"WED" DIR_STR
-#define		EARTH_DIR_NAME		"Earth nav data" DIR_STR
+#define		EDIT_DIR_NAME		DIR_STR "WED" DIR_STR
+#define		EARTH_DIR_NAME		DIR_STR "Earth nav data" DIR_STR
 
 inline int lon_lat_to_idx  (int lon, int lat) { return lon + 180 + 360 * (lat + 90); }
-inline int lon_lat_to_idx10(int lon, int lat) { return lon + 18  +  36 * (lat +  9); }
+inline int lon_lat_to_idx10(int lon, int lat) { return (lon/10) + 18  +  36 * ((lat/10) +  9); }
 
 static const char * ext = NULL;
 
@@ -57,7 +57,9 @@ static bool	scan_file_exists(const char * name, bool dir, unsigned long long mod
 		int lon = (name[4]-'0')*100+(name[5]-'0')*10+(name[6]-'0');
 		if (name[3]=='-') lon = -lon;
 		if (lat >= -90 && lat < 90 && lon >= -180 && lon < 180)
-			dirs[lon_lat_to_idx10(lon, lat)] = mod;
+		{
+			dirs[lon_lat_to_idx(lon, lat)] = mod;
+		}
 		
 	}	
 	return true;
@@ -65,6 +67,7 @@ static bool	scan_file_exists(const char * name, bool dir, unsigned long long mod
 
 WED_Package::WED_Package(const char * inPath, bool inCreate)
 {
+	Assert(inPath[strlen(inPath)-1] != DIR_CHAR);
 	mPackageBase = inPath;
 	memset(mTiles, 0, sizeof(mTiles));
 
@@ -143,20 +146,25 @@ void			WED_Package::Rescan(void)
 	MF_GetDirectoryBulk(dsf_dir_str.c_str(), scan_folder_exists, dsf_dir);
 	MF_GetDirectoryBulk(xes_dir_str.c_str(), scan_folder_exists, xes_dir);
 	
-	for (int lat = -9; lat < 9; lat++)
-	for (int lon = -18; lon < 18; lon++)
+	int lon, lat;
+	
+	for (lat = -90; lat < 90; lat+=10)
+	for (lon = -180; lon < 180; lon+=10)
 	{
 		char dname[25];
-		sprintf(dname,"%+03d%+04d" DIR_STR, lat*10, lon*10);
+		sprintf(dname,"%+03d%+04d" DIR_STR, lat, lon);
 		string dsf_subdir_str = dsf_dir_str + dname;
 		string xes_subdir_str = xes_dir_str + dname;
 		
-		if (dsf_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(dsf_dir_str.c_str(), scan_file_exists, dsf);
-		if (xes_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(xes_dir_str.c_str(), scan_file_exists, xes);
+		ext=".dsf";		
+		if (dsf_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(dsf_subdir_str.c_str(), scan_file_exists, dsf);
+		ext=".xes";
+		if (xes_dir[lon_lat_to_idx10(lon,lat)])	MF_GetDirectoryBulk(xes_subdir_str.c_str(), scan_file_exists, xes);
+		ext=NULL;
 	}
 	
-	for (int lat = -90 ; lat <  90; ++lat)
-	for (int lon = -180; lon < 180; ++lon)
+	for (lat = -90 ; lat <  90; ++lat)
+	for (lon = -180; lon < 180; ++lon)
 	{
 		int idx = lon_lat_to_idx(lon, lat);
 		

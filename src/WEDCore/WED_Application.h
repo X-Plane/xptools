@@ -10,6 +10,9 @@ public:
 
 	virtual	void	OpenFiles(const vector<string>& inFiles);
 
+	virtual	int		HandleCommand(int command);
+	virtual	int		CanHandleCommand(int command, string& ioName, int& ioCheck);
+
 };
 
 #endif

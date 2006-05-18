@@ -53,6 +53,12 @@ WED_CustomObject *		WED_ObjectLayer::GetNthObject(int n) const
 	return mObjects[n];
 }
 
+string					WED_ObjectLayer::GetName(void) const 
+{
+	return mName;
+}
+
+
 WED_CustomObject *		WED_ObjectLayer::NewObject(void)
 {
 	WED_CustomObject * new_obj = WED_CustomObject::CreateTyped(GetArchive(), WED_GUID());
@@ -74,10 +80,21 @@ void					WED_ObjectLayer::DeleteObject(WED_CustomObject * x)
 	mObjects.erase(i);
 }
 
+void					WED_ObjectLayer::SetName(const string& inName)
+{
+	StateChanged();
+	mName = inName;
+}
+
 void 			WED_ObjectLayer::ReadFrom(IOReader * reader)
 {
 	mObjects.clear();
 	int n;
+	vector<char> buf;
+	reader->ReadInt(n);
+	buf.resize(n);
+	reader->ReadBulk(&*buf.begin(), n, false);
+	mName = string(buf.begin(), buf.end());
 	reader->ReadInt(n);
 	while (n--)
 	{
@@ -88,6 +105,8 @@ void 			WED_ObjectLayer::ReadFrom(IOReader * reader)
 
 void 			WED_ObjectLayer::WriteTo(IOWriter * writer)
 {
+	writer->WriteInt(mName.size());
+	writer->WriteBulk(mName.c_str(), mName.size(), false);
 	writer->WriteInt(mObjects.size());
 	for (int n = 0; n < mObjects.size(); ++n)
 	{

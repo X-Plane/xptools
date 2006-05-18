@@ -3,6 +3,7 @@
 #include "XESIO.h"
 #include "AptIO.h"
 #include "MapAlgs.h"
+#include "WED_ObjectPlacements.h"
 // TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
@@ -21,6 +22,8 @@ WED_Document::WED_Document(
 	mBounds[1] = inBounds[1];
 	mBounds[2] = inBounds[2];
 	mBounds[3] = inBounds[3];
+	
+	mObjectRoot = WED_ObjectRoot::CreateTyped(&mArchive, WED_GUID());
 }
 
 WED_Document::~WED_Document()
@@ -36,6 +39,12 @@ bool				WED_Document::GetDirty(void) const
 {
 	return mDirty;
 }
+
+WED_ObjectRoot *	WED_Document::GetObjectRoot(void)
+{
+	return mObjectRoot;
+}
+
 
 void				WED_Document::Save(void)
 {

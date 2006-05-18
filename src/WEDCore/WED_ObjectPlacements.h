@@ -38,15 +38,18 @@ public:
 	
 	int						CountObjects(void) const;
 	WED_CustomObject *		GetNthObject(int n) const;
+	string					GetName(void) const;
 	
 	WED_CustomObject *		NewObject(void);
 	void					DeleteObject(WED_CustomObject *);
+	void					SetName(const string& inName);
 
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
 
 private:
 
+	string							mName;
 	vector<WED_CustomObjectPtr>		mObjects;
 
 };
