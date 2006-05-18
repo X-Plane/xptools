@@ -1,0 +1,9 @@
+#ifndef WED_UIDEFS_H
+#define WED_UIDEFS_H
+
+enum {
+	FILE_DIALOG_NEW_PROJECT = 1,
+	FILE_DIALOG_OPEN_PROJECT
+};
+
+#endif
