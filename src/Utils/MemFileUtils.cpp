@@ -1121,6 +1121,10 @@ MF_GetDirectoryBulk(
 		FSCatalogInfo	infos[256];
 		HFSUniStr255	names[256];
 		
+	#if !DEV
+		use CFURL FER CRYIN OUT LOUD
+	#endif
+		
 	pStr[0] = strlen(path);
 	memcpy(pStr+1,path,pStr[0]);
 	err = FSMakeFSSpec(0,0,pStr,&spec);
@@ -1134,7 +1138,7 @@ MF_GetDirectoryBulk(
 	while (1)
 	{
 		err = FSGetCatalogInfoBulk(iter, 256, &fetched, NULL, kFSCatInfoNodeFlags | kFSCatInfoContentMod, infos, NULL, NULL, names);
-		if (err != noErr)
+		if (err != noErr && err != errFSNoMoreItems)
 			break;
 			
 		for (int n = 0; n < fetched; ++n)
@@ -1144,6 +1148,7 @@ MF_GetDirectoryBulk(
 			UniChar * s = names[n].unicode;
 			while(m--)
 				*d++ = *s++;
+			((char *) names[n].unicode)[names[n].length] = 0;
 			if (!cbFunc((const char *) names[n].unicode, infos[n].nodeFlags & kFSNodeIsDirectoryMask, *((unsigned long long *) &infos[n].contentModDate), refcon))
 			{
 				FSCloseIterator(iter);
@@ -1151,6 +1156,9 @@ MF_GetDirectoryBulk(
 			}
 			++total;
 		}
+		
+		if (err == errFSNoMoreItems)
+			break;
 	}
 	
 	FSCloseIterator(iter);
