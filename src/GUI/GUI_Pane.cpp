@@ -3,7 +3,8 @@
 GUI_Pane::GUI_Pane() :
 	mParent(NULL),
 	mID(0),
-	mVisible(false)
+	mVisible(false),
+	mEnabled(true)
 {
 	mBounds[0] = mBounds[1] = mBounds[2] = mBounds[3] = 0;
 	mSticky[0] = mSticky[1] = mSticky[2] = mSticky[3] = 0;	
@@ -50,6 +51,24 @@ void		GUI_Pane::GetBounds(int outBounds[4])
 	outBounds[2] = mBounds[2];
 	outBounds[3] = mBounds[3];
 }
+
+void		GUI_Pane::GetVisibleBounds(int outBounds[4])
+{
+	outBounds[0] = mBounds[0];
+	outBounds[1] = mBounds[1];
+	outBounds[2] = mBounds[2];
+	outBounds[3] = mBounds[3];
+	if (mParent != NULL)
+	{
+		int b[4];
+		mParent->GetVisibleBounds(b);
+		outBounds[0] = max(outBounds[0], b[0]);
+		outBounds[1] = max(outBounds[1], b[1]);
+		outBounds[2] = min(outBounds[2], b[2]);
+		outBounds[3] = min(outBounds[3], b[3]);
+	}
+}
+
 
 void		GUI_Pane::SetBounds(int x1, int y1, int x2, int y2) 
 {
@@ -102,30 +121,39 @@ void		GUI_Pane::SetSticky(int inSticky[4])
 
 void		GUI_Pane::ParentResized(int inOldBounds[4], int inNewBounds[4])
 {
+	// Basically the rule is: if our sticky bit is set, follow our side, otherwise
+	// follow the opposite side.  So both bits means we stretch, but one or the other
+	// means we are tied to that side.  We no-op on NO bits, to just leave us alone...
+	// having a field that follows both opposite walls is not really useful.
+	
 	int new_bounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
 	
-	if (mSticky[0])
-		new_bounds[0] = mBounds[0] + (inNewBounds[0] - inOldBounds[0]);
-	else
-		new_bounds[0] = mBounds[0] + (inNewBounds[2] - inOldBounds[2]);
+	if (mSticky[0] || mSticky[2])
+	{		
+		if (mSticky[0])
+			new_bounds[0] = mBounds[0] + (inNewBounds[0] - inOldBounds[0]);
+		else
+			new_bounds[0] = mBounds[0] + (inNewBounds[2] - inOldBounds[2]);
 
-	if (mSticky[2])
-		new_bounds[2] = mBounds[2] + (inNewBounds[2] - inOldBounds[2]);
-	else
-		new_bounds[2] = mBounds[2] + (inNewBounds[0] - inOldBounds[0]);
+		if (mSticky[2])
+			new_bounds[2] = mBounds[2] + (inNewBounds[2] - inOldBounds[2]);
+		else
+			new_bounds[2] = mBounds[2] + (inNewBounds[0] - inOldBounds[0]);
+	}
 
+	if (mSticky[1] || mSticky[3])
+	{		
+		if (mSticky[1])
+			new_bounds[1] = mBounds[1] + (inNewBounds[1] - inOldBounds[1]);
+		else
+			new_bounds[1] = mBounds[1] + (inNewBounds[3] - inOldBounds[3]);
 
-
-	if (mSticky[1])
-		new_bounds[1] = mBounds[1] + (inNewBounds[1] - inOldBounds[1]);
-	else
-		new_bounds[1] = mBounds[1] + (inNewBounds[3] - inOldBounds[3]);
-
-	if (mSticky[3])
-		new_bounds[3] = mBounds[3] + (inNewBounds[3] - inOldBounds[3]);
-	else
-		new_bounds[3] = mBounds[3] + (inNewBounds[1] - inOldBounds[1]);
-
+		if (mSticky[3])
+			new_bounds[3] = mBounds[3] + (inNewBounds[3] - inOldBounds[3]);
+		else
+			new_bounds[3] = mBounds[3] + (inNewBounds[1] - inOldBounds[1]);
+	}
+	
 	SetBounds(new_bounds);
 }
 
@@ -188,6 +216,40 @@ void		GUI_Pane::Hide(void)
 		mVisible = false;
 	}
 }
+
+bool		GUI_Pane::IsEnabled(void) const 
+{
+	return mEnabled;
+}
+
+bool		GUI_Pane::IsEnabledNow(void) const
+{
+	return mEnabled && (mParent == NULL || mParent->IsEnabledNow());
+}
+
+void		GUI_Pane::Enable(void)
+{
+	if (!mEnabled)
+	{
+		mEnabled = true;
+		if (IsEnabledNow()) Refresh();
+	}
+}
+
+void		GUI_Pane::Disable(void)
+{
+	if (mEnabled)
+	{
+		if (IsEnabledNow()) Refresh();
+		mEnabled = false;
+	}
+}
+
+bool		GUI_Pane::IsActiveNow(void) const
+{
+	return mParent && mParent->IsActiveNow();
+}
+
 		
 void		GUI_Pane::Refresh(void)
 {
@@ -269,6 +331,12 @@ void		GUI_Pane::InternalDraw(GUI_GraphState * state)
 {
 	if (mVisible)
 	{
+		int vb[4];
+		this->GetVisibleBounds(vb);
+		if (vb[0] >= vb[2] ||
+			vb[1] >= vb[3])			return;
+		glScissor(vb[0], vb[1], vb[2]-vb[0], vb[3]-vb[1]);
+		
 		this->Draw(state);
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 		{

@@ -6,7 +6,7 @@
 #include "GUI_Pane.h"
 #include "XWinGL.h"
 
-class	GUI_Window : public GUI_Pane, GUI_Commander, public XWinGL {
+class	GUI_Window : public GUI_Pane, public GUI_Commander, public XWinGL {
 public:
 	
 							GUI_Window(const char * inTitle, int inBounds[4],GUI_Commander * inCommander);
@@ -21,9 +21,10 @@ public:
 	virtual void			SetBounds(int x1, int y1, int x2, int y2);
 	virtual void			SetBounds(int inBounds[4]);
 	virtual	void			SetDescriptor(const string& inDesc);
-
+	virtual bool			IsActiveNow(void) const;
+	
 	// From XWinGL
-	virtual	void			Timer(void) { }
+	virtual	void			Timer(void);
 	virtual	bool			Closed(void) { return true; }
 
 	virtual	void			ClickDown(int inX, int inY, int inButton);
@@ -50,6 +51,7 @@ private:
 	bool			mClearDepth;
 	bool			mClearColor;
 	GUI_Pane *		mMouseFocusPane;
+	int				mMouseFocusButton;
 	
 };
 

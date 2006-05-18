@@ -21,6 +21,9 @@ GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * in
 	mClearColor = true;
 	mDesc = inTitle;
 	mState.Init();
+	
+	// BEN SEZ: this is probably a bad idea...
+	FocusChain(1);
 }
 
 void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4])
@@ -46,6 +49,10 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 	XWinGL::GetBounds(&w, &h);
 
 	mMouseFocusPane = InternalMouseDown(inX, h-inY, inButton);
+	mMouseFocusButton = inButton;
+	if (mMouseFocusPane)
+		SetTimerInterval(0.1);
+
 }
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
@@ -54,7 +61,10 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 	XWinGL::GetBounds(&w, &h);
 
 	if (mMouseFocusPane)
+	{
 		mMouseFocusPane->MouseUp(inX, h-inY, inButton);
+		SetTimerInterval(0.0);
+	}
 	mMouseFocusPane = NULL;
 }
 
@@ -117,7 +127,9 @@ void			GUI_Window::GLDraw(void)
 		glClearColor(mClearColorRGBA[0],mClearColorRGBA[1],mClearColorRGBA[2],mClearColorRGBA[3]);
 	glClear((mClearColor ? GL_COLOR_BUFFER_BIT : 0) + (mClearDepth ? GL_DEPTH_BUFFER_BIT : 0));
 	mState.Reset();
+	glEnable(GL_SCISSOR_TEST);
 	InternalDraw(&mState);
+	glDisable(GL_SCISSOR_TEST);
 }
 
 void		GUI_Window::Refresh(void)
@@ -156,6 +168,12 @@ void		GUI_Window::SetDescriptor(const string& inDesc)
 	mDesc = inDesc;
 	XWinGL::SetTitle(inDesc.c_str());
 }
+
+bool		GUI_Window::IsActiveNow(void) const
+{
+	return XWin::GetActive();
+}
+
 
 /*
 int			GUI_Window::InternalSetFocus(GUI_Pane * who)
@@ -410,4 +428,16 @@ void		GUI_Window::Activate(int active)
 {
 	if (active && !this->IsFocusedChain())
 		FocusChain(1);
+}
+
+void		GUI_Window::Timer(void)
+{
+		int	w, h, x, y;
+
+	if (mMouseFocusPane)
+	{
+		XWinGL::GetBounds(&w, &h);
+		XWinGL::GetMouseLoc(&x, &y);
+		mMouseFocusPane->MouseDrag(x, h-y, mMouseFocusButton);
+	}
 }

@@ -19,7 +19,8 @@ public:
 			GUI_Pane *	GetParent(void) const;
 			void		SetParent(GUI_Pane * inParent);
 
-			void		GetBounds(int outBounds[4]);
+			void		GetBounds(int outBounds[4]);		// Our extend in OGL/win coords
+			void		GetVisibleBounds(int outBounds[4]);	// the subset of our extent that is not clipped by parents!
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
 			void		GetSticky(int outSticky[4]);
@@ -36,8 +37,15 @@ public:
 	virtual bool		IsVisibleNow(void) const;
 	virtual void		Show(void);
 	virtual void		Hide(void);
+
+			bool		IsEnabled(void) const;
+			bool		IsEnabledNow(void) const;
+			void		Enable(void);
+			void		Disable(void);
+
+	virtual	bool		IsActiveNow(void) const;
 			
-	virtual void		Refresh(void);
+	virtual void		Refresh(void);		// Schedule an async window redraw.
 
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 	virtual	void		Draw(GUI_GraphState * state) { }
@@ -64,6 +72,7 @@ private:
 		vector<GUI_Pane *>	mChildren;
 		int					mID;
 		int					mVisible;
+		int					mEnabled;
 		string				mDesc;
 
 	GUI_Pane(const GUI_Pane&);

@@ -19,6 +19,9 @@ GUI_Commander::~GUI_Commander()
 	
 	if (mCmdParent != NULL)
 	{
+		if (mCmdParent->mCmdFocus == this)
+			mCmdParent->mCmdFocus = NULL;
+		
 		mCmdParent->mCmdChildren.erase(find(mCmdParent->mCmdChildren.begin(),mCmdParent->mCmdChildren.end(), this));
 	}
 	for (vector<GUI_Commander *>::iterator child = mCmdChildren.begin(); child != mCmdChildren.end(); ++child)
@@ -29,7 +32,7 @@ GUI_Commander::~GUI_Commander()
 
 int				GUI_Commander::TakeFocus(void)
 {
-	GUI_Commander *	loser = mCmdRoot->GetFocusForCommander();
+	GUI_Commander *	loser = mCmdRoot ? mCmdRoot->GetFocusForCommander() : NULL;
 	if (loser == NULL || loser->AcceptLoseFocus(0))
 	{
 		if (!mCmdParent || mCmdParent->FocusChain(0))
