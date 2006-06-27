@@ -1,0 +1,264 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D6CD2501098F95D900B525DA /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */; };
+		D6CD2502098F95D900B525DA /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */; };
+		D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */; };
+		D6CD2504098F95D900B525DA /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */; };
+		D6CD2505098F95D900B525DA /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */; };
+		D6CD2508098F95DF00B525DA /* ac_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA775098E92980061BE4C /* ac_utils.c */; };
+		D6CD2509098F95DF00B525DA /* bitmap_match.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA776098E92980061BE4C /* bitmap_match.c */; };
+		D6CD250A098F95DF00B525DA /* obj_radius.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA777098E92980061BE4C /* obj_radius.c */; };
+		D6CD250B098F95DF00B525DA /* obj_tools.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA778098E92980061BE4C /* obj_tools.c */; };
+		D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA779098E92980061BE4C /* obj8_export.c */; };
+		D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77A098E92980061BE4C /* obj8_import.c */; };
+		D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77B098E92980061BE4C /* xp_plugin.c */; };
+		D6F0AEA80A4AD19C00E9C6D4 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XPlaneSupportMac.p.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
+		D6DEA775098E92980061BE4C /* ac_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ac_utils.c; sourceTree = "<group>"; };
+		D6DEA776098E92980061BE4C /* bitmap_match.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = bitmap_match.c; sourceTree = "<group>"; };
+		D6DEA777098E92980061BE4C /* obj_radius.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_radius.c; sourceTree = "<group>"; };
+		D6DEA778098E92980061BE4C /* obj_tools.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_tools.c; sourceTree = "<group>"; };
+		D6DEA779098E92980061BE4C /* obj8_export.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj8_export.c; sourceTree = "<group>"; };
+		D6DEA77A098E92980061BE4C /* obj8_import.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj8_import.c; sourceTree = "<group>"; };
+		D6DEA77B098E92980061BE4C /* xp_plugin.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xp_plugin.c; sourceTree = "<group>"; };
+		D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ObjConvert.cpp; path = src/Obj/ObjConvert.cpp; sourceTree = SOURCE_ROOT; };
+		D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ObjPointPool.cpp; path = src/Obj/ObjPointPool.cpp; sourceTree = SOURCE_ROOT; };
+		D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjBuilder.cpp; path = src/Obj/XObjBuilder.cpp; sourceTree = SOURCE_ROOT; };
+		D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjDefs.cpp; path = src/Obj/XObjDefs.cpp; sourceTree = SOURCE_ROOT; };
+		D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjReadWrite.cpp; path = src/Obj/XObjReadWrite.cpp; sourceTree = SOURCE_ROOT; };
+		D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefs.h; sourceTree = "<group>"; };
+		D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = prefs.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D6CD245D098EB16400B525DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* XPExporter */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7795FE84155DC02AAC07 /* Source */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				D6CD2460098EB16400B525DA /* XPExporter-Info.plist */,
+			);
+			name = XPExporter;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				D6DEA84A098E96AE0061BE4C /* OBJ */,
+				D6DEA849098E96A20061BE4C /* AC3DPlugins */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
+			isa = PBXGroup;
+			children = (
+				D6DEA775098E92980061BE4C /* ac_utils.c */,
+				D6DEA776098E92980061BE4C /* bitmap_match.c */,
+				D6DEA777098E92980061BE4C /* obj_radius.c */,
+				D6DEA778098E92980061BE4C /* obj_tools.c */,
+				D6DEA779098E92980061BE4C /* obj8_export.c */,
+				D6DEA77A098E92980061BE4C /* obj8_import.c */,
+				D6DEA77B098E92980061BE4C /* xp_plugin.c */,
+				D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */,
+				D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */,
+			);
+			name = AC3DPlugins;
+			path = src/AC3DPlugins;
+			sourceTree = "<group>";
+		};
+		D6DEA84A098E96AE0061BE4C /* OBJ */ = {
+			isa = PBXGroup;
+			children = (
+				D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */,
+				D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */,
+				D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */,
+				D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */,
+				D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */,
+			);
+			name = OBJ;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D6CD245E098EB16400B525DA /* XPlaneSupportMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6CD2461098EB16400B525DA /* Build configuration list for PBXNativeTarget "XPlaneSupportMac" */;
+			buildPhases = (
+				D6CD245C098EB16400B525DA /* Sources */,
+				D6CD245D098EB16400B525DA /* Frameworks */,
+				D6CD246F098EB73200B525DA /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = XPlaneSupportMac;
+			productName = XPExporter;
+			productReference = D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB914E08733D8E0010E9CD /* Build configuration list for PBXProject "XPExporter" */;
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* XPExporter */;
+			projectDirPath = "";
+			targets = (
+				D6CD245E098EB16400B525DA /* XPlaneSupportMac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D6CD246F098EB73200B525DA /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp $TARGET_BUILD_DIR/$EXECUTABLE_PATH /Applications/ac3dmac/plugins/\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D6CD245C098EB16400B525DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6CD2501098F95D900B525DA /* ObjConvert.cpp in Sources */,
+				D6CD2502098F95D900B525DA /* ObjPointPool.cpp in Sources */,
+				D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */,
+				D6CD2504098F95D900B525DA /* XObjDefs.cpp in Sources */,
+				D6CD2505098F95D900B525DA /* XObjReadWrite.cpp in Sources */,
+				D6CD2508098F95DF00B525DA /* ac_utils.c in Sources */,
+				D6CD2509098F95DF00B525DA /* bitmap_match.c in Sources */,
+				D6CD250A098F95DF00B525DA /* obj_radius.c in Sources */,
+				D6CD250B098F95DF00B525DA /* obj_tools.c in Sources */,
+				D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */,
+				D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */,
+				D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */,
+				D6F0AEA80A4AD19C00E9C6D4 /* prefs.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB914F08733D8E0010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				EXECUTABLE_EXTENSION = p;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"APL=1",
+					"DEV=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(HEADER_SEARCH_PATHS)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				PREBINDING = NO;
+				PRODUCT_NAME = "${TARGET_NAME}.p";
+				USER_HEADER_SEARCH_PATHS = "src/AC3DPlugins src/Obj src/Utils $(USER_HEADER_SEARCH_PATHS)";
+			};
+			name = Debug;
+		};
+		1DEB915008733D8E0010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
+				EXECUTABLE_EXTENSION = p;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"APL=1",
+					"DEV=0",
+				);
+				HEADER_SEARCH_PATHS = (
+					SDK/ac3d,
+					"$(HEADER_SEARCH_PATHS)",
+				);
+				MACH_O_TYPE = mh_bundle;
+				PREBINDING = NO;
+				PRODUCT_NAME = "${TARGET_NAME}.p";
+				USER_HEADER_SEARCH_PATHS = "src/AC3DPlugins src/Obj src/Utils $(USER_HEADER_SEARCH_PATHS)";
+			};
+			name = Release;
+		};
+		D6CD2462098EB16400B525DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		D6CD2463098EB16400B525DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB914E08733D8E0010E9CD /* Build configuration list for PBXProject "XPExporter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB914F08733D8E0010E9CD /* Debug */,
+				1DEB915008733D8E0010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6CD2461098EB16400B525DA /* Build configuration list for PBXNativeTarget "XPlaneSupportMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6CD2462098EB16400B525DA /* Debug */,
+				D6CD2463098EB16400B525DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
