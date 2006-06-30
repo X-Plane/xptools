@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2006, Ben Supnik and Chris Serio.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
 #ifndef _Fonts_h_
 #define _Fonts_h_
 
@@ -227,17 +249,17 @@ public:
 	 */
 	int		FitForward(
 				FontHandle						inFont,
-				float							inHeightPix,
-				const char *					inCharStart,
-				const char *					inCharEnd,
-				float							inSpace);
+				float							inHeightPx,
+				float							inWidthPx,
+				const char *					inStringStart,
+				const char *					inStringEnd);
 
 	int		FitReverse(
 				FontHandle						inFont,
-				float							inHeightPix,
-				const char *					inCharStart,
-				const char *					inCharEnd,
-				float							inSpace);
+				float							inHeightPx,
+				float							inWidthPx,
+				const char *					inStringStart,
+				const char *					inStringEnd);
 
 	/******************** FONT METRICS *************************
 	 * 
@@ -281,15 +303,22 @@ public:
 
 private:
 
-	int		CreateTexture(
-				unsigned int					inWidth,
-				unsigned int					inHeight,
-				int								inFiltering);
-
 	void	CalcTexSize(
 				FT_Face*						inFace,
 				int*							outHeight,
 				int*							outWidth);
+
+	void    CopyBitmapSection(
+                unsigned int					inSrcHeight,
+				unsigned int					inSrcWidth,
+				unsigned int					inSrcLeft,
+				unsigned int					inSrcTop,
+				unsigned char*					inSrcData,
+				unsigned int					inDstHeight,
+				unsigned int					inDstWidth,
+                unsigned int					inDstLeft,
+                unsigned int					inDstTop,
+				unsigned char*					inDstData);
 
 	typedef multimap<string, FontInfo_t*> TextureMap_t;
 

@@ -1,10 +1,36 @@
+/*
+ * Copyright (c) 2006, Ben Supnik and Chris Serio.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
 #include "FontMgr.h"
+#include <math.h>
+#include "AssertUtils.h"
 
 #if IBM
 #include <windows.h>
 #include <GL/gl.h>
+#include <GL/glu.h>
 #else
 #include <gl.h>
+#include <glu.h>
 #endif
 
 /*
@@ -27,6 +53,8 @@
 #else
 #define OGL_ERROR(expression) expression;
 #endif
+
+#include "XPLMUtilities.h"
 
 
 /*
@@ -118,7 +146,7 @@ FontMgr::FontMgr()
 	mFunctions.GenerateTextures		= GenerateTextures;
 
 	// Start an instance of the FreeType Library
-	assert(!FT_Init_FreeType(&mLibrary));
+	Assert(!FT_Init_FreeType(&mLibrary));
 }
 
 void	FontMgr::InstallCallbacks(
@@ -143,7 +171,7 @@ FontMgr::~FontMgr()
 		UnloadFont((*(mTexMap.begin())).second);
 
 	// Shutdown freetype now
-	assert(!FT_Done_FreeType(mLibrary));
+	Assert(!FT_Done_FreeType(mLibrary));
 }
 
 FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool require_exact)
@@ -174,16 +202,29 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 	FontHandle		info = new FontInfo_t;
 	FT_GlyphSlot	glyph;
 
-	assert(!FT_New_Face(mLibrary, inFontPath, FM_DEFAULT_FACE_INDEX, &face));
-	assert(!FT_Set_Char_Size(face, 0, inSizePx * 64, FM_DEVICE_RES_H, FM_DEVICE_RES_V));
+	Assert(!FT_New_Face(mLibrary, inFontPath, FM_DEFAULT_FACE_INDEX, &face));
+	Assert(!FT_Set_Char_Size(face, 0, inSizePx * 64, FM_DEVICE_RES_H, FM_DEVICE_RES_V));
 
 	CalcTexSize(&face, &info->tex_height, &info->tex_width);
-	// Ben sez: use nearest neighbor for exact-size fonts...pixel accurate!  Use linear for scaled fonts....less artifacts when we scale.
-	info->tex_id = CreateTexture(info->tex_width, info->tex_height, require_exact ? GL_NEAREST : GL_LINEAR);
+
+	unsigned char* textureData = new unsigned char[info->tex_height * info->tex_width];
+	// Create the texture number that we'll be tied to
+	mFunctions.GenerateTextures(1, &info->tex_id);
+	// Now we bind to it
+	mFunctions.BindTexture(GL_TEXTURE_2D, info->tex_id);
+	// We have to 0 out the memory or we'll get artifacts when the glyphs are cut
+	memset(textureData, 0, info->tex_height * info->tex_width);
+
+	if(info->tex_id == 0)
+	{
+		delete[] textureData;
+		return 0;
+	}
+
 	info->tex_font_size = inSizePx;
 
 	float maxHeight = 0;
-	float x_off	  = 0, y_off	= 0;
+	float x_off	  = FM_PIX_PADDING / 2.0, y_off	= FM_PIX_PADDING / 2.0;
 
 	for(int n = FM_BASE_ASCII_RANGE; n <= FM_PEAK_ASCII_RANGE; ++n)
 	{
@@ -197,8 +238,8 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 		float width  = glyph->metrics.width  / 64.0;
 		float height = glyph->metrics.height / 64.0;
 
-		assert(!(glyph->metrics.width % 64));
-		assert(!(glyph->metrics.height % 64));
+		Assert(!(glyph->metrics.width % 64));
+		Assert(!(glyph->metrics.height % 64));
 
 		if(height > maxHeight)
 			maxHeight = height;
@@ -221,17 +262,10 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 		info->dy[n]				= glyph->metrics.horiBearingY - glyph->metrics.height;
 		info->advance[n]		= glyph->metrics.horiAdvance;
 
-		// Set the unpacking alignment
-		glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		// Copy the glyph bitmap into temporary memory.
+		CopyBitmapSection(height, width, 0, 0, glyph->bitmap.buffer,
+						  info->tex_height, info->tex_width, x_off, y_off, textureData);
 
-		// Copy the glyph bitmap into OpenGL memory.
-		OGL_ERROR(glTexSubImage2D(GL_TEXTURE_2D, 0, x_off, y_off, width, height,
-						GL_ALPHA, GL_UNSIGNED_BYTE, glyph->bitmap.buffer))
-
-		// Return our states back to the way they were
-		glPopClientAttrib();
 		
 		if(x_off + width + FM_PIX_PADDING<= info->tex_width)
 			x_off += width + FM_PIX_PADDING;
@@ -248,9 +282,6 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 
 	// By setting the lineheight, we can determine how tall we can stretch
 	// our fonts later on give a certain height constraint.
-	// NOTE: We use the max height because the FT function to determine this
-	// is very unreliable.
-//	info->line_height = maxHeight;
 	info->line_height = (float) inSizePx * (float) face->height / (float) face->units_per_EM;
 	info->line_descent = (float) inSizePx * (float) -face->descender / (float) face->units_per_EM;
 	info->line_ascent = (float) inSizePx * (float) face->ascender / (float) face->units_per_EM;
@@ -258,6 +289,22 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 	info->nRefCnt = 1;
 
 	mTexMap.insert(TextureMap_t::value_type(inFontPath, info));
+
+	// Create some texture memory in OpenGL for this font
+	//OGL_ERROR(glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, info->tex_width,
+	//				info->tex_height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, textureData))
+
+	// Now build mipmaps based on this texture
+	OGL_ERROR(gluBuild2DMipmaps(GL_TEXTURE_2D, GL_ALPHA, info->tex_width, info->tex_height, GL_ALPHA, GL_UNSIGNED_BYTE, textureData))
+
+	// Ben sez: use nearest neighbor for exact-size fonts...pixel accurate!
+	// Use linear for scaled fonts....less artifacts when we scale.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, require_exact ? GL_NEAREST : GL_LINEAR);
+	int error = glGetError();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, require_exact ? GL_NEAREST : GL_LINEAR_MIPMAP_LINEAR);
+	error = glGetError();
+
+	delete[] textureData;
 	return info;
 }
 
@@ -287,34 +334,6 @@ void FontMgr::UnloadFont(FontHandle inFont)
 
 	// Delete the struct's memory
 	delete inFont;
-}
-
-int FontMgr::CreateTexture(unsigned int inWidth, unsigned int inHeight, int inFiltering)
-{
-	int textureId;
-
-	// Create the texture number that we'll be tied to
-	mFunctions.GenerateTextures(1, &textureId);
-
-	// Now we bind to it
-	mFunctions.BindTexture(GL_TEXTURE_2D, textureId);
-
-	unsigned char* textureData = new unsigned char[inHeight * inWidth];
-
-	// We have to 0 out the memory or we'll get artifacts when the glyphs are cut
-	memset(textureData, 0, inHeight * inWidth);
-
-	// Create some texture memory in OpenGL for this font
-	OGL_ERROR(glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, inWidth,
-					inHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, textureData))
-
-	//This is important or else we'll only see a white screen!
-	OGL_ERROR(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, inFiltering))
-	OGL_ERROR(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, inFiltering))
-
-	delete[] textureData;
-
-	return textureId;
 }
 
 void FontMgr::CalcTexSize(
@@ -449,14 +468,17 @@ void FontMgr::DrawRange(
 		// Slop is the amount of room we have horizontally between how much we need
 		// and how much space they've given up. A negative number means we'll go out
 		// of our bounds.  This is a dummy and not used ifi we're left aligned.
-		slop = (inRight - inLeft) - width;
+		slop = inRight - inLeft - width;
 		if(fontAlign == ALIGN_RIGHT)
 			l = inLeft + slop;
 		else
-			l = inLeft + (slop / 2.0);
+			// NOTE: Due to a possible driver bug, if slop is an even number (which has a remainder
+			// when divded by 2 in an ALIGN_CENTER) the font gets skewed by 1 pixel. So we hack
+			// around it by rounding down and accepting the 0.5pixel error.
+			l = inLeft + floorf((slop / 2.0));
 	}
 
-	b = inBottom + inFont->line_descent * scale;
+	b = floorf(inBottom + inFont->line_descent * scale);
 
 	// Set the color and let's start drawing
 	glColor4fv(color);
@@ -464,21 +486,21 @@ void FontMgr::DrawRange(
 
 	for (const char * p = inStart; p < inEnd; ++p)
 	{
-		float s1 = (inFont->char_left_x[*p] - (FM_PIX_PADDING / 2)) / (float)inFont->tex_width;
-		float s2 = (inFont->char_right_x[*p] + (FM_PIX_PADDING / 2)) / (float)inFont->tex_width;
-		float t1 = (inFont->char_bot_y[*p] - (FM_PIX_PADDING / 2)) / (float)inFont->tex_height;
-		float t2 = (inFont->char_top_y[*p] + (FM_PIX_PADDING / 2)) / (float)inFont->tex_height;
+		float s1 = (inFont->char_left_x[*p] - (FM_PIX_PADDING / 2.0)) / (float)inFont->tex_width;
+		float s2 = (inFont->char_right_x[*p] + (FM_PIX_PADDING / 2.0)) / (float)inFont->tex_width;
+		float t1 = (inFont->char_bot_y[*p] - (FM_PIX_PADDING / 2.0)) / (float)inFont->tex_height;
+		float t2 = (inFont->char_top_y[*p] + (FM_PIX_PADDING / 2.0)) / (float)inFont->tex_height;
 		// Our top is the bottom plus the height of the Glyph and adjusted for scale;
-		t = inBottom + (inFont->char_top_y[*p] - inFont->char_bot_y[*p]) * scale;
+		t = b + (inFont->char_top_y[*p] - inFont->char_bot_y[*p]) * scale;
 		// Our right side is the left plus the width of the Glyph and adjusted for scale
 		r =  l + (inFont->char_right_x[*p] - inFont->char_left_x[*p]) * scale;
 
 		// Now we adjust the positioning of the letter in both the X and Y directions
 		// remembering to scale the adjustment properly
-		l += ((inFont->dx[*p] / 64.0) - (FM_PIX_PADDING / 2)) * scale;
-		r += ((inFont->dx[*p] / 64.0) + (FM_PIX_PADDING / 2)) * scale;
-		b += ((inFont->dy[*p] / 64.0) - (FM_PIX_PADDING / 2)) * scale;
-		t += ((inFont->dy[*p] / 64.0) + (FM_PIX_PADDING / 2)) * scale;
+		l += ((inFont->dx[*p] / 64.0) - (FM_PIX_PADDING / 2.0)) * scale;
+		r += ((inFont->dx[*p] / 64.0) + (FM_PIX_PADDING / 2.0)) * scale;
+		b += ((inFont->dy[*p] / 64.0) - (FM_PIX_PADDING / 2.0)) * scale;
+		t += ((inFont->dy[*p] / 64.0) + (FM_PIX_PADDING / 2.0)) * scale;
 
 		// Splat the character down where it belongs now
 		glTexCoord2f(s1,t2);	glVertex2f(l, b);
@@ -487,10 +509,10 @@ void FontMgr::DrawRange(
 		glTexCoord2f(s2,t2);	glVertex2f(r, b);
 
 		// Now we have to undo our dx for the next time around
-		l -= ((inFont->dx[*p] / 64.0) - (FM_PIX_PADDING / 2)) * scale;
-		r -= ((inFont->dx[*p] / 64.0) + (FM_PIX_PADDING / 2)) * scale;
-		b -= ((inFont->dy[*p] / 64.0) - (FM_PIX_PADDING / 2)) * scale;
-		t -= ((inFont->dy[*p] / 64.0) + (FM_PIX_PADDING / 2)) * scale;
+		l -= ((inFont->dx[*p] / 64.0) - (FM_PIX_PADDING / 2.0)) * scale;
+		r -= ((inFont->dx[*p] / 64.0) + (FM_PIX_PADDING / 2.0)) * scale;
+		b -= ((inFont->dy[*p] / 64.0) - (FM_PIX_PADDING / 2.0)) * scale;
+		t -= ((inFont->dy[*p] / 64.0) + (FM_PIX_PADDING / 2.0)) * scale;
 
 		// Now we set our l position for the next time...advance already
 		// includes the width of the font to "advance" it for next time.
@@ -527,16 +549,16 @@ float FontMgr::MeasureRange(
 int		FontMgr::FitForward(
 				FontHandle						inFont,
 				float							inHeight,
-				const char *					inCharStart,
-				const char *					inCharEnd,
-				float							inSpace)
+				float							inWidth,
+				const char *					inStringStart,
+				const char *					inStringEnd)
 {
 	float so_far = 0.0;
 	float scale = inHeight / inFont->line_height;	
 	int total = 0;
-	for (const char * c = inCharStart; c < inCharEnd; ++c)
+	for (const char * c = inStringStart; c < inStringEnd; ++c)
 	{
-		if (so_far > inSpace) return total;
+		if (so_far > inWidth) return (total - 1);
 		++total;
 		so_far += ((inFont->advance[*c] / 64.0) * scale) ;
 	}
@@ -546,16 +568,16 @@ int		FontMgr::FitForward(
 int		FontMgr::FitReverse(
 				FontHandle						inFont,
 				float							inHeight,
-				const char *					inCharStart,
-				const char *					inCharEnd,
-				float							inSpace)
+				float							inWidth,
+				const char *					inStringStart,
+				const char *					inStringEnd)
 {
 	float so_far = 0.0;
 	float scale = inHeight / inFont->line_height;	
 	int total = 0;
-	for (const char * c = inCharEnd-1; c >= inCharStart; --c)
+	for (const char * c = inStringEnd-1; c >= inStringStart; --c)
 	{
-		if (so_far > inSpace) return total;
+		if (so_far > inWidth) return (total - 1);
 		++total;
 		so_far += ((inFont->advance[*c] / 64.0) * scale) ;
 	}
@@ -569,6 +591,8 @@ float FontMgr::GetLineHeight(
 {
 	if(!inFont)
 		return 0;
+	else if(inFontSizePx == NULL)
+		return inFont->line_height;
 	else
 		return ((float) inFontSizePx / (float) inFont->tex_font_size) * inFont->line_height;
 }
@@ -591,6 +615,38 @@ float	FontMgr::GetLineAscent(
 		return 0;
 	else
 		return ((float) inFontSizePx / (float) inFont->tex_font_size) * inFont->line_ascent;
+}
+
+void    FontMgr::CopyBitmapSection(
+                unsigned int					inSrcHeight,
+				unsigned int					inSrcWidth,
+				unsigned int					inSrcLeft,
+				unsigned int					inSrcTop,
+				unsigned char*					inSrcData,
+				unsigned int					inDstHeight,
+				unsigned int					inDstWidth,
+                unsigned int					inDstLeft,
+                unsigned int					inDstTop,
+				unsigned char*					inDstData)
+{
+	// Number of bytes in the row
+	long    src_rb = inSrcWidth;
+	long    dst_rb = inDstWidth;
+	// Location of the next row
+	long    dst_nr = inDstWidth - inSrcWidth;
+	// Move our pointers to the proper location to start
+	unsigned char * src_p = inSrcData + inSrcTop * src_rb + inSrcLeft;
+	unsigned char * dst_p = inDstData + inDstTop * dst_rb + inDstLeft;
+
+	while (inSrcHeight--)
+	{
+		long ctr = inSrcWidth;
+		while (ctr--)
+		{
+			*dst_p++ = *src_p++;
+		}
+		dst_p += dst_nr;
+	}
 }
 
 
