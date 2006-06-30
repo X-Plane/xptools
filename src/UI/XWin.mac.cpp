@@ -59,6 +59,7 @@ XWin::XWin()
 			kEventClassWindow,	kEventWindowActivated,
 			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
+			kEventClassKeyboard,kEventRawKeyRepeat,
 			kEventClassCommand,	kEventCommandProcess
 		};			
 		
@@ -120,6 +121,7 @@ XWin::XWin(
 			kEventClassWindow,	kEventWindowActivated,
 			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
+			kEventClassKeyboard,kEventRawKeyRepeat,
 			kEventClassCommand,	kEventCommandProcess
 		};			
 		
@@ -335,6 +337,7 @@ pascal OSStatus	XWin::MacEventHandler(
 	case kEventClassKeyboard:
 		switch(kind) {
 		case kEventRawKeyDown:
+		case kEventRawKeyRepeat:
 			{
 				ConvertEventRefToEventRecord(inEvent, &e);
 				if (!me->KeyPressed(macChar, e.what, e.message, e.modifiers))
