@@ -116,6 +116,14 @@ void 			WED_ObjectLayer::WriteTo(IOWriter * writer)
 
 //---------------------------------------------------------------------------------
 
+WED_ObjectRoot::WED_ObjectRoot(WED_Archive * archive, const WED_GUID& guid) :
+	WED_Persistent(archive, guid)
+{
+}
+
+WED_ObjectRoot::~WED_ObjectRoot()
+{
+}
 
 int						WED_ObjectRoot::CountLayers(void) const
 {

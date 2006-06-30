@@ -1,11 +1,13 @@
 #ifndef WED_MENUS_H
 #define WED_MENUS_H
 
+#include "GUI_Menus.h"
+
 enum {
 
-	wed_NewPackage = 1000,
-	wed_OpenPackage,
-	wed_Close
+	// File Menu
+	wed_NewPackage = GUI_APP_MENUS,
+	wed_OpenPackage
 
 };
 

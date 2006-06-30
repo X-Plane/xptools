@@ -1,5 +1,7 @@
 #include "WED_ObjectLayers.h"
 #include "WED_ObjectPlacements.h"
+#include "GUI_GraphState.h"
+#include "WED_MapZoomer.h"
 
 WED_ObjectLayers::WED_ObjectLayers(WED_ObjectRoot * root) : mRoot(root)
 {
@@ -57,3 +59,61 @@ void				WED_ObjectLayers::SetOpacity(int n, float opacity)
 {
 }
 
+void				WED_ObjectLayers::DrawLayer(
+						int						n,
+						GUI_GraphState *		state,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						overlay)
+{
+	state->SetState(false,0,false,  false, false,   false, false);
+	WED_ObjectLayer * l = mRoot->GetNthLayer(n);
+	
+	glPointSize(4);
+	glColor3f(1,1,1);
+	glBegin(GL_POINTS);
+	for (int o = 0; o < l->CountObjects(); ++o)
+	{
+		WED_CustomObject * oo = l->GetNthObject(o);
+		Point2	loc = oo->GetLocation();
+		glVertex2f( zoomer->LonToXPixel(loc.x),
+					zoomer->LatToYPixel(loc.y));
+	}
+	glEnd();
+	glPointSize(1);
+}
+
+int					WED_ObjectLayers::HandleMouseDown(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+	return 0;
+}
+
+void				WED_ObjectLayers::HandleMouseDrag(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+}
+
+void				WED_ObjectLayers::HandleMouseUp(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+}

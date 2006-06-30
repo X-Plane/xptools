@@ -33,10 +33,43 @@ public:
 	virtual void				Rename(int n, const string& name);
 	virtual	void				SetOpacity(int n, float opacity);
 
-	virtual	void	ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam);
+	virtual	void				DrawLayer(
+									int						n,
+									GUI_GraphState *		state,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						overlay);
+	virtual	int					HandleMouseDown(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button);
+	virtual	void				HandleMouseDrag(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button);
+	virtual	void				HandleMouseUp(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button);
+
+	virtual	void				ReceiveMessage(
+										GUI_Broadcaster *		inSrc,
+										int						inMsg,
+										int						inParam);
+
 
 private:
 

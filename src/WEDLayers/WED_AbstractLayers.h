@@ -3,6 +3,8 @@
 
 #include "GUI_Broadcaster.h"
 
+class	GUI_GraphState;
+class	WED_MapZoomer;
 /*
 	WED_AbstractLayers - THEORY OF OPERATOION
 	
@@ -51,9 +53,6 @@ enum {
 class	WED_AbstractLayers : public GUI_Broadcaster {
 public:
 
-								 WED_AbstractLayers();
-	virtual						~WED_AbstractLayers();
-
 	// HIERARCHY
 	
 	virtual	int					CountLayers(void)=0;
@@ -74,6 +73,38 @@ public:
 	virtual void				Rename(int n, const string& name)=0;
 	virtual	void				SetOpacity(int n, float opacity)=0;
 	
+	// VISUALIZATION
+	virtual	void				DrawLayer(
+									int						n,
+									GUI_GraphState *		state,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						overlay)=0;
+	virtual	int					HandleMouseDown(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button)=0;
+	virtual	void				HandleMouseDrag(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button)=0;
+	virtual	void				HandleMouseUp(
+									int						n,
+									WED_MapZoomer *			zoomer,
+									int						tool,
+									int						selected,
+									int						x,
+									int						y,
+									int						button)=0;
 
 };
 

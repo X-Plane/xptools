@@ -4,6 +4,8 @@
 #include "AptIO.h"
 #include "MapAlgs.h"
 #include "WED_ObjectPlacements.h"
+#include "WED_Messages.h"
+
 // TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
@@ -28,6 +30,7 @@ WED_Document::WED_Document(
 
 WED_Document::~WED_Document()
 {
+	BroadcastMessage(msg_DocumentDestroyed, 0);
 }
 
 string				WED_Document::GetFilePath(void) const
@@ -86,3 +89,8 @@ void				WED_Document::Load(void)
 }
 
 
+void		WED_Document::GetBounds(double bounds[4])
+{
+	for (int n = 0; n < 4; ++n)
+		bounds[n] = mBounds[n];
+}

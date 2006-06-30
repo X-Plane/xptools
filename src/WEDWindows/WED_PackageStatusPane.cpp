@@ -1,11 +1,12 @@
 #include "WED_PackageStatusPane.h"
 #include "WED_Package.h"
 #include "GUI_GraphState.h"
-
+#include "WED_DocumentWindow.h"
 #include  <gl.h>
 
-WED_PackageStatusPane::WED_PackageStatusPane(WED_Package * inPackage) :
-	mPackage(inPackage)
+WED_PackageStatusPane::WED_PackageStatusPane(WED_Package * inPackage,GUI_Commander * doc_super) :
+	mPackage(inPackage),
+	mSuper(doc_super)
 {
 }
 
@@ -71,7 +72,35 @@ void		WED_PackageStatusPane::Draw(GUI_GraphState * state)
 	
 int			WED_PackageStatusPane::MouseDown(int x, int y, int button)
 {
-	return 0;
+	int bounds[4];
+	this->GetBounds(bounds);
+	float fbounds[4] = { bounds[0], 
+						bounds[1], 
+						bounds[2] - bounds[0], 
+						bounds[3] - bounds[1] };
+	int xp = ((float) (x - fbounds[0]) * 360.0 / fbounds[2]) - 180;
+	int yp = ((float) (y - fbounds[1]) * 180.0 / fbounds[3]) -  90;
+	
+	if (xp >= -180 && xp < 180 &&
+		yp >= -90 && yp < 90)
+	{
+		WED_Document * doc;
+		int st = mPackage->GetTileStatus(xp, yp);
+		if (st == status_None || st == status_DSF)
+			doc = mPackage->OpenTile(xp, yp);
+		else
+			doc = mPackage->NewTile(xp, yp);
+	
+		int doc_bounds[4] = { 50, 50, 800, 700 };
+			
+		WED_DocumentWindow * doc_win = new WED_DocumentWindow(
+				"new document",
+				doc_bounds,
+				mSuper,
+				doc);
+	}	
+	
+	return 1;
 }
 
 void		WED_PackageStatusPane::MouseDrag(int x, int y, int button)

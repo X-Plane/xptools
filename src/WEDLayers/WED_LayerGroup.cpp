@@ -110,6 +110,61 @@ void				WED_LayerGroup::SetOpacity(int n, float opacity)
 		mChildren->SetOpacity(n-1, opacity);
 }
 
+void		WED_LayerGroup::DrawLayer(
+						int						n,
+						GUI_GraphState *		state,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						overlay)
+{
+	if (mFlags & wed_Flag_Visible)
+	if (n > 0)
+		mChildren->DrawLayer(n-1,state,zoomer,tool,selected,overlay);
+}
+
+int					WED_LayerGroup::HandleMouseDown(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+	if (mFlags & wed_Flag_Visible)
+	if (n > 0)
+		return mChildren->HandleMouseDown(n-1,zoomer,tool,selected,x,y,button);
+	return 0;
+}
+
+void				WED_LayerGroup::HandleMouseDrag(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+	if (mFlags & wed_Flag_Visible)
+	if (n > 0)
+		mChildren->HandleMouseDrag(n-1,zoomer,tool,selected,x,y,button);
+}
+						
+void				WED_LayerGroup::HandleMouseUp(
+						int						n,
+						WED_MapZoomer *			zoomer,
+						int						tool,
+						int						selected,
+						int						x,
+						int						y,
+						int						button)
+{
+	if (mFlags & wed_Flag_Visible)
+	if (n > 0)
+		mChildren->HandleMouseUp(n-1,zoomer,tool,selected,x,y,button);
+}
 
 void				WED_LayerGroup::ReceiveMessage(
 										GUI_Broadcaster *		inSrc,

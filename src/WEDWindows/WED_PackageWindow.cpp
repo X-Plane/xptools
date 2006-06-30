@@ -29,7 +29,7 @@ WED_PackageWindow::WED_PackageWindow(
 	scroller->SetContent(contents);
 	scroller->PositionInContentArea(contents);
 	
-	WED_PackageStatusPane * p = new WED_PackageStatusPane(inPackage);
+	WED_PackageStatusPane * p = new WED_PackageStatusPane(inPackage, inCommander);
 	p->SetParent(contents);
 	p->SetBounds(0,0,360 * 5, 180 * 5);
 	p->Show();
@@ -49,7 +49,7 @@ int	WED_PackageWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 int	WED_PackageWindow::HandleCommand(int command)
 {
 	switch(command) {
-	case wed_Close:
+	case gui_Close:
 	#if !DEV
 	not safe!
 	#endif
@@ -63,7 +63,7 @@ int	WED_PackageWindow::HandleCommand(int command)
 int	WED_PackageWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	switch(command) {
-	case wed_Close:	return 1;
+	case gui_Close:	return 1;
 	default:		return 0;
 	}
 }

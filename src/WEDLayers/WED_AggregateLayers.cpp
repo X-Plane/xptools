@@ -96,6 +96,58 @@ WED_AbstractLayers *		WED_AggregateLayers::Translate(int& n) const
 	return NULL;
 }
 
+void	WED_AggregateLayers::DrawLayer(
+			int						n,
+			GUI_GraphState *		state,
+			WED_MapZoomer *			zoomer,
+			int						tool,
+			int						selected,
+			int						overlay)
+{
+	WED_AbstractLayers * l = Translate(n);
+	if (l) l->DrawLayer(n,state,zoomer,tool,selected,overlay);
+}
+
+int		WED_AggregateLayers::HandleMouseDown(
+			int						n,
+			WED_MapZoomer *			zoomer,
+			int						tool,
+			int						selected,
+			int						x,
+			int						y,
+			int						button)
+{
+	WED_AbstractLayers * l = Translate(n);
+	if (l) return l->HandleMouseDown(n,zoomer,tool,selected,x,y,button);
+	return 0;
+}
+
+void	WED_AggregateLayers::HandleMouseDrag(
+			int						n,
+			WED_MapZoomer *			zoomer,
+			int						tool,
+			int						selected,
+			int						x,
+			int						y,
+			int						button)
+{
+	WED_AbstractLayers * l = Translate(n);
+	if (l) l->HandleMouseDrag(n,zoomer,tool,selected,x,y,button);
+}
+
+void	WED_AggregateLayers::HandleMouseUp(
+			int						n,
+			WED_MapZoomer *			zoomer,
+			int						tool,
+			int						selected,
+			int						x,
+			int						y,
+			int						button)
+{
+	WED_AbstractLayers * l = Translate(n);
+	if (l) l->HandleMouseUp(n,zoomer,tool,selected,x,y,button);
+}
+
 void	WED_AggregateLayers::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							int						inMsg,

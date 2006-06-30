@@ -2,13 +2,14 @@
 #define WED_PACKAGESTATUSPANE_H
 
 class	WED_Package;
+class	GUI_Commander;
 
 #include "GUI_Pane.h"
 
 class	WED_PackageStatusPane : public GUI_Pane {
 public:
 
-					 WED_PackageStatusPane(WED_Package * inPackage);
+					 WED_PackageStatusPane(WED_Package * inPackage, GUI_Commander * doc_super);
 	virtual			~WED_PackageStatusPane();
 	
 	virtual	void		Draw(GUI_GraphState * state);
@@ -20,6 +21,7 @@ public:
 private:
 
 	WED_Package * mPackage;
+	GUI_Commander * mSuper;
 
 };
 	

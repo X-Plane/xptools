@@ -12,7 +12,9 @@
 class	WED_ObjectRoot;
 class	WED_Package;
 
-class	WED_Document {
+#include "GUI_Broadcaster.h"
+
+class	WED_Document : public GUI_Broadcaster{
 public:
 
 						WED_Document(
@@ -27,6 +29,7 @@ public:
 	
 	void				Save(void);
 	void				Load(void);
+	void				GetBounds(double bounds[4]);
 
 	// OBJECT PLACEMENT
 	
