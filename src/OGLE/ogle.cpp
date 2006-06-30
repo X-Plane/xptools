@@ -1,17 +1,25 @@
 #include "ogle.h"
 #include <vector>
+#include <ctype.h>
 using std::vector;
 
 
 
 /*
 
-	TODO: handle return key as newline immediate bail.
-	TODO: how are spaces handled in word break func?
+		BUG: cut-copy-paste reveals MAJOR repagination problems!
+		BUG: scroll-reveal is off by a line on the down side.
+		BUG: when we down-arrow or up-arrow and the line is too short, we tend to get in AFTER the return, which makes it seem like
+				we go an extra line.  This also gets us stuck in a recursive patern
+		BUG: click isnt centered on the MIDDLE of a character.  We need to deal with off-by-one-ish-ness in measure funcs!!
+		BUG: scroll wheel busted		
+		BUG: word-break is bad when we cannot keep a whole word.  Not so good. we take 1 char - we should take the min # of chars??!
+		BUG: when the window is bigger than the logical bounds, we are NOT properly aligned. Can we fix this??	
+		BUG: put char on very end of text.  press return - caret does not advance to next line
+			This is because a new line is not started with ZERO chars on it.....hrm....
 
-	OPEN ISSUES:
-		when we insert a line or delete a line, the algorithm will cascade...
-		what's the best way to catch the optimized cascade case?
+	TODO: double-click and tripple-click words?
+
 */
 
 /*******************************************************************************************
@@ -20,14 +28,33 @@ using std::vector;
 
 
 struct OGLE_Rec {
+
+	// The OGLE_rec doesn't contain any real data - it uses accessors from the callbacks to
+	// get them.  Variables below are really internal algorithm control structs.
 	OGLE_Callbacks 			callbacks;
 	void *					ref;
 
+	// This vector has the char pos of the first char of each line.  Lines are numbered 0 so
+	// line_starts 0 is always 0.  This also tells us the number of lines.
 	vector<int>				line_starts;
 
+	// This is the character range of the selection (first char, one after the last char).
+	// 0 <= sel_start <= sel_end always <= number of chars
 	int						sel_start;
 	int						sel_end;
-	int						active_side;	// 0 = start, 1 = end
+	
+	// When we are changing the edit selection with the shift key, we need to know if
+	// we are changing the start or end - this stores 0 if the start is being moved or
+	// 1 if the end is being moved.
+	int						active_side;
+	
+	// As we arrow up and down, we remember the vertical line we are trying to trace and
+	// recycle it.  This field stores the distance from the logical left side to the 
+	// insertion point and is reused as we go up or down.  It will be -1.0 if 
+	// we do not have a gap established yet.  This behavior is important because in a 
+	// proportionally spaced font, as the insertion point moves left or right due to letter
+	// unalgnment, rounding errors could move us constantly left or right.
+	float					horizontal_gap;	// -1.0 if no gap used
 	
 };
 
@@ -49,17 +76,19 @@ inline int			OGLE_LineEnd(OGLE_Handle h, int l, int total)
 	return OGLE_LineStart(h,l+1,total);
 }
 
+// Returns the line number of a given char position by searching the
+// line starts.  For speeed we use an STL binary search.
 static int OGLE_CharPosToLine(OGLE_Handle h, int charpos)
 {
-	int line = 0;
-	const char * startp, * endp;
-	h->callbacks.GetText_f(h,&startp,&endp);
-	int count = endp - startp;
-	while(line < h->line_starts.size() && charpos > OGLE_LineEnd(h, line, count))
-		++line;
-	if (line >= h->line_starts.size())
-		line = h->line_starts.size()-1;
-	return line;
+	vector<int>::iterator line_iter = lower_bound(h->line_starts.begin(), h->line_starts.end(), charpos);
+	int n = line_iter - h->line_starts.begin();
+	// Off the end - last line by definition.
+	if (n == h->line_starts.size()) return n-1;
+	// Direct hit? We're on the line?
+	if (h->line_starts[n] == charpos)	return n;
+	// Otherwise lower bound is the NEXT line - back up by 1.
+	return n-1;
+		
 }
 
 static int OGLE_CoordToCharPos(OGLE_Handle h, float x, float y)
@@ -77,8 +106,8 @@ static int OGLE_CoordToCharPos(OGLE_Handle h, float x, float y)
 	if (x > bounds[2]) x = bounds[2];
 	
 	int line = floor((bounds[3] - y) / line_height);
-	if (line >= h->line_starts.size()) return endp - startp;
 	if (line < 0) return 0;
+	if (line >= h->line_starts.size()) return endp - startp;
 	
 	int ls = OGLE_LineStart(h,line, endp - startp);
 	int le = OGLE_LineEnd  (h,line, endp - startp);
@@ -86,13 +115,14 @@ static int OGLE_CoordToCharPos(OGLE_Handle h, float x, float y)
 	return ls + cb->FitStringFwd_f(h, startp + ls, startp + le, x - bounds[0]);
 }
 
-static int OGLE_CharPosVerticalAdjust(OGLE_Handle h, int charpos, int delta)
+static int OGLE_CharPosVerticalAdjust(OGLE_Handle h, int charpos, int delta, float& old_gap)
 {
 	// First find line # of char
 	const char * start_p, * end_p;
 	h->callbacks.GetText_f(h, &start_p, &end_p);
 	int line = OGLE_CharPosToLine(h, charpos);
-	float xdelta = h->callbacks.MeasureString_f(h, start_p + OGLE_LineStart(h,line,end_p-start_p), start_p + charpos);
+	float xdelta = (old_gap == -1.0) ? h->callbacks.MeasureString_f(h, start_p + OGLE_LineStart(h,line,end_p-start_p), start_p + charpos) : old_gap;
+	if (old_gap == -1.0) old_gap = xdelta;
 	
 	line += delta;
 	if (line < 0) return 0;
@@ -155,6 +185,10 @@ static void			OGLE_RepaginateInternal(
 	OGLE_Callbacks *	callbacks = &handle->callbacks;
 	float				line_height;
 	
+	// MAJOR HACK ALERT!!
+	start_line = 0;
+	change_stop_char = 0;
+	
 	callbacks->GetLogicalBounds_f(handle, logical);
 	logical[4] = logical[2] - logical[0];
 	logical[5] = logical[3] - logical[1];
@@ -166,6 +200,7 @@ static void			OGLE_RepaginateInternal(
 	if (handle->line_starts.empty())	handle->line_starts.push_back(0);
 	else								handle->line_starts[0] = 0;
 	
+	if (start_line < 0) start_line = 0;
 	if (start_line >= handle->line_starts.size())
 		return;
 
@@ -234,6 +269,8 @@ OGLE_Handle		OGLE_Create(
 	rec->ref = ref;
 	rec->sel_start = 0;
 	rec->sel_end = 0;
+	rec->horizontal_gap = -1.0;
+	rec->active_side = 1;
 //	OGLE_Repaginate(rec);
 	return rec;
 }
@@ -252,7 +289,8 @@ void *			OGLE_GetRef(
 
 
 void			OGLE_Draw(
-						OGLE_Handle			handle)
+						OGLE_Handle			handle,
+						int					draw_caret)
 {
 	float	logical[4];
 	float	visible[4];
@@ -340,7 +378,7 @@ void			OGLE_Draw(
 		callbacks->DrawString_f(handle, o1, o2, logical[0], logical[3] - line_height * (l+1));
 	}
 
-	
+	if (draw_caret)
 	if (handle->sel_end == handle->sel_start)
 	for (int l = top_line; l < bot_line; ++l)
 	{
@@ -365,7 +403,8 @@ void			OGLE_Key(
 						char				key,
 						int					extend)
 {
-	int sline = OGLE_CharPosToLine(handle, handle->sel_start);
+	int sline = OGLE_CharPosToLine(handle, handle->sel_start)-1;
+	if (key != ogle_Up && key != ogle_Down)	handle->horizontal_gap = -1.0; 
 	switch(key) {
 	case ogle_DeleteBack:
 		if (handle->sel_end == handle->sel_start)
@@ -376,6 +415,7 @@ void			OGLE_Key(
 				handle->sel_start--;
 				handle->sel_end = handle->sel_start;
 				OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+				OGLE_RevealSelection(handle);
 			}
 		}
 		else
@@ -383,6 +423,7 @@ void			OGLE_Key(
 			handle->callbacks.ReplaceText_f(handle, handle->sel_start,handle->sel_end,NULL, NULL);
 			handle->sel_end = handle->sel_start;
 			OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+			OGLE_RevealSelection(handle);
 		}
 		handle->active_side = 1;
 		break;
@@ -395,6 +436,7 @@ void			OGLE_Key(
 			else
 				--handle->sel_start;
 			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
 		}
 		else
 		{
@@ -402,6 +444,7 @@ void			OGLE_Key(
 				--handle->sel_start;
 			handle->sel_end = handle->sel_start;
 			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
 		}
 		break;
 	case ogle_Right:
@@ -412,6 +455,7 @@ void			OGLE_Key(
 			else
 				++handle->sel_start;
 			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
 		}
 		else
 		{
@@ -419,40 +463,45 @@ void			OGLE_Key(
 				++handle->sel_end;
 			handle->sel_start = handle->sel_end;
 			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
 		}
 		break;
 	case ogle_Up:
 		if (extend)
 		{
 			if (handle->active_side)		
-				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1);
+				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1, handle->horizontal_gap);
 			else
-				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,-1);			
+				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,-1, handle->horizontal_gap);			
 			OGLE_NormalizeSelectionInternal(handle);		
+			OGLE_RevealSelection(handle);
 		}
 		else
 		{
 			if (handle->sel_start == handle->sel_end)
-				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1);
+				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1, handle->horizontal_gap);
 			handle->sel_end = handle->sel_start;
 			OGLE_NormalizeSelectionInternal(handle);		
+			OGLE_RevealSelection(handle);
 		}
 		break;
 	case ogle_Down:
 		if (extend)
 		{
 			if (handle->active_side)		
-				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,1);
+				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,1, handle->horizontal_gap);
 			else
-				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,1);			
+				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,1, handle->horizontal_gap);			
 			OGLE_NormalizeSelectionInternal(handle);		
+			OGLE_RevealSelection(handle);
 		}
 		else
 		{
 			if (handle->sel_start == handle->sel_end)
-				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,1);
+				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,1, handle->horizontal_gap);
 			handle->sel_start = handle->sel_end;
 			OGLE_NormalizeSelectionInternal(handle);		
+			OGLE_RevealSelection(handle);
 		}
 		break;
 	default:		
@@ -461,31 +510,9 @@ void			OGLE_Key(
 		handle->sel_end = handle->sel_start;
 		handle->active_side = 1;
 		OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+			OGLE_RevealSelection(handle);
 		break;
-	}
-	
-	// left arrow: move left one char, collapse sel if needed
-	// right arrow: move right one char, collapse sel if needed
-
-	// up/down arrow:
-	//	first collapse in the right direction
-	//	then calc position in logical space based on line start and char pos
-	//  use fitstringfwd to find that place on the line above/below
-	//  clamp and translate back
-	
-	// delete:
-	//	if we have a selection, delete that text, set to 0
-	//
-	// otherwise: delete char before sel, move sel bkwd 1
-	//
-	// key:
-	//  if we have a sel, replace sel with key
-	//  otherwise, insert key after sel, move sel forward 1
-	//
-	// TODO - RELATIVE REPAGINATION AND LINE BREAKS!
-	// Recalc selection LINE numbers
-	//
-	// Finally, calc new sel pos and scroll bounds and auto scroll?
+	}	
 }
 
 void			OGLE_Click(
@@ -494,20 +521,27 @@ void			OGLE_Click(
 						float				y,
 						int					extend)
 {
+	handle->horizontal_gap = -1.0;
 	int p = OGLE_CoordToCharPos(handle, x,y);
 	if (extend)
 	{
 		if (p < handle->sel_start)
+		{
 			handle->sel_start = p;
-		else
+			handle->active_side = 0;
+		} else {
 			handle->sel_end = p;		
+			handle->active_side = 1;
+		}
 	}
 	else
 	{
 		handle->sel_start = p;
 		handle->sel_end = p;
-		handle->active_side =1;
+		handle->active_side = 1;
 	}
+	OGLE_NormalizeSelectionInternal(handle);
+	OGLE_RevealSelection(handle);	
 }
 
 void			OGLE_Drag(
@@ -515,12 +549,14 @@ void			OGLE_Drag(
 						float				x,
 						float				y)
 {
+	handle->horizontal_gap = -1.0;
 	int p = OGLE_CoordToCharPos(handle, x,y);
 	if (handle->active_side == 0)
 		handle->sel_start = p;
 	else
 		handle->sel_end = p;
 	OGLE_NormalizeSelectionInternal(handle);
+	OGLE_RevealSelection(handle);
 }
 
 void			OGLE_ReplaceText(
@@ -554,12 +590,7 @@ void			OGLE_ReplaceText(
 
 	handle->callbacks.ReplaceText_f(handle, offset1, offset2, t1, t2);	
 	
-	int line = 0;
-	while (line < handle->line_starts.size() && handle->line_starts[line] < offset1)
-		++line;			
-	--line;
-	if (line < 0) line = 0;
-	OGLE_RepaginateInternal(handle, line, offset2);
+	OGLE_RepaginateInternal(handle, OGLE_CharPosToLine(handle, offset1)-1, offset2);
 }
 
 void			OGLE_GetSelection(
@@ -579,6 +610,56 @@ void			OGLE_SetSelection(
 	handle->sel_start = offset1;
 	handle->sel_end = offset2;
 	OGLE_NormalizeSelectionInternal(handle);
+}
+
+void			OGLE_RevealSelection(
+						OGLE_Handle			handle)
+{
+	float	logical[6];
+	float	visible[6];
+	float	sel_rect[2];
+	float	line_height;
+	const char * sp, * ep;
+	
+	handle->callbacks.GetText_f(handle, &sp, &ep);
+	handle->callbacks.GetLogicalBounds_f(handle, logical);
+	handle->callbacks.GetVisibleBounds_f(handle, visible);
+	logical[4] = logical[2] - logical[0];
+	logical[5] = logical[3] - logical[1];
+	visible[4] = visible[2] - visible[0];
+	visible[5] = visible[3] - visible[1];
+	
+	line_height = handle->callbacks.GetLineHeight_f(handle);
+	int char_pos = handle->active_side ? handle->sel_end : handle->sel_start;	
+	int line = OGLE_CharPosToLine(handle, char_pos);
+	
+	sel_rect[1] = logical[3] - (line+(1-handle->active_side)) * line_height;	
+	sel_rect[0] = logical[0] + handle->callbacks.MeasureString_f(handle, sp + OGLE_LineStart(handle, line, ep-sp), sp + char_pos);
+
+	float		where[2] = { visible[0] - logical[0], visible[1] - logical[1] };
+	float	old_where[2] = { visible[0] - logical[0], visible[1] - logical[1] };
+
+	if (sel_rect[0] < visible[0])	where[0] = sel_rect[0] - logical[0];
+	if (sel_rect[0] > visible[2])	where[0] = sel_rect[0] - logical[0] - visible[4];
+	if (sel_rect[1] < visible[1])	
+									where[1] = sel_rect[1] - logical[1];
+	if (sel_rect[1] > visible[3])	
+									where[1] = sel_rect[1] - logical[1] - visible[5];
+	
+	float hmin = 0;
+	float hmax = logical[4] - visible[4];
+	if (hmax < hmin) hmax = hmin;
+	float vmin = 0;
+	float vmax = logical[5] - visible[5];
+	if (hmax < hmin) hmin = hmax;
+	
+//	if (where[0] < hmin) where[0] = hmin;
+//	if (where[0] > hmax) where[0] = hmax;
+//	if (where[1] < vmin) where[1] = vmin;
+//	if (where[1] > vmax) where[1] = vmax;
+	
+	if (where[0] != old_where[0] || where[1] != old_where[1])
+		handle->callbacks.ScrollTo_f(handle, where);
 }
 
 void			OGLE_Repaginate(
@@ -619,9 +700,9 @@ OGLE::~OGLE()
 	OGLE_Destroy(mHandle);
 }
 
-void			OGLE::Draw(void)
+void			OGLE::Draw(int draw_caret)
 {
-	OGLE_Draw(mHandle);
+	OGLE_Draw(mHandle, draw_caret);
 }
 
 void			OGLE::Key(char				key, int extend)
@@ -666,6 +747,11 @@ void			OGLE::SetSelection(
 					int					offset2)
 {
 	OGLE_SetSelection(mHandle, offset1, offset2);
+}
+
+void			OGLE::RevealSelection(void)
+{
+	OGLE_RevealSelection(mHandle);
 }
 
 void			OGLE::Repaginate(void)

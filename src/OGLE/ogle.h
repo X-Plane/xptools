@@ -3,9 +3,20 @@
 
 /*
 
-TODO: 
-	clicking, mod keys, dragging, double-click
-	selection drawing in hilite vs unhilite, etc.
+	OGLE COORDINATE SYSTEM
+	
+	Each handle requires two rectangles:
+	- Drawing coordinates are the coordinate system that OGLE needs to pass to the callbacks to put
+	  text on the screen. +X = right and +Y = up.
+	- The visible boundary defines how much of the text can be seen currently, in drawing coordinates.
+	- The logical boundary defines the entire size of the document, in drawing coordinates.
+	- Neither rectangle needs to be aligned with the origin of the drawing coordinate system in any way.
+	
+	Scrolling deltas are always positive numbers expressed from the lower left corner of the logical
+	view to the lower left corner of the visible view.  Typically these will always be positive, but if 
+	the visible view is taller than the logical view, the vertical scroll position can go negative to
+	allow this.
+	
 	
 	
 
@@ -133,7 +144,8 @@ void *			OGLE_GetRef(
 						OGLE_Handle			handle);
 
 void			OGLE_Draw(
-						OGLE_Handle			handle);
+						OGLE_Handle			handle,
+						int					draw_caret);
 
 void			OGLE_Key(
 						OGLE_Handle			handle,
@@ -168,6 +180,9 @@ void			OGLE_SetSelection(
 						OGLE_Handle			handle,
 						int					offset1,
 						int					offset2);
+						
+void			OGLE_RevealSelection(
+						OGLE_Handle			handle);
 
 void			OGLE_Repaginate(
 						OGLE_Handle			handle);
@@ -187,7 +202,8 @@ public:
 								 OGLE();
 	virtual						~OGLE();
 
-			void			Draw(void);
+			void			Draw(
+									int					draw_caret);
 
 			void			Key(
 									char				key,
@@ -215,6 +231,8 @@ public:
 			void			SetSelection(
 									int					offset1,
 									int					offset2);
+									
+			void			RevealSelection(void);
 
 			void			Repaginate(void);
 
