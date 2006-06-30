@@ -48,8 +48,8 @@
 typedef unsigned char 	xbyt;
 typedef int				xint;
 typedef float			xflt;
-#define Xtrue			true
-#define Xfals			false
+#define xtrue			true
+#define xfals			false
 
 // Identify chars that indicate a new line
 inline xint  TXT_MAP_eoln(const xbyt* c)
@@ -103,10 +103,10 @@ inline xint TXT_MAP_str_match_space(xbyt*& c,const xbyt* c_max,const char* input
 	xbyt* c1=c;
 	while(c<c_max && *c==*input && *input != 0) { ++c; ++input; }
 		
-	if (*input==0 && 		   TXT_MAP_space(c)) return Xtrue;
-	if (*input==0 && eol_ok && TXT_MAP_eoln (c)) return Xtrue;
+	if (*input==0 && 		   TXT_MAP_space(c)) return xtrue;
+	if (*input==0 && eol_ok && TXT_MAP_eoln (c)) return xtrue;
 	c=c1;
-	return Xfals;
+	return xfals;
 }
 
 inline xflt TXT_MAP_flt_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
@@ -117,14 +117,14 @@ inline xflt TXT_MAP_flt_scan(xbyt*& c,const xbyt* c_max, bool go_next_line)
 
 	xflt ret_val	=0;
 	xint decimals	=0;
-	xint negative	=Xfals;
-	xint has_decimal=Xfals;
+	xint negative	=xfals;
+	xint has_decimal=xfals;
 
 	while(c<c_max && !TXT_MAP_space(c) && !TXT_MAP_eoln(c))
 	{
-			 if(*c=='-')negative	=Xtrue;
-		else if(*c=='+')negative	=Xfals;
-		else if(*c=='.')has_decimal	=Xtrue;
+			 if(*c=='-')negative	=xtrue;
+		else if(*c=='+')negative	=xfals;
+		else if(*c=='.')has_decimal	=xtrue;
 		else
 		{
 			ret_val=(10*ret_val)+*c-'0';
@@ -205,13 +205,13 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	
 	// LINE 2: version
-	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	
 	// LINE 3: "OBJ"
 	if (vers == 700)
 	{
-		if (!TXT_MAP_str_match_space(cur_ptr, end_ptr, "OBJ", Xtrue))
+		if (!TXT_MAP_str_match_space(cur_ptr, end_ptr, "OBJ", xtrue))
 			vers = 0;
 		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	}
@@ -244,7 +244,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 		 ************************************************************/		
 		if (vers == 2)
 		{
-			int obj2_op = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			int obj2_op = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 			switch(obj2_op) {
 			case 1:
 			case 2:
@@ -253,17 +253,17 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				cmd.cmdID = (obj2_op == 1) ? obj_Light : obj_Line;
 				cmd.cmdType = type_PtLine;
 				count = obj2_op;
-				scanned_st_rgb[0][0]=scanned_st_rgb[1][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals); // r
-				scanned_st_rgb[0][1]=scanned_st_rgb[1][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals); // g
-				scanned_st_rgb[0][2]=scanned_st_rgb[1][2]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals); // b
+				scanned_st_rgb[0][0]=scanned_st_rgb[1][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals); // r
+				scanned_st_rgb[0][1]=scanned_st_rgb[1][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals); // g
+				scanned_st_rgb[0][2]=scanned_st_rgb[1][2]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals); // b
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 
 				// Sets of x,y,z follows.
 				for (int t = 0; t < count; ++t)
 				{
-					vrgb.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vrgb.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					vrgb.rgb[0] = scanned_st_rgb[t][0];
 					vrgb.rgb[1] = scanned_st_rgb[t][1];
 					vrgb.rgb[2] = scanned_st_rgb[t][2];
@@ -286,10 +286,10 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				if (count > 4) count = 4;				
 				// Make sure to 'spread' the 4 S/T coords to 8 points.  This is 
 				// because 
-				scanned_st_rgb[2][0]=scanned_st_rgb[3][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);	// s1
-				scanned_st_rgb[0][0]=scanned_st_rgb[1][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);	// s2
-				scanned_st_rgb[1][1]=scanned_st_rgb[2][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);	// t1
-				scanned_st_rgb[0][1]=scanned_st_rgb[3][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);  	// t2
+				scanned_st_rgb[2][0]=scanned_st_rgb[3][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// s1
+				scanned_st_rgb[0][0]=scanned_st_rgb[1][0]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// s2
+				scanned_st_rgb[1][1]=scanned_st_rgb[2][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);	// t1
+				scanned_st_rgb[0][1]=scanned_st_rgb[3][1]=TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);  	// t2
 
 				xav = yav = zav = 0.0;
 
@@ -297,9 +297,9 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				// Read sets of 3 points.
 				for (int t = 0; t < count; ++t)
 				{
-					vst.v[0] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[1] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[2] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst.v[0] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[1] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[2] =  TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					xav += vst.v[0];
 					yav += vst.v[1];
 					zav += vst.v[2];
@@ -343,16 +343,16 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				// Read a pair of x,y,z,s,t coords.
 				while (count--)
 				{
-					vst.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst2.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst2.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst2.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst2.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst2.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst2.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst2.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst2.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst2.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst2.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					cmd.st.push_back(vst);
 					cmd.st.push_back(vst2);
 				}
@@ -386,12 +386,12 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 				while (count--)
 				{
-					vrgb.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.rgb[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.rgb[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vrgb.rgb[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vrgb.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.rgb[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.rgb[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vrgb.rgb[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					
 					cmd.rgb.push_back(vrgb);
 				}
@@ -401,16 +401,16 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 				
 			case type_Poly:
 
-				if (count == 0) count = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+				if (count == 0) count = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 
 				while (count--)
 				{
-					vst.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
-					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xtrue);
+					vst.v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.st[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
+					vst.st[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xtrue);
 					
 					cmd.st.push_back(vst);
 				}
@@ -420,7 +420,7 @@ bool	XObjRead(const char * inFile, XObj& outObj)
 			case type_Attr:
 				
 				for (int n = 0; n < count; ++n)
-					cmd.attributes.push_back(TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals));
+					cmd.attributes.push_back(TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals));
 					
 				outObj.cmds.push_back(cmd);
 				TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
@@ -551,11 +551,11 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	
 	// LINE 2: version
-	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+	int vers = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	
 	// LINE 3: "OBJ"
-	if (!TXT_MAP_str_match_space(cur_ptr, end_ptr, "OBJ", Xtrue))
+	if (!TXT_MAP_str_match_space(cur_ptr, end_ptr, "OBJ", xtrue))
 		vers = 0;
 	TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	
@@ -585,22 +585,22 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	while (!stop && TXT_MAP_continue(cur_ptr, end_ptr))
 	{
 		// TEXTURE <tex>
-		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE", Xfals))
+		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE", xfals))
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture);
 		}
 		// TEXTURE_LIT <tex>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_LIT", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_LIT", xfals))
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_lit);
 		} 
 		// POINT_COUNTS tris lines lites geo indices
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "POINT_COUNTS", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "POINT_COUNTS", xfals))
 		{
-			trimax = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			linemax = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			lightmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			idxmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			trimax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			linemax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			lightmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			idxmax = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 
 			outObj.indices.resize(idxmax);
 			outObj.geo_tri.clear(8);
@@ -611,132 +611,190 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			outObj.geo_lights.resize(lightmax);
 		}
 		// VT <x> <y> <z> <nx> <ny> <nz> <s> <t>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VT", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VT", xfals))
 		{
 			if (tricount >= trimax) break;
-			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[6] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[7] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[6] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[7] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.geo_tri.set(tricount++, stdat);
 		}
 		// VLINE <x> <y> <z> <r> <g> <b>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLINE", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLINE", xfals))
 		{
 			if (linecount >= linemax) break;
-			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.geo_lines.set(linecount++, stdat);
 		}
 		// VLIGHT <x> <y> <z> <r> <g> <b>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLIGHT", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "VLIGHT", xfals))
 		{
 			if (lightcount >= lightmax) break;
-			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			stdat[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.geo_lights.set(lightcount++, stdat);
 		}
 		// IDX <n>
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX", xfals))
 		{
 			if (idxcount >= idxmax) break;
-			outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		}
 		// IDX10 <n> x 10
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "IDX10", xfals))
 		{			
 			if (idxcount >= idxmax) break;
 			for (n = 0; n < 10; ++n)
-				outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+				outObj.indices[idxcount++] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		}
 		// TRIS offset count
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TRIS", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TRIS", xfals))
 		{
 			cmd.cmd = obj8_Tris;
-			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
-			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// LINES offset count
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "LINES", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "LINES", xfals))
 		{
 			cmd.cmd = obj8_Lines;
-			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
-			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// LIGHTS offset count
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "LIGHTS", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "LIGHTS", xfals))
 		{
 			cmd.cmd = obj8_Lights;
-			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
-			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, Xfals);
+			cmd.idx_offset = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			cmd.idx_count = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// ATTR_LOD near far
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ATTR_LOD", Xtrue))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ATTR_LOD", xtrue))
 		{
 			if (outObj.lods.back().lod_far != 0)	outObj.lods.push_back(XObjLOD8());
-			outObj.lods.back().lod_near = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			outObj.lods.back().lod_far = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			outObj.lods.back().lod_near = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.lods.back().lod_far = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 		} 
 		// ANIM_rotate x y z r1 r2 v1 v2 dref
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", xfals))
 		{
 			cmd.cmd = anim_Rotate;
 			cmd.idx_offset = outObj.animation.size();			
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv2[0] = animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[1] = animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[2] = animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv1[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			animation.xyzrv2[0] = animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[1] = animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[2] = animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv1[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
 		}
 		// ANIM_trans x1 y1 z1 x2 y2 z2 v1 v2 dref
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_trans", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_trans", xfals))
 		{
 			cmd.cmd = anim_Translate;
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+			animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
 		}
 		// ANIM_begin
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_begin", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_begin", xfals))
 		{
 			cmd.cmd = anim_Begin;
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// ANIM_end
-		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_end", Xfals))
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_end", xfals))
 		{
 			cmd.cmd = anim_End;
 			outObj.lods.back().cmds.push_back(cmd);
 		}
+/******************************************************************************************************************************/
+		// LIGHT_CUSTOM <x> <y> <z> <r> <g> <b> <a> <s><s1> <t1> <s2> <t2> <dataref>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"LIGHT_CUSTOM", xfals))
+		{
+			cmd.cmd = obj8_LightCustom;
+			for (n = 0; n < 12; ++n)
+				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// LIGHT_NAMED <name> <x> <y> <z>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"LIGHT_NAMED", xfals))
+		{
+			cmd.cmd = obj8_LightNamed;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			for (n = 0; n < 3; ++n)
+				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// ATTR_layer_group <group name> <offset>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_layer_group", xfals))
+		{
+			cmd.cmd = attr_Layer_Group;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// ATTR_hard_named <type>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard_named", xfals))
+		{
+			cmd.cmd = attr_Hard_Surface;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// ANIM_hide <v1> <v2> <dataref>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_hide", xfals))
+		{
+			cmd.cmd = anim_Hide;
+			cmd.idx_offset = outObj.animation.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
+			outObj.animation.push_back(animation);
+		}
+		// ANIM_show <v1> <v2> <dataref>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_show", xfals))
+		{
+			cmd.cmd = anim_Show;
+			cmd.idx_offset = outObj.animation.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
+			outObj.animation.push_back(animation);
+		}
+/******************************************************************************************************************************/
+
 		else
 		// Common attribute handling:
 		{
@@ -748,12 +806,21 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 				cmd.cmd = gCmds[cmd_idx].cmd_id;
 				for (n = 0; n < gCmds[cmd_idx].elem_count; ++n)
 				{
-					cmd.params[n] = TXT_MAP_flt_scan(cur_ptr, end_ptr, Xfals);
+					cmd.params[n] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 				}
 				outObj.lods.back().cmds.push_back(cmd);
 			}			
 			
 		}
+
+	obj8_LightCustom,			// all in name??  param is pos?
+	obj8_LightNamed,			// name has light name, param is pos
+	attr_Layer_Group,			// name has group name, param[0] has offset
+	attr_Hard_Surface,			// name has surface name
+	attr_No_Blend_Level,		// param 0 has blend level
+	
+	anim_Hide,					// only v1 and v2 are used
+	anim_Show,
 			
 		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	} // While loop	
@@ -857,6 +924,36 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 				break;
 			case obj8_Lights:
 				fprintf(fi, "LIGHTS %d %d" CRLF, cmd->idx_offset, cmd->idx_count);
+				break;
+			// OBJ 850 crap
+			case obj8_LightCustom:
+				fprintf(fi, "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %f %f %f %s" CRLF,
+					cmd->params[0], cmd->params[1 ], cmd->params[2 ],
+					cmd->params[3], cmd->params[4 ], cmd->params[5 ],
+					cmd->params[6], cmd->params[7 ], cmd->params[8 ],
+					cmd->params[9], cmd->params[10], cmd->params[11], cmd->name.c_str());
+				break;
+			case obj8_LightNamed:
+				fprintf(fi,"LIGHT_NAMED %s %f %f %f" CRLF, cmd->name.c_str(),
+					cmd->params[0], cmd->params[1 ], cmd->params[2 ]);
+				break;
+			case attr_Layer_Group:
+				fprintf(fi,"ATTR_layer_group %s %d" CRLF, cmd->name.c_str(), (int) cmd->params[0]);
+				break;
+			case attr_Hard_Surface:
+				fprintf(fi, "ATTR_hard_named %s" CRLF, cmd->name.c_str());
+				break;
+			case anim_Hide:
+				fprintf(fi, "ANIM_hide %f %f %s" CRLF, 
+					outObj.animation[cmd->idx_offset].xyzrv1[4],
+					outObj.animation[cmd->idx_offset].xyzrv2[4],
+					outObj.animation[cmd->idx_offset].dataref.c_str());
+				break;
+			case anim_Show:
+				fprintf(fi, "ANIM_show %f %f %s" CRLF, 
+					outObj.animation[cmd->idx_offset].xyzrv1[4],
+					outObj.animation[cmd->idx_offset].xyzrv2[4],
+					outObj.animation[cmd->idx_offset].dataref.c_str());
 				break;
 			default: 
 				{

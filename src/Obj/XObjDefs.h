@@ -48,7 +48,8 @@ enum {
 	type_Poly,		// OBJ 7
 	type_Attr,		// OBJ 7 or 8
 	type_Indexed,	// OBJ 8
-	type_Anim		// OBJ 8
+	type_Anim,		// OBJ 8
+	type_Cust		// OBJ8
 	
 };	
 
@@ -101,6 +102,15 @@ enum {
 	anim_End,
 	anim_Rotate,
 	anim_Translate,
+	
+	// OBJ850 commands
+	obj8_LightCustom,			// all in name??  param is pos?
+	obj8_LightNamed,			// name has light name, param is pos
+	attr_Layer_Group,			// name has group name, param[0] has offset
+	attr_Hard_Surface,			// name has surface name
+	attr_No_Blend_Level,		// param 0 has blend level
+	anim_Hide,					// only v1 and v2 are used
+	anim_Show,
 	
 	attr_Max	
 };	
@@ -165,7 +175,8 @@ struct	XObjAnim8 {
 
 struct	XObjCmd8 {
 	int						cmd;
-	float					params[4];
+	float					params[12];		
+	string					name;
 	int						idx_offset;
 	int						idx_count;
 };	

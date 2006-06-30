@@ -70,6 +70,14 @@ cmd_info	gCmds[] = {
 {	anim_Rotate,		type_Anim,		"ANIM_rotate",		7,0,1},
 {	anim_Translate,		type_Anim,		"ANIM_trans",		8,0,1},
 
+{	obj8_LightCustom,	type_Cust,		"LIGHT_CUSTOM",		14,0,1},
+{	obj8_LightNamed,	type_Cust,		"LIGHT_NAMED",		4 ,0,1},
+{	attr_Layer_Group,	type_Cust,		"ATTR_layer_group",	2 ,0,1},
+{	attr_Hard_Surface,	type_Cust,		"ATTR_hard_named",	2,0,1},
+{	attr_No_Blend_Level,type_Attr,		"ATTR_no_blend_level",1,0,1},
+{	anim_Hide,			type_Anim,		"ANIM_hide",		3,0,1},
+{	anim_Show,			type_Anim,		"ANIM_show",		3,0,1},
+
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
 };

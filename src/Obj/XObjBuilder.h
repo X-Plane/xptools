@@ -41,6 +41,7 @@ struct	XObjLOD8;
  	void	SetAttribute(int inAttribute);
  	void	SetAttribute1(int inAttribute, float v);
  	void	SetAttribute3(int inAttribute, float v[3]);
+ 	void	SetAttribute1Named(int inAttribute, float v, const char * str);
  	
  	// X Y Z nX ny nZ S T repeated 3 times
  	void	AccumTri(float inTri[24]);
@@ -50,6 +51,8 @@ struct	XObjLOD8;
  	
  	// X Y Z R G B
  	void	AccumLight(float inPoint[6]);
+	void	AccumLightNamed(float xyz[3], const char * name);
+	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);
  
 	void	AccumAnimBegin(void);
 	void	AccumAnimEnd(void);

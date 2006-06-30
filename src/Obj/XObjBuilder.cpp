@@ -81,6 +81,15 @@ void	XObjBuilder::SetAttribute1(int attr, float v)
 	}
 }
 
+void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8()); 
+	lod->cmds.back().cmd = attr;
+	lod->cmds.back().name = s;
+	lod->cmds.back().params[0] = v;
+}
+
 void	XObjBuilder::SetAttribute3(int attr, float v[3])
 {
 	switch(attr) {
@@ -176,6 +185,30 @@ void	XObjBuilder::AccumLight(float inPoint[6])
 		lod->cmds.back().idx_offset = idx;
 		lod->cmds.back().idx_count = 1;
 	}	
+}
+
+void	XObjBuilder::AccumLightNamed(float xyz[3], const char * name)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = obj8_LightNamed;
+	lod->cmds.back().params[0] = xyz[0];
+	lod->cmds.back().params[1] = xyz[1];
+	lod->cmds.back().params[2] = xyz[2]	;
+	lod->cmds.back().name = name;
+}
+
+void	XObjBuilder::AccumLightCustom(float xyz[3], float params[9], const char * dataref)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = obj8_LightCustom;
+	lod->cmds.back().params[0] = xyz[0];
+	lod->cmds.back().params[1] = xyz[1];
+	lod->cmds.back().params[2] = xyz[2]	;
+	for (int n = 0; n < 9; ++n)
+		lod->cmds.back().params[n+3] = params[n];
+	lod->cmds.back().name = dataref;
 }
 
 void	XObjBuilder::AccumAnimBegin(void)
