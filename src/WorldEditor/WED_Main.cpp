@@ -41,9 +41,15 @@
 
 #include "WED_Menus.h"
 
+#include "GUI_ScrollerPane.h"
+#include "GUI_Textfield.h"
+#include "GUI_Splitter.h"
 #if APL
 #include "SIOUX.h"
 #endif
+
+
+
 
 
 class	GUI_Hack : public GUI_Pane {
@@ -170,7 +176,51 @@ int main(int argc, const char * argv[])
 	WED_AssertInit();
 	
 	XPInitDefaultMargins();
-	
+/*
+	int wb[4] = { 100, 100, 500, 500 };
+	int wc[4] = { 0, 0, 400, 400 };
+	GUI_Window * test_win = new GUI_Window("Test", wb, &app);
+
+	GUI_Splitter * splitter = new GUI_Splitter(gui_Split_Vertical);
+	splitter->SetParent(test_win);
+	splitter->Show();
+	splitter->SetBounds(wc);
+	splitter->SetSticky(1,1,1,1);
+
+	GUI_ScrollerPane * sp1 = new GUI_ScrollerPane(1, 1);
+	GUI_TextField * tf1 = new GUI_TextField(true, test_win);
+	tf1->SetParent(sp1);
+	sp1->SetParent(splitter);
+	sp1->PositionInContentArea(tf1);
+	sp1->SetContent(tf1);
+	sp1->Show();
+	tf1->Show();
+	sp1->SetSticky(1,1,1,1);
+	tf1->SetWidth(700);
+
+
+	GUI_ScrollerPane * sp2 = new GUI_ScrollerPane(0, 1);
+	GUI_TextField * tf2 = new GUI_TextField(true, test_win);
+	tf2->SetParent(sp2);
+	sp2->SetParent(splitter);
+	sp2->PositionInContentArea(tf2);
+	sp2->SetContent(tf2);
+	sp2->Show();
+	tf2->Show();
+	sp2->SetSticky(1,0,1,1);
+	tf2->SetWidth(700);
+
+	sp1->AttachSlaveH(sp2);
+
+	splitter->AlignContents();
+	test_win->Show();
+
+	const char * str = "Thsi is the very model of a modern major general.\nFor information vegetable animal and mineral.  I know the kings of england and I quote the "
+		"something historical from marithon to waterloo in order catregoeryical!";
+	tf1->DoReplaceText(0,0,str,str+strlen(str));
+	tf1->SetSelection(20, 24);
+*/
+	/*
 	{
 	int wb[4] = { 100, 100, 500, 500 };
 	GUI_Window * test_win = new GUI_Window("Test", wb, &app);
@@ -226,8 +276,9 @@ int main(int argc, const char * argv[])
 	
 	test_win->SetBounds(80, 80, 500, 500);
 	test_win->SetDescriptor("w2.\n");
-	}
+	}*/
 //	test_win->Show();
+
 
 	app.Run();
 }
