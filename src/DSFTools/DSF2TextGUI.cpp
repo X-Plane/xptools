@@ -23,6 +23,8 @@
 #include <stdio.h>
 //#include <strings.h>
 #include "XGrinderApp.h"
+#include "PlatformUtils.h"
+#include "AssertUtils.h"
 
 extern "C"      int strcasecmp(const char *s1, const char *s2);
 
@@ -40,8 +42,19 @@ void	XGrindFiles(const vector<string>& files)
 	}
 }
 
+void HandleAssert(const char * condition, const char * file, int line)
+{
+	char	buf[5000];
+	sprintf(buf,"The conversion failed: %s (%s:%d.)", condition, file, line);
+	DoUserAlert(buf);
+	throw condition;
+}
+
 void	XGrindInit(string& t)
 {
+	InstallDebugAssertHandler(HandleAssert);
+	InstallAssertHandler(HandleAssert);
+
 	t = "DSF2Text";
 	XGrinder_ShowMessage("Drag a DSF or text file here to convert it.");
 }	
@@ -61,29 +74,47 @@ void	XGrindFile(const char * inFileName)
 	{
 		strcpy(newname,inFileName);
 		strcat(newname,".dsf");
-		if (ENV2Overlay(inFileName, newname))
-			XGrinder_ShowMessage("Env -> overlay Conversion successful.");
-		else
-			XGrinder_ShowMessage("Env -> overlay Conversion Failure.");
+		try {			
+			if (ENV2Overlay(inFileName, newname))
+				XGrinder_ShowMessage("Env -> overlay Conversion successful.");
+			else
+				XGrinder_ShowMessage("Env -> overlay Conversion Failure.");
+		} catch (const char *& e) {
+			XGrinder_ShowMessage(e);
+		} catch (...) { 
+			XGrinder_ShowMessage("ENV -> overlay Conversion Failure.");
+		}
 	}
 	
 	if (!strcasecmp(inFileName+l-4, ".dsf"))
 	{
 		strcpy(newname,inFileName);
 		strcat(newname,".txt");
-		if (DSF2Text(inFileName, newname))
-			XGrinder_ShowMessage("DSF -> text Conversion successful.");
-		else
+		try {
+			if (DSF2Text(inFileName, newname))
+				XGrinder_ShowMessage("DSF -> text Conversion successful.");
+			else
+				XGrinder_ShowMessage("DSF -> text Conversion Failure.");
+		} catch (const char *& e) {
+			XGrinder_ShowMessage(e);
+		} catch (...) {
 			XGrinder_ShowMessage("DSF -> text Conversion Failure.");
+		}
 	}
 
 	if (!strcasecmp(inFileName+l-4, ".txt"))
 	{
 		strcpy(newname,inFileName);
 		strcat(newname,".dsf");
-		if (Text2DSF(inFileName, newname))
-			XGrinder_ShowMessage("text->DSF Conversion successful.");
-		else
-			XGrinder_ShowMessage("text->DSF Conversion Failure.");
+		try {
+			if (Text2DSF(inFileName, newname))
+				XGrinder_ShowMessage("text->DSF Conversion successful.");
+			else
+				XGrinder_ShowMessage("text->DSF Conversion Failure.");
+		} catch (const char *& e) {
+			XGrinder_ShowMessage(e);
+		} catch (...) {
+			XGrinder_ShowMessage("text -> DSF Conversion Failure.");
+		}
 	}
 }
