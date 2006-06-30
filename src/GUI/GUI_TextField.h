@@ -1,16 +1,24 @@
 #ifndef GUI_TEXTFIELD_H
 #define GUI_TEXTFIELD_H
 
+/*
+	
+	TODO: occlusion - tell OGLE if we don't need to draw the entire visible bounds??
+
+*/
+
 #include "OGLE.h"
 #include "GUI_Pane.h"
 #include "GUI_ScrollerPane.h"
 #include "GUI_Commander.h"
+#include "GUI_Timer.h"
 
 class	GUI_GraphState;
 
 class	GUI_TextField : public GUI_Pane, 
 						public GUI_Commander,
 						public GUI_ScrollerPaneContent,
+						public GUI_Timer,
 						public OGLE {
 public:
 
@@ -41,6 +49,9 @@ public:
 	virtual	void		ScrollH(float xOffset);
 	virtual	void		ScrollV(float yOffset);
 
+	// GUI_Timer
+	virtual	void		TimerFired(void);	
+	
 protected:
 
 	// OGLE
@@ -61,7 +72,6 @@ protected:
 								const char *	t1,
 								const char *	t2);
 	virtual	float			GetLineHeight(void);
-//	virtual	float			GetBaseline(void);
 	virtual	float			MeasureString(
 								const char * 	tStart, 
 								const char * 	tEnd);
@@ -85,7 +95,10 @@ protected:
 								const char *	t2);
 	
 private:
+	
+			void			ConstrainLogicalBounds(void);
 
+		int					mCaret;
 		int					mScrollH;
 		float				mLogicalBounds[4];
 		GUI_GraphState * 	mState;

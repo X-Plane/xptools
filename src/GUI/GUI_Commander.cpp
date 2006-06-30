@@ -114,6 +114,8 @@ int				GUI_Commander::IsFocusedChain(void)
 	return 1;
 }
 
+GUI_Commander * GUI_Commander::GetCmdParent(void) { return mCmdParent; }
+
 
 int				GUI_Commander::DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {

@@ -67,16 +67,16 @@ void	GUI_FontDrawScaled(
 	
 	sFontMgr->DrawRange(sFonts[inFontID], color, inLeft, inBottom, inRight, inTop, inStart, inEnd, kAlign[inAlign]);
 }
-float	GUI_MeasureString(
+float	GUI_MeasureRange(
 				int 							inFontID,
-				const char *					inString,
-				int								inCount)
+				const char *					inCharStart,
+				const char *					inCharEnd)
 {
 	EstablishFont(inFontID);
 	return sFontMgr->MeasureRange(
 							sFonts[inFontID], 
 							sFontMgr->GetLineHeight(sFonts[inFontID], kFontSizes[inFontID]),
-							inString,inString+inCount);
+							inCharStart,inCharEnd);
 }
 
 int		GUI_FitForward(
@@ -89,7 +89,7 @@ int		GUI_FitForward(
 	return sFontMgr->FitForward(
 							sFonts[inFontID], 
 							sFontMgr->GetLineHeight(sFonts[inFontID], kFontSizes[inFontID]),
-							inCharStart, inCharEnd, inSpace);
+							inSpace, inCharStart, inCharEnd);
 
 }
 
@@ -103,7 +103,7 @@ int		GUI_FitReverse(
 	return sFontMgr->FitReverse(
 							sFonts[inFontID], 
 							sFontMgr->GetLineHeight(sFonts[inFontID], kFontSizes[inFontID]),
-							inCharStart, inCharEnd, inSpace);
+							inSpace, inCharStart, inCharEnd);
 }
 
 float	GUI_GetLineHeight(int inFontID)

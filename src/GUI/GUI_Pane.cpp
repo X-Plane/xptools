@@ -1,4 +1,38 @@
 #include "GUI_Pane.h"
+#if APL
+	#include <Events.h>
+#elif IBM
+	#include <Windows.h>
+#endif
+
+GUI_KeyFlags GUI_Pane::GetModifiers(void)
+{
+#if APL
+	UInt32	mods = GetCurrentKeyModifiers();
+	
+	GUI_KeyFlags	flags = 0;
+	
+	if (mods & shiftKey)
+		flags |= gui_ShiftFlag;
+	if (mods & cmdKey)
+		flags |= gui_ControlFlag;
+	if (mods & optionKey)
+		flags |= gui_OptionAltFlag;
+	return flags;
+#elif IBM
+	GUI_KeyFlags	flags = 0;
+	
+	if (::GetKeyState(VK_SHIFT) & ~1)
+		flags |= gui_ShiftFlag;
+	if (::GetKeyState(VK_CONTROL) & ~1)
+		flags |= gui_ControlFlag;
+	if (::GetKeyState(VK_MENU) & ~1)
+		flags |= gui_OptionAltFlag;
+	return flags;
+#else
+	#error platform not implemented
+#endif
+}
 
 GUI_Pane::GUI_Pane() :
 	mParent(NULL),

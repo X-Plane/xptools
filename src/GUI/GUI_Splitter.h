@@ -14,12 +14,18 @@ public:
 						 GUI_Splitter(int direction);
 	virtual				~GUI_Splitter();
 	
+			void		AlignContents();
+	
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp(int x, int y, int button);
-	virtual void		SetBounds(int x1, int y1, int x2, int y2);
-	virtual void		SetBounds(int inBounds[4]);
+
+private:
+
+	int		mDirection;
+	int		mSlop;		// mouse - boundary = slop
+	int		mClick;
 	
 };
 

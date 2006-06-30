@@ -47,6 +47,17 @@ GUI_ScrollerPane::~GUI_ScrollerPane()
 {
 }
 
+void	GUI_ScrollerPane::AttachSlaveH(GUI_ScrollerPane *inSlaveH)
+{
+	mSlaveH.push_back(inSlaveH);
+}
+
+void	GUI_ScrollerPane::AttachSlaveV(GUI_ScrollerPane *inSlaveV)
+{
+	mSlaveV.push_back(inSlaveV);
+}
+
+
 void	GUI_ScrollerPane::PositionInContentArea(GUI_Pane * inPane)
 {
 	int bounds_me[4];
@@ -92,11 +103,19 @@ void	GUI_ScrollerPane::ReceiveMessage(
 		int						inMsg,
 		int						inParam)
 {
+	vector<GUI_ScrollerPane*>::iterator slave;
 	if (inSrc == mScrollH && inMsg == GUI_CONTROL_VALUE_CHANGED && mContent && !mCalibrating)
+	{
 		mContent->ScrollH(mScrollH->GetValue());
-
+		for (slave = mSlaveH.begin(); slave != mSlaveH.end(); ++slave)
+			(*slave)->mContent->ScrollH(mScrollH->GetValue());
+	}
 	if (inSrc == mScrollV && inMsg == GUI_CONTROL_VALUE_CHANGED && mContent && !mCalibrating)
+	{
 		mContent->ScrollV(mScrollV->GetValue());
+		for (slave = mSlaveV.begin(); slave != mSlaveV.end(); ++slave)
+			(*slave)->mContent->ScrollV(mScrollV->GetValue());
+	}
 		
 	if (inSrc == mContent && inMsg == GUI_SCROLL_CONTENT_SIZE_CHANGED && mContent && !mCalibrating)
 		CalibrateSBs();

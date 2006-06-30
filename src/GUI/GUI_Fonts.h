@@ -33,11 +33,10 @@ void	GUI_FontDrawScaled(
 				const char *					inEnd,
 				int								inAlign);
 
-float	GUI_MeasureString(
+float	GUI_MeasureRange(
 				int 							inFontID,
-				const char *					inString,
-				int								inCount);
-
+				const char *					inCharStart,
+				const char *					inCharEnd);
 int		GUI_FitForward(
 				int 							inFontID,
 				const char *					inCharStart,

@@ -2,11 +2,16 @@
 #include "GUI_Messages.h"
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
+#include "GUI_Menus.h"
+#include "GUI_Clipboard.h"
+#include <ctype.h>
+#include <ctype.h>
 
 GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	GUI_Commander(parent),
 	mState(NULL),
-	mScrollH(scrollH)
+	mScrollH(scrollH),
+	mCaret(0)
 	
 {
 	mLogicalBounds[0] = 0;
@@ -23,6 +28,7 @@ void		GUI_TextField::SetWidth(float width)
 {
 	mLogicalBounds[2] = mLogicalBounds[0] + width;
 	Repaginate();
+	ConstrainLogicalBounds();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();	
 }
@@ -31,7 +37,7 @@ void		GUI_TextField::SetWidth(float width)
 void		GUI_TextField::Draw(GUI_GraphState * state)
 {
 	mState = state;
-	OGLE::Draw();
+	OGLE::Draw(mCaret && IsActiveNow() && IsFocused());
 	mState = NULL;
 }
 
@@ -39,7 +45,7 @@ int			GUI_TextField::MouseDown(int x, int y, int button)
 {
 	if (!IsFocused())
 		TakeFocus();
-	Click(x,y,false);
+	Click(x,y,GetModifiers() & gui_ShiftFlag);
 	Refresh();
 	return 1;
 }
@@ -67,10 +73,11 @@ void		GUI_TextField::SetBounds(int x1, int y1, int x2, int y2)
 	{
 		mLogicalBounds[0] = x1;
 		mLogicalBounds[2] = x2;
-		Repaginate();
-		Refresh();
 	}
+	Repaginate();
+	ConstrainLogicalBounds();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+	Refresh();
 }
 
 void		GUI_TextField::SetBounds(int inBounds[4])
@@ -80,37 +87,89 @@ void		GUI_TextField::SetBounds(int inBounds[4])
 	{
 		mLogicalBounds[0] = inBounds[0];
 		mLogicalBounds[2] = inBounds[2];
-		Repaginate();
-		Refresh();
 	}
+	Repaginate();
+	ConstrainLogicalBounds();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+	Refresh();
 }
 
 int			GUI_TextField::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	Key(inKey, inFlags & gui_ShiftFlag);
-	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 	return 1;
 }
 
 int			GUI_TextField::HandleCommand(int command)
 {
+	int s1, s2;
+	string txt;
+	switch(command) {
+	case gui_Cut:
+		GetSelection(&s1, &s2);
+		if (s1 != s2)
+		{
+			GUI_SetTextToClipboard(mText.substr(s1,s2-s1));
+			DoReplaceText(s1, s2, NULL, NULL);
+		}
+		return 1;	
+	case gui_Copy:
+		GetSelection(&s1, &s2);
+		if (s1 != s2)
+		{
+			GUI_SetTextToClipboard(mText.substr(s1,s2-s1));
+		}
+		return 1;	
+	case gui_Paste:
+		{
+			if (GUI_GetTextFromClipboard(txt))
+			{
+				GetSelection(&s1, &s2);
+				DoReplaceText(s1, s2, &*txt.begin(), &*txt.end());
+				SetSelection(s1+txt.size(),s1+txt.size());
+			}
+		}
+		return 1;
+	case gui_Clear:
+		GetSelection(&s1, &s2);
+		if (s1 != s2)
+		{
+			DoReplaceText(s1, s2, NULL, NULL);
+		}
+		return 1;	
+	case gui_SelectAll:
+		SetSelection(0, mText.size());
+		Refresh();
+		return 1;
+	}		
 	return 0;
 }
 
 int			GUI_TextField::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
+	switch(command) {
+	case gui_Cut:
+	case gui_Copy:
+	case gui_Paste:
+	case gui_Clear:
+	case gui_SelectAll:
+		return 1;
+	}
 	return 0;
 }
 
 int			GUI_TextField::AcceptTakeFocus(void)
 {
+	mCaret = 1;
+	Start(0.25);
 	return 1;
 }
 
 int			GUI_TextField::AcceptLoseFocus(int inForce)
 {
+	Stop();
+	mCaret = 0;
 	return 1;
 }
 
@@ -153,6 +212,12 @@ void		GUI_TextField::ScrollH(float hOffset)
 	Refresh();
 }
 
+void		GUI_TextField::TimerFired(void)
+{
+	mCaret = !mCaret;
+	Refresh();
+}
+
 void			GUI_TextField::GetVisibleBounds(
 						float			bounds[4])
 {
@@ -177,6 +242,9 @@ void			GUI_TextField::SetLogicalHeight(
 						float 			height)
 {
 	mLogicalBounds[1] = mLogicalBounds[3] - height;
+	ConstrainLogicalBounds();
+	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+	Refresh();
 }
 
 void			GUI_TextField::ScrollTo(
@@ -190,6 +258,7 @@ void			GUI_TextField::ScrollTo(
 	mLogicalBounds[1] = vbounds[1] - where[1];
 	mLogicalBounds[2] += mLogicalBounds[0];
 	mLogicalBounds[3] += mLogicalBounds[1];
+	ConstrainLogicalBounds();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 }
@@ -216,18 +285,11 @@ float			GUI_TextField::GetLineHeight(void)
 	return GUI_GetLineHeight(font_UI_Basic);
 }
 
-/*
-float			GUI_TextField::GetBaseline(void)
-{
-	return GUI_GetLineDescent(font_UI_Basic);
-}
-*/
-
 float			GUI_TextField::MeasureString(
 						const char * 	tStart, 
 						const char * 	tEnd)
 {
-	return GUI_MeasureString(font_UI_Basic, tStart, tEnd - tStart);
+	return GUI_MeasureRange(font_UI_Basic, tStart, tEnd);
 }
 
 int				GUI_TextField::FitStringFwd(
@@ -297,4 +359,32 @@ const char *	GUI_TextField::WordBreak(
 	return p;
 }
 							
+void	GUI_TextField::ConstrainLogicalBounds(void)
+{
+	int	vbounds[4];
+	GetBounds(vbounds);
 
+	if (mLogicalBounds[2] < vbounds[2])
+	{
+		mLogicalBounds[0] -= (mLogicalBounds[2] - vbounds[2]);
+		mLogicalBounds[2] -= (mLogicalBounds[2] - vbounds[2]);		
+	}
+
+	if (mLogicalBounds[1] > vbounds[1])
+	{
+		mLogicalBounds[3] -= (mLogicalBounds[1] - vbounds[1]);
+		mLogicalBounds[1] -= (mLogicalBounds[1] - vbounds[1]);
+	}
+
+	if (mLogicalBounds[0] > vbounds[0])
+	{
+		mLogicalBounds[2] -= (mLogicalBounds[0] - vbounds[0]);
+		mLogicalBounds[0] -= (mLogicalBounds[0] - vbounds[0]);
+	}
+
+	if (mLogicalBounds[3] < vbounds[3])
+	{
+		mLogicalBounds[1] -= (mLogicalBounds[3] - vbounds[3]);
+		mLogicalBounds[3] -= (mLogicalBounds[3] - vbounds[3]);		
+	}
+}

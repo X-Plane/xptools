@@ -92,14 +92,12 @@ void	GUI_SimpleScroller::AlignContents()
 		child[2] -= (child[2] - me[2]);		
 	}
 
-	if (child[3] < me[3])
+	if (child[1] > me[1])
 	{
 		change = 1;
-		child[1] -= (child[3] - me[3]);
-		child[3] -= (child[3] - me[3]);		
+		child[3] -= (child[1] - me[1]);
+		child[1] -= (child[1] - me[1]);
 	}
-
-
 
 	if (child[0] > me[0])
 	{
@@ -108,13 +106,13 @@ void	GUI_SimpleScroller::AlignContents()
 		child[0] -= (child[0] - me[0]);
 	}
 
-	if (child[1] > me[1])
+	if (child[3] < me[3])
 	{
 		change = 1;
-		child[3] -= (child[1] - me[1]);
-		child[1] -= (child[1] - me[1]);
+		child[1] -= (child[3] - me[3]);
+		child[3] -= (child[3] - me[3]);		
 	}
-	
+
 	if (change)
 		this->GetNthChild(0)->SetBounds(child);
 		

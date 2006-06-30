@@ -1,11 +1,35 @@
 #ifndef GUI_SCROLLERPANE_H
 #define GUI_SCROLLERPANE_H
 
-// This class manages scrollbars for you.  The behavior provides
-// the scrolled content - doesn't have to be a subpane, can be anything.
-// Deleting super pane does NOT delete behavhior because behavior may 
-// just be an APSECT of a subclassed pane which will be deleted anyway - so
-// we have to avoid the double-delete.
+/*
+
+	GUI_ScrollerPane - THEORY OF OPERATION
+	
+	GUI_ScrollerPane is a pane that manages scrollable content.
+
+	No assumptions are made about the content - it doesn't have to be
+	a sub-pane; it's simply an aspect of some object.  The object
+	returns the logical vs physical bounds (any units) and takes 
+	scrolling commands.  ScrollH and ScrollV take absolute positive
+	units measured from the logical to physical lower left corners -
+	thus when the lower left corner of the logical doc is visible, the
+	scroll is 0,0.  Vertical scroll could be negative if we want a top-
+	aligned document and the visible rect is taller than the logical ret.
+
+	This class does not delete contents on destruction so that if contents
+	are a sub-pane we don't have a double-delete.
+
+	SLAVING
+	
+	It is possible to slave another scroller to this one - basically it makes
+	our scroll-bars drive the slave.  However:
+	- child auto-slaving with a "contents changed" message to the master does
+	  not scroll slaves, so two slaved text fields are a bad idea...auto-scroll
+	  won't propagate.
+	- Master-slave is not bidirectional.
+
+*/
+
 
 #include "GUI_Pane.h"
 #include "GUI_Listener.h"
@@ -32,6 +56,9 @@ public:
 					 GUI_ScrollerPane(int inHScroll, int inVScroll);
 	virtual			~GUI_ScrollerPane();
 
+			void	AttachSlaveH(GUI_ScrollerPane *inSlaveH);
+			void	AttachSlaveV(GUI_ScrollerPane *inSlaveV);
+
 			void	PositionInContentArea(GUI_Pane * inPane);		// Sticks between scrollbars
 			void	SetContent(GUI_ScrollerPaneContent * inPane);
 
@@ -50,6 +77,9 @@ public:
 
 
 private:
+
+		vector<GUI_ScrollerPane*>	mSlaveH;
+		vector<GUI_ScrollerPane*>	mSlaveV;
 
 			void	CalibrateSBs(void);
 

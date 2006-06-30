@@ -18,6 +18,8 @@ public:
 			int				IsFocused(void);
 			int				IsFocusedChain(void);
 	
+			GUI_Commander *	GetCmdParent(void);
+	
 	// Handler Dispatchers
 			int				DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 			int				DispatchHandleCommand(int command);

@@ -47,12 +47,14 @@ public:
 			
 	virtual void		Refresh(void);		// Schedule an async window redraw.
 
+	static	GUI_KeyFlags	GetModifiers(void);
+
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 	virtual	void		Draw(GUI_GraphState * state) { }
 	
 	virtual	int			MouseDown(int x, int y, int button) { return 0; }
-	virtual	void		MouseDrag(int x, int y, int button) { }
-	virtual	void		MouseUp(int x, int y, int button) { }
+	virtual	void		MouseDrag(int x, int y, int button) { 			}
+	virtual	void		MouseUp  (int x, int y, int button) { 			}
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis) { return 0; }
 
 private:
