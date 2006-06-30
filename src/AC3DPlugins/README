@@ -12,6 +12,14 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 
+Version 2.2 (not yet out)
+	named lights
+	custom lights
+	prefs
+	remap tex coords
+	convert directory
+	make LOD group
+
 Version 2.1b2 2/15/06
 	- Fixed texture repeat-offset export (was ignored since 2.0).
 Version 2.1b1 1/20/06

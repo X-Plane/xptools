@@ -150,6 +150,49 @@ void do_change_tex(void)
 */		
 }
 
+void do_rescale_tex(const char * config)
+{
+	float old_s1,  old_t1,  old_s2,  old_t2,
+	 new_s1,  new_t1,  new_s2,  new_t2;
+	
+	if (sscanf(config,"%f %f %f %f %f %f %f %f", 
+		&old_s1, &old_t1, &old_s2, &old_t2, 
+		&new_s1, &new_t1, &new_s2, &new_t2) != 8)
+	{
+		printf("Bad args %s to rescalae tex.\n",config);
+		return;
+	}
+	
+	vector <ACObject *> all;
+	find_all_selected_objects(all);
+	
+	float s_scale = (new_s2 - new_s1) / (old_s2 - old_s1);
+	float s_offset = new_s1 - old_s1 * s_scale;
+
+	float t_scale = (new_t2 - new_t1) / (old_t2 - old_t1);
+	float t_offset = new_t1 - old_t1 * t_scale;
+	
+	if (!all.empty())
+	{	
+		add_undoable_all("Remap textures");
+		
+		int total = 0, changed = 0;
+		for (vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)		
+		{
+			if (ac_object_has_texture(*i))
+			{
+				offset_object_textures(*i, s_offset, t_offset, s_scale, t_scale);
+			}
+		}
+		
+	} else
+		message_dialog("Cannot substitute textures when no objects are selected.");
+
+
+}
+
+
+
 void do_calc_lod(void)
 {
 	float minv[3], maxv[3];
@@ -165,7 +208,7 @@ void do_calc_lod(void)
 
 }
 
-void do_animation_group(void)
+void do_named_group(char * str)
 {
 	List * objs_l = ac_selection_get_objects();
 	if (objs_l == NULL) return;
@@ -190,7 +233,7 @@ void do_animation_group(void)
 	}	
 	
 	ACObject * new_obj = new_object(OBJECT_GROUP);
-	object_set_name(new_obj, "ANIMATION");
+	object_set_name(new_obj, str);
 
 	for (int n = 0; n < objs.size(); ++n)
 		object_reparent(objs[n], new_obj);

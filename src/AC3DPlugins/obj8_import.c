@@ -446,6 +446,44 @@ ACObject *	do_obj8_load(char *filename)
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
 				}
 				break;
+			case obj8_LightNamed:
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 1.0, 1.0, 1.0 };
+					pt_ac3.x = cmd->params[0];
+					pt_ac3.y = cmd->params[1];
+					pt_ac3.z = cmd->params[2];
+					ac_entity_set_point_value(light, "loc", &pt_ac3);
+					
+					sprintf(strbuf, "LIGHT_NAMED %s", cmd->name.c_str());
+						
+					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					object_set_name(light, strbuf);
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);				
+				}				
+				break;				
+			case obj8_LightCustom:
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 1.0, 1.0, 1.0 };
+					pt_ac3.x = cmd->params[0];
+					pt_ac3.y = cmd->params[1];
+					pt_ac3.z = cmd->params[2];
+					ac_entity_set_point_value(light, "loc", &pt_ac3);
+
+					sprintf(strbuf, "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", 
+						cmd->params[3], cmd->params[4 ], cmd->params[5 ], 
+						cmd->params[6], cmd->params[7 ], cmd->params[8 ], 
+						cmd->params[9], cmd->params[10], cmd->params[11], 
+						cmd->name.c_str());
+					
+					ac_entity_set_point_value(light, "diffuse", &col_ac3);
+					object_set_name(light, strbuf);
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);				
+				}				
+				break;
 			case obj_Smoke_Black:
 			case obj_Smoke_White:
 			case attr_Ambient_RGB:	

@@ -40,6 +40,7 @@ attributes.
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
 #include "XObjBuilder.h"
+#include "prefs.h"
 #include <stdio.h>
 #include <list>
 #include <set>
@@ -215,9 +216,35 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 {
 	Point3	xyz, rgb = { 1.0, 1.0, 1.0 };
 	ac_entity_get_point_value(obj, "loc", &xyz);
-	
+	char * token;
 	char * title = ac_object_get_name(obj);
-	char * token = strstr(title, "_RGB=");
+	
+	token = strstr(title, "LIGHT_NAMED");
+	if (token)
+	{
+		char lname[256];
+		sscanf(token,"LIGHT_NAMED %s", lname);
+		float pos[3] = { xyz.x, xyz.y, xyz.z };
+		builder->AccumLightNamed(pos, lname);
+		return;
+	}
+
+	token = strstr(title, "LIGHT_CUSTOM");
+	if (token)
+	{
+		char lname[256];
+		float params[9];
+		sscanf(token,"LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", 
+			params  , params+1, params+2,
+			params+3, params+4, params+5,
+			params+6, params+7, params+8, lname);
+		float pos[3] = { xyz.x, xyz.y, xyz.z };
+		builder->AccumLightCustom(pos, params, lname);
+		return;
+	}
+
+	
+	token = strstr(title, "_RGB=");
 	if (token != NULL)
 	{
 		if (strlen(token) > 5)
@@ -389,9 +416,20 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 
 	XObjBuilder		builder(&obj8);
 
+	if (g_export_airport_lights)
+		builder.SetAttribute1Named(attr_Layer_Group, 0, "light_objects");
+
 //	obj8_reset_properties();
     obj8_output_object(&builder, obj, obj);
     
+	if (g_default_LOD > 0.0f)
+	if (obj8.lods.size() == 1 && obj8.lods.front().lod_far == 0.0)
+	{
+		obj8.lods[0].lod_near = 0.0f;
+		obj8.lods[0].lod_far = g_default_LOD;
+	}
+
+	
     string::size_type p = gTexName.find_last_of("\\/");
     if (p != gTexName.npos) gTexName.erase(0,p+1);
     obj8.texture = gTexName;
