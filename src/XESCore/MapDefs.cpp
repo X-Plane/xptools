@@ -2238,7 +2238,7 @@ GISHalfedge *	Pmwx::get_preceding(GISHalfedge * points_to_vertex, const Point2& 
 
 		it = next;		
 	} while (it != points_to_vertex);
-	assert(!"Never found the insert CCB vector.");
+	Assert(!"Never found the insert CCB vector.");
 	return points_to_vertex;
 }
 

@@ -23,6 +23,7 @@
 #include "DEMTables.h"
 #include "EnumSystem.h"
 #include "DEMDefs.h"
+#include <ctype.h>
 //#include "CoverageFinder.h"
 
 EnumColorTable				gEnumColors;
