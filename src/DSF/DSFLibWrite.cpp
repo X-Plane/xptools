@@ -1290,31 +1290,42 @@ void 	DSFFileWriterImp::BeginPolygon(
 		
 		DSFTuple	polyRangeMin, polyRangeMax;
 						polyRangeMin.push_back(REF(inRef)->mWest);
-						polyRangeMin.push_back(REF(inRef)->mSouth);
-		if (inDepth > 2)polyRangeMin.push_back(-32768.0);
-		if (inDepth > 3)polyRangeMin.push_back(-1.0);
-		if (inDepth > 4)polyRangeMin.push_back(-1.0);
-		if (inDepth > 5)polyRangeMin.push_back(0.0);
 						polyRangeMax.push_back(REF(inRef)->mEast);
+						polyRangeMin.push_back(REF(inRef)->mSouth);
 						polyRangeMax.push_back(REF(inRef)->mNorth);
+		if (inDepth > 2)polyRangeMin.push_back(-32768.0);
 		if (inDepth > 2)polyRangeMax.push_back(32767.0);
+		if (inDepth > 3)polyRangeMin.push_back(-1.0);
 		if (inDepth > 3)polyRangeMax.push_back(1.0);
+		if (inDepth > 4)polyRangeMin.push_back(-1.0);
 		if (inDepth > 4)polyRangeMax.push_back(1.0);
+		if (inDepth > 5)polyRangeMin.push_back(0.0);
 		if (inDepth > 5)polyRangeMax.push_back(0.0);
+		if (inDepth ==4)polyRangeMin[2]=polyRangeMin[0];
+		if (inDepth ==4)polyRangeMax[2]=polyRangeMax[0];
+		if (inDepth ==4)polyRangeMin[3]=polyRangeMin[1];
+		if (inDepth ==4)polyRangeMax[3]=polyRangeMax[1];
 				
 		polygonPool.SetRange(polyRangeMin, polyRangeMax);
 		for (int i = 0; i < REF(inRef)->mDivisions; ++i)
 		for (int j = 0; j < REF(inRef)->mDivisions; ++j)
 		{
 			DSFTuple	fracMin, fracMax;
-			fracMin.push_back((double) i / double (REF(inRef)->mDivisions));
-			fracMin.push_back((double) j / double (REF(inRef)->mDivisions));
-			for (int k = 2; k < inDepth; ++k)
-				fracMin.push_back(0.0);
+			fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
 			fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
+			fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
 			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			for (int k = 2; k < inDepth; ++k)
-				fracMax.push_back(1.0);
+			if (inDepth==4) {
+				fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
+				fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
+				fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
+				fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
+			} else {
+				for (int k = 2; k < inDepth; ++k) {
+					fracMin.push_back(0.0);
+					fracMax.push_back(1.0);
+				}
+			}
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
@@ -1322,15 +1333,22 @@ void 	DSFFileWriterImp::BeginPolygon(
 		for (int i = 1; i < REF(inRef)->mDivisions; ++i)
 		for (int j = 1; j < REF(inRef)->mDivisions; ++j)
 		{
-			DSFTuple	fracMin, fracMax;
+			DSFTuple	fracMin, fracMax;			
 			fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
+			fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
 			fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
-			for (int k = 2; k < inDepth; ++k)
-				fracMin.push_back(0.0);
-			fracMax.push_back(((double) i+0.5) / double (REF(inRef)->mDivisions));
-			fracMax.push_back(((double) j+0.5) / double (REF(inRef)->mDivisions));
-			for (int k = 2; k < inDepth; ++k)
-				fracMax.push_back(1.0);
+			fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
+			if (inDepth==4) {
+				fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
+				fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
+				fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
+				fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
+			} else {
+				for (int k = 2; k < inDepth; ++k) {
+					fracMin.push_back(0.0);
+					fracMax.push_back(1.0);
+				}
+			}
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
@@ -1338,6 +1356,15 @@ void 	DSFFileWriterImp::BeginPolygon(
 		DSFTuple	fracMin, fracMax;
 		fracMin.push_back(0.0);		fracMax.push_back(1.0);
 		fracMin.push_back(0.0);		fracMax.push_back(1.0);
+		if (inDepth==4) {
+			fracMin.push_back(0.0);		fracMax.push_back(1.0);
+			fracMin.push_back(0.0);		fracMax.push_back(1.0);
+		} else {
+			for (int k = 2; k < inDepth; ++k) {
+				fracMin.push_back(0.0);
+				fracMax.push_back(1.0);
+			}
+		}
 		polygonPool.AddPool(fracMin, fracMax);
 		polygonPool.AddPool(fracMin, fracMax);
 		polygonPool.AddPool(fracMin, fracMax);
