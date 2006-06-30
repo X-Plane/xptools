@@ -109,7 +109,7 @@ int				XPLMFitStringForward(
 									int					inWidth)
 {
 	if (sFont == NULL) InitFonts();	
-	return sMgr->FitForward(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inStartPtr, inEndPtr, inWidth);
+	return sMgr->FitForward(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inWidth,inStartPtr, inEndPtr);
 }
 
 int				XPLMFitStringBackward(
@@ -119,7 +119,7 @@ int				XPLMFitStringBackward(
 									int					inWidth)
 {
 	if (sFont == NULL) InitFonts();	
-	return sMgr->FitReverse(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inStartPtr, inEndPtr, inWidth);
+	return sMgr->FitReverse(sFont, sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inWidth,inStartPtr, inEndPtr);
 }
 
 
