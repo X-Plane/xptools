@@ -114,6 +114,7 @@ void obj8_reset_properties(void)
 
 void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth)
 {
+	if (!g_export_triangles) return;
 //		Vertex *p1, *p2, *p3;
 		SVertex * s1, * s2, *s3;
 
@@ -140,6 +141,8 @@ void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth)
 
 void obj8_output_polyline(XObjBuilder * builder, Surface *s)
 {
+	if (!g_export_triangles) return;
+
 	Vertex *p1, *p2;
 	int n;
 
@@ -429,9 +432,10 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 		obj8.lods[0].lod_far = g_default_LOD;
 	}
 
-	
-    string::size_type p = gTexName.find_last_of("\\/");
-    if (p != gTexName.npos) gTexName.erase(0,p+1);
+	string obj_path(fname);
+	string::size_type p;
+	p = obj_path.find_last_of("\\/");
+	gTexName.erase(0,p+1);
     obj8.texture = gTexName;
     if (obj8.texture.size() > 4)
 	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);

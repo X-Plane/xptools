@@ -24,7 +24,6 @@
 #define XBUCKETS_H
 
 #include <vector>
-#include <hash_map>
 
 /***************************************************
 	An X-Limerick
@@ -268,7 +267,7 @@ private:
 	typedef	vector<Object>									ObjectVector;
 
 #if __GNUC__
-	typedef	std::hash_map<XBucketID, ObjectVector>	BucketMap;
+	typedef	hash_map<XBucketID,  ObjectVector>	BucketMap;
 #endif
 #if __MWERKS__
 	typedef	Metrowerks::hash_map<XBucketID, ObjectVector>	BucketMap;

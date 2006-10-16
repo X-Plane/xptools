@@ -23,32 +23,41 @@
 #ifndef XDEFS_H
 #define XDEFS_H
 
-#if __MACH__
-	#pragma c99 on
-	
-	#define _MSL_USING_MW_C_HEADERS 1
-	
-	#define __dest_os __mac_os_x
-#elif APL
-	#define __dest_os __mac_os
+#if __MWERKS__
+	#if __MACH__
+		#pragma c99 on
+		
+		#define _MSL_USING_MW_C_HEADERS 1
+		
+		#define __dest_os __mac_os_x
+	#elif APL
+		#define __dest_os __mac_os
+	#endif
+
+	#define __MSL_LONGLONG_SUPPORT__
 #endif
 
-#define __MSL_LONGLONG_SUPPORT__
-
-
-#ifdef WINVER
-	#define APL 0
-	#define IBM 1
+#if APL || LIN
 	#define CRLF "\n"
-#else
-	#define APL 1
-	#define IBM 0
-#if __MACH__	
-	#define CRLF "\r"
 #else	
-	#define CRLF "\n"
+	#define CRLF "\r\n"
 #endif	
-#endif	
+
+#if APL
+	#if defined(__POWERPC__)
+		#define BIG 1
+		#define LIL 0
+	#else
+		#define BIG 0
+		#define LIL 1
+	#endif	
+#elif IBM || LIN
+	#define BIG 0
+	#define LIL 1
+#else
+	#error NO PLATFORM!
+#endif
+
 
 #include <vector>
 #include <string>
@@ -61,5 +70,37 @@
 using namespace std;
 
 #define SUPPORT_STL
+
+#if __MWERKS__							// metrowerks compiler
+	#include <hash_map>
+	using namespace std;				// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
+	using Metrowerks::hash_map;			// Pull hash map into the global domain too!
+	using Metrowerks::hash_multimap;
+	#define HASH_MAP_NAMESPACE Metrowerks
+#endif
+#if __GNUC__							// gnuc is the x-code compiler
+	#if APL
+		#include <ext/hash_map>
+		#include <ext/hash_fun.h>
+
+		namespace __gnu_cxx {
+			template<>
+			struct hash<std::string>
+			{
+				size_t
+				operator()(const std::string& __s) const
+				{ return __stl_hash_string(__s.c_str()); }
+			};
+		}
+	#else
+		#include <hash_map>
+	#endif
+	using namespace	std;				// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
+	using namespace __gnu_cxx;			// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
+	using __gnu_cxx::hash_map;
+	using __gnu_cxx::hash;
+	#define HASH_MAP_NAMESPACE __gnu_cxx
+#endif
+
 
 #endif

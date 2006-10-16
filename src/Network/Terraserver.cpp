@@ -23,7 +23,11 @@
 #include "Terraserver.h"
 #include "HTTPClient.h"
 #include "XPLMGraphics.h"
-#include <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
 #include "BitmapUtils.h"
 #include "TexUtils.h"
 #include "XMLObject.h"

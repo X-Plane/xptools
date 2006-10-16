@@ -6,9 +6,8 @@ vector<ACCEL>	gAccelTable;
 #endif
 
 #if APL
-#include <Carbon.h>
+#include <carbon/Carbon.h>
 #include "XUtils.h"
-#include <sioux.h>
 
 
 static void	NukeAmpersand(string& ioString)
@@ -18,16 +17,6 @@ static void	NukeAmpersand(string& ioString)
 	{
 		ioString.erase(loc);
 	}
-}
-
-pascal OSStatus GUI_Application::SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
-{
-	GUI_Application * me = reinterpret_cast<GUI_Application *>(inUserData);
-
-	EventRecord	rec;
-	if (ConvertEventRefToEventRecord(inEvent, &rec) && SIOUXHandleOneEvent(&rec))
-		return noErr;
-	return eventNotHandledErr;
 }
 
 pascal OSErr GUI_Application::HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
@@ -167,52 +156,15 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	SetMenuBar(GetNewMBar(128));
 
 	mMacEventHandlerUPP = NewEventHandlerUPP(MacEventHandler);
-	mSiouxSnifferUPP = NewEventHandlerUPP(SiouxSniffer);
 	mHandleOpenDocUPP = NewAEEventHandlerUPP(HandleOpenDoc);
 
 	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, mHandleOpenDocUPP, reinterpret_cast<long>(this), FALSE);
-
-	EventTypeSpec sioux_events[] = {
-		kEventClassMouse,			kEventMouseDown,
-		kEventClassMouse,			kEventMouseUp,
-		kEventClassMouse,			kEventMouseMoved,
-		kEventClassMouse,			kEventMouseDragged,
-		kEventClassKeyboard,		kEventRawKeyDown,
-		kEventClassKeyboard,		kEventRawKeyRepeat,
-		kEventClassKeyboard,		kEventRawKeyUp,
-		kEventClassKeyboard,		kEventRawKeyModifiersChanged,
-		kEventClassApplication,		kEventAppActivated,
-		kEventClassApplication,		kEventAppDeactivated,
-		kEventClassApplication,		kEventAppFrontSwitched,
-		kEventClassWindow,			kEventWindowUpdate,
-		kEventClassWindow,			kEventWindowActivated,
-		kEventClassWindow,			kEventWindowDeactivated,
-		kEventClassWindow,			kEventWindowShowing,
-		kEventClassWindow,			kEventWindowHiding,
-		kEventClassWindow,			kEventWindowShown,
-		kEventClassWindow,			kEventWindowHidden,
-		kEventClassWindow,			kEventWindowBoundsChanged,
-		kEventClassWindow,			kEventWindowResizeCompleted,
-		kEventClassWindow,			kEventWindowDragCompleted,
-		kEventClassWindow,			kEventWindowClickDragRgn,
-		kEventClassWindow,			kEventWindowClickResizeRgn,
-		kEventClassWindow,			kEventWindowClickCollapseRgn,
-		kEventClassWindow,			kEventWindowClickCloseRgn,
-		kEventClassWindow,			kEventWindowClickZoomRgn,
-		kEventClassWindow,			kEventWindowClickContentRgn,
-		kEventClassWindow,			kEventWindowClickStructureRgn,
-		kEventClassWindow,			kEventWindowCursorChange,
-		kEventClassWindow,			kEventWindowClose,
-		kEventClassWindow,			kEventWindowExpand,
-		kEventClassWindow,			kEventWindowZoom,
-		kEventClassWindow,			kEventWindowHandleContentClick };
 		
 	EventTypeSpec menu_events[] = {
 		kEventClassCommand,			kEventCommandProcess,
 		kEventClassMenu,			kEventMenuEnableItems };
 		
 	InstallEventHandler(GetApplicationEventTarget(), mMacEventHandlerUPP, GetEventTypeCount(menu_events), menu_events, reinterpret_cast<void *>(this), &mMacEventHandlerRef);
-	InstallEventHandler(GetEventDispatcherTarget(), mSiouxSnifferUPP, GetEventTypeCount(sioux_events), sioux_events, reinterpret_cast<void *>(this), &mSiouxSnifferRef);	
 	
 #endif
 #if IBM

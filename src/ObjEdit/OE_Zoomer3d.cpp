@@ -24,7 +24,13 @@
 #include "trackball.h"
 #include "MatrixUtils.h"
 #include "GEoUtils.h"
-#include <gl/glu.h>
+#if APL
+	#include <OpenGL/glu.h>
+#else
+	#include <gl/glu.h>
+#endif
+#include <math.h>
+
 const	float	kCamDist = 500;
 const	float	kNear = 50.0;
 const	float	kFar = 2000.0;
@@ -74,7 +80,7 @@ void		OE_Zoomer3d::SetupMatrices(
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	gluLookAt(	0.0, 0.0, -kCamDist, 
+	gluLookAt(	0.0, 0.0, kCamDist, 
 				0.0, 0.0, 0.0, 
 				0.0, 1.0, 0.0);
 
@@ -143,7 +149,7 @@ void		OE_Zoomer3d::HandleRotationClick(
 		y2 *= 2.0; y2 -= 1.0;
 
 		float q[4];
-		trackball(q, x1, -y1, x2, -y2);				
+		trackball(q, x1, y1, x2, y2);				
 		add_quats(q, mRotation, mRotation);
 	}
 	x_drag = x;

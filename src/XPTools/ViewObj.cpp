@@ -39,15 +39,21 @@
 #include <set>
 #include "PlatformUtils.h"
 #include "OE_Zoomer3d.h"
+
 #if FACADES
-#include "FacadeObj.h"
+	#include "FacadeObj.h"
 #endif
-#include <gl/gl.h>
+
 #if APL
-#include <gl/glext.h>
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glext.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <gl/gl.h>
+	#include <glu.h>
 #endif
+
 //#include <glut.h>
-#include <glu.h>
 
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
@@ -142,7 +148,7 @@ private:
 	FacadeObj_t		mFacade;
 #endif	
 	Polygon2 		mPts;
-	Sphere3			mBounds;
+//	Sphere3			mBounds;
 
 //	bool	mIsPrototype;
 #if FACADES
@@ -161,7 +167,7 @@ private:
 	bool	mLighting;
 	bool	mMeasureOnOpen;
 	int		mShowCulled;
-	int		mShowBounds;
+//	int		mShowBounds;
 	
 	int		mEditNum;
 	int		mLastX;
@@ -193,7 +199,7 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 
 
 XObjWin::XObjWin(const char * inFileName) : XWinGL(inFileName ? inFileName : "Drag Obj Here", 50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
-	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), mShowBounds(false), mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false)
+	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false)
 {
 	mPts.push_back(Point2(-10.0,  10.0));
 	mPts.push_back(Point2( 10.0,  10.0));
@@ -300,7 +306,7 @@ void			XObjWin::GLDraw(void)
 		glPopMatrix();
 	}
 	
-	if (mShowBounds)
+/*	if (mShowBounds)
 	{
 		glDisable(GL_TEXTURE_2D);
 		glColor3f(0.2, 0.2, 0.2);
@@ -312,6 +318,7 @@ void			XObjWin::GLDraw(void)
 		gluDeleteQuadric(quad);
 		glPopMatrix();
 	}
+*/
 		
 #if FACADES
 	if (mIsFacade)
@@ -437,10 +444,10 @@ void			XObjWin::ClickDrag(int inX, int inY, int inButton)
 				BuildFacadeObj(mFacade, pts, mFloors, Vector3(0.0, 1.0, 0.0), ExtrudeFuncToObj, &mObj);
 			}
 #endif			
-			xflt	s[4];
-			GetObjBoundingSphere(mObj, s);
-			mBounds.c = Point3(s[0], s[1], s[2]);
-			mBounds.radius_squared = s[3];
+//			xflt	s[4];
+//			GetObjBoundingSphere(mObj, s);
+//			mBounds.c = Point3(s[0], s[1], s[2]);
+//			mBounds.radius_squared = s[3];
 			ForceRefresh();
 		}
 	} else {
@@ -609,10 +616,10 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 	case 'C':
 		mShowCulled = 1 - mShowCulled;
 		break;
-	case 'b':
-	case 'B':
-		mShowBounds = 1 - mShowBounds;
-		break;
+//	case 'b':
+//	case 'B':
+//		mShowBounds = 1 - mShowBounds;
+//		break;
 	case 'U':
 	case 'u':
 		mFloors++;
@@ -669,13 +676,13 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 void		XObjWin::ScaleToObj(void)
 {
 	mZoomer.ResetToIdentity();
-	xflt	s[4];
-	if (mIsObj8)	
-		GetObjBoundingSphere8(mObj8, s);
-	else
-		GetObjBoundingSphere(mObj, s);
-	mBounds.c = Point3(s[0], s[1], s[2]);
-	mBounds.radius_squared = s[3];
+//	xflt	s[4];
+//	if (mIsObj8)	
+//		GetObjBoundingSphere8(mObj8, s);
+//	else
+//		GetObjBoundingSphere(mObj, s);
+//	mBounds.c = Point3(s[0], s[1], s[2]);
+//	mBounds.radius_squared = s[3];
 	double	rad = mIsObj8 ? GetObjRadius8(mObj8) : GetObjRadius(mObj);
 	if (rad > 0.0)
 	{

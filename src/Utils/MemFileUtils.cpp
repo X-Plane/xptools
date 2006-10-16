@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>
+#if APL
+#include <CFURL.h>
+#include <CFString.h>
+#endif
 /*
 	TODO - level two analysis
 	TODO - single file open handles zip, gz
@@ -1120,18 +1124,24 @@ MF_GetDirectoryBulk(
 		ItemCount		fetched;
 		FSCatalogInfo	infos[256];
 		HFSUniStr255	names[256];
-		
-	#if !DEV
-		use CFURL FER CRYIN OUT LOUD
-	#endif
-		
-	pStr[0] = strlen(path);
-	memcpy(pStr+1,path,pStr[0]);
-	err = FSMakeFSSpec(0,0,pStr,&spec);
-	if (err != 0) return 0;
-	err = FSpMakeFSRef(&spec, &ref);
-	if (err != 0) return 0;
+
+		CFURLRef	cfurl;
+		CFStringRef	cfstr;
+
+	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingMacRoman);
+	if (cfstr == NULL) return 0;
 	
+	cfurl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfstr, kCFURLHFSPathStyle, TRUE);
+	CFRelease(cfstr);
+	if (cfurl == NULL) return 0;
+
+	if (!CFURLGetFSRef(cfurl, &ref))
+	{
+		CFRelease(cfurl);
+		return 0;
+	}
+	CFRelease(cfurl);
+		
 	err = FSOpenIterator(&ref, kFSIterateFlat, &iter);
 	if (err != noErr) return 0;
 

@@ -25,16 +25,24 @@
 
 #include <stdio.h>
 
-#if APL
-	#include <Endian.h>
-	#define SWAP16(x) (Endian16_Swap(x))
-	#define SWAP32(x) (Endian32_Swap(x))
-	#define SWAP64(x) (Endian64_Swap(x))
-#else
+#if BIG
+	#if APL
+
+	#include <libkern/OSByteOrder.h>
+
+		#define SWAP16(x) (OSSwapConstInt16(x))
+		#define SWAP32(x) (OSSwapConstInt32(x))
+		#define SWAP64(x) (OSSwapConstInt64(x))
+	#else
+		#error need big endian swapping for non-MAc OS!
+	#endif
+#elif LIL
 	#define SWAP16(x) (x)
 	#define SWAP32(x) (x)
 	#define SWAP64(x) (x)
-#endif	
+#else
+	#error endian not defined
+#endif
 
 #if APL
 #pragma options align=mac68k

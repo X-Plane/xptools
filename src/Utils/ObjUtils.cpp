@@ -365,30 +365,43 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 
 #pragma mark -
 
+/*
 void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 {
-	vector<Point3>	pts;
+	xflt minxyz[3] = {  9.9e9, 9.9e9, 9.9e9 };
+	xflt maxxyz[3] = { -9.9e9,-9.9e9,-9.9e9 };
 	
 	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); cmd != inObj.cmds.end(); ++cmd)
 	{
 		for (vector<vec_tex>::const_iterator st = cmd->st.begin(); st != cmd->st.end(); ++st)
 		{
-			pts.push_back(Point3(st->v[0], st->v[1], st->v[2]));
+			minxyz[0] = min(minxyz[0], st->v[0]);
+			minxyz[1] = min(minxyz[1], st->v[1]);
+			minxyz[2] = min(minxyz[2], st->v[2]);
+			maxxyz[0] = max(maxxyz[0], st->v[0]);
+			maxxyz[1] = max(maxxyz[1], st->v[1]);
+			maxxyz[2] = max(maxxyz[2], st->v[2]);
 		}
 		
 		for (vector<vec_rgb>::const_iterator rgb = cmd->rgb.begin(); rgb != cmd->rgb.end(); ++rgb)
 		{
-			pts.push_back(Point3(rgb->v[0], rgb->v[1], rgb->v[2]));
+			minxyz[0] = min(minxyz[0], rgb->v[0]);
+			minxyz[1] = min(minxyz[1], rgb->v[1]);
+			minxyz[2] = min(minxyz[2], rgb->v[2]);
+			maxxyz[0] = max(maxxyz[0], rgb->v[0]);
+			maxxyz[1] = max(maxxyz[1], rgb->v[1]);
+			maxxyz[2] = max(maxxyz[2], rgb->v[2]);
 		}
 	}
 
-	Sphere3	sphere;
-	FastBoundingSphere(pts, sphere);
-	outSphere[0] = sphere.c.x;
-	outSphere[1] = sphere.c.y;
-	outSphere[2] = sphere.c.z;
-	outSphere[3] = sphere.radius_squared;
+	outSphere[0] = (minxyz[0]+maxxyz[0]) * 0.5;
+	outSphere[1] = (minxyz[1]+maxxyz[1]) * 0.5;
+	outSphere[2] = (minxyz[2]+maxxyz[2]) * 0.5;
+	outSphere[3] = (minxyz[0]-outSphere[0])*(minxyz[0]-outSphere[0])+
+				   (minxyz[1]-outSphere[1])*(minxyz[1]-outSphere[1])+
+				   (minxyz[2]-outSphere[2])*(minxyz[2]-outSphere[2]);
 }
+
 
 void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4])
 {
@@ -419,7 +432,7 @@ void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4])
 	outSphere[2] = sphere.c.z;
 	outSphere[3] = sphere.radius_squared;
 }
-
+*/
 
 void OffsetObject(XObj& ioObj, double x, double y, double z)
 {

@@ -14,6 +14,8 @@ Version History
 							Fixed crashes and hung files on Windows
 							Fixed return codes for command-line tool
 							Changed output for clean piping
+	 7/24/06 - 1.1.1		Fixed support for bezier polygon parsing
+	 
 -------------------------------------------------------------------------------
 OVERVIEW
 -------------------------------------------------------------------------------

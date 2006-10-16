@@ -37,8 +37,7 @@
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
 #else
-#include <OpenTransport.h>
-#include <OpenTransportProviders.h>
+#include <Carbon/Carbon.h>
 #endif
 
 class	PCSBSocket {

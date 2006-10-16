@@ -904,6 +904,7 @@ int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInf
 {
 	png_uint_32	width, height;
 	int bit_depth,color_type,interlace_type,compression_type,P_filter_type;
+	double lcl_gamma, screen_gamma;
 
 	png_structp		pngPtr = NULL;
 	png_infop		infoPtr = NULL;
@@ -954,12 +955,12 @@ int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInf
 	outImageInfo->width = width;
 	outImageInfo->height = height;
 
-	double lcl_gamma;			// This will be the gamma of the file if it has one.
+								// This will be the gamma of the file if it has one.
 #if APL							// Macs and PCs have different gamma responses.
-	double screen_gamma=1.8;	// Darks look darker and brights brighter on the PC.
+	screen_gamma=1.8;			// Darks look darker and brights brighter on the PC.
 #endif							// Macs are more even.
 #if IBM||LIN
-	double screen_gamma=2.2;
+	screen_gamma=2.2;
 #endif
 
 	if(  png_get_gAMA (pngPtr,infoPtr     ,&lcl_gamma))		// Perhaps the file has its gamma recorded, for example by photoshop. Just tell png to callibrate for our hw platform.
@@ -1095,11 +1096,11 @@ static	void	IgnoreTiffWarnings(const char *, const char*, va_list)
 
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
+	int result = -1;
 	TIFFErrorHandler	errH = TIFFSetWarningHandler(IgnoreTiffWarnings);
     TIFF* tif = TIFFOpen(inFilePath, "r");
     if (tif == NULL) goto bail;
 
-	int result = -1;
 	uint32 w, h;
 	uint16 cc;
 	size_t npixels;

@@ -4,6 +4,7 @@
 #include "obj_tools.h"
 #include <ac_plugin.h>
 #include <stdio.h>
+#include <gl.h>
 #include <string.h>
 #include "prefs.h"
 
@@ -15,8 +16,38 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
 
 #define CAST_CMD(x) reinterpret_cast<void*>(x)
 /***************************************************************************************************
- * MAIN PLUGINJ
+ * MAIN PLUGIN
  ***************************************************************************************************/
+
+
+typedef void (ac_render_object_callback_func)(
+		ACObject *		ob, 
+		Boolean			is_primary_render);
+		
+extern "C" Prototype void	ac_set_pre_render_object_callback(ac_render_object_callback_func *func);
+extern "C" Prototype void	ac_set_post_render_object_callback(ac_render_object_callback_func *func);
+
+
+static int gRotate = 0;
+
+static void pre_func(ACObject * ob, Boolean is_primary_render);
+static void post_func(ACObject * ob, Boolean is_primary_render);
+
+void pre_func(ACObject * ob, Boolean is_primary_render)
+{
+	glMatrixMode(GL_MODELVIEW_MATRIX);
+	glPushMatrix();
+	glRotatef(gRotate,0,1,0);
+}
+
+void post_func(ACObject * ob, Boolean is_primary_render)
+{
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	if (!is_primary_render && object_parent(ob)==NULL)
+		gRotate += 1;
+}
+
 
 
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
@@ -34,6 +65,9 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 
 //	double vers = ac_get_version_number();
 //	printf("vers=%lf\n", vers);
+
+	ac_set_pre_render_object_callback(pre_func);
+	ac_set_post_render_object_callback(post_func);
 
 	ac_register_file_exporter("OBJ7Save", ".obj", "X-Plane 7 Object File", do_obj7_save_convert, "X-Plane 7 Object File Export Plugin"); 
 	ac_register_file_exporter("OBJ8Save", ".obj", "X-Plane 8 Object File", do_obj8_save, "X-Plane 8 Object File Export Plugin");

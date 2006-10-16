@@ -71,8 +71,7 @@ double	RandRangeBias(double mmin, double mmax, double biasRatio, double randomAm
 
 #if APL && !defined(XUTILS_EXCLUDE_MAC_CRAP)
 
-#include <MacTypes.h>
-#include <Files.h>
+#include <Carbon/Carbon.h>
 
 void	AppPath(string& outString);
 OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder);

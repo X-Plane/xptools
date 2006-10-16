@@ -530,7 +530,7 @@ private:
 class	MapFaceBucketTraits {
 public:
 
-	typedef	Point2				Point2;
+	typedef	::Point2				Point2;
 	typedef	double				Scalar;
 	typedef	GISFace *			Object;
 
@@ -548,7 +548,7 @@ public:
 class	MapHalfedgeBucketTraits {
 public:
 
-	typedef	Point2					Point2;
+	typedef	::Point2				Point2;
 	typedef	double					Scalar;
 	typedef	GISHalfedge *			Object;
 
@@ -567,7 +567,7 @@ public:
 class	MapVertexBucketTraits {
 public:
 
-	typedef	Point2				Point2;
+	typedef	::Point2			Point2;
 	typedef	double				Scalar;
 	typedef	GISVertex *			Object;
 

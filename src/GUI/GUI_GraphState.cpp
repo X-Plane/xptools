@@ -1,7 +1,14 @@
 #include "GUI_GraphState.h"
-#include <gl.h>
+
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glext.h>
+#else
+	#include <gl.h>
+	#include <glext.h>
+#endif
+
 #include "XWinGL.h"
-#include <glext.h>
 
 void		GUI_GraphState::Init(void)
 {

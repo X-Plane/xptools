@@ -56,13 +56,19 @@
 #include "BitmapUtils.h"
 #include "TexUtils.h"
 
+#define	GL_EXT_texture_env_combine	 1
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glext.h>
+#else
+	#include <gl.h>
+	#include <glext.h>
+#endif
+
 #if IBM
 #include "XWinGL.h"
 #endif
 
-#define GL_EXT_texture_env_combine 1
-#define GL_GLEXT_FUNCTION_POINTERS 1
-#include <glext.h>
 
 #define DRAW_MESH_BORDERS 0
 
@@ -237,9 +243,9 @@ void	SetupNormalShading(void)
 
 inline	int GetBucketForFace(Bbox2 * buckets, int bucket_count, CDT::Face_handle f)
 {
-	Point2 p1(f->vertex(0)->point().x(), f->vertex(0)->point().y());
-	Point2 p2(f->vertex(1)->point().x(), f->vertex(1)->point().y());
-	Point2 p3(f->vertex(2)->point().x(), f->vertex(2)->point().y());
+	Point2 p1(f->vertex(0)->point().x, f->vertex(0)->point().y);
+	Point2 p2(f->vertex(1)->point().x, f->vertex(1)->point().y);
+	Point2 p3(f->vertex(2)->point().x, f->vertex(2)->point().y);
 	for (int n = 0; n < bucket_count; ++n)
 	{
 		if (buckets[n].contains(p1) &&
@@ -255,8 +261,8 @@ inline	int GetBucketForEdge(Bbox2 * buckets, int bucket_count, CDT::Finite_edges
 	CDT::Vertex_handle	a = eit->first->vertex(eit->first->ccw(eit->second));
 	CDT::Vertex_handle	b = eit->first->vertex(eit->first->cw(eit->second));
 
-	Point2 p1(a->point().x(),a->point().y());
-	Point2 p2(b->point().x(),b->point().y());
+	Point2 p1(a->point().x,a->point().y);
+	Point2 p2(b->point().x,b->point().y);
 	for (int n = 0; n < bucket_count; ++n)
 	{
 		if (buckets[n].contains(p1) &&
@@ -1541,7 +1547,7 @@ char * WED_MapView::MonitorCaption(void)
 			{
 				DEMGeo& wetPts(gDem[dem_Elevation];
 				int xw, yw;
-				float e = wetPts.xy_nearest(ffi->vertex(vi)->point().x(),ffi->vertex(vi)->point().y(), xw, yw);
+				float e = wetPts.xy_nearest(ffi->vertex(vi)->point().x,ffi->vertex(vi)->point().y, xw, yw);
 				e = wetPts.get_lowest_heuristic(xw, yw, 5);
 			}
 			

@@ -66,10 +66,10 @@ char *	dsfErrorMessages[] = {
 #define DEBUG_MESSAGES 1
 
 // These debug macros are used to swap the headers around.
-#if APL
-	#include <Endian.h>
-	#define SWAP32(x) (Endian32_Swap(x))
-	#define SWAP16(x) (Endian16_Swap(x))
+#if APL && BIG
+	#include <libkern/OSByteOrder.h>
+	#define SWAP32(x) (OSSwapConstInt32(x))
+	#define SWAP16(x) (OSSwapConstInt16(x))
 #else
 	#define SWAP32(x) (x)
 	#define SWAP16(x) (x)

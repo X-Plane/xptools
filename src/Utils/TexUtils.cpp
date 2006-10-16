@@ -22,8 +22,13 @@
  */
 #include "TexUtils.h"
 #include "BitmapUtils.h"
-#include <gl.h>
-#include <glu.h>
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <gl.h>
+	#include <glu.h>
+#endif
 
 /*****************************************************************************************
  * UTILS

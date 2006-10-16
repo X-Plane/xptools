@@ -87,7 +87,7 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 		return true;
 	}
 	
-	Vector2	along(Point2(a->point().x(), a->point().y()),Point2(b->point().x(), b->point().y()));
+	Vector2	along(Point2(a->point().x, a->point().y),Point2(b->point().x, b->point().y));
 	
 	CDT::Vertex_handle v = a;
 	do {
@@ -95,7 +95,7 @@ inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_ha
 		CDT::Vertex_handle best = CDT::Vertex_handle();
 		circ = stop = ioMesh.incident_vertices(v);
 		do {
-			Vector2	step(Point2(v->point().x(), v->point().y()),Point2(circ->point().x(), circ->point().y()));
+			Vector2	step(Point2(v->point().x, v->point().y),Point2(circ->point().x, circ->point().y));
 			if (along.dot(step) > 0.0 && (along.dx * step.dy == along.dy * step.dx))
 			{
 				best = circ;
@@ -129,7 +129,7 @@ inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
 	for (int n = 0; n < 3; ++n)
 	{
-		if (f->neighbor(n)->has_vertex(inMesh.infinite_vertex()))
+		if (inMesh.is_infinite(f->neighbor(n)))
 			return true;
 	}
 	return false;
@@ -142,15 +142,13 @@ inline void FindNextEast(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 	CDT::Vertex_circulator stop, now;
 	stop = now = ioMesh.incident_vertices(sv);
 		
-//	printf("Starting with: %lf, %lf\n", CGAL::to_double(sv->point().x()), CGAL::to_double(sv->point().y()));
+//	printf("Starting with: %lf, %lf\n", y(sv->point().x), y(sv->point().y));
 	
-	CDT::Geom_traits::Compare_y_2 cy;
-	CDT::Geom_traits::Compare_x_2 cx;
 	do {
-//		printf("Checking: %lf, %lf\n", CGAL::to_double(now->point().x()), CGAL::to_double(now->point().y()));
-		if (now != ioMesh.infinite_vertex())
-		if (cy(now->point(), p) == CGAL::EQUAL)
-		if (cx(now->point(), p) == CGAL::LARGER)
+//		printf("Checking: %lf, %lf\n", y(now->point().x), y(now->point().y));
+		if (!ioMesh.is_infinite(now))
+		if (now->point().y == p.y)
+		if (now->point().x >  p.x)
 		{
 			CDT::Face_handle	a_face;
 			CDT::Vertex_circulator next = now;
@@ -172,15 +170,13 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 	CDT::Vertex_circulator stop, now;
 	stop = now = ioMesh.incident_vertices(sv);
 		
-//	printf("Starting with: %lf, %lf\n", CGAL::to_double(sv->point().x()), CGAL::to_double(sv->point().y()));
+//	printf("Starting with: %lf, %lf\n", y(sv->point().x), y(sv->point().y));
 	
-	CDT::Geom_traits::Compare_y_2 cy;
-	CDT::Geom_traits::Compare_x_2 cx;
 	do {
-//		printf("Checking: %lf, %lf\n", CGAL::to_double(now->point().x()), CGAL::to_double(now->point().y()));
-		if (now != ioMesh.infinite_vertex())
-		if (cx(now->point(), p) == CGAL::EQUAL)
-		if (cy(now->point(), p) == CGAL::SMALLER)
+//		printf("Checking: %lf, %lf\n", y(now->point().x), y(now->point().y));
+		if (!ioMesh.is_infinite(now))
+		if (now->point().x==p.x)
+		if (now->point().x < p.y)
 		{
 			CDT::Face_handle	a_face;
 			CDT::Vertex_circulator next = now;
@@ -197,9 +193,9 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 
 void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& all, Bbox2& bounds)
 {
-	bounds = Point2(f->vertex(0)->point().x(),f->vertex(0)->point().y());
-	bounds += Point2(f->vertex(1)->point().x(),f->vertex(1)->point().y());
-	bounds += Point2(f->vertex(2)->point().x(),f->vertex(2)->point().y());
+	bounds = Point2(f->vertex(0)->point().x,f->vertex(0)->point().y);
+	bounds += Point2(f->vertex(1)->point().x,f->vertex(1)->point().y);
+	bounds += Point2(f->vertex(2)->point().x,f->vertex(2)->point().y);
 	
 	all.clear();
 	set<CDT::Face_handle>	working;
@@ -213,7 +209,7 @@ void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& al
 		
 		for (int n = 0; n < 3; ++n)
 		{
-			bounds += Point2(w->vertex(0)->point().x(),w->vertex(0)->point().y());
+			bounds += Point2(w->vertex(0)->point().x,w->vertex(0)->point().y);
 			CDT::Face_handle t = w->neighbor(n);
 			
 			if (!inMesh.is_infinite(t))
@@ -314,23 +310,23 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 		{
 /*		
 			CDT::Vertex_circulator	circ, stop;
-			printf("    Vert 1 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n].buddy->point().x(), ioBorder.vertices[n].buddy->point().y(), &*ioBorder.vertices[n].buddy);
+			printf("    Vert 1 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n].buddy->point().x, ioBorder.vertices[n].buddy->point().y, &*ioBorder.vertices[n].buddy);
 			circ = stop = ioMesh.incident_vertices(ioBorder.vertices[n].buddy);
 			do {
-				printf("    Buddy 1 vert = %lf,%lf (0x%08X)\n", circ->point().x(), circ->point().y(), &*circ);
+				printf("    Buddy 1 vert = %lf,%lf (0x%08X)\n", circ->point().x, circ->point().y, &*circ);
 				++circ;
 			} while (circ != stop);
 			circ = stop = ioMesh.incident_vertices(ioBorder.vertices[n+ 1].buddy);
-			printf("    Vert 2 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n+ 1].buddy->point().x(), ioBorder.vertices[n+ 1].buddy->point().y(), &*ioBorder.vertices[n+ 1].buddy);
+			printf("    Vert 2 vert = %lf,%lf (0x%08X)\n", ioBorder.vertices[n+ 1].buddy->point().x, ioBorder.vertices[n+ 1].buddy->point().y, &*ioBorder.vertices[n+ 1].buddy);
 			do {
-				printf("    Buddy 2 vert = %lf,%lf (0x%08X)\n", circ->point().x(), circ->point().y(), &*circ);
+				printf("    Buddy 2 vert = %lf,%lf (0x%08X)\n", circ->point().x, circ->point().y, &*circ);
 				++circ;
 			} while (circ != stop);
 			AssertPrintf("Border match failure: %lf,%lf to %lf,%lf\n", 
-				ioBorder.vertices[n  ].buddy->point().x(),
-				ioBorder.vertices[n  ].buddy->point().y(),
-				ioBorder.vertices[n+1].buddy->point().x(),
-				ioBorder.vertices[n+1].buddy->point().y());
+				ioBorder.vertices[n  ].buddy->point().x,
+				ioBorder.vertices[n  ].buddy->point().y,
+				ioBorder.vertices[n+1].buddy->point().x,
+				ioBorder.vertices[n+1].buddy->point().y);
 */
 		// BEN SEZ: this used to be an error but - there are cases where the SLAVE file has a lake ENDING at the edge...there is no way the MASTER
 		// could have induced these pts, so we're screwed.  For now - we'll just blunder on.
@@ -477,19 +473,17 @@ void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_han
 	
 	outPts.clear();	
 		
-	CDT::Geom_traits::Compare_y_2 cy;
-	CDT::Geom_traits::Compare_x_2 cx;
 	do {
 		double dist;
-		if (isRight && cx(now->point(), pt) == CGAL::EQUAL)
+		if (isRight && now->point().x == pt.x)
 		{
-			dist = CGAL::to_double(now->point().y()) - origin.y;
+			dist = (now->point().y) - origin.y;
 			DebugAssert(outPts.count(dist)==0);
 			outPts[dist] = now;
 		}
-		if (!isRight && cy(now->point(), pt) == CGAL::EQUAL)
+		if (!isRight && now->point().y == pt.y)
 		{
-			dist = CGAL::to_double(now->point().x()) - origin.x;
+			dist = (now->point().x) - origin.x;
 			DebugAssert(outPts.count(dist)==0);
 			outPts[dist] = now;
 		}
@@ -526,7 +520,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 			// Find the nearest slave for it by decreasing distance.
 			for (map<double, CDT::Vertex_handle>::iterator sl = slaves.begin(); sl != slaves.end(); ++sl)
 			{
-				double myDist = isRight ? (pts->loc.y - CGAL::to_double(sl->second->point().y())) : (pts->loc.x - CGAL::to_double(sl->second->point().x()));
+				double myDist = isRight ? (pts->loc.y - (sl->second->point().y)) : (pts->loc.x - (sl->second->point().x));
 				if (myDist < 0.0) myDist = -myDist;
 				nearest.insert(multimap<double, pair<double, mesh_match_vertex_t *> >::value_type(myDist, pair<double, mesh_match_vertex_t *>(sl->first, &*pts)));
 			}
@@ -719,10 +713,10 @@ return base_dist * y_normal;
 inline double	DistPtToTri(CDT::Vertex_handle v, CDT::Face_handle f)
 {
 	// Find the closest a triangle comes to a point.  Inputs are in lat/lon, otuput is in meters!
-	Point2	vp(v->point().x(), v->point().y());
-	Point2	tp1(f->vertex(0)->point().x(), f->vertex(0)->point().y());
-	Point2	tp2(f->vertex(1)->point().x(), f->vertex(1)->point().y());
-	Point2	tp3(f->vertex(2)->point().x(), f->vertex(2)->point().y());
+	Point2	vp(v->point().x, v->point().y);
+	Point2	tp1(f->vertex(0)->point().x, f->vertex(0)->point().y);
+	Point2	tp2(f->vertex(1)->point().x, f->vertex(1)->point().y);
+	Point2	tp3(f->vertex(2)->point().x, f->vertex(2)->point().y);
 	Vector2	vpv(vp);
 	tp1 -= vpv;
 	tp2 -= vpv;
@@ -1196,7 +1190,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 				if (fn->info().terrain != terrain_Natural && fn->info().terrain != tg)
 					AssertPrintf("Error: conflicting terrain assignment between %s and %s, near %lf, %lf\n",
 							FetchTokenString(fn->info().terrain), FetchTokenString(tg),
-							CGAL::to_double(f->vertex(vi)->point().x()), CGAL::to_double(f->vertex(vi)->point().y()));
+							(f->vertex(vi)->point().x), (f->vertex(vi)->point().y));
 				fn->info().terrain = tg;
 				fn->info().feature = tg;
 				if (fn->info().orig_face == NULL) fn->info().orig_face = of;
@@ -1210,7 +1204,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 	for (int vi = 0; vi < 3; ++vi)
 	{
 		int xw, yw;
-		float e = allPts.xy_nearest(ffi->vertex(vi)->point().x(),ffi->vertex(vi)->point().y(), xw, yw);
+		float e = allPts.xy_nearest(ffi->vertex(vi)->point().x,ffi->vertex(vi)->point().y, xw, yw);
 		
 		e = allPts.get_lowest_heuristic(xw, yw, 5);
 		if (e != NO_DATA)
@@ -1281,9 +1275,9 @@ void CalculateMeshNormals(CDT& ioMesh)
 		do {
 			last = nowi;
 			++nowi;
-			Point3	lastP(last->point().x(), last->point().y(), last->info().height);
-			Point3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
-			Point3	selfP(   i->point().x(),    i->point().y(),    i->info().height);
+			Point3	lastP(last->point().x, last->point().y, last->info().height);
+			Point3	nowiP(nowi->point().x, nowi->point().y, nowi->info().height);
+			Point3	selfP(   i->point().x,    i->point().y,    i->info().height);
 			Vector3	v1(selfP, lastP);
 			Vector3	v2(selfP, nowiP);
 			v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
@@ -1642,18 +1636,18 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			// Hires - take from DEM if we don't have one.
 			if (tri->info().terrain != terrain_Water)
 			{
-				double	center_x = (tri->vertex(0)->point().x() + tri->vertex(1)->point().x() + tri->vertex(2)->point().x()) / 3.0;
-				double	center_y = (tri->vertex(0)->point().y() + tri->vertex(1)->point().y() + tri->vertex(2)->point().y()) / 3.0;
+				double	center_x = (tri->vertex(0)->point().x + tri->vertex(1)->point().x + tri->vertex(2)->point().x) / 3.0;
+				double	center_y = (tri->vertex(0)->point().y + tri->vertex(1)->point().y + tri->vertex(2)->point().y) / 3.0;
 				
 				float lu  = landuse.search_nearest(center_x, center_y);
-				float lu1 = landuse.search_nearest(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float lu2 = landuse.search_nearest(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float lu3 = landuse.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float lu1 = landuse.search_nearest(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float lu2 = landuse.search_nearest(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float lu3 = landuse.search_nearest(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 
 				float cl  = inClimate.search_nearest(center_x, center_y);
-				float cl1 = inClimate.search_nearest(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float cl2 = inClimate.search_nearest(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float cl3 = inClimate.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float cl1 = inClimate.search_nearest(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float cl2 = inClimate.search_nearest(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float cl3 = inClimate.search_nearest(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 
 				// Ben sez: tiny island in the middle of nowhere - do NOT expect LU.  That's okay - Sergio doesn't need it.
 //				if (lu == NO_DATA)
@@ -1661,69 +1655,69 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				lu = MAJORITY_RULES(lu,lu1,lu2, lu3);
 				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
 
-				float	el1 = inElevation.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	el2 = inElevation.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	el3 = inElevation.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	el1 = inElevation.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	el2 = inElevation.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	el3 = inElevation.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	el = SAFE_AVERAGE(el1, el2, el3);
 				
-				float	sl1 = inSlope.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	sl2 = inSlope.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	sl3 = inSlope.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	sl1 = inSlope.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	sl2 = inSlope.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	sl3 = inSlope.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	sl = SAFE_MAX	 (sl1, sl2, sl3);	// Could be safe max.
 
-				float	tm1 = inTemp.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	tm2 = inTemp.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	tm3 = inTemp.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	tm1 = inTemp.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	tm2 = inTemp.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	tm3 = inTemp.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	tm = SAFE_AVERAGE(tm1, tm2, tm3);	// Could be safe max.
 
-				float	tmr1 = inTempRng.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	tmr2 = inTempRng.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	tmr3 = inTempRng.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	tmr1 = inTempRng.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	tmr2 = inTempRng.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	tmr3 = inTempRng.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	tmr = SAFE_AVERAGE(tmr1, tmr2, tmr3);	// Could be safe max.
 
-				float	rn1 = inRain.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	rn2 = inRain.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	rn3 = inRain.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	rn1 = inRain.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	rn2 = inRain.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	rn3 = inRain.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	rn = SAFE_AVERAGE(rn1, rn2, rn3);	// Could be safe max.
 
-//				float	sh1 = inSlopeHeading.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-//				float	sh2 = inSlopeHeading.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-///				float	sh3 = inSlopeHeading.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+//				float	sh1 = inSlopeHeading.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+//				float	sh2 = inSlopeHeading.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+///				float	sh3 = inSlopeHeading.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 //				float	sh = SAFE_AVERAGE(sh1, sh2, sh3);	// Could be safe max.
 
-				float	re1 = inRelElev.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	re2 = inRelElev.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	re3 = inRelElev.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	re1 = inRelElev.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	re2 = inRelElev.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	re3 = inRelElev.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	re = SAFE_AVERAGE(re1, re2, re3);	// Could be safe max.
 
-				float	er1 = inRelElevRange.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	er2 = inRelElevRange.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	er3 = inRelElevRange.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	er1 = inRelElevRange.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	er2 = inRelElevRange.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	er3 = inRelElevRange.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	er = SAFE_AVERAGE(er1, er2, er3);	// Could be safe max.
 				
 				int		near_water =(tri->neighbor(0)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(0))) ||
 									(tri->neighbor(1)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(1))) ||
 									(tri->neighbor(2)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(2)));
 
-				float	uden1 = inUrbanDensity.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	uden2 = inUrbanDensity.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	uden3 = inUrbanDensity.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	uden1 = inUrbanDensity.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	uden2 = inUrbanDensity.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	uden3 = inUrbanDensity.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	uden = SAFE_AVERAGE(uden1, uden2, uden3);	// Could be safe max.
 
-				float	urad1 = inUrbanRadial.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	urad2 = inUrbanRadial.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	urad3 = inUrbanRadial.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	urad1 = inUrbanRadial.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	urad2 = inUrbanRadial.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	urad3 = inUrbanRadial.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	urad = SAFE_AVERAGE(urad1, urad2, urad3);	// Could be safe max.
 
-				float	utrn1 = inUrbanTransport.value_linear(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float	utrn2 = inUrbanTransport.value_linear(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float	utrn3 = inUrbanTransport.value_linear(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float	utrn1 = inUrbanTransport.value_linear(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float	utrn2 = inUrbanTransport.value_linear(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float	utrn3 = inUrbanTransport.value_linear(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				float	utrn = SAFE_AVERAGE(utrn1, utrn2, utrn3);	// Could be safe max.
 
 				float usq  = usquare.search_nearest(center_x, center_y);
-				float usq1 = usquare.search_nearest(tri->vertex(0)->point().x(),tri->vertex(0)->point().y());
-				float usq2 = usquare.search_nearest(tri->vertex(1)->point().x(),tri->vertex(1)->point().y());
-				float usq3 = usquare.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
+				float usq1 = usquare.search_nearest(tri->vertex(0)->point().x,tri->vertex(0)->point().y);
+				float usq2 = usquare.search_nearest(tri->vertex(1)->point().x,tri->vertex(1)->point().y);
+				float usq3 = usquare.search_nearest(tri->vertex(2)->point().x,tri->vertex(2)->point().y);
 				usq = MAJORITY_RULES(usq, usq1, usq2, usq3);
 
 //				float	el1 = tri->vertex(0)->info().height;
@@ -2212,9 +2206,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		
 		do {
 			fprintf(border, "VT %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
+				(f->vertex(i)->point().x),
+				(f->vertex(i)->point().y),
+				(f->vertex(i)->info().height));
 			
 			hash_map<int, float>	borders;			
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
@@ -2244,9 +2238,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		} while (f->vertex(i)->point() != stop);
 		
 		fprintf(border, "VC %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
+				(f->vertex(i)->point().x),
+				(f->vertex(i)->point().y),
+				(f->vertex(i)->info().height));
 		fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
 		for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
 			fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
@@ -2263,9 +2257,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				fprintf(border, "BORDER_T %s\n", FetchTokenString(*si));
 		
 			fprintf(border, "VR %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
+				(f->vertex(i)->point().x),
+				(f->vertex(i)->point().y),
+				(f->vertex(i)->info().height));
 				
 			hash_map<int, float>	borders;			
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
@@ -2381,16 +2375,16 @@ void	Calc2ndDerivative(DEMGeo& deriv)
 double	HeightWithinTri(CDT& inMesh, CDT::Face_handle f, double inLon, double inLat)
 {
 	Assert(!inMesh.is_infinite(f));
-	Point3	p1(CGAL::to_double(f->vertex(0)->point().x()),
-			   CGAL::to_double(f->vertex(0)->point().y()),
+	Point3	p1((f->vertex(0)->point().x),
+			   (f->vertex(0)->point().y),
 				 			   f->vertex(0)->info().height);
 
-	Point3	p2(CGAL::to_double(f->vertex(1)->point().x()),
-			   CGAL::to_double(f->vertex(1)->point().y()),
+	Point3	p2((f->vertex(1)->point().x),
+			   (f->vertex(1)->point().y),
 				 			   f->vertex(1)->info().height);
 
-	Point3	p3(CGAL::to_double(f->vertex(2)->point().x()),
-			   CGAL::to_double(f->vertex(2)->point().y()),
+	Point3	p3((f->vertex(2)->point().x),
+			   (f->vertex(2)->point().y),
 				 			   f->vertex(2)->info().height);
 
 	Vector3	s1(p2, p3);
@@ -2527,7 +2521,7 @@ void MarchHeightStart(CDT& inMesh, const CDT::Point& loc, CDT_MarchOverTerrain_t
 		info.locate_face = info.locate_face->neighbor(info.locate_face->index(inMesh.infinite_vertex()));
 	}
 	info.locate_pt = loc;
-	info.locate_height = HeightWithinTri(inMesh, info.locate_face, loc.x(), loc.y());
+	info.locate_height = HeightWithinTri(inMesh, info.locate_face, loc.x, loc.y);
 }
 
 void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates)
@@ -2554,7 +2548,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		if (inMesh.is_infinite(goal_face) && goal_type == CDT::EDGE)
 			goal_face = goal_face->neighbor(goal_index);
 
-		double				goal_height = HeightWithinTri(inMesh, goal_face, goal.x(), goal.y());
+		double				goal_height = HeightWithinTri(inMesh, goal_face, goal.x, goal.y);
 
 		march_info.locate_pt = goal;
 		march_info.locate_face = goal_face;
@@ -2578,7 +2572,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		return;
 	}
 
-	intermediates.push_back(Point3(march_info.locate_pt.x(), march_info.locate_pt.y(), march_info.locate_height));
+	intermediates.push_back(Point3(march_info.locate_pt.x, march_info.locate_pt.y, march_info.locate_height));
 
 	CDT::Segment	ray(march_info.locate_pt, goal);
 	int				cross_side;
@@ -2597,9 +2591,9 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		if (!inMesh.is_infinite(now) && inMesh.triangle(now).bounded_side(goal) != CGAL::ON_UNBOUNDED_SIDE)
 		{
 			march_info.locate_pt = last_pt = goal;
-			march_info.locate_height = last_ht = HeightWithinTri(inMesh, now, goal.x(), goal.y());
+			march_info.locate_height = last_ht = HeightWithinTri(inMesh, now, goal.x, goal.y);
 			march_info.locate_face = now;
-			intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));		
+			intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));		
 			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
 			DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);	
 			break;
@@ -2621,26 +2615,26 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 			{
 				last_pt = now->vertex(CDT::ccw(cross_side))->point();
 				last_ht = now->vertex(CDT::ccw(cross_side))->info().height;
-				intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));			
+				intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));			
 			} else if (o2 == CGAL::COLLINEAR)
 			{
 				last_pt = now->vertex(CDT::cw(cross_side))->point();
 				last_ht = now->vertex(CDT::cw(cross_side))->info().height;
-				intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+				intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));
 			
 			} else {		
 				CGAL::Object o = CGAL::intersection(ray, crossed_seg);
 				if (CGAL::assign(last_pt, o))
 				{
-					last_ht = HeightWithinTri(inMesh, now, last_pt.x(), last_pt.y());
-					intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+					last_ht = HeightWithinTri(inMesh, now, last_pt.x, last_pt.y);
+					intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));
 				} else {
 #if DEV				
 					printf("Ray: %lf,%lf->%lf,%lf\nSide: %lf,%lf->%lf,%lf\n",
-						ray.source().x(), ray.source().y(), 
-						ray.target().x(), ray.target().y(), 
-						crossed_seg.source().x(), crossed_seg.source().y(), 
-						crossed_seg.target().x(), crossed_seg.target().y());
+						ray.source().x, ray.source().y, 
+						ray.target().x, ray.target().y, 
+						crossed_seg.source().x, crossed_seg.source().y, 
+						crossed_seg.target().x, crossed_seg.target().y);
 #endif						
 					AssertPrintf("Intersection failed.");
 				}
@@ -2650,7 +2644,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		{
 			last_pt = now->vertex(cross_side)->point();
 			last_ht = now->vertex(cross_side)->info().height;
-			intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+			intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));
 		} else
 			AssertPrintf("Cannot determine relationship between triangles!");
 		
@@ -2671,9 +2665,9 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		{
 			intermediates.pop_back();
 			march_info.locate_pt = last_pt = goal;
-			march_info.locate_height = last_ht = HeightWithinTri(now, goal.x(), goal.y());
+			march_info.locate_height = last_ht = HeightWithinTri(now, goal.x, goal.y);
 			march_info.locate_face = now;
-			intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+			intermediates.push_back(Point3(last_pt.x, last_pt.y, last_ht));
 			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
 			DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);	
 			break;

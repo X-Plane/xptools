@@ -26,7 +26,7 @@
 #if APL
 // hack for conflict with DebugAssert!
 #define __DEBUGGING__
-#include <AGL.h>
+#include <AGL/AGL.h>
 #endif
 #include "XWin.h"
 

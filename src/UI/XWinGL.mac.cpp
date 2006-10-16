@@ -21,7 +21,11 @@
  *
  */
 #include "XWinGL.h"
-#include <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
 	
 XWinGL::XWinGL(XWinGL * inShare) :
 	XWin()

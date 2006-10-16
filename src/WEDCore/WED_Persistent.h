@@ -158,7 +158,7 @@ public:
 	bool operator!=(const T * rhs) const { if (rhs) return owner != rhs->GetArchive() || guid != rhs->GetGUID(); else return guid != NULL_GUID; }
 
 	bool operator< (const WED_PersistentPtr& rhs) const { if (owner == rhs.owner) return guid < rhs.guid; return owner < rhs.owner; }
-	bool operator< (const T * rhs) const { if (rhs) { if (owner == rhs->GetArchive()) return guid < rhs->GetGUID(); return owner < rhs->GetArchive(); } return guid < NULL_GUID(); }
+	bool operator< (const T * rhs) const { if (rhs) { if (owner == rhs->GetArchive()) return guid < rhs->GetGUID(); return owner < rhs->GetArchive(); } return guid < NULL_GUID; }
 
 	void ReadFrom(IOReader * reader) { guid.ReadFrom(reader); }
 	void WriteTo(IOWriter * writer) { guid.WriteTo(writer); }

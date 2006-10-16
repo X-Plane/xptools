@@ -21,6 +21,7 @@
  *
  */
 #include "CompGeomUtils.h"
+#include "CompGeomDefs2.h"
 #include "MapDefs.h"
 #include "AssertUtils.h"
 #include "XESConstants.h"
@@ -1410,7 +1411,7 @@ void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
 }
 
 struct sort_by_ymin {
-	operator()(const Bbox2& lhs, const Bbox2& rhs) const { return lhs.ymin() < rhs.ymin(); }
+	int operator()(const Bbox2& lhs, const Bbox2& rhs) const { return lhs.ymin() < rhs.ymin(); }
 };
 
 // Simple self-intersection check.

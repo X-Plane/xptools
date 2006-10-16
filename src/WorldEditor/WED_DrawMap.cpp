@@ -21,8 +21,13 @@
  *
  */
 #include "WED_DrawMap.h"
-#include <gl.h>
-#include <glu.h>
+#if APL
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+#else
+	#include <gl.h>
+	#include <glu.h>
+#endif
 #include "ParamDefs.h"
 #include "DEMTables.h"
 #include "XPLMGraphics.h"

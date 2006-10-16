@@ -478,7 +478,7 @@ void	InsetPmwx(Pmwx& inMap, GISFace * inFace);
 template <typename InputIterator>
 Point2	FindRefPoint(InputIterator begin, InputIterator end)
 {
-	if (begin == end) return CGAL::ORIGIN;
+	if (begin == end) return Point2(0.0,0.0);
 	Point2	best = *begin;
 	for (InputIterator i = begin; i != end; ++i)
 	{
@@ -494,8 +494,8 @@ Point2	FindRefPoint(InputIterator begin, InputIterator end)
 template <typename ForwardIterator>
 void LatLonToLocalMeters(ForwardIterator begin, ForwardIterator end, const Point2& ref)
 {
-	Vector_2	offset(ref);
-	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(ref.y) * DEG_TO_RAD);
+	Vector2		offset(ref);
+	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos((ref.y) * DEG_TO_RAD);
 	for (ForwardIterator i = begin; i != end; ++i)
 	{
 		Point2 p = *i - offset;
@@ -508,8 +508,8 @@ void LatLonToLocalMeters(ForwardIterator begin, ForwardIterator end, const Point
 template <typename ForwardIterator>
 void LocalMetersToLatLon(ForwardIterator begin, ForwardIterator end, const Point2& ref)
 {
-	Vector_2	offset(ref);
-	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(ref.y) * DEG_TO_RAD);
+	Vector2	offset(ref);
+	double		DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos((ref.y) * DEG_TO_RAD);
 	for (ForwardIterator i = begin; i != end; ++i)
 	{
 		Point2	p ((*i).x * kOverscale / DEG_TO_MTR_LON,

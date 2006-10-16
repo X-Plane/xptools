@@ -4,6 +4,10 @@
 #include <stdarg.h>
 using std::exception;
 
+#ifndef _MSL_THROW
+	#define	_MSL_THROW throw()
+#endif
+
 class assert_fail_exception : public exception {
 public:
 	assert_fail_exception(const char * c, const char * f, int l) _MSL_THROW 

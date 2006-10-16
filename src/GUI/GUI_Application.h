@@ -2,7 +2,7 @@
 #define GUI_APPLICATION_H
 
 #if APL
-#include <CarbonEvents.h>
+#include <Carbon/Carbon.h>
 #endif
 
 #if APL

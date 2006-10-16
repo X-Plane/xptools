@@ -23,6 +23,8 @@
 #ifndef DEMDEFS_H
 #define DEMDEFS_H
 
+#include <math.h>
+
 #include "XESConstants.h"
 #include "ProgressUtils.h"
 #include "AssertUtils.h"

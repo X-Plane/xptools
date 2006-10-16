@@ -2,6 +2,12 @@
 #include "FontMgr.h"
 #include "GUI_GraphState.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 static const char * kFontNames[font_Max] = {
 	"LucidaGrande.ttf"
 //	"Arial"

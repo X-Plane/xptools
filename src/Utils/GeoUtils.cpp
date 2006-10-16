@@ -22,8 +22,12 @@
  */
 #include "GeoUtils.h"
 #include "MatrixUtils.h"
+#include <math.h>
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl.h>
-
+#endif
 
 static	inline	float	Interp2d(
 							float		val,

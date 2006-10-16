@@ -5,7 +5,12 @@
 #include "GUI_Menus.h"
 #include "GUI_Clipboard.h"
 #include <ctype.h>
-#include <ctype.h>
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
 
 GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	GUI_Commander(parent),

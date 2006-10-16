@@ -1,7 +1,12 @@
 #include "prefs.h"
+#include <string.h>
+
 #include <ac_plugin.h>
 int		g_export_airport_lights	= 0;
+int		g_export_triangles		= 1;
 double	g_default_LOD			= 0.0f;
+char *	g_export_prefix			= STRING("");
+//export_prefix;
 
 //static PrefSpec	export_airport_lights_spec	;
 //static PrefSpec	default_LOD_spec			;
@@ -17,6 +22,8 @@ double	g_default_LOD			= 0.0f;
 void	prefs_init(void)
 {
 	MANAGE_PREF(export_airport_lights, PREF_INT)
+	MANAGE_PREF(export_triangles, PREF_INT)
 	MANAGE_PREF(default_LOD, PREF_DOUBLE)
+	MANAGE_PREF(export_prefix, PREF_STRING);
 	
 }

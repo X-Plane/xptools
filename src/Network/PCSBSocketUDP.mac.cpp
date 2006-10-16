@@ -32,7 +32,6 @@
  */
 
 #include "PCSBSocketUDP.h"
-#include <OpenTransportProviders.h>
 
 PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
 {
@@ -76,7 +75,7 @@ PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
       	
       option.len = kOTFourByteOptionSize;
       option.level = INET_IP;
-      option.name = IP_BROADCAST;
+      option.name = kIP_BROADCAST;
       option.status = 0;
       option.value[0] = T_YES;
       

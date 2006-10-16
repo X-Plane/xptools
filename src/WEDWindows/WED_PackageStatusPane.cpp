@@ -2,7 +2,11 @@
 #include "WED_Package.h"
 #include "GUI_GraphState.h"
 #include "WED_DocumentWindow.h"
-#include  <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include  <gl.h>
+#endif
 
 WED_PackageStatusPane::WED_PackageStatusPane(WED_Package * inPackage,GUI_Commander * doc_super) :
 	mPackage(inPackage),

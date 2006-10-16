@@ -1,6 +1,12 @@
 #include "GUI_ScrollBar.h"
 #include "GUI_GraphState.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 enum {
 	sb_PartNone,
 	sb_PartDownButton,

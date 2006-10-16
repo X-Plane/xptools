@@ -2,7 +2,7 @@
 #define GUI_TIMER_H
 
 #if APL
-#include <CarbonEvents.h>
+#include <Carbon/Carbon.h>
 #endif
 
 class	GUI_Timer {

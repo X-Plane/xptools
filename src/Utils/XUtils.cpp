@@ -28,14 +28,13 @@
 #include <stdlib.h>
 #include "PlatformUtils.h"
 //#include <time.h>
-#include <hash_map>
 
 //#if !defined(XUTILS_EXCLUDE_MAC_CRAP) && defined(__MACH__)
 //#define XUTILS_EXCLUDE_MAC_CRAP 1
 //#endif
 
 #if APL || IBM
-using namespace Metrowerks;
+//using namespace Metrowerks;
 #endif
 
 static char * my_fgets(char * s, int n, FILE * file)
@@ -253,7 +252,7 @@ void		ExtractPath(string& ioPath)
 #if !defined(XUTILS_EXCLUDE_MAC_CRAP)
 
 #define _STDINT_H_
-#include <Processes.h>
+#include <Carbon/Carbon.h>
 
 OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder)
 {
@@ -378,7 +377,7 @@ struct	XPointPool::XPointPoolImp {
 		float st[2];
 	};
 	vector<p_info>			pts;
-	hash_map<string, int>	index;
+	map<string, int>	index;
 
 	void	clear() 
 	{
@@ -401,13 +400,13 @@ struct	XPointPool::XPointPoolImp {
 			*(reinterpret_cast<const int*>(st +0)),
 			*(reinterpret_cast<const int*>(st +1)));
 		string	key(buf);
-		hash_map<string, int>::iterator i = index.find(key);
+		map<string, int>::iterator i = index.find(key);
 		if (i != index.end()) return i->second;			
 		p_info	p;
 		memcpy(p.xyz, xyz, sizeof(p.xyz));
 		memcpy(p.st, st, sizeof(p.st));
 		pts.push_back(p);
-		index.insert(hash_map<string,int>::value_type(key, pts.size()));
+		index.insert(map<string,int>::value_type(key, pts.size()));
 		pts.push_back(p);
 		return pts.size()-1;
 	}

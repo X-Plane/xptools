@@ -25,8 +25,6 @@
 
 #include <vector>
 #include <list>
-#include <hash_map>
-#include <hash_fun>
 
 #include "AssertUtils.h"
 
@@ -89,10 +87,12 @@ private:
 	
 };
 
+namespace HASH_MAP_NAMESPACE{
 template <>
 struct hash<DSFTuple> : std::unary_function<DSFTuple, std::size_t> {
 	std::size_t operator()(const DSFTuple& key) const { return key.hash(); }
 };
+}
 
 typedef	vector<DSFTuple>			DSFTupleVector;
 typedef list<DSFTupleVector>		DSFTupleVectorVector;

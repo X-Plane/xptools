@@ -1,8 +1,6 @@
 #ifndef WED_GUID_H
 #define WED_GUID_H
 
-#include <hash_fun>
-
 class	IOReader;
 class	IOWriter;
 
@@ -34,13 +32,14 @@ public:
 
 };
 
+namespace HASH_MAP_NAMESPACE {
 template <>
 struct hash<WED_GUID>
 	: std::unary_function<WED_GUID, std::size_t>
 {
 	std::size_t operator()(const WED_GUID& key) const { return key.hash(); }
 };
-
+}
 extern const WED_GUID	NULL_GUID;
 
 #endif /* WED_GUID_H */

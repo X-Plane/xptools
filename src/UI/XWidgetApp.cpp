@@ -35,7 +35,7 @@ vector<ACCEL>	gAccelTable;
 
 #if APL
 static pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
-#include <sioux.h>
+//#include <sioux.h>
 #endif
 
 void	XGrinder_Quit(void)
@@ -44,6 +44,7 @@ void	XGrinder_Quit(void)
 }
 
 #if APL
+/*
 pascal OSStatus SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
 {
 	EventRecord	rec;
@@ -51,6 +52,7 @@ pascal OSStatus SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEv
 		return noErr;
 	return eventNotHandledErr;
 }
+*/
 
 int		main(int argc, char ** argv)
 {
@@ -104,8 +106,8 @@ int		main(int argc, char ** argv)
 									
 									
 	
-	InstallEventHandler(GetEventDispatcherTarget(), 
-		NewEventHandlerUPP(SiouxSniffer),GetEventTypeCount(events), events, NULL, NULL);
+//	InstallEventHandler(GetEventDispatcherTarget(), 
+//		NewEventHandlerUPP(SiouxSniffer),GetEventTypeCount(events), events, NULL, NULL);
 	
 	RunApplicationEventLoop();		
 

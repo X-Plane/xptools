@@ -31,7 +31,7 @@
 #if defined(__MACH__)
 #define _STDINT_H_
 #endif
-#include <Carbon.h>
+#include <Carbon/Carbon.h>
 #define xmenu MenuRef
 #endif
 #if IBM

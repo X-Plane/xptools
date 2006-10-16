@@ -24,7 +24,10 @@
 #include <math.h>
 #include "AssertUtils.h"
 
-#if IBM
+#if APL
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#elif IBM
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -591,7 +594,7 @@ float FontMgr::GetLineHeight(
 {
 	if(!inFont)
 		return 0;
-	else if(inFontSizePx == NULL)
+	else if(inFontSizePx == 0)
 		return inFont->line_height;
 	else
 		return ((float) inFontSizePx / (float) inFont->tex_font_size) * inFont->line_height;

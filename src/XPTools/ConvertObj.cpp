@@ -38,7 +38,7 @@
 
 #include "ConvertObjDXF.h"
 #include "ConvertObj3DS.h"
-#include "ConvertObjVRML.h"
+//#include "ConvertObjVRML.h"
 
 #include "XWin.h"
 
@@ -191,9 +191,12 @@ void	PostProcessObj(XObj& ioObj, bool inReverse)
 	
 	if (gCenterH)
 	{
-		float sphere[4];
-		GetObjBoundingSphere(ioObj, sphere);
-		OffsetObject(ioObj, -sphere[0], 0.0, -sphere[2]);	// DO NOT center on Y!!
+//		float sphere[4];
+//		GetObjBoundingSphere(ioObj, sphere);
+//		OffsetObject(ioObj, -sphere[0], 0.0, -sphere[2]);	// DO NOT center on Y!!
+		#if !DEV
+			hello
+		#endif
 	}
 }
 
@@ -267,9 +270,9 @@ void	XGrindFile(const char * inFileName)
 	string	fname_new;
 	bool	is_dxf = HasExtNoCase(fname, ".dxf");
 	bool	is_3ds = HasExtNoCase(fname, ".3ds");
-	bool	is_wrl = HasExtNoCase(fname, ".wrl");
+//	bool	is_wrl = HasExtNoCase(fname, ".wrl");
 	
-	if (HasExtNoCase(fname, ".obj") || is_dxf || is_3ds || is_wrl)
+	if (HasExtNoCase(fname, ".obj") || is_dxf || is_3ds)
 	{
 		noext = fname.substr(0, fname.length() - 4);
 	}
@@ -290,14 +293,7 @@ void	XGrindFile(const char * inFileName)
 	
 	bool success = false;
 	
-	if (is_wrl)
-	{
-		// VRML tags the polygons as CW or CCW internally
-		success = ReadObjVRML(inFileName, obj);
-		if (success)
-			PostProcessObj(obj, false);
-		
-	} else  if (is_3ds)
+	if (is_3ds)
 	{
 		// 3DS files are normally clockwise polygon orientation...if we want CCW we 
 		// need to tell it to reverse.

@@ -2,7 +2,6 @@
 #define APTDEFS_H
 
 #include <vector>
-#include <hash_map>
 #include "CompGeomDefs2.h"
 
 struct	AptPavement_t {

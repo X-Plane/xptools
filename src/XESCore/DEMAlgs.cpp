@@ -30,6 +30,7 @@
 #include "MeshAlgs.h"
 #include "PolyRasterUtils.h"
 #include "WED_Document.h"
+#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "DEMAlgs.h"
 #include "WED_Globals.h"
@@ -1729,7 +1730,7 @@ void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
 			float dif = 0;
 			for (int k = 0; k < 8; ++k)
 			if (en[k] != NO_DATA)
-				dif = max(dif, fabs(en[k]-e));
+				dif = max(dif, fabsf(en[k]-e));
 			dst(x,y)=dif;
 		} else
 			dst(x,y) = 0.0;

@@ -39,10 +39,10 @@
 // Define this to 1 to see statistics about the encoded DSF file.
 #define ENCODING_STATS 1
 
-#if APL
-	#include <Endian.h>
-	#define SWAP32(x) (Endian32_Swap(x))
-	#define SWAP16(x) (Endian16_Swap(x))
+#if APL && BIG
+	#include <libkern/OSByteOrder.h>
+	#define SWAP32(x) (OSSwapConstInt32(x))
+	#define SWAP16(x) (OSSwapConstInt16(x))
 #else
 	#define SWAP32(x) (x)
 	#define SWAP16(x) (x)
@@ -1148,11 +1148,11 @@ void 	DSFFileWriterImp::BeginPatch(
 			DSFTuple	fracMin, fracMax;
 			fracMin.push_back((double) i / double (REF(inRef)->mDivisions));
 			fracMin.push_back((double) j / double (REF(inRef)->mDivisions));
-			for (int i = 0; i < (inCoordDepth-2); ++i)
+			for (int k = 0; i < (inCoordDepth-2); ++i)
 				fracMin.push_back(0.0);
 			fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
 			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			for (int i = 0; i < (inCoordDepth-2); ++i)
+			for (int k = 0; i < (inCoordDepth-2); ++i)
 				fracMax.push_back(1.0);
 			accum_patch_pool->AddPool(fracMin, fracMax);
 		}

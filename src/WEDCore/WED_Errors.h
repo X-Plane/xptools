@@ -17,6 +17,10 @@ using std::exception;
 #define WED_ThrowPrintf(fmt, ...) \
  		throw wed_error_exception(__FILE__, __LINE__, fmt, __VA_ARGS__)
 
+#ifndef _MSL_THROW
+#define _MSL_THROW throw()
+#endif
+
 class wed_error_exception : public exception {
 public:
 	wed_error_exception(int os_error_code, const char * file, int line) _MSL_THROW ;

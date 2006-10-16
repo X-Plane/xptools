@@ -40,22 +40,25 @@ struct StProfileInit {
 #endif
 
 #if APL
-#if __MACH__
-#include <CarbonCore/Timer.h>
-#else
-#include <Timer.h>
-#endif
+	#if __MACH__
+//		#include <Carbon/Carbon.h>
+	#if !DEV 
+	fixt his
+	#endif
+	#else
+		#include <Timer.h>
+	#endif
 #elif IBM
-#include <time.h>
+	#include <time.h>
 #elif LIN
-#error Linux not yet implemented.
+	#error Linux not yet implemented.
 #else
-#error PLATFORM NOT DEFINED
+	#error PLATFORM NOT DEFINED
 #endif
 
 class	PerfTimer {
 
-#if APL
+#if APL && 0
 	unsigned long long	mStart;
 #else
 	clock_t				mStart;
@@ -83,7 +86,7 @@ public:
 	
 	inline	void Start(void)
 	{
-#if APL
+#if APL && 0
 		::Microseconds((UnsignedWide *) &mStart);
 #else	
 		mStart = clock();
@@ -92,7 +95,7 @@ public:
 	
 	inline	void Stop(void)
 	{
-#if APL		
+#if APL	&& 0
 		unsigned long long stopTime;
 		::Microseconds((UnsignedWide *) &stopTime);
 		unsigned long long delta = stopTime - mStart;
@@ -108,7 +111,7 @@ public:
 };
 
 class	StElapsedTime {
-#if APL
+#if APL && 0
 	unsigned long long 	mStartTime;
 #else
 	clock_t				mStartTime;
@@ -117,7 +120,7 @@ class	StElapsedTime {
 public:
 	StElapsedTime(const char * inName): mName(inName)
 	{
-#if APL	
+#if APL	 && 0
 		::Microseconds((UnsignedWide *) &mStartTime);
 #else
 		mStartTime = clock();
@@ -125,7 +128,7 @@ public:
 	}
 	~StElapsedTime()
 	{
-#if APL	
+#if APL	&& 0
 		unsigned long long stopTime;
 		::Microseconds((UnsignedWide *) &stopTime);		
 		unsigned long long delta = stopTime - mStartTime;

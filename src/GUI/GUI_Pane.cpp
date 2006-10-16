@@ -1,9 +1,16 @@
 #include "GUI_Pane.h"
 #if APL
-	#include <Events.h>
+	#include <Carbon/Carbon.h>
 #elif IBM
 	#include <Windows.h>
 #endif
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 
 GUI_KeyFlags GUI_Pane::GetModifiers(void)
 {

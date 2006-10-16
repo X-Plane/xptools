@@ -1,6 +1,12 @@
 #include "GUI_Splitter.h"
 #include "GUI_GraphState.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 const int	gui_SplitSize = 5;
 
 GUI_Splitter::GUI_Splitter(int direction)

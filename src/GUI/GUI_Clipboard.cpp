@@ -1,7 +1,7 @@
 #include "GUI_Clipboard.h"
 
 #if APL
-#include <Scrap.h>
+#include <Carbon/Carbon.h>
 #elif IBM
 #include <Windows.h>
 #endif

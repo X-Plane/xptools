@@ -133,7 +133,7 @@ bool		GISFace::AreaMatch(const GISFace& rhs) const { return (mTerrainType == rhs
 void	GISFace::set_outer_ccb(GISHalfedge * outer) 			
 {
 	if (outer)
-		DebugAssert(mLinkPrev != NULL != NULL);
+		DebugAssert(mLinkPrev != NULL);
 	else
 		DebugAssert(mOuterCCB == NULL && mLinkPrev == NULL);
 	mOuterCCB = outer; 
@@ -973,6 +973,8 @@ void	Pmwx::clear()
 
 bool			Pmwx::is_valid() const
 {
+	int fc = 0, vc = 0, hc = 0;
+
 	char * file = NULL;
 	int line = NULL;
 	char * reason = NULL;
@@ -992,7 +994,6 @@ bool			Pmwx::is_valid() const
 	if (mHalfedges == 0 && mLastHalfedge) 
 		NOT_VALID("zero halfedges but have last halfedge")
 	
-	int fc = 0, vc = 0, hc = 0;
 	for (GISVertex * v = mFirstVertex; v; v = v->mLinkNext, ++vc)
 	{
 		if (v->mLinkNext == DEAD_VERTEX)
@@ -1514,7 +1515,7 @@ GISHalfedge *	Pmwx::ray_shoot(
 	Point2			best_pt;			// best pt so far
 	Segment2		tryseg(start, dest);
 	
-	GISHalfedge * it = (search_face == NULL || search_face->is_unbounded()) ? NULL : search_face->outer_ccb();
+	GISHalfedge * it = (search_face == NULL || search_face->is_unbounded()) ? NULL : (GISHalfedge *) search_face->outer_ccb();
 	if (it)
 	do {
 		seg = Segment2(it->source()->point(), it->target()->point());

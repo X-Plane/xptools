@@ -22,7 +22,12 @@
  */
 #include "ObjDraw.h"
 #include "XObjDefs.h"
-#include <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+#include <math.h>
 
 #define	CHECK_GL_ERR		GL_ERR(glGetError());
 

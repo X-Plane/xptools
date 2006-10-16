@@ -35,7 +35,7 @@
 #endif
 
 #include <tiffio.h>
-#include <libxtiff/xtiffio.h>
+#include <xtiffio.h>
 const double one_256 = 1.0 / 256.0;
 
 static	double	ReadReal48(const unsigned char * p)
@@ -457,6 +457,8 @@ bail:
 //
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 {
+	int	n;
+	
 	MFMemFile * fi = MemFile_Open(inFileName);
 	if (fi == NULL) return false;
 	
@@ -490,7 +492,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	inMap.mSouth = south;
 
 	const char * p = b + 1024;
-	int n = 0;
+	n = 0;
 	int total_profiles = profiles;
 	while (profiles > 0)
 	{
@@ -640,6 +642,7 @@ static void 	MemTIFFUnmapFileProc(thandle_t, tdata_t, toff_t)
 */
 bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 {
+	int result = -1;
 	double	corners[8];
 	TIFFErrorHandler	warnH = TIFFSetWarningHandler(IgnoreTiffWarnings);
 	TIFFErrorHandler	errH = TIFFSetErrorHandler(IgnoreTiffErrs);
@@ -669,7 +672,6 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	printf("Corners: %lf,%lf   %lf,%lf   %lf,%lf   %lf,%lf\n",
 		corners[0], corners[1], corners[2], corners[3], corners[4], corners[5], corners[6], corners[7]);
 
-	int result = -1;
 	uint32 w, h;
 	uint16 cc;
 	uint16 d;

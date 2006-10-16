@@ -24,11 +24,8 @@
 
 #define _STDINT_H_
 
-#include <Endian.h>
-#include <Dialogs.h>
-#include <Navigation.h>
+#include <Carbon/Carbon.h>
 #include <string.h>
-#include <Appearance.h>
 
 static	OSErr		FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname);
 
@@ -168,7 +165,7 @@ void	ShowProgressMessage(const char * inMsg, float * progress)
 	}
 
 	SetPortWindowPort(wind);
-	CFStringRef ref = CFStringCreateWithCString(NULL, inMsg, smSystemScript);
+	CFStringRef ref = CFStringCreateWithCString(NULL, inMsg, kCFStringEncodingMacRoman);
 	EraseRect(&windBounds);
 	InsetRect(&windBounds, 20, 15);
 	DrawThemeTextBox(ref, kThemeSystemFont, kThemeStateActive, true, &windBounds, teJustLeft, NULL);		
