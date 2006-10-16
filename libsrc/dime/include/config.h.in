@@ -3,8 +3,23 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* whether or not finite() is available */
+#undef HAVE_FINITE
+
+/* whether or not fpclass() is available */
+#undef HAVE_FPCLASS
+
+/* Define to 1 if you have the <ieeefp.h> header file. */
+#undef HAVE_IEEEFP_H
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* whether or not isinf() is available */
+#undef HAVE_ISINF
+
+/* whether or not isnan() is available */
+#undef HAVE_ISNAN
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -29,6 +44,15 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* whether or not _finite() is available */
+#undef HAVE__FINITE
+
+/* whether or not _fpclass() is available */
+#undef HAVE__FPCLASS
+
+/* whether or not _isnan() is available */
+#undef HAVE__ISNAN
 
 /* Name of package */
 #undef PACKAGE

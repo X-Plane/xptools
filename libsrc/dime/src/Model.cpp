@@ -196,22 +196,11 @@ dimeModel::read(dimeInput * const in)
   
   while (true) {
     ok = false;
-    if (!in->readGroupCode(groupcode)) 
-    {
-//    	printf("Failed to read group code.\n");
-    	break;
-    }
-    if (groupcode != 0 && groupcode != 999) 
-    {
-//    	printf("Strange group code.\n");
-    	break;
-    }
+    if (!in->readGroupCode(groupcode)) break;
+    if (groupcode != 0 && groupcode != 999) break;
     string = in->readString();
-    if (string == NULL) 
-    {
-//    	printf("Could not read string.\n");    
-    	break;
-    }
+    if (string == NULL) break;
+    
     if (groupcode == 999) {
       ok = true;
       dimeParam param;
@@ -225,28 +214,17 @@ dimeModel::read(dimeInput * const in)
       ok = in->readGroupCode(groupcode);
       string = in->readString();
       ok = ok && string != NULL && groupcode == 2;
-      if (!ok) 
-      {
-//      	printf("Section group code not 2\n");
-      	break;
-      }
+      if (!ok) break;
       section = dimeSection::createSection(string, in->getMemHandler());
       ok = section != NULL && section->read(in);
-      if (!ok) 
-      {
-//      	printf("Could not read section.\n");
-      	break;
-      }
+      if (!ok) break;
       this->sections.append(section);
     }
     else if (!strcmp(string, EOFID)) {
       ok = true;
       break;
     }
-    else {
-//    	printf("Unexpected error.\n");
-    	break; // something unexpected has happened
-    }
+    else break; // something unexpected has happened
   }	
   if (!ok) {
     if (in->aborted) {
@@ -266,7 +244,7 @@ dimeModel::read(dimeInput * const in)
     if (bs) bs->fixReferences(this);
     if (es) es->fixReferences(this);
 #ifndef NDEBUG
-//    fprintf(stderr,"dimeModel::largestHandle: %d\n", this->largestHandle);
+    fprintf(stderr,"dimeModel::largestHandle: %d\n", this->largestHandle);
 #endif
   }
   return ok;

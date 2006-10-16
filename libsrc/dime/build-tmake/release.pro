@@ -1,4 +1,3 @@
-TARGET = dime
-CONFIG = release staticlib
-DEFINES = NDEBUG
-OBJECTS_DIR = releaseobjects
+CONFIG      += release staticlib
+DEFINES     += NDEBUG
+OBJECTS_DIR  = releaseobjects

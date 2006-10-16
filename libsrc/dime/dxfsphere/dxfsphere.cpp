@@ -40,10 +40,13 @@
 #include <dime/Model.h>
 #include <dime/sections/EntitiesSection.h>
 #include <dime/sections/TablesSection.h>
+#include <dime/sections/BlocksSection.h>
 #include <dime/tables/LayerTable.h>
 #include <dime/tables/Table.h>
 #include <dime/entities/3DFace.h>
 #include <dime/entities/Line.h>
+#include <dime/entities/Block.h>
+#include <dime/entities/Insert.h>
 #include <dime/entities/UnknownEntity.h>
 #include <dime/Output.h>
 #include <dime/util/Linear.h>
@@ -178,8 +181,10 @@ object ico(sizeof(icosahedron) / sizeof(icosahedron[0]),
 point *normalize(point * p);
 point *midpoint(point * a, point * b);
 void flip_object(object * obj);
-void print_object(object * obj, int level, dimeModel & model, const char * layername);
-void print_triangle(triangle *t, dimeModel & model, const dimeLayer * layer);
+void print_object(object * obj, int level, dimeModel & model, const char * layername,
+                  dimeBlock * block = NULL);
+void print_triangle(triangle *t, dimeModel & model, const dimeLayer * layer,
+                    dimeBlock * block = NULL);
 
 static void
 add_layer(const char * name, int colnum, dimeModel * model, dimeTable * layers)
@@ -209,6 +214,8 @@ main(int ac, char ** av)
     level,              /* Current subdivision level */
     maxlevel = 0;       /* Maximum subdivision level */
 
+  int useblock = 0;
+
   char * outfile = NULL;
   
   /* Parse arguments */
@@ -219,6 +226,8 @@ main(int ac, char ** av)
       old = &tet;
     else if (!strcmp(av[i], "-i"))
       old = &ico;
+    else if (!strcmp(av[i], "-b"))
+      useblock = 1;
     else if (!strcmp(av[i], "-o") && i < ac-1) {
       outfile = av[i+1];
       i++;
@@ -235,7 +244,7 @@ main(int ac, char ** av)
   }
   
   if (i < ac || ac == 1) {
-    fprintf(stderr, "dxfsphere: [-c] [-t] [-i] [-o <outfile>] <levels>\n");
+    fprintf(stderr, "dxfsphere: [-c] [-t] [-i] [-b] [-o <outfile>] <levels>\n");
     exit(1);
   }
 
@@ -262,6 +271,16 @@ main(int ac, char ** av)
 
     // DIME: insert the layer in the table
     tables->insertTable(layers); 
+  }
+
+  // DIME: only needed if you want to create the sphere as a BLOCK
+  dimeBlock * block = NULL;
+  if (useblock) {
+    dimeBlocksSection * blocks = new dimeBlocksSection;
+    model.insertSection(blocks);
+    block = new dimeBlock(NULL);
+    block->setName("MyBlock");
+    blocks->insertBlock(block);
   }
 
   // DIME: add the entities section.
@@ -350,7 +369,13 @@ main(int ac, char ** av)
   }
   
   /* Print out resulting approximation */
-  print_object(old, maxlevel, model, LAYERNAME1);
+  print_object(old, maxlevel, model, LAYERNAME1, block);
+
+  if (block) {
+    dimeInsert * insert = new dimeInsert;
+    insert->setBlock(block);
+    model.addEntity(insert);
+  }
 
   // DIME: write the model to file
   model.write(&out);
@@ -401,20 +426,22 @@ void flip_object(object * obj)
 }
 
 /* Write out all triangles in an object */
-void print_object(object * obj, int level, dimeModel & model, const char * layername)
+void print_object(object * obj, int level, dimeModel & model, const char * layername,
+                  dimeBlock * block)
 {
   int i;
   
   const dimeLayer * layer = model.getLayer(layername);
 
   for (i = 0; i < obj->npoly; i++) {
-    print_triangle(&obj->poly[i], model, layer);  
+    print_triangle(&obj->poly[i], model, layer, block);  
   }
 }
 
 
 /* Output a triangle */
-void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer)
+void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer,
+                    dimeBlock * block)
 {
 #if defined(DXFSPHERE_FILLED) && !defined(DXFSPHERE_USE_UNKNOWNENTITY)
   // filled, create dime3DFace
@@ -444,7 +471,12 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer)
   face->setRecord(5, param);
 
   // DIME: add entity to model
-  model.addEntity(face);
+  if (block) {
+    block->insertEntity(face);
+  }
+  else {
+    model.addEntity(face);
+  }
 #elif defined(DXFSPHERE_USE_UNKNOWNENTITY)
 
   // DIME: create a dimeUnknownEntity, and set it to contain a triangle
@@ -520,7 +552,12 @@ void print_triangle(triangle * t, dimeModel & model, const dimeLayer * layer)
     line->setRecord(5, param);
 
     // DIME: add entity to model
-    model.addEntity(line);
+    if (block) {
+      block->insertEntity(line);
+    }
+    else {
+      model.addEntity(line);
+    }
   }
 #endif // ! DXFSPHERE_FILLED
 }

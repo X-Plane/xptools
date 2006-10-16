@@ -1,4 +1,3 @@
-TARGET = dime
-CONFIG = debug sharedlib
-DEFINES = # DIME_FIXBIG USE_GZFILE
-OBJECTS_DIR = objects
+CONFIG        += debug
+!win32:CONFIG += sharedlib
+OBJECTS_DIR    = objects

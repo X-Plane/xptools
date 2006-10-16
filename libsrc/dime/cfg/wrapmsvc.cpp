@@ -611,7 +611,7 @@ main(int argc, char ** argv)
       wrapdbg = true;
     }
     else if (match(arg, "--wrapversion")) {
-      (void)fprintf(stdout, "$Revision: 1.1 $\n");
+      (void)fprintf(stdout, "$Revision: 65 $\n");
       exit(0);
     }
 

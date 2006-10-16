@@ -96,6 +96,9 @@ dimeTable::copy(dimeModel * const model) const
       t->tableEntries.append(this->tableEntries[i]->copy(model));
     }
   }
+
+  if (this->tablename) t->setTableName(this->tablename);
+
   return t;
 }
 

@@ -148,15 +148,11 @@ private:
 #endif
 
   int16 surfaceType;
-#ifdef DIME_FIXBIG
+  
   int32 coordCnt;  // real # of coordinate vertices
   int32 indexCnt;  // real # of index vertices
   int32 frameCnt; 
-#else  
-  int16 coordCnt;  // real # of coordinate vertices
-  int16 indexCnt;  // real # of index vertices
-  int16 frameCnt; 
-#endif
+  
   dimeVertex **coordVertices;
   dimeVertex **indexVertices;
   dimeVertex **frameVertices;

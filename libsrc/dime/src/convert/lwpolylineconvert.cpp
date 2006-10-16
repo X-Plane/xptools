@@ -52,7 +52,8 @@ convert_lwpolyline(const dimeEntity *entity, const dimeState *state,
   e = dimeVec3f(0,0,1) * thickness;
 
   float elev = pline->getElevation();
-
+  if (!dime_finite(elev)) elev = 0.0f;
+  
   int n = pline->getNumVertices();
   if (n <= 0) return;
   

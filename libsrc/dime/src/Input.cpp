@@ -415,20 +415,35 @@ dimeInput::readInt32(int32 &val)
 bool 
 dimeInput::readFloat(float &val)
 {
+  bool ret = false;
+
   if (this->binary) {
     // binary files only contains doubles
     dxfdouble tmp;
-    bool ret = readDouble(tmp);
-    val = (float) tmp;
-    return ret;
+    ret = readDouble(tmp);
+    val = (float) tmp; 
   }
-  dxfdouble tmp;
-  bool ok = skipWhiteSpace();
-  if (ok && readReal(tmp) && tmp >= -FLT_MAX && tmp <= FLT_MAX) {
-    val = (float) tmp;
-    return nextLine();
+  else {
+    dxfdouble tmp;
+    ret = skipWhiteSpace();
+    if (ret && 
+        readReal(tmp)) {    
+      val = (float) tmp;
+      ret = nextLine();
+    }
   }
-  return false;
+  if (ret) {
+    if (!dime_finite(val)) {
+      int tst = dime_isinf(val);
+      if (tst < 0) {
+        val = -FLT_MAX;
+      }
+      else if (tst > 0) {
+        val = FLT_MAX;
+      }
+    }
+  }
+  return ret;
 }
 
 /*!
@@ -438,8 +453,8 @@ dimeInput::readFloat(float &val)
 bool 
 dimeInput::readDouble(dxfdouble &val)
 {
+  bool ret = false;
   if (this->binary) {
-    bool ret;
     double tmp;
     assert(sizeof(tmp) == 8);
     char *ptr = (char*)&tmp;
@@ -465,9 +480,28 @@ dimeInput::readDouble(dxfdouble &val)
       ret = this->get(ptr[7]);
       val = (dxfdouble) tmp;
     }
-    return ret;
   }
-  return skipWhiteSpace() && readReal(val) && nextLine();
+  else {
+    if (skipWhiteSpace()) {
+      if (readReal(val)) {
+        ret = nextLine();
+      }
+    }
+  }
+  
+  if (ret) {
+    if (!dime_finite(val)) {
+      int tst = dime_isinf(val);
+      // choose FLT_MAX as the maximum value if a number is infinite
+      if (tst < 0) {
+        val = -FLT_MAX;
+      }
+      else if (tst > 0) {
+        val = FLT_MAX;
+      }
+    }
+  }
+  return ret;
 }
 
 /*!
@@ -704,7 +738,7 @@ dimeInput::nextLine()
   register char endline2 = 0xd;
   while((gotChar = get(c)) && c != endline && c != endline2);
   if (!gotChar) return false;
-  while (c == endline2 && c == endline) { // try to read one more	// BAS MODIFICATOIN FOR STUPID-ASS MACINTOSH
+  while (c == endline2) { // try to read one more
     gotChar = get(c);
     if (!gotChar) return false;
   }

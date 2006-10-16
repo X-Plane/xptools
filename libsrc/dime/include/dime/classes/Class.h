@@ -39,6 +39,7 @@
 class dimeInput;
 class dimeMemHandler;
 class dimeOutput;
+class dimeModel;
 
 class DIME_DLL_API dimeClass : public dimeRecordHolder
 {

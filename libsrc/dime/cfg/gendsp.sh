@@ -160,7 +160,7 @@ if test -f "$studiofile"; then :; else
   echo "!MESSAGE You can specify a configuration when running NMAKE" >>"$studiofile"
   echo "!MESSAGE by defining the macro CFG on the command line. For example:" >>"$studiofile"
   echo "!MESSAGE" >>"$studiofile"
-  echo "!MESSAGE NMAKE /f \"${library}@${LIBRARY}_MAJOR_VERSION@.mak\" CFG=\"${library}@${LIBRARY}_MAJOR_VERSION@d - Win32 Debug\"" >>"$studiofile"
+  echo "!MESSAGE NMAKE /f \"${library}@${LIBRARY}_MAJOR_VERSION@.mak\" CFG=\"${library}@${LIBRARY}_MAJOR_VERSION@ - Win32 Debug\"" >>"$studiofile"
   echo "!MESSAGE" >>"$studiofile"
   echo "!MESSAGE Possible choices for configuration are:" >>"$studiofile"
   echo "!MESSAGE" >>"$studiofile"
@@ -259,6 +259,16 @@ if test x"$sourcefile" = x""; then :; else
   echo "" >>"$studiofile"
   sourcefile=`CYGWIN= cygpath -w "$sourcefile" 2>/dev/null || echo "$sourcefile"`
   echo "SOURCE=$sourcefile" >>"$studiofile"
+  sourcefileunixname=`CYGWIN= cygpath -u "$sourcefile"`
+  sourcefiledir=`dirname "$sourcefileunixname"`
+  sourcefiledirdir=`dirname "$sourcefiledir"`
+  targetdir=`echo $sourcefiledir | sed "s%^$sourcefiledirdir%%" | sed s%/%%g`
+  echo '!IF  "$(CFG)" == "'${library}@${LIBRARY}_MAJOR_VERSION@' - Win32 Release"' >>"$studiofile"
+  echo "# PROP Intermediate_Dir \"Release\\$targetdir\"" >>"$studiofile"
+  echo '!ELSEIF  "$(CFG)" == "'${library}@${LIBRARY}_MAJOR_VERSION@' - Win32 Debug"' >>"$studiofile"
+  echo "# PROP Intermediate_Dir \"Debug\\$targetdir\"" >>"$studiofile"
+  echo '!ENDIF ' >>"$studiofile"
+
   echo "# End Source File" >>"$studiofile"
 fi
 
@@ -364,7 +374,7 @@ case "$outputfile" in
   # the .dsp-file contain relative paths that works from where the sources and
   # build files are going to be installed...
   # The first two rules are for individual source files, the next two are for
-  # the include directive settings...
+  # the include directive settings.
 
   sed -e "s%^SOURCE=.:.*\\(${Library}-[0-9]\\.[^/\\\\]*\\)%SOURCE=..\\\\source\\\\\\1%" \
       -e 's%^SOURCE=.:.*build-files%SOURCE=.%' \

@@ -34,6 +34,8 @@
 #include <dime/entities/Entity.h>
 #include <dime/util/Linear.h>
 
+class dimeBlock;
+
 class DIME_DLL_API dimeInsert : public dimeEntity
 {
   friend class dimeEntitiesSection;

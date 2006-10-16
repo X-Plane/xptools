@@ -194,6 +194,9 @@ dimeOutput::writeFloat(const float val)
 bool
 dimeOutput::writeDouble(const dxfdouble val)
 {
+  // %g somehow leaves out a digit when writing single precision floats
+  if (sizeof(dxfdouble) == sizeof(float))
+    return fprintf(this->fp,"%.7g\n", val) > 0;
   return fprintf(this->fp,"%g\n", val) > 0;
 }
 

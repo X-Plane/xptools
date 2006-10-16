@@ -72,7 +72,6 @@ public: // 20011001 thammer - please don't kill me for this ;-)
   dimeBSPTree linebsp;
   dimeArray <int> lineindices;
   dimeArray <dimeVec3f> points;
- 
 };
 
 #endif // _DXF2VRML_LAYERDATA_H_

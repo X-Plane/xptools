@@ -52,6 +52,7 @@
 #define FLAG_FIRST_FREE       0x0800 // use this if you want to define your own flags
 
 class dimeLayer;
+class dimeModel;
 
 class DIME_DLL_API dimeEntity : public dimeRecordHolder
 {

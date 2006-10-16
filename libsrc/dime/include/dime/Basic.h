@@ -40,6 +40,7 @@
 // we prefer to use floats to save mem. Applications needing
 // scientific calculations should typedef this to double
 typedef float dxfdouble;
+// typedef double dxfdouble;
 
 #include <float.h>
 
@@ -84,10 +85,6 @@ typedef unsigned int uint32;
 
 #ifdef macintosh
  char* strdup( const char* );
-#endif
-
-#ifdef _WIN32
-#define DIME_NOT_DLL
 #endif
  
 #define ARRAY_NEW(memh, type, num) \
@@ -179,6 +176,10 @@ typedef union {
 #ifndef DIME_DLL_API
 # define DIME_DLL_API
 #endif /* !DIME_DLL_API */
+
+int DIME_DLL_API dime_isnan(double value);
+int DIME_DLL_API dime_isinf(double value);
+int DIME_DLL_API dime_finite(double value);
 
 /* ********************************************************************** */
 

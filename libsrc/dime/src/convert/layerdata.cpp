@@ -128,7 +128,6 @@ dxfLayerData::addTriangle(const dimeVec3f &v0,
 			  const dimeMatrix * const matrix)
 {
   if (this->fillmode) {
-  
     if (matrix) {
       dimeVec3f t0, t1, t2;
       matrix->multMatrixVec(v0, t0);
@@ -143,7 +142,7 @@ dxfLayerData::addTriangle(const dimeVec3f &v0,
       faceindices.append(facebsp.addPoint(v0));
       faceindices.append(facebsp.addPoint(v1));
       faceindices.append(facebsp.addPoint(v2));
-      faceindices.append(-1);            
+      faceindices.append(-1);
     }
   }
   else {
@@ -164,7 +163,6 @@ dxfLayerData::addQuad(const dimeVec3f &v0,
 		      const dimeVec3f &v3,
 		      const dimeMatrix * const matrix)
 {
-	
   if (this->fillmode) {
     if (matrix) {
       dimeVec3f t0, t1, t2, t3;
@@ -177,7 +175,7 @@ dxfLayerData::addQuad(const dimeVec3f &v0,
       faceindices.append(facebsp.addPoint(t2));
       faceindices.append(facebsp.addPoint(t3));
       faceindices.append(-1);
-     }
+    }
     else {
       faceindices.append(facebsp.addPoint(v0));
       faceindices.append(facebsp.addPoint(v1));
@@ -206,8 +204,7 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
 
   int i, n;
 
-
-  float r,g,b;
+  dxfdouble r,g,b;
   
   dimeLayer::colorToRGB(this->colidx, r, g, b);
 
@@ -306,8 +303,12 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
     else {
       fprintf(fp, 
               "    Shape {\n"
+              "      appearance Appearance {\n"
+              "        material Material {\n"
+              "          emissiveColor %g %g %g\n"
+              "        }\n"
+              "      }\n"
               "      geometry IndexedLineSet {\n"
-              "        color Color { color %g %g %g }\n"
               "        coord Coordinate {\n"
               "          point [\n", r, g, b);
     }
@@ -364,8 +365,12 @@ dxfLayerData::writeWrl(FILE *fp, int indent, const bool vrml1,
     else {
       fprintf(fp, 
               "    Shape {\n"
+              "      appearance Appearance {\n"
+              "        material Material {\n"
+              "          emissiveColor %g %g %g\n"
+              "        }\n"
+              "      \n"
               "      geometry PointSet {\n"
-              "        color Color { color %g %g %g }\n"
               "        coord Coordinate {\n"
               "          point [\n", r, g, b);
     }
