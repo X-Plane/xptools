@@ -5,10 +5,16 @@
 #include <vector>
 using std::vector;
 
+#define CAST_CMD(x) reinterpret_cast<void*>(x)
+
 const char * strstrnocase(const char * haystack, const char * needle);
+
+int		is_parent_of(ACObject * parent, ACObject * child);
 
 void	find_all_objects(ACObject * root, vector<ACObject *>& output);
 void	find_all_selected_objects(vector<ACObject *>& output);
+void	find_all_selected_objects_flat(vector<ACObject *>& output);
+void	find_all_selected_objects_parents(vector<ACObject *>& output);
 
 void	offset_object_textures(ACObject * ob, double dx, double dy, double sx, double sy);
 
@@ -27,6 +33,10 @@ char * 	pull_str_attr(ACObject * ob, const char * attr);
 void rotate_surface_y(Surface * surface, float angle, float x_ctr, float z_ctr);
 void surface_set_normals(Surface * surface, Point3* rml);
 int get_selection_bounds(float minv[3], float maxv[3]);
+
+void move_child_to_head(ACObject * parent, ACObject * child);
+
+Surface * obj_get_first_surf(ACObject * obj);
 
 
 #endif

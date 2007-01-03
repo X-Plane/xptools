@@ -33,14 +33,14 @@ attributes.
 #undef Boolean
 #endif
 
-#define BONES 0
-
 #include "obj8_import.h"
 #include "ac_utils.h"
 
 #include "XObjDefs.h"
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
+#include "obj_model.h"
+#include "obj_anim.h"
 
 #include <list>
 using std::list;
@@ -48,32 +48,7 @@ using std::list;
 
 // Set this to 1 and each change in culling or flat/smooth shading pops another object.
 #define	OBJ_FOR_ALL_ATTRS	0
-// Set this 1 to provide _DEPTH attribute to support depth
-#define SUPPORT_NO_DEPTH 0
 
-
-#if BONES
-
-extern "C"
-{
-Prototype ACJoint *ac_new_joint();
-
-Prototype void ac_object_set_local_position(ACObject *b, Point3 *p);
-Prototype void ac_object_set_local_rotation(ACObject *b, Point3 *p);
-Prototype void ac_object_init_transform(ACObject *ob); // call this after setting local pos/rot
-Prototype void ac_object_add_position_key(ACObject *b, float ftime, Point3 *p);
-Prototype void ac_object_add_rotation_key(ACObject *b, float ftime, Point3 *p);
-
-Prototype void animator_set_max_time(float t);
-
-Prototype void ac_vertex_set_joint(Vertex *v, int b);
-Prototype int ac_vertex_get_joint(Vertex *v);
-
-Prototype void ac_object_init_transform(ACObject *ob); // create the animation matrix from local pos and rot
-Prototype void ac_object_init_transform_recurse(ACObject *ob); // create the animation matrix from local pos and rot
-}
-
-#endif
 
 
 /***************************************************************************************************
@@ -83,31 +58,44 @@ Prototype void ac_object_init_transform_recurse(ACObject *ob); // create the ani
 
 ACObject *	do_obj8_load(char *filename)
 {
-#if BONES
-		animator_set_max_time(60.0);
-#endif
-
 		ACObject * 	group_obj = NULL;
 		ACObject * 	lod_obj = NULL;
 		ACObject * 	stuff_obj = NULL;
 		list<ACObject *>	anim_obj;
-#if BONES
-		list<ACJoint *>		anim_joint;
-		vector<ACJoint *>	top_joints;
-#endif
-		
 		char *		tex_full_name = NULL;
 		int			tex_id = -1;
 		char *		panel_full_name = NULL;
 		int			panel_id = -1;
 
-		char		anim_cmd[1024];
+//		char		anim_cmd[1024];
 		string		anim_dat;
-		char *		anim_old_cmd;
+//		char *		anim_old_cmd;
 
-		Point3		key1, key2;
+//		Point3		key1, key2;
 					int i;
 
+		material_template_t	current_material;
+		current_material.rgb.r = 1.0;
+		current_material.rgb.g = 1.0;
+		current_material.rgb.b = 1.0;
+
+		current_material.ambient.r = 0.2;
+		current_material.ambient.g = 0.2;
+		current_material.ambient.b = 0.2;
+
+		current_material.specular.r = 0.0;
+		current_material.specular.g = 0.0;
+		current_material.specular.b = 0.0;
+
+		current_material.emissive.r = 0.0;
+		current_material.emissive.g = 0.0;
+		current_material.emissive.b = 0.0;
+
+		current_material.shininess = 128;
+		current_material.transparency = 0.0;
+		
+		int default_material = ac_palette_get_new_material_index(&current_material);
+		
 	Point3	p3;
 	char	strbuf[256];
 	
@@ -174,12 +162,17 @@ ACObject *	do_obj8_load(char *filename)
         
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
     {
-    	lod_obj = new_object(OBJECT_NORMAL);
+    	lod_obj = new_object(OBJECT_GROUP);
     	if (lod->lod_far != 0.0)
 			sprintf(strbuf, "LOD %f/%f",lod->lod_near, lod->lod_far);
 		else
 			strcpy(strbuf, "Default LOD");
 		object_set_name(lod_obj, strbuf);
+		if (lod->lod_far != 0.0)
+		{
+			OBJ_set_LOD_near(lod_obj, lod->lod_near);
+			OBJ_set_LOD_far (lod_obj, lod->lod_far );
+		}
 
 		object_add_child(group_obj, lod_obj);
     	
@@ -187,11 +180,8 @@ ACObject *	do_obj8_load(char *filename)
     	bool	two_side = false;
     	bool	panel_tex = false;
 
-    	bool	no_blend = false;
-    	bool	hard_poly = false;
-#if SUPPORT_NO_DEPTH
-    	bool	no_depth = false;
-#endif    	
+    	float	no_blend = -1.0;
+    	string	hard_poly;
     	float	offset = 0;
     	
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
@@ -210,13 +200,11 @@ ACObject *	do_obj8_load(char *filename)
 						if (tex_id != -1) object_texture_set(stuff_obj, tex_id);
 					}
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), stuff_obj);
-#if SUPPORT_NO_DEPTH
-					sprintf(strbuf, "_POLY_OS=%d _HARD=%d _BLEND=%d _DEPTH=%d",
-						(int) offset, hard_poly ? 1 : 0, no_blend ? 0 : 1, no_depth ? 0 : 1);
-#else
-					sprintf(strbuf, "_POLY_OS=%d _HARD=%d _BLEND=%d",
-						(int) offset, hard_poly ? 1 : 0, no_blend ? 0 : 1);
-#endif						
+					OBJ_set_poly_os(stuff_obj, offset);
+					OBJ_set_blend(stuff_obj, no_blend);
+					OBJ_set_hard(stuff_obj, hard_poly.c_str());
+					sprintf(strbuf, "POLY_OS=%d HARD=%s BLEND=%s",
+						(int) offset, hard_poly.c_str(), no_blend >= 0.0 ? "no":"yes");
 					object_set_name(stuff_obj, strbuf);
 				}
 
@@ -230,10 +218,6 @@ ACObject *	do_obj8_load(char *filename)
 						p3.y = dat[1];
 						p3.z = dat[2];
 						verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
-#if BONES						
-						if (!anim_joint.empty())
-							ac_vertex_set_joint(verts.back(), (int) anim_joint.back());
-#endif							
 					}
 					
 			        Surface * s = NULL;
@@ -245,7 +229,12 @@ ACObject *	do_obj8_load(char *filename)
 						    surface_set_type(s, SURFACE_POLYGON);
 						    surface_set_twosided(s, two_side);
 						    surface_set_shading(s, !shade_flat);
-					        object_add_surface_head(stuff_obj, s);				
+					        object_add_surface_head(stuff_obj, s);
+							
+							int our_material = ac_palette_get_new_material_index(&current_material);
+							surface_set_col(s, our_material);
+							if (our_material != default_material)
+								OBJ_set_use_materials(stuff_obj, 1);
 						}
 						float * dat = obj8.geo_tri.get(obj8.indices[cmd->idx_offset + i]);					
 				        surface_add_vertex_head(s, verts[i], dat[6], dat[7]);
@@ -262,10 +251,6 @@ ACObject *	do_obj8_load(char *filename)
 						p3.y = dat[1];
 						p3.z = dat[2];
 						verts.push_back(object_add_new_vertex_head(stuff_obj, &p3));
-#if BONES						
-						if (!anim_joint.empty())
-							ac_vertex_set_joint(verts.back(), (int) anim_joint.back());
-#endif							
 					}
 					
 			        Surface * s = NULL;
@@ -296,35 +281,25 @@ ACObject *	do_obj8_load(char *filename)
 				panel_tex = true;
 				break;
 			case attr_No_Blend:
-				if (!no_blend) stuff_obj = NULL;
-				no_blend = true;
+				if (!no_blend != cmd->params[0]) stuff_obj = NULL;
+				no_blend = cmd->params[0];
 				break;
 			case attr_Blend:
-				if (no_blend) stuff_obj = NULL;
-				no_blend = false;
+				if (no_blend != -1.0) stuff_obj = NULL;
+				no_blend = -1.0;
 				break;
 			case attr_Hard:
-				if (!hard_poly) stuff_obj = NULL;
-				hard_poly = true;
+				if (hard_poly != cmd->name) stuff_obj = NULL;
+				hard_poly = cmd->name;
 				break;
 			case attr_No_Hard:
-				if (hard_poly) stuff_obj = NULL;
-				hard_poly = false;
+				if (!hard_poly.empty()) stuff_obj = NULL;
+				hard_poly.clear();
 				break;
 			case attr_Offset:
 				if (offset != cmd->params[0]) stuff_obj = NULL;
 				offset = cmd->params[0];
 				break;
-#if SUPPORT_NO_DEPTH
-			case attr_No_Depth:			
-				if (!no_depth) stuff_obj = NULL;
-				no_depth = true;
-				break;
-			case attr_Depth:
-				if (no_depth) stuff_obj = NULL;
-				no_depth = false;
-				break;
-#endif				
 			case attr_Shade_Flat:		
 #if OBJ_FOR_ALL_ATTRS
 				if (!shade_flat)	stuff_obj = NULL;
@@ -354,17 +329,10 @@ ACObject *	do_obj8_load(char *filename)
 				{
 					stuff_obj = NULL;
 					ACObject * parent = anim_obj.empty() ? lod_obj : anim_obj.back();
-					anim_obj.push_back(new_object(OBJECT_NORMAL));
+					anim_obj.push_back(new_object(OBJECT_GROUP));
 					object_add_child(parent, anim_obj.back());
 					object_set_name(anim_obj.back(), "ANIMATION");
-#if BONES
-					ACJoint * parent_joint = anim_joint.empty() ? group_obj : anim_joint.back();
-					anim_joint.push_back(ac_new_joint());
-					object_add_child(parent_joint, anim_joint.back());
-					if (parent_joint == group_obj)
-						top_joints.push_back(anim_joint.back());
-					object_set_name(anim_joint.back(), "JOINT");
-#endif					
+					OBJ_set_animation_group(anim_obj.back(),1);
 
 					}
 				break;
@@ -373,60 +341,39 @@ ACObject *	do_obj8_load(char *filename)
 				anim_obj.pop_back();
 				break;
 			case anim_Translate:
-				anim_old_cmd = ac_object_get_data(anim_obj.back());
-				if (anim_old_cmd)
-					anim_dat = anim_old_cmd;
-				else
-					anim_dat.clear();
-				sprintf(anim_cmd, "TRANSLATE %f %f %f %f %f %f %f %f %s\n",
-					obj8.animation[cmd->idx_offset].xyzrv1[0],
-					obj8.animation[cmd->idx_offset].xyzrv1[1],
-					obj8.animation[cmd->idx_offset].xyzrv1[2],
-
-					obj8.animation[cmd->idx_offset].xyzrv2[0],
-					obj8.animation[cmd->idx_offset].xyzrv2[1],
-					obj8.animation[cmd->idx_offset].xyzrv2[2],
-
-					obj8.animation[cmd->idx_offset].xyzrv1[4],
-					obj8.animation[cmd->idx_offset].xyzrv2[4],
-					obj8.animation[cmd->idx_offset].dataref.c_str());
-				anim_dat += anim_cmd;
-				object_set_userdata(anim_obj.back(), (char *) anim_dat.c_str());
+				{
+					if (obj8.animation[cmd->idx_offset].keyframes[0].v[0] != 0.0 ||
+						obj8.animation[cmd->idx_offset].keyframes[0].v[1] != 0.0 ||
+						obj8.animation[cmd->idx_offset].keyframes[0].v[2] != 0.0)
+						
+						anim_add_static(anim_obj.back(), 0, obj8.animation[cmd->idx_offset].keyframes[0].v, obj8.animation[cmd->idx_offset].dataref.c_str(), "static translate");
 				
-				key1.x = obj8.animation[cmd->idx_offset].xyzrv1[0];
-				key1.y = obj8.animation[cmd->idx_offset].xyzrv1[1];
-				key1.z = obj8.animation[cmd->idx_offset].xyzrv1[2];
-
-				key2.x = obj8.animation[cmd->idx_offset].xyzrv2[0];
-				key2.y = obj8.animation[cmd->idx_offset].xyzrv2[1];
-				key2.z = obj8.animation[cmd->idx_offset].xyzrv2[2];
-#if BONES				
-				ac_object_add_position_key(anim_joint.back(), 0,  &key1);
-				ac_object_add_position_key(anim_joint.back(), 60, &key2);
-				key1.x = key1.y = key2.y = 0.0;
-				ac_object_add_rotation_key(anim_joint.back(), 0,  &key1);
-				ac_object_add_rotation_key(anim_joint.back(), 60, &key1);
-#endif				
-				break;
+					if (obj8.animation[cmd->idx_offset].keyframes.size() > 2 || 
+						(obj8.animation[cmd->idx_offset].keyframes.size() == 2 && (
+							obj8.animation[cmd->idx_offset].keyframes[0].v[0] != obj8.animation[cmd->idx_offset].keyframes[1].v[0] ||
+							obj8.animation[cmd->idx_offset].keyframes[0].v[1] != obj8.animation[cmd->idx_offset].keyframes[1].v[1] ||
+							obj8.animation[cmd->idx_offset].keyframes[0].v[2] != obj8.animation[cmd->idx_offset].keyframes[1].v[2])))
+						anim_add_translate(anim_obj.back(), 0, obj8.animation[cmd->idx_offset].keyframes, obj8.animation[cmd->idx_offset].dataref.c_str(), "translate");
+				}
+				break;	
 			case anim_Rotate:
-				anim_old_cmd = ac_object_get_data(anim_obj.back());
-				if (anim_old_cmd)
-					anim_dat = anim_old_cmd;
-				else
-					anim_dat.clear();
-				sprintf(anim_cmd, "ROTATE %f %f %f %f %f %f %f %s\n",
-					obj8.animation[cmd->idx_offset].xyzrv1[0],
-					obj8.animation[cmd->idx_offset].xyzrv1[1],
-					obj8.animation[cmd->idx_offset].xyzrv1[2],
+				{
+					float center[3] = { 0.0, 0.0, 0.0 };
 
-					obj8.animation[cmd->idx_offset].xyzrv1[3],
-					obj8.animation[cmd->idx_offset].xyzrv2[3],
-
-					obj8.animation[cmd->idx_offset].xyzrv1[4],
-					obj8.animation[cmd->idx_offset].xyzrv2[4],
-					obj8.animation[cmd->idx_offset].dataref.c_str());
-				anim_dat += anim_cmd;
-				object_set_userdata(anim_obj.back(), (char *) anim_dat.c_str());
+					anim_add_rotate(anim_obj.back(), 0, center, obj8.animation[cmd->idx_offset].axis, 
+										obj8.animation[cmd->idx_offset].keyframes,
+										obj8.animation[cmd->idx_offset].dataref.c_str(), "rotate");
+				}
+				break;
+			case anim_Show:
+				anim_add_show(anim_obj.back(), 0,
+									obj8.animation[cmd->idx_offset].keyframes,
+									obj8.animation[cmd->idx_offset].dataref.c_str(), "show");
+				break;
+			case anim_Hide:
+				anim_add_hide(anim_obj.back(), 0,
+									obj8.animation[cmd->idx_offset].keyframes,
+									obj8.animation[cmd->idx_offset].dataref.c_str(), "show");
 				break;
 			case obj8_Lights:			
 				for (i = 0; i < cmd->idx_count; ++i)
@@ -440,73 +387,129 @@ ACObject *	do_obj8_load(char *filename)
 					pt_ac3.z = dat[2];
 					ac_entity_set_point_value(light, "loc", &pt_ac3);
 					
-					sprintf(strbuf, "_RGB=%f,%f,%f", dat[3], dat[4], dat[5]);
+					sprintf(strbuf, "RGB (%f,%f,%f)", dat[3], dat[4], dat[5]);
 					ac_entity_set_point_value(light, "diffuse", &col_ac3);
 					object_set_name(light, strbuf);
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
+					OBJ_set_light_red(light, dat[3]);
+					OBJ_set_light_green(light, dat[4]);
+					OBJ_set_light_blue(light, dat[5]);
+					OBJ_set_light_named(light, "rgb");
 				}
 				break;
 			case obj8_LightNamed:
 				{
 					stuff_obj = NULL;
 					ACObject * light = new_object(OBJECT_LIGHT);
-					Point3	pt_ac3, col_ac3 = { 1.0, 1.0, 1.0 };
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
-					ac_entity_set_point_value(light, "loc", &pt_ac3);
-					
-					sprintf(strbuf, "LIGHT_NAMED %s", cmd->name.c_str());
-						
+					ac_entity_set_point_value(light, "loc", &pt_ac3);					
 					ac_entity_set_point_value(light, "diffuse", &col_ac3);
-					object_set_name(light, strbuf);
+					object_set_name(light, (char*) cmd->name.c_str());
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);				
+					OBJ_set_light_named(light, cmd->name.c_str());
 				}				
 				break;				
 			case obj8_LightCustom:
 				{
 					stuff_obj = NULL;
 					ACObject * light = new_object(OBJECT_LIGHT);
-					Point3	pt_ac3, col_ac3 = { 1.0, 1.0, 1.0 };
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
 					pt_ac3.x = cmd->params[0];
 					pt_ac3.y = cmd->params[1];
 					pt_ac3.z = cmd->params[2];
 					ac_entity_set_point_value(light, "loc", &pt_ac3);
-
-					sprintf(strbuf, "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", 
-						cmd->params[3], cmd->params[4 ], cmd->params[5 ], 
-						cmd->params[6], cmd->params[7 ], cmd->params[8 ], 
-						cmd->params[9], cmd->params[10], cmd->params[11], 
-						cmd->name.c_str());
-					
 					ac_entity_set_point_value(light, "diffuse", &col_ac3);
-					object_set_name(light, strbuf);
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);				
+					OBJ_set_light_named(light, "custom");
+					OBJ_set_light_dataref(light, cmd->name.c_str());
+					OBJ_set_light_red	(light,cmd->params[3]);
+					OBJ_set_light_green	(light,cmd->params[4]);
+					OBJ_set_light_blue	(light,cmd->params[5]);
+					OBJ_set_light_alpha	(light,cmd->params[6]);
+					OBJ_set_light_size	(light,cmd->params[7]);
+					OBJ_set_light_s1	(light,cmd->params[8]);
+					OBJ_set_light_t1	(light,cmd->params[9]);
+					OBJ_set_light_s2	(light,cmd->params[10]);
+					OBJ_set_light_t2	(light,cmd->params[11]);
 				}				
 				break;
 			case obj_Smoke_Black:
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
+					pt_ac3.x = cmd->params[0];
+					pt_ac3.y = cmd->params[1];
+					pt_ac3.z = cmd->params[2];
+					ac_entity_set_point_value(light, "loc", &pt_ac3);
+					ac_entity_set_point_value(light, "diffuse", &col_ac3);					
+					object_set_name(light, "Black Smoke");
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);									
+					OBJ_set_light_smoke_size(light, cmd->params[3]);
+					OBJ_set_light_named(light, "black smoke");
+				}
+				break;
 			case obj_Smoke_White:
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
+					pt_ac3.x = cmd->params[0];
+					pt_ac3.y = cmd->params[1];
+					pt_ac3.z = cmd->params[2];
+					ac_entity_set_point_value(light, "loc", &pt_ac3);
+					ac_entity_set_point_value(light, "diffuse", &col_ac3);					
+					object_set_name(light, "White Smoke");
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);									
+					OBJ_set_light_smoke_size(light, cmd->params[3]);
+					OBJ_set_light_named(light, "white smoke");
+				}
+				break;
 			case attr_Ambient_RGB:	
+				break;
 			case attr_Diffuse_RGB:
+				current_material.rgb.r = cmd->params[0];
+				current_material.rgb.g = cmd->params[1];
+				current_material.rgb.b = cmd->params[2];
+				break;
 			case attr_Emission_RGB:
+				current_material.emissive.r = cmd->params[0];
+				current_material.emissive.g = cmd->params[1];
+				current_material.emissive.b = cmd->params[2];
+				break;
 			case attr_Specular_RGB:
+				break;
 			case attr_Shiny_Rat:
+				current_material.specular.r = cmd->params[0];
+				current_material.specular.g = cmd->params[0];
+				current_material.specular.b = cmd->params[0];
+				break;
 			case attr_Reset:
-#if !SUPPORT_NO_DEPTH
-			case attr_No_Depth:			
-			case attr_Depth:
-#endif			
+				current_material.rgb.r = 1.0;
+				current_material.rgb.g = 1.0;
+				current_material.rgb.b = 1.0;
+
+				current_material.specular.r = 0.0;
+				current_material.specular.g = 0.0;
+				current_material.specular.b = 0.0;
+
+				current_material.emissive.r = 0.0;
+				current_material.emissive.g = 0.0;
+				current_material.emissive.b = 0.0;				
 				break;
 			}	
 		}
 	}
-
-#if BONES    
-    for (vector<ACJoint *>::iterator joint = top_joints.begin(); joint != top_joints.end(); ++joint)
-    	ac_object_init_transform_recurse(*joint);
-#endif
     
 	object_calc_normals_force(group_obj);
+
+	bake_static_transitions(group_obj);
+	purge_datarefs();
+	gather_datarefs(group_obj);
+	sync_datarefs();
 
     return group_obj;
 }

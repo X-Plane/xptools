@@ -5,6 +5,16 @@ using std::string;
 using std::min;
 using std::max;
 
+int		is_parent_of(ACObject * parent, ACObject * child)
+{
+	while(child)
+	{
+		if (child == parent) return 1;
+		child = ac_object_get_parent(child);
+	}
+	return 0;
+}
+
 void	find_all_objects(ACObject * root, vector<ACObject *>& output)
 {
 	List *kids = ac_object_get_childrenlist(root);
@@ -27,6 +37,52 @@ void	find_all_selected_objects(vector<ACObject *>& output)
 			find_all_objects((ACObject *) i->data, output);
 		}
 		list_free(&objs);
+	}
+}
+
+void	find_all_selected_objects_flat(vector<ACObject *>& output)
+{
+	output.clear();
+	
+	List *	objs = ac_selection_get_objects();
+	if (objs)
+	{	
+		for (List * i = objs; i; i=i->next)
+		{
+			output.push_back((ACObject *) i->data);
+		}
+		list_free(&objs);
+	}
+}
+
+
+
+void	find_all_selected_objects_parents(vector<ACObject *>& output)
+{
+	vector<ACObject *>	parents;
+	output.clear();
+	List *	objs = ac_selection_get_objects();
+	if (objs)
+	{	
+		for (List * i = objs; i; i=i->next)
+		{
+			parents.push_back(ac_object_get_parent((ACObject *) i->data));
+		}
+		list_free(&objs);
+	}
+	
+	for (int i = 0; i < parents.size(); ++i)
+	{
+		bool is_top = 1;
+		for (int j = 0; j < parents.size(); ++j)
+		if (i != j)
+		if (is_parent_of(parents[j],parents[i]))
+		{
+			is_top = false;
+			break;
+		}
+		if (is_top)
+			output.push_back(parents[i]);
 	}
 }
 
@@ -182,4 +238,36 @@ int get_selection_bounds(float minv[3], float maxv[3])
 	}
 	list_free(&surf_l);
 	return inited;
+}
+
+void move_child_to_head(ACObject * parent, ACObject * child)
+{
+/*
+	vector<ACObject *> kids;
+	kids.push_back(child);
+	int found = 0;
+	List *kids_list = ac_object_get_childrenlist(parent);
+    for (List * p = kids_list; p != NULL; p = p->next)
+	if (child == (ACObject *)p->data)
+		found = 1;
+	else
+        kids.push_back((ACObject *)p->data);
+	if (!found) return;
+
+	for (vector<ACObject*>::iterator i = kids.begin(); i != kids.end(); ++i)
+		object_remove_child_nocleanup(parent, *i);
+	for (vector<ACObject*>::iterator i = kids.begin(); i != kids.end(); ++i)
+		object_add_child(parent, *i);
+*/
+	tcl_command("ac3d object_move_to_head %d", child);
+}
+
+Surface * obj_get_first_surf(ACObject * obj)
+{
+	List * sl = ac_object_get_surfacelist(obj);
+	if (sl && sl->data)
+	{
+		return (Surface *) sl->data;
+	}
+	return NULL;
 }

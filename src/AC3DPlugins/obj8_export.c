@@ -35,6 +35,8 @@ attributes.
 
 #include "obj8_export.h"
 #include "ac_utils.h"
+#include "obj_anim.h"
+#include "obj_model.h"
 
 #include "XObjDefs.h"
 #include "XObjReadWrite.h"
@@ -72,8 +74,6 @@ static List *	gBadSurfaces;
 
 
 /* OBJ8 import and export */
-///static void obj8_assure_one_lod(XObj8 * obj);
-//static void obj8_reset_properties();
 static void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth);
 static void obj8_output_polyline(XObjBuilder * builder, Surface *s);
 static void obj8_output_polygon(XObjBuilder * builder, Surface *s);
@@ -87,40 +87,10 @@ static int do_obj8_save_common(char * fname, ACObject * obj, bool convert);
  * OBJ8 IMPORT AND EXPORT
  ***************************************************************************************************/
 
-/*
-static void obj8_assure_one_lod(XObj8 * obj)
-{
-	if (obj->lods.empty())
-	{
-		obj->lods.push_back(XObjLOD8());
-		obj->lods.back().lod_near = 0;
-		obj->lods.back().lod_far  = 0;	
-	}
-}
-*/
-/*
-void obj8_reset_properties(void)
-{
-	// NOTE: in obj8 x-plaen resets props - just remember that we're reset!
-	gSmooth = 1;
-	gTwoSided = 0;
-	gIsCockpit = 0;
-	gWasCockpit = 0;
-
-	gBlend = 1;
-	gHardPoly = 0;
-	gPolyOS = 0;
-}*/
-
 void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth)
 {
 	if (!g_export_triangles) return;
-//		Vertex *p1, *p2, *p3;
 		SVertex * s1, * s2, *s3;
-
- //   p3 = SVERTEX(s->vertlist->data);
- //  p2 = SVERTEX(s->vertlist->next->data);
- //   p1 = SVERTEX(s->vertlist->next->next->data);
 
 	s3 = ((SVertex *)s->vertlist->data);
 	s2 = ((SVertex *)s->vertlist->next->data);
@@ -183,6 +153,32 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	bool	is_two_sided = surface_get_twosided(s);
 	bool	is_smooth = surface_get_shading(s);
 	
+	if (OBJ_get_use_materials(object_of_surface(s)))
+	{
+		ACMaterial * mat = ac_palette_get_material(s->col);
+		if (mat)
+		{
+			ACrgb	diffuse, emissive, spec;
+			if (ac_entity_get_rgb_value((ACEntity*) mat, "diffuse", &diffuse))
+			{
+				float diff[3] = { diffuse.r, diffuse.g, diffuse.b };
+				builder->SetAttribute3(attr_Diffuse_RGB,diff);
+			}
+			if (ac_entity_get_rgb_value((ACEntity*) mat, "emissive", &emissive))
+			{
+				float emis[3] = { emissive.r, emissive.g, emissive.b };
+				builder->SetAttribute3(attr_Emission_RGB,emis);
+			}
+			if (ac_entity_get_rgb_value((ACEntity*) mat, "specular", &spec))
+			{
+				builder->SetAttribute1(attr_Shiny_Rat,(spec.r + spec.g + spec.b) / 3.0);
+			}			
+		}
+		
+	} else
+		builder->SetAttribute(attr_Reset);
+	
+	
 	builder->SetAttribute(is_two_sided ? attr_NoCull : attr_Cull);
 	builder->SetAttribute(is_smooth ? attr_Shade_Smooth : attr_Shade_Flat);
 
@@ -194,7 +190,7 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 			gErrBadCockpit = true;
 			list_add_item_head(&gBadSurfaces, s);
 		}
-		if (builder->IsHard())
+		if (!builder->IsHard().empty())
 		{
 			gErrBadHard = true;
 			list_add_item_head(&gBadSurfaces, s);
@@ -217,53 +213,56 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 {
-	Point3	xyz, rgb = { 1.0, 1.0, 1.0 };
+	Point3	xyz;
 	ac_entity_get_point_value(obj, "loc", &xyz);
-	char * token;
-	char * title = ac_object_get_name(obj);
-	
-	token = strstr(title, "LIGHT_NAMED");
-	if (token)
-	{
-		char lname[256];
-		sscanf(token,"LIGHT_NAMED %s", lname);
-		float pos[3] = { xyz.x, xyz.y, xyz.z };
-		builder->AccumLightNamed(pos, lname);
-		return;
-	}
+	float pos[3] = { xyz.x, xyz.y, xyz.z };
 
-	token = strstr(title, "LIGHT_CUSTOM");
-	if (token)
-	{
-		char lname[256];
-		float params[9];
-		sscanf(token,"LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", 
-			params  , params+1, params+2,
-			params+3, params+4, params+5,
-			params+6, params+7, params+8, lname);
-		float pos[3] = { xyz.x, xyz.y, xyz.z };
-		builder->AccumLightCustom(pos, params, lname);
-		return;
-	}
+	char lname[256], lref[256];
+	OBJ_get_light_named(obj, lname);
+	
+	if (lname[0] == 0) return;
 
-	
-	token = strstr(title, "_RGB=");
-	if (token != NULL)
+		 if (strcmp(lname,"rgb")==0)
 	{
-		if (strlen(token) > 5)
-		{
-			token += 5;
-			sscanf(token, "%f,%f,%f", &rgb.x, &rgb.y, &rgb.z);
-		}
+		float	dat[6] = { xyz.x, xyz.y, xyz.z, 
+			OBJ_get_light_red  (obj),
+			OBJ_get_light_green(obj),
+			OBJ_get_light_blue (obj) };
+		builder->AccumLight(dat);	
 	}
-	float	dat[6] = { xyz.x, xyz.y, xyz.z, rgb.x, rgb.y, rgb.z };
-	
-	builder->AccumLight(dat);
+	else if (strcmp(lname,"custom")==0)
+	{
+		float params[9] = {
+			OBJ_get_light_red  (obj), 
+			OBJ_get_light_green(obj), 
+			OBJ_get_light_blue (obj), 
+			OBJ_get_light_alpha(obj), 
+			OBJ_get_light_size (obj), 
+			OBJ_get_light_s1   (obj), 
+			OBJ_get_light_t1   (obj), 
+			OBJ_get_light_s2   (obj), 
+			OBJ_get_light_t2   (obj) };
+		OBJ_get_light_dataref(obj,lref);
+		builder->AccumLightCustom(pos, params, lref);	
+	}
+	else if (strcmp(lname,"white smoke")==0)
+	{
+		builder->AccumSmoke(obj_Smoke_White, pos, OBJ_get_light_smoke_size(obj));
+	}
+	else if (strcmp(lname,"black smoke")==0)
+	{
+		builder->AccumSmoke(obj_Smoke_Black, pos, OBJ_get_light_smoke_size(obj));
+	}
+	else
+	{
+		builder->AccumLightNamed(pos, lname);	
+	}	
 }
 
 
 void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 {
+	char  buf[1024];
 	if (!ac_object_is_visible(obj)) return;
 	
 		int 	numvert, numsurf, numkids;
@@ -275,108 +274,138 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
         &vertices, &surfaces, &kids); 
 
-	float	lod_start, lod_end;
-	if (sscanf(ac_object_get_name(obj), "LOD %f/%f",&lod_start, &lod_end)==2)
+	float	lod_start = OBJ_get_LOD_near(obj);
+	float   lod_end = OBJ_get_LOD_far(obj);
+	if (lod_start != 0.0 || lod_end != 0.0)
 	{
 		builder->EndLOD();
 		builder->BeginLOD(lod_start, lod_end);
 	}
 	
-	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
+	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimBegin();
-		char * startp = ac_object_get_data(obj);
-		if (startp)
-		{
-			char * endp = startp + strlen(startp);
-			while (startp != endp)
-			{
-				char * stopp = startp;
-				while (stopp < endp && *stopp != '\n')
-					++stopp;
-				if (stopp < endp) ++stopp;
-				
-				char		dataref[512];
-				float		xyz1[3], xyz2[3], v1, v2, r1, r2;
-				
-				if (sscanf(startp, "TRANSLATE %f %f %f %f %f %f %f %f %s",
-					xyz1,xyz1+1,xyz1+2,
-					xyz2,xyz2+1,xyz2+2,
-					&v1,&v2,dataref) == 9)
+	}
+	
+	char dref[256];
+	float xyz1[3];
+	float xyz2[3];
+	int k;
+	
+	switch(OBJ_get_anim_type(obj)) {
+	case anim_rotate:
+		builder->AccumTranslate(
+			center_for_rotation(obj, xyz2),
+			center_for_rotation(obj, xyz2),
+			0.0, 0.0, "none");	
+		builder->AccumRotateBegin(axis_for_rotation(obj,xyz1), 
+							OBJ_get_anim_dataref(obj, dref));
+		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
+			builder->AccumRotateKey(OBJ_get_anim_nth_value(obj, k),
+									OBJ_get_anim_nth_angle(obj, k));
+		builder->AccumRotateEnd();							
+		builder->AccumTranslate(
+			center_for_rotation_negative(obj, xyz2),
+			center_for_rotation_negative(obj, xyz2),
+			0.0, 0.0, "none");	
+		break;
+	case anim_trans:
+		builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
+		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)		
+			builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
+										anim_trans_nth_relative(obj, k, xyz1));
+		builder->AccumTranslateEnd();
+		break;
+	case anim_static:
+		builder->AccumTranslate(
+							anim_trans_nth(obj,0,xyz1), 
+							anim_trans_nth(obj,1,xyz2), 
+							OBJ_get_anim_nth_value(obj,0),
+							OBJ_get_anim_nth_value(obj,1),
+							OBJ_get_anim_dataref(obj, dref));							
+		break;
+	case anim_show:
+		builder->AccumShow(
+							OBJ_get_anim_nth_value(obj,0),
+							OBJ_get_anim_nth_value(obj,1),
+							OBJ_get_anim_dataref(obj, dref));							
+		break;
+	case anim_hide:
+		builder->AccumHide(
+							OBJ_get_anim_nth_value(obj,0),
+							OBJ_get_anim_nth_value(obj,1),
+							OBJ_get_anim_dataref(obj, dref));							
+		break;
+	case anim_none:
+		{	
+			float now_poly_os, now_blend;
+
+			now_poly_os = OBJ_get_poly_os(obj);						//  pull_int_attr_recursive(obj, "_POLY_OS=",0,root);
+			builder->SetAttribute1(attr_Offset, now_poly_os);
+
+			OBJ_get_hard(obj, buf);
+			if(buf[0] == 0)
+				builder->SetAttribute(attr_No_Hard);
+			else if (strcmp(buf,"object")==0)
+				builder->SetAttribute(attr_Hard);
+			else
+				builder->SetAttribute1Named(attr_Hard, 0.0, buf);
+
+			now_blend = OBJ_get_blend(obj);
+			if (now_blend <= 0.0)
+				builder->SetAttribute(attr_Blend);
+			else
+				builder->SetAttribute1(attr_No_Blend, now_blend);
+
+			bool bad_obj = false;
+			
+			if (ac_object_has_texture(obj))
+			{	
+				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
+				gHasTexNow = true;
+				if (strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel."))
 				{
-					builder->AccumTranslate(xyz1, xyz2, v1, v2, dataref);
+					builder->SetAttribute(attr_Tex_Cockpit);
+				} else {
+					builder->SetAttribute(attr_Tex_Normal);
 				}
-
-				if (sscanf(startp, "ROTATE %f %f %f %f %f %f %f %s",
-					xyz1,xyz1+1,xyz1+2,
-					&r1,&r2,
-					&v1,&v2,dataref) == 8)
+				if (!builder->IsCockpit())
 				{
-					builder->AccumRotate(xyz1, r1, r2, v1, v2, dataref);					
-				}				
-				
-				startp = stopp;				
+					if (tex != gTexName && !gTexName.empty())
+					{
+						gErrDoubleTex = true;
+						list_add_item_head(&gBadObjects, obj);
+						bad_obj = true;
+					} 
+					gTexName = tex;
+				}
+			} else {
+				builder->SetAttribute(attr_Tex_Normal);
+				gHasTexNow = false;
 			}
-		}
-	}
-	
-		int	now_poly_os, now_hard, now_blend;
 
-	now_poly_os = pull_int_attr_recursive(obj, "_POLY_OS=",0,root);
-	builder->SetAttribute1(attr_Offset, now_poly_os);
-
-	now_hard = pull_int_attr_recursive(obj, "_HARD=", 0, root);
-	builder->SetAttribute(now_hard ? attr_Hard : attr_No_Hard);
-
-	now_blend = pull_int_attr_recursive(obj, "_BLEND=", 1, root);
-	builder->SetAttribute(now_blend ? attr_Blend : attr_No_Blend);
-
-	bool bad_obj = false;
-	
-	if (ac_object_has_texture(obj))
-	{	
-		string tex = texture_id_to_name(ac_object_get_texture_index(obj));
-		gHasTexNow = true;
-		if (strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel."))
-		{
-			builder->SetAttribute(attr_Tex_Cockpit);
-		} else {
-			builder->SetAttribute(attr_Tex_Normal);
-		}
-		if (!builder->IsCockpit())
-		{
-			if (tex != gTexName && !gTexName.empty())
+			builder->SetTexRepeatParams(
+				ac_object_get_texture_repeat_x(obj),
+				ac_object_get_texture_repeat_y(obj),
+				ac_object_get_texture_offset_x(obj),
+				ac_object_get_texture_offset_y(obj));
+				
+			int no_tex_count = gErrMissingTex;
+			for (p = surfaces; p != NULL; p = p->next)
 			{
-				gErrDoubleTex = true;
+				Surface *s = (Surface *)p->data;
+				if (surface_get_type(s) == SURFACE_POLYGON)
+					obj8_output_polygon(builder, s);
+				else
+					obj8_output_polyline(builder, s);
+			}
+			
+			if (no_tex_count < gErrMissingTex && !bad_obj)
 				list_add_item_head(&gBadObjects, obj);
-				bad_obj = true;
-			} 
-			gTexName = tex;
 		}
-	} else {
-		builder->SetAttribute(attr_Tex_Normal);
-		gHasTexNow = false;
+		break;
 	}
-
-	builder->SetTexRepeatParams(
-		ac_object_get_texture_repeat_x(obj),
-		ac_object_get_texture_repeat_y(obj),
-		ac_object_get_texture_offset_x(obj),
-		ac_object_get_texture_offset_y(obj));
-        
-    int no_tex_count = gErrMissingTex;
-    for (p = surfaces; p != NULL; p = p->next)
-    {
-        Surface *s = (Surface *)p->data;
-        if (surface_get_type(s) == SURFACE_POLYGON)
-            obj8_output_polygon(builder, s);
-        else
-            obj8_output_polyline(builder, s);
-    }
-    
-    if (no_tex_count < gErrMissingTex && !bad_obj)
-    	list_add_item_head(&gBadObjects, obj);
-
+	
 	if (ac_entity_is_class(obj, AC_CLASS_LIGHT))
 	{
 		obj8_output_light(builder, obj);
@@ -388,7 +417,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 	        obj8_output_object(builder, child, root);
 	}
 	
-	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
+	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimEnd();
 	}
@@ -422,7 +451,6 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 	if (g_export_airport_lights)
 		builder.SetAttribute1Named(attr_Layer_Group, 0, "light_objects");
 
-//	obj8_reset_properties();
     obj8_output_object(&builder, obj, obj);
     
 	if (g_default_LOD > 0.0f)

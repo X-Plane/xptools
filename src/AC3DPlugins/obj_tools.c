@@ -3,6 +3,7 @@
 #include "bitmap_match.h"
 #include "obj_radius.h"
 #include "XObjDefs.h"
+#include "obj_model.h"
 #include "ac_utils.h"
 #include "obj8_export.h"
 #include "obj8_import.h"
@@ -233,6 +234,7 @@ void do_named_group(char * str)
 	}	
 	
 	ACObject * new_obj = new_object(OBJECT_GROUP);
+
 	object_set_name(new_obj, str);
 
 	if (!objs.empty())
@@ -240,6 +242,7 @@ void do_named_group(char * str)
 		object_reparent(objs[n], new_obj);
 	
 	object_add_child(*parents.begin(), new_obj);	
+	
 	tcl_command("hier_update");
 }
 

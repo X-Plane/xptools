@@ -12,13 +12,10 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 
-Version 2.2 (not yet out)
-	named lights
-	custom lights
-	prefs
-	remap tex coords
-	convert directory
-	make LOD group
+Version 3.0
+	- Total rewrite of how x-plane properties are managed
+	- Previev of animation
+	- Support for materials, smoke, named lights, custom lights, show/hide animation
 
 Version 2.1b2 2/15/06
 	- Fixed texture repeat-offset export (was ignored since 2.0).
@@ -43,7 +40,7 @@ Version 1.1 11/30/04
 		(Note: this is only needed for older versions of x-plane.)
 	
 The X-Plane import/export plugin for AC3D (XPlaneSupport.p) is a plugin for
-AC3D that supports the reading of X-Plane Object version 7-8files.  These 
+AC3D that supports the reading of X-Plane Object version 7-8 files.  These 
 files should be compatible with all versions of X-Plane  (although some 
 features are only supported in version 7.40 and beyond for OBJ7 and 8.20
 and beyond for OBJ8).
@@ -57,25 +54,18 @@ AC3D version 5 for free.
 -------------------------------------------------------------------------------
 INSTALLING
 -------------------------------------------------------------------------------
+This version of the X-Plane plugin (version 3) requires AC3D 6.1 or newer.  If
+you have an older version of AC3D, please download the older plugin instead.
+
 Simply copy the AC3D plugin file XPlaneSupportWin.p or XPlaneSupportMac.p
-(depending on your operating system) into the "plugins" folder for AC3D while
-it is not running, then start AC3D.
-
-You'll also want to download the standard suite of plugins from the AC3D
-website if you do not already have them; this includes two plugins to support
-reading and writing the .PNG graphics file format.  (AC3D supports .bmp files 
-by default.)
-
-WARNING: the X-Plane epxorter plugin is not compatible with the Alias Wavefront
-OBJ import/export plugin, because they share a similar file name extension.  
-Remove the alias wavefront importers (obj_import.p, obj_export.p) from the 
-plugins folder before working with this plugin.
+(depending on your operating system) and the file XPlaneSupport.tcl into
+the "plugins" folder for AC3D while it is not running, then start AC3D.
 
 -------------------------------------------------------------------------------
 USING THE PLUGIN
 -------------------------------------------------------------------------------
 
-When the plugin is installed the export menu gains atwo new options: 
+When the plugin is installed the export menu gains two new options: 
 "X-Plane 7 Object File..." and "X-Plane 8 Object File..." and the Import dialog
 will have a file type "X-Plane 7/8 Objerct File (*.obj)" in it.  (Note: if you
 have the Alias  Wavefront Object importer plugin installed this may not work.)
@@ -92,16 +82,15 @@ LIMITATIONS
 
 This importer/exporter does not support:
 
- - Materials.
  - ATTR_no_depth (you shouldn't use it anyway!)
  - It will not build quad strips, tri strips, or tri fans for version 7 
    objects. (Please note that these are not supported in OBJ8.)
  - There is not yet a way to preview night lighting inside AC3D.
  - Movie quads (for OBJ7 - these are not supported in OBJ8.)
- - Smoke puff actions.
+ - Ambient and specular materials (they do not work in X-Plane anyway).
 
 Please note that the color of a line will be exported from the material in
-AC3D; materials are only not supported for polygons.
+AC3D.
 
 WARNING: Importing and Exporting can lose information.  Your best bet is to
 save your work in AC3D format (.ac) and export to OBJ; do not use OBJ as your
@@ -187,7 +176,7 @@ Also there are some serious performance considerations regarding these features
 so be sure to read the PERFORMANCE section carefully before using them!
 
 -------------------------------------------------------------------------------
-ANNOTATION AND EXPORT ORDER
+EXPORT ORDER
 -------------------------------------------------------------------------------
 
 The AC3D exporter exports your object in the order that the hierarchy window
@@ -207,22 +196,17 @@ order of your object is very important both for correct rendering of
 translucent textures and for performance; see the PERFORMANCE section for more
 info.  Use groups, objects, and the hiearchy window to control ordering.
 
-For OBJ features that AC3D does not support natively, the export plugin uses
-the ANNOTATION system.  The idea is simple: you label your AC3D objects and
-groups with special names and/or put text in the "User data..." area and the
-export plugin reads this data to do special tricks.
+-------------------------------------------------------------------------------
+EDITING X-PLANE SPECIFIC PROPERTIES
+-------------------------------------------------------------------------------
 
-AC3D Objects and groups have text names - they can be set using the text field
-in the  lower left corner of the screen when in selection mode.
+The X-Plane plugin adds a new menu, "X-Plane" to AC3D with X-Plane specific 
+functionality.  The plugin also provides a way to edit properties of X-Plane
+objects that are not supported directly by AC3D.
 
-Objects and groups also have "user text".  Pick "Object Property Editor..." 
-from the Tools menu to edit this text.  For groups within groups (where the
-group cannot be selected, you can right-click (Windows) or mouse-wheel-click
-(Mac) to get a contextual menu with an "Edit Object Data..." command.
-
-NOTE: Macintosh users will need a mouse with a clickable scroll wheel to edit
-the object data for nested groups.  This editing is only required to make
-objects with multiple levels of detail or nested animations.
+You can view and edit X-Plane specific properties using the "X-Plane Object
+Properties..." command, which will show the X-Plane object inspector.  As you
+select different objects, different options will be visible.
 
 -------------------------------------------------------------------------------
 HARD POLYGONS, POLYGON OFFSET, AND BLENDING CONTROL
@@ -231,33 +215,36 @@ HARD POLYGONS, POLYGON OFFSET, AND BLENDING CONTROL
 Polygon hardness (whether the polygon interacts physically with the plane
 causing collisions) polygon offset (a method for making polygons on the ground
 draw properly) and blending control (turning off and on translucency) can all
-be set using annotation, but not previewed in AC3D.
+be set using the X-Plane Object properties panel, but not previewed in AC3D.
 
-The exporter looks for objects with the following words inside the object name
-to control these attributes:
+Polygon offset can be set from 0 to 5 - use this to help polygons that overlap
+the terrain from Z-thrashing.
 
-	_POLY_OS=0
-	_HARD=0
-	_BLEND=0
+Normally the alpha channel of an object's texture creates translucent objects.
+You can disable the blending effect (resulting in all pixels being either
+totally opaque or transparent) by unchecking "blending".  When you uncheck
+blending you can then set the cutoff point (for the alpha channel) between 
+transparency and opacity.  The default is 0.5 (50% alpha).
 
-Legal values are 0 or 1 for _HARD and _BLEND (default is 0 for hard, 1 for
-blend since OBJs default to having blending on) and 0 or a positive integer
-for polygon offset.  All can be used together and the object may have 
-additional text that is ignored.  So you may name an object something like:
+A popup lets you pick whether the object's polygons are treated as "hard" (that
+is, whether they interact with the physics engine).  You can pick from a number
+of surface types.  "object" provides the surface type that objects used before
+X-Plane 850 - this surface type is very smooth.
 
-Terminal C Wing _POLY_OS=0 _HARD=0 _BLEND=0
-
-When you import objects, these names will be added automatically to preserve
-these properties.  When you export, remember that the AC3D exporter goes in
-order...all objects exported after an object with these names (including
-surfaces within the object with these names) will be affected.  However 
-changing LOD (see below) resets all properties.
+NOTE: X-Plane before 850 does not support specific object surface types or 
+blending cutoff levels.
 
 Also make sure to read the PERFORMANCE section for notes on changing these 
 attributes.
 
 -------------------------------------------------------------------------------
-LIGHT COLORS
+MATERIALS
+-------------------------------------------------------------------------------
+
+****
+
+-------------------------------------------------------------------------------
+LIGHTS AND SMOKE
 -------------------------------------------------------------------------------
 
 AC3D will export light objects as X-Plane lights.  Use the naem _RGB=r,g,b 
