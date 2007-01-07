@@ -3,4 +3,6 @@
 #define APL 1
 #define DEV 0
 #define IBM 0
+#define BIG 1
+#define LIL 0
 #include "DSFToolsPrefix.h"

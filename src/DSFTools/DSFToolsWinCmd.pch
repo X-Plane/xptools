@@ -3,5 +3,7 @@
 #define APL 0
 #define IBM 1
 #define DEV 0
+#define BIG 0
+#define LIL 1
 #define WINDOWS_LEAN_AND_MEAN
 #include "DSFToolsPrefix.h"
