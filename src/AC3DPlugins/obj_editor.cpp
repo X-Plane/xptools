@@ -4,7 +4,7 @@
 #include "obj_model.h"
 #include <math.h>
 
-const int NUM_KEYFRAMES = 10;
+const int NUM_KEYFRAMES = 50;
 const int MAX_MULTI_COUNT = 5;
 
 /****************************************************************************************************************/
