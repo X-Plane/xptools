@@ -176,8 +176,10 @@ public:
 		int					pool;
 		int					param;
 		int					depth;
+		int					hash_depth;
 		vector<int>			intervals;	// All but first are inclusive ends of ranges.
 		bool	operator<(const PolygonSpec& rhs) const {
+			if (hash_depth < rhs.hash_depth) return true;		if (hash_depth > rhs.hash_depth) return false;
 			if (depth < rhs.depth) return true;		if (depth > rhs.depth) return false;
 			if (type < rhs.type) return true;		if (type > rhs.type) return false;
 			if (pool < rhs.pool) return true;		if (pool > rhs.pool) return false;
@@ -188,7 +190,7 @@ public:
 
 	PolygonSpec *				accum_poly;
 	DSFTupleVectorVector		accum_poly_winding;
-	int							accum_poly_depth;
+//	int							accum_poly_depth;
 
 	/********** TERRAIN STORAGE **********/
 	typedef map<int, DSFSharedPointPool>	DSFSharedPointPoolMap;
@@ -549,7 +551,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	{
 		polygonPool->second.ProcessPoints();
 		for (polySpec = polygons.begin(); polySpec != polygons.end(); ++polySpec)
-			if (polygonPool->first == polySpec->depth)
+			if (polygonPool->first == polySpec->hash_depth)
 				polySpec->pool = polygonPool->second.MapPoolNumber(polySpec->pool);
 	}
 
@@ -869,7 +871,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	/************************************************************************************************************/
 		for (polySpec = polygons.begin(); polySpec != polygons.end(); ++polySpec)
 		{
-			UpdatePoolState(fi, polySpec->type, polySpec->pool + offset_to_poly_pool_of_depth[polySpec->depth], curDef, curPool);
+			UpdatePoolState(fi, polySpec->type, polySpec->pool + offset_to_poly_pool_of_depth[polySpec->hash_depth], curDef, curPool);
 			if (polySpec->intervals.size() <= 2)
 			{
 				WriteUInt8(fi, dsf_Cmd_PolygonRange);
@@ -1276,17 +1278,22 @@ void 	DSFFileWriterImp::BeginPolygon(
 				int				inDepth,
 				void *			inRef)
 {
+	bool has_bezier = (inDepth == 4 && inParam != 65535) || inDepth == 8;
+	bool has_st = (inDepth == 4 && inParam == 65535) || inDepth == 8;
+	int hash_depth = inDepth + (has_bezier ? 100 : 0) + (has_st ? 200 : 0);
+
 	REF(inRef)->polygons.push_back(PolygonSpec());
 	REF(inRef)->accum_poly = &(REF(inRef)->polygons.back());
 	REF(inRef)->accum_poly_winding.clear();
 	REF(inRef)->accum_poly->type = inPolygonType;
 	REF(inRef)->accum_poly->depth = inDepth;
+	REF(inRef)->accum_poly->hash_depth = hash_depth;
 	REF(inRef)->accum_poly->param = inParam;
-	REF(inRef)->accum_poly_depth = inDepth;
+//	REF(inRef)->accum_poly_depth = inDepth;
 	
-	if (REF(inRef)->polygonPools.count(inDepth) == 0)
+	if (REF(inRef)->polygonPools.count(hash_depth) == 0)
 	{
-		DSFContiguousPointPool& polygonPool = REF(inRef)->polygonPools[inDepth];
+		DSFContiguousPointPool& polygonPool = REF(inRef)->polygonPools[hash_depth];
 		
 		DSFTuple	polyRangeMin, polyRangeMax;
 						polyRangeMin.push_back(REF(inRef)->mWest);
@@ -1299,12 +1306,41 @@ void 	DSFFileWriterImp::BeginPolygon(
 		if (inDepth > 3)polyRangeMax.push_back(1.0);
 		if (inDepth > 4)polyRangeMin.push_back(-1.0);
 		if (inDepth > 4)polyRangeMax.push_back(1.0);
+
 		if (inDepth > 5)polyRangeMin.push_back(0.0);
 		if (inDepth > 5)polyRangeMax.push_back(0.0);
-		if (inDepth ==4)polyRangeMin[2]=polyRangeMin[0];
-		if (inDepth ==4)polyRangeMax[2]=polyRangeMax[0];
-		if (inDepth ==4)polyRangeMin[3]=polyRangeMin[1];
-		if (inDepth ==4)polyRangeMax[3]=polyRangeMax[1];
+		if (inDepth > 6)polyRangeMin.push_back(0.0);
+		if (inDepth > 6)polyRangeMax.push_back(1.0);
+		if (inDepth > 7)polyRangeMin.push_back(0.0);
+		if (inDepth > 7)polyRangeMax.push_back(1.0);
+
+		printf("depth = %d, hash = %d, param = %d, has_st = %s has_bezier = %s\n", inDepth, hash_depth, inParam, has_st ? "yes" : "no", has_bezier ? "yes" : "no");
+
+		if (has_bezier)
+		{
+			polyRangeMin[2]=polyRangeMin[0];
+			polyRangeMax[2]=polyRangeMax[0];
+			polyRangeMin[3]=polyRangeMin[1];
+			polyRangeMax[3]=polyRangeMax[1];
+		}
+		if (has_st)
+		{
+			if (has_bezier)
+			{
+				polyRangeMin[4]=0.0;
+				polyRangeMax[4]=1.0;
+				polyRangeMin[5]=0.0;
+				polyRangeMax[5]=1.0;
+			}
+			else
+			{
+				polyRangeMin[2]=0;
+				polyRangeMax[2]=1;
+				polyRangeMin[3]=0;
+				polyRangeMax[3]=1;
+			}
+		}
+
 				
 		polygonPool.SetRange(polyRangeMin, polyRangeMax);
 		for (int i = 0; i < REF(inRef)->mDivisions; ++i)
@@ -1315,17 +1351,19 @@ void 	DSFFileWriterImp::BeginPolygon(
 			fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
 			fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
 			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			if (inDepth==4) {
+			if (has_bezier) {
 				fracMin.push_back((double)  i    / double (REF(inRef)->mDivisions));
 				fracMax.push_back((double) (i+1) / double (REF(inRef)->mDivisions));
 				fracMin.push_back((double)  j    / double (REF(inRef)->mDivisions));
 				fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
-			} else {
-				for (int k = 2; k < inDepth; ++k) {
-					fracMin.push_back(0.0);
-					fracMax.push_back(1.0);
-				}
 			}
+			for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
+				fracMin.push_back(0.0);
+				fracMax.push_back(1.0);
+			}
+			polygonPool.AddPool(fracMin, fracMax);
+			polygonPool.AddPool(fracMin, fracMax);
+			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
@@ -1338,17 +1376,20 @@ void 	DSFFileWriterImp::BeginPolygon(
 			fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
 			fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
 			fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
-			if (inDepth==4) {
+			if (has_bezier) {
 				fracMin.push_back(((double) i - 0.5) / double (REF(inRef)->mDivisions));
 				fracMax.push_back(((double) i + 0.5) / double (REF(inRef)->mDivisions));
 				fracMin.push_back(((double) j - 0.5) / double (REF(inRef)->mDivisions));
 				fracMax.push_back(((double) j + 0.5) / double (REF(inRef)->mDivisions));
-			} else {
-				for (int k = 2; k < inDepth; ++k) {
-					fracMin.push_back(0.0);
-					fracMax.push_back(1.0);
-				}
+			} 
+			for (int k = (has_bezier ? 4 : 2); k < inDepth; ++k) {
+				fracMin.push_back(0.0);
+				fracMax.push_back(1.0);
 			}
+
+			polygonPool.AddPool(fracMin, fracMax);
+			polygonPool.AddPool(fracMin, fracMax);
+			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
 			polygonPool.AddPool(fracMin, fracMax);
@@ -1356,15 +1397,13 @@ void 	DSFFileWriterImp::BeginPolygon(
 		DSFTuple	fracMin, fracMax;
 		fracMin.push_back(0.0);		fracMax.push_back(1.0);
 		fracMin.push_back(0.0);		fracMax.push_back(1.0);
-		if (inDepth==4) {
-			fracMin.push_back(0.0);		fracMax.push_back(1.0);
-			fracMin.push_back(0.0);		fracMax.push_back(1.0);
-		} else {
-			for (int k = 2; k < inDepth; ++k) {
-				fracMin.push_back(0.0);
-				fracMax.push_back(1.0);
-			}
+		for (int k = 2; k < inDepth; ++k) {
+			fracMin.push_back(0.0);
+			fracMax.push_back(1.0);
 		}
+		polygonPool.AddPool(fracMin, fracMax);
+		polygonPool.AddPool(fracMin, fracMax);
+		polygonPool.AddPool(fracMin, fracMax);
 		polygonPool.AddPool(fracMin, fracMax);
 		polygonPool.AddPool(fracMin, fracMax);
 		polygonPool.AddPool(fracMin, fracMax);
@@ -1382,7 +1421,7 @@ void 	DSFFileWriterImp::AddPolygonPoint(
 				void *			inRef)
 {
 	DSFTupleVector * cw = &REF(inRef)->accum_poly_winding.back();
-	cw->push_back(DSFTuple(inCoordinates, REF(inRef)->accum_poly_depth));
+	cw->push_back(DSFTuple(inCoordinates, REF(inRef)->accum_poly->depth));
 #if DEV
 	int sz = cw->size();
 	if (sz > 1)
@@ -1404,7 +1443,7 @@ void	DSFFileWriterImp::EndPolygon(
 	for (DSFTupleVectorVector::iterator i = REF(inRef)->accum_poly_winding.begin(); i != REF(inRef)->accum_poly_winding.end(); ++i)
 		pts.insert(pts.end(), i->begin(), i->end());
 	
-	DSFPointPoolLoc	loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->depth].AccumulatePoints(pts);
+	DSFPointPoolLoc	loc = REF(inRef)->polygonPools[REF(inRef)->accum_poly->hash_depth].AccumulatePoints(pts);
 	if (loc.first == -1 || loc.second == -1)
 	{
 		for (int n = 0; n < pts.size(); ++n)
