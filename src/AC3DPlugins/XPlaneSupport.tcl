@@ -1,6 +1,6 @@
 catch {namespace import combobox::*}
 
-set MAX_KEYFRAMES 10
+set MAX_KEYFRAMES 50
 set MAX_SEL 5
 
 ##########################################################################################################################################################
@@ -171,7 +171,7 @@ proc xplane_prefs_dialog {} {
 ##########################################################################################################################################################
 
 proc recurse_menu { base path } {
-	global log
+#	global log
 	set path_parent [lrange $path 0 end-1]
 	
 	set widget_parent $base.[join $path_parent "."]
@@ -187,43 +187,42 @@ proc recurse_menu { base path } {
 		}
 	}
 	
-	puts $log [concat "building @" $widget_itself "@"]
+#	puts $log [concat "building @" $widget_itself "@"]
 	menu $widget_itself
 	
-	puts $log [concat "adding " [lindex $path end] " to " $widget_parent]
+#	puts $log [concat "adding " [lindex $path end] " to " $widget_parent]
 	$widget_parent add cascade -label [lindex $path end] -menu $widget_itself		
 }
 
 proc build_popup { popup textvar } {
-	global log
-	set log [open "popup_log.txt" w]
+#	global log
+#	set log [open "popup_log.txt" w]
 	menu $popup.test_menu
-
 	$popup.test_menu add command -label "none" -command "set $textvar none"
 
-
-	set fi [open "plugins/datarefs.txt" r]
-	gets $fi line	
-	while { [gets $fi line] >= 0 } {
-		if [llength $line] {
-		   set dref_fullname [lindex $line 0]
-		   set dref_path [split $dref_fullname "/"]
-		   set dref_name [lindex $dref_path end]
-		   
-		   set dref_parents [lrange $dref_path 0 end-1]   
-		   set widget [join $dref_path "."]
-		   set widget_parent [join $dref_parents "."]
-		   puts $log [concat $widget_parent $widget $dref_name]
-		   
-		   if ![winfo exists $popup.test_menu.$widget_parent] {
-			  recurse_menu $popup.test_menu $dref_parents
-		   }
-		   
-		   $popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname"
+	catch {
+		set fi [open "plugins/datarefs.txt" r]
+		gets $fi line	
+		while { [gets $fi line] >= 0 } {
+			if [llength $line] {
+			   set dref_fullname [lindex $line 0]
+			   set dref_path [split $dref_fullname "/"]
+			   set dref_name [lindex $dref_path end]
+			   
+			   set dref_parents [lrange $dref_path 0 end-1]   
+			   set widget [join $dref_path "."]
+			   set widget_parent [join $dref_parents "."]
+#			   puts $log [concat $widget_parent $widget $dref_name]
+			   
+			   if ![winfo exists $popup.test_menu.$widget_parent] {
+				  recurse_menu $popup.test_menu $dref_parents
+			   }
+			   
+			   $popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname"
+			}
 		}
-	}
-	close $fi   
-	close $log
+		close $fi   
+	} msg
 }
 
 
