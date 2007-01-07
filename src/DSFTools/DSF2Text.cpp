@@ -318,7 +318,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (sscanf(buf,"BEGIN_PATCH %d %lf %lf %d %d", &ptype, &lod_near, &lod_far, &flags, &depth) == 5) 	cbs.BeginPatch_f(ptype, lod_near, lod_far, flags, depth, writer);
 		else if (!strncmp(buf, "END_PATCH", strlen("END_PATCH")))												{ cbs.EndPatch_f(writer); depth = 99; }
 
-		else if (sscanf(buf, "POLYGON_POINT %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])==depth)			cbs.AddPolygonPoint_f(coords, writer);
+		else if (sscanf(buf, "POLYGON_POINT %lf %lf %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5], &coords[6], &coords[7])==depth)			cbs.AddPolygonPoint_f(coords, writer);
 		else if (!strncmp(buf, "BEGIN_WINDING", strlen("BEGIN_WINDING")))					cbs.BeginPolygonWinding_f(writer);
 		else if (!strncmp(buf, "END_WINDING", strlen("END_WINDING")))						cbs.EndPolygonWinding_f(writer);
 		else if (sscanf(buf,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==3)			cbs.BeginPolygon_f(ptype, param, depth, writer);
