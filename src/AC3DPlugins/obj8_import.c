@@ -342,11 +342,12 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case anim_Translate:
 				{
-					if (obj8.animation[cmd->idx_offset].keyframes[0].v[0] != 0.0 ||
-						obj8.animation[cmd->idx_offset].keyframes[0].v[1] != 0.0 ||
-						obj8.animation[cmd->idx_offset].keyframes[0].v[2] != 0.0)
+					int root = 0;
+					if (obj8.animation[cmd->idx_offset].keyframes[root].v[0] != 0.0 ||
+						obj8.animation[cmd->idx_offset].keyframes[root].v[1] != 0.0 ||
+						obj8.animation[cmd->idx_offset].keyframes[root].v[2] != 0.0)
 						
-						anim_add_static(anim_obj.back(), 0, obj8.animation[cmd->idx_offset].keyframes[0].v, obj8.animation[cmd->idx_offset].dataref.c_str(), "static translate");
+						anim_add_static(anim_obj.back(), 0, obj8.animation[cmd->idx_offset].keyframes[root].v, obj8.animation[cmd->idx_offset].dataref.c_str(), "static translate");
 				
 					if (obj8.animation[cmd->idx_offset].keyframes.size() > 2 || 
 						(obj8.animation[cmd->idx_offset].keyframes.size() == 2 && (

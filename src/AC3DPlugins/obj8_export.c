@@ -310,11 +310,13 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 			0.0, 0.0, "none");	
 		break;
 	case anim_trans:
-		builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
-		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)		
-			builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
-										anim_trans_nth_relative(obj, k, xyz1));
-		builder->AccumTranslateEnd();
+		{
+			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
+			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)		
+				builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
+											anim_trans_nth_relative(obj, k, xyz1));
+			builder->AccumTranslateEnd();
+		}
 		break;
 	case anim_static:
 		builder->AccumTranslate(

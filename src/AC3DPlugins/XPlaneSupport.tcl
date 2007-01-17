@@ -471,7 +471,7 @@ proc xplane_inspector {} {
 				pack $container.obj.none.hard_surf_label $container.obj.none.hard_surf_btn
 				checkbutton $container.obj.none.use_materials -text "Use AC3D Materials" -variable xplane_use_materials$idx
 				pack $container.obj.none.use_materials
-				checkbutton $container.obj.none.blend_enable -text "Blending" -variable xplane_blend_enable -command "xplane_obj_sync_all"
+				checkbutton $container.obj.none.blend_enable -text "Blending" -variable xplane_blend_enable$idx -command "xplane_obj_sync_all"
 				pack $container.obj.none.blend_enable
 				frame $container.obj.none.blend_level
 					make_labeled_entry $container.obj.none.blend_level "blend cutoff" xplane_blend_level$idx
@@ -500,6 +500,7 @@ proc xplane_inspector {} {
 					button $container.obj.trans.xplane_anim_value$x$idx.go -text "Go" -command "ac3d xplane_set_anim_keyframe $x $idx"
 					pack $container.obj.trans.xplane_anim_value$x$idx.delete $container.obj.trans.xplane_anim_value$x$idx.add $container.obj.trans.xplane_anim_value$x$idx.go -side left -anchor nw
 				}
+				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
 				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
@@ -603,7 +604,8 @@ proc sync_dataref { dref name now minv maxv } {
 		if ![winfo exists .xp_anim.drefs.label_$dref] {
 			label .xp_anim.drefs.label_$dref -text $dref
 			scale .xp_anim.drefs.$dref -command "ac3d xplane_set_anim_now $dref" -from 0 -to 360 -orient horiz -length 150 -width 10 -resolution 0
-			grid .xp_anim.drefs.label_$dref .xp_anim.drefs.$dref -sticky news
+			button .xp_anim.drefs.sel_$dref -command "ac3d xplane_anim_select $dref" -text "Select"
+			grid .xp_anim.drefs.label_$dref .xp_anim.drefs.$dref .xp_anim.drefs.sel_$dref -sticky news
 		}
 
 		.xp_anim.drefs.label_$dref configure -text $name

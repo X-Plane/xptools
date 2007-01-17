@@ -166,7 +166,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 					xyz1,xyz1+1,xyz1+2,
 					xyz2,xyz2+1,xyz2+2,
 					&v1,&v2,dataref) == 9)
-				{				
+				{	
 					if(xyz1[0] != 0.0 || xyz1[1] != 0.0 || xyz1[2] != 0.0)
 					{
 						anim_ops.push_back(update_anim_op());					
@@ -195,7 +195,7 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 						anim_ops.back().dataref = dataref;
 						anim_ops.back().op = update_trans;
 					}
-					
+
 				}
 
 				if (sscanf(startp, "ROTATE %f %f %f %f %f %f %f %s",

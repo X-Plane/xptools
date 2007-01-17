@@ -2,6 +2,7 @@
 #include "obj_model.h"
 #include "obj_editor.h"
 #include "ac_plugin.h"
+#include <ac_plugin.h>
 #if APL
 #include <OpenGL/gl.h>
 #else
@@ -191,6 +192,13 @@ float *	axis_for_rotation(ACObject * obj, float buf[3])
 {
 	Vertex * v1 = surface_get_vertex(obj_get_first_surf(obj), 0);
 	Vertex * v2 = surface_get_vertex(obj_get_first_surf(obj), 1);
+	if (v1 == NULL || v2 == NULL)
+	{
+		buf[0] = 0.0;
+		buf[1] = 1.0;
+		buf[2] = 0.0;
+		return buf;
+	}
 	buf[0] = (v2->x - v1->x);
 	buf[1] = (v2->y - v1->y);
 	buf[2] = (v2->z - v1->z);
@@ -209,6 +217,11 @@ float * center_for_rotation(ACObject * obj, float buf[3])
 {
 	Vertex * v1 = surface_get_vertex(obj_get_first_surf(obj), 0);
 	Vertex * v2 = surface_get_vertex(obj_get_first_surf(obj), 1);
+	if(v1 == NULL || v2 == NULL)
+	{
+		buf[0] = buf[1] = buf[2] = 0.0f;
+		return buf;
+	}
 	buf[0] = (v2->x + v1->x) * 0.5;
 	buf[1] = (v2->y + v1->y) * 0.5;
 	buf[2] = (v2->z + v1->z) * 0.5;
@@ -219,6 +232,11 @@ float * center_for_rotation_negative(ACObject * obj, float buf[3])
 {
 	Vertex * v1 = surface_get_vertex(obj_get_first_surf(obj), 0);
 	Vertex * v2 = surface_get_vertex(obj_get_first_surf(obj), 1);
+	if(v1 == NULL || v2 == NULL)
+	{
+		buf[0] = buf[1] = buf[2] = 0.0f;
+		return buf;
+	}	
 	buf[0] = -(v2->x + v1->x) * 0.5;
 	buf[1] = -(v2->y + v1->y) * 0.5;
 	buf[2] = -(v2->z + v1->z) * 0.5;
@@ -228,6 +246,11 @@ float * center_for_rotation_negative(ACObject * obj, float buf[3])
 float *	anim_trans_nth(ACObject * obj, int n, float buf[3])
 {
 	Vertex * v = surface_get_vertex(obj_get_first_surf(obj), n);
+	if(v == NULL)
+	{
+		buf[0] = buf[1] = buf[2] = 0.0f;
+		return buf;
+	}
 	buf[0] = v->x;
 	buf[1] = v->y;
 	buf[2] = v->z;
@@ -236,8 +259,9 @@ float *	anim_trans_nth(ACObject * obj, int n, float buf[3])
 
 float *	anim_trans_nth_relative(ACObject * obj, int n, float buf[3])
 {
+	int root = OBJ_get_anim_keyframe_root(obj);
 	float o[3];
-	anim_trans_nth(obj, 0, o);
+	anim_trans_nth(obj, root, o);
 	anim_trans_nth(obj, n, buf);
 	buf[0] -= o[0];
 	buf[1] -= o[1];
@@ -260,10 +284,12 @@ void bake_static_transitions(ACObject * object)
 		{
 			Vertex * v1 = surface_get_vertex(obj_get_first_surf(child), 0);
 			Vertex * v2 = surface_get_vertex(obj_get_first_surf(child), 1);
-		
-			diff.x += (v2->x - v1->x);
-			diff.y += (v2->y - v1->y);
-			diff.z += (v2->z - v1->z);
+			if(v1 != NULL && v2 != NULL)
+			{
+				diff.x += (v2->x - v1->x);
+				diff.y += (v2->y - v1->y);
+				diff.z += (v2->z - v1->z);
+			}
 			kill_set.insert(child);
 		}
 		else
@@ -457,6 +483,25 @@ static void set_anim_enable(float n)
 		redraw_all();
 }
 
+static void sel_if_has(ACObject * who, const char *dref)
+{
+	char	buf[512];
+	if (OBJ_get_anim_type(who) != anim_none)
+	{
+		OBJ_get_anim_dataref(who,buf);
+		if(strcmp(buf,dref)==0)
+		{
+			ac_select_object(who);
+		}
+	}
+
+	List *kids = ac_object_get_childrenlist(who);
+
+    for (List * p = kids; p != NULL; p = p->next)
+        sel_if_has((ACObject *)p->data, dref);
+	
+}
+
 static void set_anim_now(int argc, char * argv[])
 {
 	if (argc <= 2) return;
@@ -474,6 +519,24 @@ static void set_anim_now(int argc, char * argv[])
 		}
 	}
 }
+
+static void set_sel_now(int argc, char * argv[])
+{
+	if (argc <= 1) return;
+	map<string,string>::iterator who = g_tcl_mapping.find(argv[1]);
+	if (who != g_tcl_mapping.end())
+	{
+		string dref = who->second;
+		if (!dref.empty())
+		{
+			sel_if_has(ac_get_world(),dref.c_str());
+			tcl_command("hier_update");
+			redraw_all();
+			display_status();
+		}
+	}
+}
+
 
 static void set_anim_for_sel_keyframe(int argc, char * argv[])
 {
@@ -511,19 +574,23 @@ static void add_keyframe(int argc, char * argv[])
 		{
 			int n = atoi(argv[1]);
 			int m = OBJ_get_anim_keyframe_count(obj);
-			if (n < m && n > 0)
+			if (n < m && n >= 0)
 			{
 				add_undoable_all("Add Keyframe");			
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{			
 					Boolean made;
-					surface_insert_vertex(obj_get_first_surf(obj), 
-										surface_get_vertex(obj_get_first_surf(obj), n-1),
-										surface_get_vertex(obj_get_first_surf(obj), n),
-										&made);							
+					Vertex * v2 = surface_get_vertex(obj_get_first_surf(obj), n);
+					Vertex * v1 = (n > 0) ? surface_get_vertex(obj_get_first_surf(obj), n-1) : v2;					
+					if (v1 == NULL || v2 == NULL) 
+						return;
+					surface_insert_vertex(obj_get_first_surf(obj), v1, v2, &made);							
 				}
-				float nv = 0.5 * (OBJ_get_anim_nth_value(obj, n-1)+OBJ_get_anim_nth_value(obj, n));
-				float na = 0.5 * (OBJ_get_anim_nth_angle(obj, n-1)+OBJ_get_anim_nth_angle(obj, n));
+				int kf = n-1;
+				int ks = n;
+				if (kf < 0) kf = 0;
+				float nv = 0.5 * (OBJ_get_anim_nth_value(obj, kf)+OBJ_get_anim_nth_value(obj, ks));
+				float na = 0.5 * (OBJ_get_anim_nth_angle(obj, kf)+OBJ_get_anim_nth_angle(obj, ks));
 				for (int k = m; k > n; --k)
 				{
 					OBJ_set_anim_nth_value(obj, k, OBJ_get_anim_nth_value(obj, k-1));
@@ -551,7 +618,7 @@ static void delete_keyframe(int argc, char * argv[])
 		{
 			int n = atoi(argv[1]);
 			int m = OBJ_get_anim_keyframe_count(obj);
-			if (n < (m-1) && n > 0)
+			if (n < m && n >= 0 && m > 1)
 			{
 				add_undoable_all("Add Keyframe");			
 				if (OBJ_get_anim_type(obj) == anim_trans)
@@ -654,9 +721,12 @@ void anim_post_func(ACObject * ob, Boolean is_primary_render)
 		case anim_trans:
 			{
 				build_key_table(ob, table);
-				glTranslatef(key_extrap(now_v,table,0) - table.front().v[0],
-							 key_extrap(now_v,table,1) - table.front().v[1],
-							 key_extrap(now_v,table,2) - table.front().v[2]);
+				int root = OBJ_get_anim_keyframe_root(ob);
+				if (root >= table.size()) root = (table.size()-1);
+				if (!table.empty())
+					glTranslatef(key_extrap(now_v,table,0) - table[root].v[0],
+								 key_extrap(now_v,table,1) - table[root].v[1],
+								 key_extrap(now_v,table,2) - table[root].v[2]);
 			}
 			break;
 		case anim_static:
@@ -671,18 +741,20 @@ void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			break;
 		case anim_rotate:
 			{
-				build_key_table(ob, table);
-				axis_for_rotation(ob, axis);
-				center_for_rotation(ob, offset);
-				glTranslatef(offset[0],offset[1],offset[2]);
-				glRotatef(key_extrap(now_v, table, 0),
-							axis[0],axis[1],axis[2]);
-				glTranslatef(-offset[0],-offset[1],-offset[2]);
+				build_key_table(ob, table);				
+				if (!table.empty())
+				{
+					axis_for_rotation(ob, axis);
+					center_for_rotation(ob, offset);
+					glTranslatef(offset[0],offset[1],offset[2]);
+					glRotatef(key_extrap(now_v, table, 0),
+								axis[0],axis[1],axis[2]);
+					glTranslatef(-offset[0],-offset[1],-offset[2]);
+				}
 			}
 			break;
 		}
-	}
-	
+	}	
 }
 
 
@@ -693,7 +765,8 @@ void setup_obj_anim(void)
 	ac_set_pre_render_object_callback(anim_pre_func);
 	ac_set_post_render_object_callback(anim_post_func);
 	ac_add_command_full("xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, "f", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
-	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
+	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_now <n> <t>", "set dataref n to time t");
+	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");	
 	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");	

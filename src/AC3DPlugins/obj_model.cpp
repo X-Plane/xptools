@@ -216,6 +216,7 @@ INT_PROP(animation_group,animated)
 STR_PROP(anim_dataref,dataref)
 
 INT_PROP(anim_keyframe_count,anim_keyframe_count)
+INT_PROP(anim_keyframe_root,anim_keyframe_root)
 INT_PROP(anim_type,anim_type)
 
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v)

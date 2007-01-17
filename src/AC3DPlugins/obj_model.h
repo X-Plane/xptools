@@ -45,6 +45,7 @@ void		OBJ_set_anim_dataref(ACObject * obj, const char * dataref);
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v);
 void		OBJ_set_anim_nth_angle(ACObject * obj, int n, float a);
 void		OBJ_set_anim_keyframe_count(ACObject * obj, int n);
+void		OBJ_set_anim_keyframe_root(ACObject * obj, int n);
 
 
 
@@ -82,6 +83,7 @@ const char *	OBJ_get_anim_dataref(ACObject * obj, char * buf);
 float		OBJ_get_anim_nth_value(ACObject * obj, int n);
 float		OBJ_get_anim_nth_angle(ACObject * obj, int n);
 int			OBJ_get_anim_keyframe_count(ACObject * obj);
+int			OBJ_get_anim_keyframe_root(ACObject * obj);
 
 
 typedef void (* OBJ_change_f)(ACObject * obj);
