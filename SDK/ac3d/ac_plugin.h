@@ -1,14 +1,14 @@
 /** ac_plugin.h  -  include file for AC3D plugins www.ac3d.org **/
-/** Copyright (c) 2004, Inivis Limited. All rights reserved. **/
+/** Copyright (c) 2006, Inivis Limited. All rights reserved. **/
+/** this file must not be distributed without permission **/
 
-
-/** last updated 8th Oct 2004 **/
+/** last updated 10th Nov 2006 **/
 
 
 #ifndef AC_PLUGIN
 #define AC_PLUGIN
 
-
+#include <Tcl/tcl.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -19,8 +19,6 @@ extern "C"
 
 #ifdef WINDOWS
 	#include <windows.h>
-
-	#define message_dialog windows_message_dialog
 
 	#ifdef __cplusplus
 		#define AC3D_PLUGIN_FUNC extern "C" __declspec(dllexport)
@@ -37,6 +35,11 @@ extern "C"
 
 	#endif // __cplusplus
 
+#endif
+
+
+#ifndef WINDOWS
+#define stricmp strcasecmp
 #endif
 
 
@@ -113,6 +116,7 @@ typedef void *ACEntity;
 typedef void *ACClass;
 typedef void *ACResource;
 typedef void *ACViewWin;
+typedef void *ACCamera;
 typedef void *ACImage;
 typedef void *ACObject;
 typedef void *ACJoint;
@@ -257,15 +261,25 @@ Prototype void ac_add_command(char *name, void (*function)( ) );
 Prototype void ac_add_import_menu_item(char *label, char *command);
 Prototype void ac_add_export_menu_item(char *label, char *command);
 Prototype void ac_add_tools_menu_item(char *label, char *command, char *desc);
-Prototype char *ac_get_load_filename(char *title, char **suffix);
-Prototype char *ac_get_import_filename(char *title, char **suffix);
-Prototype char *ac_get_save_filename(char *title, char **suffix);
-Prototype char *ac_get_export_filename(char *title, char **suffix);
+Prototype char *ac_get_load_filename(char *title, char **suffix); // returns a static string (do not free!) or NULL
+Prototype char *ac_get_import_filename(char *title, char **suffix); // returns a static string or NULL
+Prototype char *ac_get_save_filename(char *title, char **suffix); // returns a static string or NULL
+Prototype char *ac_get_export_filename(char *title, char **suffix); // returns a static string or NULL
+Prototype char *ac_get_export_folder(char *title); // returns a static string or NULL
 Prototype int ac_get_filesize(char *filename);
 Prototype ACObject *ac_get_world();
-Prototype Boolean ac_replace_command_function(char *name, void (*function)());
+Prototype Boolean ac_replace_command_function(char *name, void *function); 
 Prototype void ac_add_command_full(char *name, void *function, int numargs, char *args, char *usage, char *desc);
-Prototype char *ac_get_export_folder(char *title);
+
+
+Prototype char *command_result_get();
+Prototype void command_result_clear();
+Prototype char *command_result_set(char *s);
+Prototype char *command_result_append_string(char *s);
+Prototype void command_result_append_int(int n);
+Prototype void command_result_append_float(float f);
+Prototype void command_result_append_hex(int i);
+Prototype char *command_result_appendf(char *fmt, ...); // (2k buffer)
 
 
 // general util
@@ -295,34 +309,12 @@ Prototype List *list_end(List *l);
 Prototype void *list_last_item(List *l);
 Prototype void list_sort(List *list, int (*compare)(void *, void *));
 Prototype List *list_clone_all(List *l, int item_size);
-Prototype Boolean list_insert_at(List **l, int pos, void *item);
+//Prototype Boolean list_insert_at(List **l, int pos, void *item);
 Prototype Boolean list_insert_item(List **l, void *before, void *item);
 Prototype ListData *list_create_array(List *l, int numitems); // free with myfree()
 Prototype List *list_union(List *l1, List *l2); // returns a new list of items common to both lists
+Prototype Boolean list_remove_item_at(List **list, int pos); // FALSE if not found
 
-
-
-
-
-
-
-/** SURFACE FILTERS  - NO LONGER SUPPORTED do not use **/
-
-typedef void (*ac_surface_filter_func)( ACObject *object, Surface *surface);
-
-typedef struct ACSurfaceFilter_t
-{
-    char *name; /** name for the menu e.g. "Bevel..." **/
-    char *desc; /** description of the function e.g. for balloon help **/
-    ac_surface_filter_func func; /** ptr to the function that's called with each surface **/
-    int flags; 
-    char *internal_name; /** auto generated name used in the TCL command to refer to this filter **/
-} ACSurfaceFilter;
-
-#define AC_SFILTER_FLAG_NO_UNDO (1<<0)  /** don't setup an undo **/
-#define AC_SFILTER_FLAG_NO_MENU_ITEM (1<<1)  /** don't add a menu item **/
-
-Prototype ACSurfaceFilter *ac_register_surface_filter(char *name, char *desc, ac_surface_filter_func func, int flags);
 
 
 
@@ -332,7 +324,10 @@ Prototype Vertex *new_vertex_set(float x, float y, float z);
 Prototype Vertex *vertex_clone(Vertex *p);
 Prototype void vertex_set_point(Vertex *v, Point3 *p);
 Prototype void vertex_free(Vertex *v);
-
+Prototype void ac_vertex_set_index(Vertex *v, int i);
+Prototype int ac_vertex_get_index(Vertex *v);
+Prototype void normalize_point(Point3 *p);
+Prototype float points_dist(Point3 *p1, Point3 *p2);
 
 /** OBJECTS **/
 Prototype void ac_object_get_contents(ACObject *ob, int *numvert, int *numsurf, int *numchildren, List **points, List **surfaces, List **children);
@@ -344,20 +339,27 @@ Prototype void object_delete(ACObject *ob); /** removes from parent and cleansup
 Prototype void object_set_name(ACObject *ob, char *name); // will work but use ac_object_set_name...
 Prototype void ac_object_set_name(ACObject *ob, char *name);
 Prototype void object_set_url(ACObject *ob, char *url);
-Prototype void object_set_userdata(ACObject *ob, char *dat); /** set the objectdata string **/
-Prototype char *object_get_userdata(ACObject *ob); /** get the objectdata string **/
+Prototype void object_set_userdata(ACObject *ob, char *dat); /** set the objectdata string  - badly named pair these get the string data**/
+Prototype char *object_get_userdata(ACObject *ob); // get the objectdata string - use ac_object_get_data instead
+
+Prototype void ac_object_set_data(ACObject *ob, char *dat); // set string data - copies string - use this instead of object_set_userdata
+Prototype char *ac_object_get_data(ACObject *ob); // get pointer to string data - don't ever free it
+
+Prototype void ac_object_set_userdata(ACObject *ob, void *data); // a void * to be used as you please
+Prototype void *ac_object_get_userdata(ACObject *ob);
+
 Prototype void object_add_vertex(ACObject *ob, Vertex *p);
 Prototype Boolean object_delete_vertex(ACObject *ob, Vertex *p);
 Prototype Boolean object_remove_vertex(ACObject *ob, Vertex *v);
-Prototype List *object_remove_all_vertices(ACObject *ob);
 Prototype Vertex *object_add_new_vertex(ACObject *ob, Point3 *p);
+Prototype List *ac_object_add_vertex_fast(ACObject *ob, Vertex *v, List *last); //returns last list
+
 Prototype void object_add_vertices(ACObject *ob, List *l);
 Prototype void object_add_surface(ACObject *ob, Surface *p);
 Prototype void object_add_surface_head(ACObject *ob, Surface *p);
 Prototype void object_add_surfaces(ACObject *ob, List *l);
 Prototype void object_remove_surface(ACObject *ob, Surface *s);
-Prototype void object_remove_surfacelist(ACObject *ob, List *slist); // remove each surface that's in slist
-Prototype List *object_remove_all_surfaces(ACObject *ob);
+Prototype void object_remove_surfaces(ACObject *ob, List *slist);
 
 Prototype void object_add_child(ACObject *ob, ACObject *kid);
 Prototype void object_add_children(ACObject *ob, List *kids);
@@ -368,7 +370,7 @@ Prototype ACObject *object_parent(ACObject *ob); /** get the object's parent **/
 Prototype void object_delete(ACObject *ob);  /** garbage collects **/
 Prototype void object_delete_nocleanup(ACObject *ob);
 Prototype void object_free(ACObject *ob);
-Prototype ACObject *object_of_vertex(Vertex *pt); /** find object that has this vertex - pass world as ob to search all **/
+Prototype ACObject *object_of_vertex(Vertex *pt); /** find object that has this vertex **/
 Prototype ACObject *object_of_surface(Surface *s); /** find object that has this surface **/
 Prototype List *surfaces_of_object_vertex(ACObject *ob, Vertex *pt); /** remember to free the list returned **/
 Prototype int object_set_surface_type(ACObject *ob, int type); /** returns number of surfaces changed **/
@@ -383,14 +385,11 @@ Prototype int object_set_twosided_faces(ACObject *ob, Boolean what);
 Prototype int object_point_index(ACObject *ob, Point3 *p);
 Prototype Vertex *object_find_vertex_point(ACObject *ob, Point3 *p);
 Prototype Vertex *object_add_new_vertex_reuse(ACObject *ob, Point3 *p);
-Prototype void object_replace_surfaceref(ACObject *ob, Vertex *f, Vertex *r);
-Prototype int object_subdivide_surfaces(ACObject *ob, float spike, List **newsurfaces);
 Prototype Boolean object_exists(ACObject *ob);
 Prototype void object_fragment(ACObject *ob);
 Prototype void object_set_texture_repeat(ACObject *ob, float tx, float ty);
 Prototype void object_set_texture_offset(ACObject *ob, float tx, float ty);
 Prototype void object_set_visible(ACObject *ob, Boolean vis);
-Prototype Boolean object_is_selected(ACObject *ob);
 Prototype void calc_texture_coors(ACObject *ob, int projection);
 Prototype void translate_object(ACObject *ob, Point3 *diff);
 Prototype void translate_object_abs(ACObject *ob, Point3 *pos);
@@ -441,10 +440,22 @@ Prototype Boolean ac_object_is_visible_3d(ACObject *ob); // can object be viewed
 Prototype Boolean ac_object_is_locked(ACObject *ob);
 Prototype Boolean ac_object_is_hidden(ACObject *ob);
 
+Prototype int ac_object_find_bound(ACObject *ob, Point3 *max, Point3 *min); // returns 0 if no geometry (therefore bb is invalid)
+
+
 Prototype Boolean ac_object_is_subdivided(ACObject *ob);
 Prototype ACObject *ac_object_get_subdivision(ACObject *ob);
 Prototype int ac_object_get_subdivision_level(ACObject *ob);
-Prototype int ac_object_find_bound(ACObject *ob, Point3 *max, Point3 *min); // returns 0 if no geometry (therefore bb is invalid)
+Prototype Boolean ac_object_set_subdivision_level(ACObject *ob, int newlevel);
+Prototype Boolean ac_object_is_subdivided(ACObject *ob);
+
+Prototype Surface *ac_object_add_triangle(ACObject *ob, Vertex *v1, Vertex *v2, Vertex *v3);
+Prototype Surface *ac_object_add_triangle_uv(ACObject *ob, Vertex *v1, Vertex *v2, Vertex *v3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3 );
+
+typedef void (ac_render_object_callback_func)(ACObject *ob, Boolean is_primary_render); // is_primary_render indicates geometry (primary) or editable render
+Prototype void ac_set_pre_render_object_callback(ac_render_object_callback_func *func);
+Prototype void ac_set_post_render_object_callback(ac_render_object_callback_func *func);
+
 
 
 /** these add functions are badly named :- they only create stuff, you need to
@@ -458,6 +469,9 @@ Prototype ACObject *add_disk(int win, Point3 *start, Point3 *end);
 Prototype ACObject *add_cube(int win, Point3 *start, Point3 *end);
 Prototype ACObject *add_sphere(int win, Point3 *start, Point3 *end);
 Prototype ACObject *create_regular_cube();
+Prototype ACObject *create_regular_sphere();
+Prototype ACObject *create_regular_sphere_at(Point3 *pos);
+Prototype ACObject *create_regular_cube_at(Point3 *pos);
 Prototype ACObject *create_text(char *str); // using a .ac font file
 Prototype ACObject *new_circle(int win, float radiusx, float radiusy, int divisions);
 
@@ -487,9 +501,7 @@ Prototype void surface_set_type(Surface *s, int type);
 Prototype Surface *surface_clone(Surface *s, ACObject *newob);  /** reuses existing vertices **/
 Prototype void surface_add_quad_refs(Surface *s, Vertex *v1, Vertex *v2, Vertex *v3, Vertex *v4);
 Prototype void surface_add_tri_refs(Surface *s, Vertex *v1, Vertex *v2, Vertex *v3);
-Prototype Boolean surface_subdivide(ACObject *ob, Surface *s, float spike_factor);
 Prototype void surface_set_twosided(Surface *s, Boolean two);
-Prototype Surface *surface_make_hole(ACObject *ob, Surface *s, float hole_percent, Boolean hole);
 Prototype Vertex *surface_insert_vertex(Surface *s, Vertex *v1, Vertex *v2, Boolean *newvertexwascreted);
 Prototype List *surfaces_of_vertex(Vertex *v);
 Prototype void surface_change_vertex_order(Surface *s);
@@ -507,8 +519,11 @@ Prototype SVertex *svertex_clone(SVertex *sv);
 Prototype Point3 *ac_surface_get_normal(Surface *s);
 Prototype List *ac_surfacelist_get_surfaces_with_col(List *slist, int col); // call list_free on result!  
 Prototype List *ac_surfacelist_get_cols_used(List *slist);  // call list_free on result!
-
-
+Prototype SVertex *surface_get_svertex_after(Surface *s, SVertex *svp);
+Prototype Vertex *surface_get_vertex(Surface *s, int indexnum);
+Prototype int ac_surface_get_col(Surface *s);
+Prototype void ac_surface_set_index(Surface *s, int i);
+Prototype int ac_surface_get_index(Surface *s);
 
 // EDGES
 
@@ -524,18 +539,21 @@ typedef struct ACEdge_t
 Prototype ACEdge *new_edge(Surface *s, Vertex *v1, Vertex *v2);
 Prototype void ac_edge_free(ACEdge *e);
 Prototype void ac_edgelist_free(List **e);
-Prototype List *ac_object_get_edges(ACObject *ob); // free the returned edgelist
-Prototype List *ac_selection_get_edges(Boolean wholesurfaces);
+Prototype List *ac_object_get_edges(ACObject *ob); // // free returned list of edges with ac_edgelist_free
+Prototype List *ac_selection_get_edges(Boolean wholesurfaces); // free returned list of edges with ac_edgelist_free
 Prototype List *ac_edgelist_remove_internal_edges(List **e);  // keeps only the edges that reference one surface
-Prototype List *ac_selection_get_edges_external();
+Prototype List *ac_selection_get_edges_external(); // free returned list of edges with ac_edgelist_free
+Prototype List *ac_selection_get_edges_internal(); // free returned list of edges with ac_edgelist_free
 Prototype void ac_edgelist_print(List *e);
 Prototype List *ac_edgelist_get_surfaces(List *e);
 Prototype Vertex *ac_edge_insert_vertex(ACEdge *e, Boolean *vertexwasnew); // returns list of new allocated vertices (which may be less than edges that were split)
 Prototype List *ac_edgelist_get_by_surface(List *e, Surface *s); // free the returned list but not the edges
 Prototype ACEdge *ac_edgelist_get_by_vertices(List *e, Vertex *v1, Vertex *v2); // free the returned list but not the edges
-Prototype List *ac_edgelist_get_connected(List *edgelist, ACEdge *edge, Vertex *firstv);
-Prototype List *ac_edgelist_get_connected_surfaces(List *e, Surface *s);
+Prototype List *ac_edgelist_get_connected(List *edgelist, ACEdge *edge, Vertex *firstv); // returns list of pointers to connected edge, free the list later
+Prototype List *ac_edgelist_get_connected_surfaces(List *e, Surface *s); // returns list of surfaces connected to that edge, frere the list later
 Prototype void ac_edge_add_surface(ACEdge *e, Surface *s);
+Prototype void ac_object_get_selected_edges(ACObject *ob, Boolean wholesurfacesonly, List **edges ); // pass empty list - free edgelist when done
+
 
 
 
@@ -564,10 +582,14 @@ Prototype void fit_selected_all();
 Prototype List *ac_selection_get_vertices(); // call in vertex select mode, free list after
 Prototype List *ac_selection_get_surfaces(); // call in surface select mode, free list after
 Prototype List *ac_selection_get_objects(); // call in object or group select mode, free list after
+Prototype List *ac_selection_get_objects_ordered(); // in the order they were selected. free the returned list
+Prototype List *ac_selection_get_part_selected_objects(); // free the returned list 
+Prototype List *ac_selection_get_unselected_objects(); // free the returned list when done
 Prototype List *ac_selection_get_groups(); // gets all selected toplevel obs, call in object or group select mode, free returned list
 Prototype List *ac_selection_get_whole_surfaces_all(void); // any select mode, free the list when you've finished with it
 Prototype List *ac_selection_get_vertices_all(); // in vertex/surface modes et all selected vertices
 Prototype List *ac_selection_get_poly_objects(); // call in object or group select mode, free returned list
+Prototype List *ac_selection_get_part_selected_surfaces(); // in vertex and surface mode, free the returned list
 Prototype void ac_select_object(ACObject *ob); // can be called in any select mode
 Prototype void ac_unselect_object(ACObject *ob); // can be called in any select mode
 Prototype void ac_selection_select_objectlist(List *obs); // replaces select_objectlist
@@ -579,6 +601,11 @@ Prototype void ac_selection_select_by_surface(Surface *s);
 Prototype void ac_selection_deselect_vertexlist(List *l);
 Prototype ACObject *get_current_object(); // NULL if no object or > 1 selected
 
+Prototype Boolean ac_selection_get_bounding_box(Point3 *bmin, Point3 *bmax); // boolean indicates if bb is valid
+Prototype Boolean ac_selection_get_bounding_box_size(Point3 *bsize); // boolean indicates if bb is valid
+Prototype Boolean ac_selection_get_bounding_box_centre(Point3 *bcent); // boolean indicates if bb is valid
+
+
 typedef void *ACSelection; // private data 
 Prototype ACSelection *ac_selection_get_snapshot();
 Prototype void ac_selection_restore_from_snapshot(ACSelection *replacement);
@@ -586,12 +613,18 @@ Prototype void ac_selection_free(ACSelection *sel);
 Prototype int ac_get_select_mode(); // returns one of SELECT_*
 Prototype List *clone_selected(Boolean whole_surfaces_only);  // returns list of copied objects, free objects with object_delete (or object_free), then free the List.
 
+typedef void (ACSelectionChangedCallback)(char *reason, void *userdata);
+Prototype void ac_add_selection_changed_callback(ACSelectionChangedCallback *c, void *userdata);
+Prototype Boolean ac_remove_selection_changed_callback(ACSelectionChangedCallback *c); // returns TRUE if success (found and removed)
+Prototype void selection_changed(char *from);
+
+
 /** NORMALS **/
-Prototype void selected_calc_normals_force();
-Prototype void object_calc_normals_force(ACObject *ob);
-Prototype void selected_calc_normals(); /** won't do anything if the recal-normals setting is off **/
-Prototype void object_calc_normals(ACObject *ob);
-Prototype void objectlist_calc_normals(List *oblist);
+Prototype void selected_calc_normals_force(); // recalculates ALL normals
+Prototype void object_calc_normals_force(ACObject *ob);  // recalculates ALL normals - usefule for file importers
+Prototype void object_calc_normals(ACObject *ob); // recalculates dirty normals - now deprecated, use ac_object_refresh
+Prototype void objectlist_calc_normals(List *oblist); // calls object_calc_normals on each object
+Prototype void selected_calc_normals(); // recalculates dirty normals
 
 
 
@@ -602,9 +635,13 @@ Prototype ACMaterial *ac_new_material_rgb(long rgb);
 Prototype void ac_material_set_userdata(ACMaterial *m, void *d);
 Prototype void *ac_material_get_userdata(ACMaterial *m);
 Prototype ACMaterial *ac_material_duplicate(ACMaterial *cp);
+Prototype char *ac_material_get_name(ACMaterial *m);
 Prototype void ac_material_set_name(ACMaterial *m, char *name);
 Prototype ACMaterial *ac_new_material_from_template(ACMaterialTemplate *t);
+Prototype void ac_material_template_init(ACMaterialTemplate *mt); // fills in empty structure - makes white default material
+Prototype void ac_material_get_template(ACMaterial *m, ACMaterialTemplate *t); // pass addr of template to be filled in
 
+Prototype int ac_material_to_palette_index(ACMaterial *m); // returns -1 if not found
 
 
 Prototype void surface_set_rgb_long(Surface *s, long rgb); /** allocates a new material and uses that if needed **/
@@ -622,8 +659,11 @@ Prototype ACMaterial *ac_new_material();
 Prototype long ac_palette_append_material(ACMaterial *m); /** append this material onto the palette list i.e. doesn't just copy contents **/
 
 
-Prototype int ac_palette_get_new_material_index(ACMaterialTemplate *m); /** if this material exists then return it's index otherwise, allocate a new one, COPY the contents from m and return it's index **/
+Prototype int ac_palette_get_new_material_index(ACMaterialTemplate *m); /** if a material like this exists then return it's index otherwise, allocate a new one, COPY the contents from m and return it's index **/
+Prototype int ac_palette_get_new_material_index2(ACMaterialTemplate *m, char *name); // search on name too
 Prototype int object_surfaces_find_same_material(ACObject *ob);  // returns index of material used in object, -1 if multiple materials are used
+Prototype List *ac_get_surfaces_by_material(ACMaterial *m); // searches ALL objects.  free the returned list whne you've finished with it
+Prototype Boolean ac_palette_set_material_name(int id, char *name);
 
 
 
@@ -668,7 +708,13 @@ Prototype Boolean ac_replace_exporter_function(char *suffix, ac_file_exporter_fu
 Prototype Boolean ac_exporter_set_settings_function(char *suffix, ac_file_settings_func func); // to be called before export
 
 
+// CAMERA
 
+Prototype void ac_camera_move_forward(ACCamera *e, float dist); // use -ve for other directions
+Prototype void ac_camera_move_up(ACCamera *e, float dist);
+Prototype void ac_camera_move_left(ACCamera *e, float dist);
+Prototype void ac_camera_turn_left(ACCamera *e, float degs);
+Prototype void ac_camera_turn_up(ACCamera *e, float degs);
 
 
 /** used to get the size of a window in win_get_geom() : **/
@@ -679,7 +725,8 @@ typedef struct wingeom_t
 
 
 /** MISC **/
-
+Prototype void ac_object_dirty_all_normals(ACObject *ob); // force recalc of all normals when ac_object_refresh is called
+Prototype void ac_object_refresh(ACObject *ob); // call to recalculate dirty normals, subdivs etc
 Prototype int message_dialog(char *fmt, ...);
 Prototype int windows_message_dialog(char *fmt, ...); // don't use this - use message_dialog
 Prototype void *myalloc(int size);
@@ -705,13 +752,16 @@ Prototype void ac_add_object_menu_item(char *label, char *command, char *desc);
 Prototype ACViewWin *ac_winid_to_view(int id);
 Prototype List *ac_views_get_list(); // list of ACViewWin
 Prototype ACViewWin *ac_views_get_3d(); // gets the first 3d window
-//Prototype ACCamera *ac_views_get_default_camera(); // get the camera from the first 3d window, NULL if none
+Prototype ACCamera *ac_views_get_default_camera(); // get the camera from the first 3d window, NULL if none
 
 Prototype int ac_view_get_projection(ACViewWin *v);
 Prototype void ac_view_get_size(ACViewWin *v, int *w, int *h);
 Prototype unsigned char *ac_win_get_pixels(ACViewWin *view, int *width, int *height);
 Prototype void ac_view_redraw(ACViewWin *v);
 Prototype void find_bounding_box(void); // recalculate the green selection bounding box
+Prototype char *tcl_get_string(char *varname);  // get the value of a tcl global
+Prototype Surface *ac_surface_get_proxy(Surface *s);
+Prototype Vertex *ac_vertex_get_proxy(Vertex *v);
 
 
 /** access to PREFS **/
@@ -720,18 +770,20 @@ Prototype void find_bounding_box(void); // recalculate the green selection bound
 #define PREF_DOUBLE 2
 #define PREF_HEX 4
 #define PREF_STRING 8
-#define PREF_KEY 16
+#define PREF_KEY 16 // not used
 #define PREF_BOOLEAN 32
 #define PREF_NOSAVE 128 // don't save this value in the AC3D prefs file
+#define PREF_ALLOC 256 // if you want AC3D to alocate storage space
 
 typedef struct prefspec
 {
     char *name;
     int type; // PREF_
     void *addr; // pointer to current value
+//    void *defaultvalue; // pointer to the default value
 } PrefSpec;
 
-// Note that string values must be allocated with  STRING();
+// Note that string values MUST be allocated with ac_pref_alloc_string();
 
 Prototype PrefSpec *ac_prefs_get_spec(char *name);  /** returns NULL if not found **/
 
@@ -745,10 +797,11 @@ Prototype double ac_prefs_get_double(char *name);
 Prototype int ac_prefs_get_hex(char *name);
 Prototype char *ac_prefs_get_string(char *name);
 Prototype char *ac_prefs_get_key(char *name);
-Prototype void ac_tcl_link_pref(PrefSpec *p); // make this preference available in tcl as pref_<p->name>
-Prototype void prefs_append_prefspec(PrefSpec *n); // add a new pref to the main list
-
-
+Prototype void ac_tcl_link_pref(PrefSpec *p); // make this preference available in tcl as prefs_<p->name>
+Prototype PrefSpec *prefs_append_prefspec(PrefSpec *n); // add a new pref to the main list
+Prototype char *ac_pref_alloc_string(char *s);
+Prototype void ac_pref_free_string(char *s);
+Prototype PrefSpec *ac_create_and_link_pref(char *name, int type, void *defaultvalue); // best function to use to add a tracked preference
 
 // undo
 Prototype void add_undoable_all(char *name);
@@ -774,7 +827,7 @@ Prototype void add_undoable_object_centres(char *name, List *oblist);
 #define AC_CLASS_WINDOW "window"
 #define AC_CLASS_IMAGE "image"
 
-ACEntity *ac_new_entity(char *classname); // use instead of new_object, pass AC_CLASS_*
+Prototype ACEntity *ac_new_entity(char *classname); // use instead of new_object, pass AC_CLASS_*
 Prototype ACObject *ac_new_object(); // calls ac_new_entity(AC_CLASS_OBJECT));
 Prototype ACObject *ac_new_group(); // calls ac_new_entity(AC_CLASS_GROUP));
 Prototype ACObject *ac_new_world(); // calls ac_new_entity(AC_CLASS_WORLD));
@@ -790,6 +843,7 @@ Prototype Boolean ac_entity_set_string_value(ACEntity *e, char *resname, char *v
 Prototype Boolean ac_entity_set_boolean_value(ACEntity *e, char *resname, Boolean val);
 Prototype Boolean ac_entity_set_point_value(ACEntity *e, char *resname, Point3 *val);
 Prototype Boolean ac_entity_set_rgb_value(ACEntity *e, char *resname, ACrgb *val);
+Prototype Boolean ac_entity_set_entity_value(ACEntity *e, char *resname, ACEntity *val);
 
 Prototype Boolean ac_entity_get_value(ACEntity *e, char *resname, char *restype, void *valaddr);
 Prototype Boolean ac_entity_get_int_value(ACEntity *e, char *resname, int *val);
@@ -799,6 +853,7 @@ Prototype Boolean ac_entity_get_string_value(ACEntity *e, char *resname, char **
 Prototype Boolean ac_entity_get_boolean_value(ACEntity *e, char *resname, Boolean *val);
 Prototype Boolean ac_entity_get_point_value(ACEntity *e, char *resname, Point3 *val);
 Prototype Boolean ac_entity_get_rgb_value(ACEntity *e, char *resname, ACrgb *val);
+Prototype Boolean ac_entity_get_entity_value(ACEntity *e, char *resname, ACEntity **val);
 
 
 
@@ -824,12 +879,12 @@ Prototype Boolean ac_entity_get_rgb_value(ACEntity *e, char *resname, ACrgb *val
 #define INVERTPOINT(p) { (p)->x = -(p)->x; (p)->y = -(p)->y; (p)->z = -(p)->z; }
 #define ZEROPOINT(p) { (p)->x = 0; (p)->y = 0; (p)->z = 0; } 
 
-#define DOTPRODUCT(p1, p2)  ((float)((p1)->x*(p2)->x + (p1)->y*(p2)->y + (p1)->z*(p2)->z))
+#define DOTPRODUCT(p1, p2)  (((p1)->x*(p2)->x + (p1)->y*(p2)->y + (p1)->z*(p2)->z))
 #define CROSSPRODUCT(p1, p2, r)  { (r)->x = ((p1)->y * (p2)->z - (p1)->z * (p2)->y); (r)->y = -((p1)->x * (p2)->z - (p1)->z * (p2)->x);  (r)->z = ((p1)->x * (p2)->y - (p1)->y * (p2)->x); }
 
 #define POINTISZERO(p) ( ((p)->x == 0) && ((p)->y == 0) && ((p)->z == 0) )
 #define POINTEQ(p, a, b, c) ( ((p)->x == (a)) && ((p)->y == (b)) && ((p)->z == (c)) )
-#define SETPOINT(p,a,b,c) {(p)->x=(float)(a); (p)->y=(float)(b); (p)->z=(float)(c);}
+#define SETPOINT(p,a,b,c) {(p)->x=(a); (p)->y=(b); (p)->z=(c);}
 #define POINTCOPY(b, a) {(a)->x = (b)->x; (a)->y = (b)->y; (a)->z = (b)->z;} 
 #define sqr(x) ((x)*(x))
 
@@ -839,9 +894,7 @@ Prototype Boolean ac_entity_get_rgb_value(ACEntity *e, char *resname, ACrgb *val
 #define STRINGISEMPTY(s) ( (s == NULL) || (*(char *)s == 0) )
 #define STRING(s)  (strcpy((char *)myalloc(strlen(s)+1), s))
 
-
-
-
+Prototype Tcl_Interp * ac_get_tcl_interp();
 
 #ifdef __cplusplus
 }
