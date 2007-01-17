@@ -66,38 +66,51 @@ void	XObjBuilder::SetAttribute(int attr)
 	case attr_Cull:			two_sided = 0;	break;
 	case attr_Tex_Cockpit:	cockpit = 1;	break;
 	case attr_Tex_Normal:	cockpit = 0;	break;
-	case attr_No_Blend:		no_blend = 1;	break;
-	case attr_Blend:		no_blend = 0;	break;
-	case attr_Hard:			hard = 1;		break;
-	case attr_No_Hard:		hard = 0;		break;
+	case attr_No_Blend:		no_blend = 0.5;	break;
+	case attr_Blend:		no_blend = -1.0;break;
+	case attr_Hard:			hard = "object";break;
+	case attr_No_Hard:		hard = "";		break;
+	case attr_Reset: 
+		diffuse[0] = 1.0; diffuse[1] = 1.0; diffuse[2] = 1.0;
+		emission[0] = 0.0; emission[1] = 0.0; emission[2] = 0.0;
+		shiny = 0.0;
+		break;
 	}
 }
 
 void	XObjBuilder::SetAttribute1(int attr, float v)
 {
 	switch(attr) {
-	case attr_Offset: 	offset = v; break;
-	case attr_Shiny_Rat:shiny  = v; break;
+	case attr_Offset: 	offset = v;					break;
+	case attr_Shiny_Rat:shiny  = v;					break;
+	case attr_No_Blend:	no_blend = v;				break;
 	}
 }
 
 void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
 {
-	AssureLOD();
-	lod->cmds.push_back(XObjCmd8()); 
-	lod->cmds.back().cmd = attr;
-	lod->cmds.back().name = s;
-	lod->cmds.back().params[0] = v;
+	if (attr == attr_Hard)
+	{
+		hard = s ? s : "";
+	}
+	else
+	{
+		AssureLOD();
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr;
+		lod->cmds.back().name = s;
+		lod->cmds.back().params[0] = v;
+	}
 }
 
 void	XObjBuilder::SetAttribute3(int attr, float v[3])
 {
 	switch(attr) {
 	case attr_Emission_RGB: 
-		emission[0] = v[0]; emission[1] = v[1]; emission[2] = v[2];
+		emission[0] = v[0]; emission[1] = v[1]; emission[2] = v[2]; 
 		break;
 	case attr_Diffuse_RGB: 
-		diffuse[0] = v[0]; diffuse[1] = v[1]; diffuse[2] = v[2];
+		diffuse[0] = v[0]; diffuse[1] = v[1]; diffuse[2] = v[2]; 
 		break;
 	}
 }
@@ -211,6 +224,17 @@ void	XObjBuilder::AccumLightCustom(float xyz[3], float params[9], const char * d
 	lod->cmds.back().name = dataref;
 }
 
+void	XObjBuilder::AccumSmoke(int cmd, float xyz[3], float size)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = cmd;
+	lod->cmds.back().params[0] = xyz[0];
+	lod->cmds.back().params[1] = xyz[1];
+	lod->cmds.back().params[2] = xyz[2];
+	lod->cmds.back().params[3] = size;	
+}
+
 void	XObjBuilder::AccumAnimBegin(void)
 {
 	AssureLOD(); 
@@ -227,36 +251,104 @@ void	XObjBuilder::AccumAnimEnd(void)
 
 void	XObjBuilder::AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref)
 {
+	AccumTranslateBegin(ref);
+	AccumTranslateKey(v1, xyz1);
+	AccumTranslateKey(v2, xyz2);
+	AccumTranslateEnd();
+}
+
+void	XObjBuilder::AccumRotate(float axis[3], float r1, float r2, float v1, float v2, const char * ref)
+{
+	AccumRotateBegin(axis, ref);
+	AccumRotateKey(v1, r1);
+	AccumRotateKey(v2, r2);
+	AccumRotateEnd();
+}
+
+void	XObjBuilder::AccumTranslateBegin(const char * ref)
+{
 	AssureLOD(); 
 	XObjAnim8 anim;
 	anim.dataref = ref;
-	anim.xyzrv1[0] = xyz1[0];	anim.xyzrv2[0] = xyz2[0];
-	anim.xyzrv1[1] = xyz1[1];   anim.xyzrv2[1] = xyz2[1];
-	anim.xyzrv1[2] = xyz1[2];   anim.xyzrv2[2] = xyz2[2];
-	anim.xyzrv1[4] = v1     ;   anim.xyzrv2[4] = v2     ;
-	
 	obj->animation.push_back(anim);
 	lod->cmds.push_back(XObjCmd8());
 	lod->cmds.back().cmd = anim_Translate;
 	lod->cmds.back().idx_offset = obj->animation.size()-1;	
 }
 
-void	XObjBuilder::AccumRotate(float axis[3], float r1, float r2, float v1, float v2, const char * ref)
+void	XObjBuilder::AccumTranslateKey(float v, float xyz[3])
+{
+	obj->animation.back().keyframes.push_back(XObjKey());
+	obj->animation.back().keyframes.back().key = v;
+	obj->animation.back().keyframes.back().v[0] = xyz[0];
+	obj->animation.back().keyframes.back().v[1] = xyz[1];
+	obj->animation.back().keyframes.back().v[2] = xyz[2];	
+}
+
+
+void	XObjBuilder::AccumTranslateEnd(void)
+{
+}
+
+void	XObjBuilder::AccumRotateBegin(float axis[3], const char * ref)
 {
 	AssureLOD(); 
 	XObjAnim8 anim;
 	anim.dataref = ref;
-	anim.xyzrv1[0] = axis[0];	
-	anim.xyzrv1[1] = axis[1];
-	anim.xyzrv1[2] = axis[2];
-	anim.xyzrv1[3] = r1     ;   anim.xyzrv2[3] = r2     ;
-	anim.xyzrv1[4] = v1     ;   anim.xyzrv2[4] = v2     ;
-	
+	anim.axis[0] = axis[0];	
+	anim.axis[1] = axis[1];
+	anim.axis[2] = axis[2];	
 	obj->animation.push_back(anim);
 	lod->cmds.push_back(XObjCmd8());
 	lod->cmds.back().cmd = anim_Rotate;
 	lod->cmds.back().idx_offset = obj->animation.size()-1;	
 }
+
+void	XObjBuilder::AccumRotateKey(float v, float a)
+{
+	obj->animation.back().keyframes.push_back(XObjKey());
+	obj->animation.back().keyframes.back().key = v;
+	obj->animation.back().keyframes.back().v[0] = a;
+}
+
+void	XObjBuilder::AccumRotateEnd(void)
+{
+}
+
+
+void	XObjBuilder::AccumShow(float v1, float v2, const char * ref)
+{
+	AssureLOD(); 
+	XObjAnim8 anim;
+	anim.dataref = ref;
+		
+	anim.keyframes.push_back(XObjKey());
+	anim.keyframes.back().key = v1;
+	anim.keyframes.push_back(XObjKey());
+	anim.keyframes.back().key = v2;
+	
+	obj->animation.push_back(anim);
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = anim_Show;
+	lod->cmds.back().idx_offset = obj->animation.size()-1;	
+}
+
+void	XObjBuilder::AccumHide(float v1, float v2, const char * ref)
+{
+	AssureLOD(); 
+	XObjAnim8 anim;
+	anim.dataref = ref;
+
+	anim.keyframes.push_back(XObjKey());
+	anim.keyframes.back().key = v1;
+	anim.keyframes.push_back(XObjKey());
+	anim.keyframes.back().key = v2;
+	
+	obj->animation.push_back(anim);
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = anim_Hide;
+	lod->cmds.back().idx_offset = obj->animation.size()-1;	
+	}
 
 void	XObjBuilder::AssureLOD(void)
 {
@@ -272,10 +364,10 @@ void	XObjBuilder::AssureLOD(void)
 
 void	XObjBuilder::SetDefaultState(void)
 {
-	o_hard = hard = 0;
+	o_hard = hard = "";
 	o_flat = flat = 0;
 	o_two_sided = two_sided = 0;
-	o_no_blend = no_blend = 0;
+	o_no_blend = no_blend = -1.0;
 	o_cockpit = cockpit = 0;
 	o_offset = offset = 0.0;
 
@@ -298,7 +390,9 @@ void XObjBuilder::SyncAttrs(void)
 	if (hard != o_hard)
 	{
 		lod->cmds.push_back(XObjCmd8()); 
-		lod->cmds.back().cmd = hard ? attr_Hard : attr_No_Hard;
+		lod->cmds.back().cmd = hard.empty() ? attr_No_Hard : attr_Hard;
+		if (hard != "object" && !hard.empty())
+			lod->cmds.back().name = hard;
 		o_hard = hard;
 	}
 	
@@ -319,16 +413,10 @@ void XObjBuilder::SyncAttrs(void)
 	if (no_blend != o_no_blend)
 	{
 		lod->cmds.push_back(XObjCmd8()); 
-		lod->cmds.back().cmd = no_blend ? attr_No_Blend : attr_Blend;
+		lod->cmds.back().cmd = (no_blend >= 0.0) ? attr_No_Blend : attr_Blend;
+		if (no_blend >= 0.0)
+			lod->cmds.back().params[0] = no_blend;
 		o_no_blend = no_blend;
-	}
-
-	if (shiny != o_shiny)
-	{
-		lod->cmds.push_back(XObjCmd8()); 
-		lod->cmds.back().cmd = attr_Shiny_Rat;
-		lod->cmds.back().params[0] = shiny;
-		o_shiny = shiny;
 	}
 
 	if (offset != o_offset)
@@ -339,8 +427,34 @@ void XObjBuilder::SyncAttrs(void)
 		o_offset = offset;
 	}
 
-	if (emission[0] != o_emission[0] || emission[1] != o_emission[1] || emission[2] != o_emission[2])
+	if (emission[0] != o_emission[0] || emission[1] != o_emission[1] || emission[2] != o_emission[2] ||
+		diffuse[0] != o_diffuse[0] || diffuse[1] != o_diffuse[1] || diffuse[2] != o_diffuse[2] ||
+		shiny != o_shiny)
+	if (emission[0] == 0.0 && emission[1] == 0.0 && emission[2] == 0.0 &&
+		diffuse[0] == 1.0 && diffuse[1] == 1.0 && diffuse[2] == 1.0 && 
+		shiny == 0.0)
 	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Reset;
+		o_emission[0] = emission[0];
+		o_emission[1] = emission[1];
+		o_emission[2] = emission[2];
+		o_shiny = shiny;
+		o_diffuse[0] = diffuse[0];
+		o_diffuse[1] = diffuse[1];
+		o_diffuse[2] = diffuse[2];
+	}
+
+	if (shiny != o_shiny)
+	{
+		lod->cmds.push_back(XObjCmd8()); 
+		lod->cmds.back().cmd = attr_Shiny_Rat;
+		lod->cmds.back().params[0] = shiny;
+		o_shiny = shiny;
+	}
+
+	if (emission[0] != o_emission[0] || emission[1] != o_emission[1] || emission[2] != o_emission[2])
+	{		
 		lod->cmds.push_back(XObjCmd8()); 
 		lod->cmds.back().cmd = attr_Emission_RGB;
 		lod->cmds.back().params[0] = emission[0];
@@ -350,7 +464,7 @@ void XObjBuilder::SyncAttrs(void)
 		o_emission[1] = emission[1];
 		o_emission[2] = emission[2];
 	}
-
+	
 	if (diffuse[0] != o_diffuse[0] || diffuse[1] != o_diffuse[1] || diffuse[2] != o_diffuse[2])
 	{
 		lod->cmds.push_back(XObjCmd8()); 

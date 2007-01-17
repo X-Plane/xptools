@@ -23,6 +23,9 @@
  
  #ifndef XOBJBUILDER_H
  #define XOBJBUILDER_H
+
+#include <string>
+using std::string;
  
 struct	XObj8;
 struct	XObjLOD8;
@@ -52,15 +55,27 @@ struct	XObjLOD8;
  	// X Y Z R G B
  	void	AccumLight(float inPoint[6]);
 	void	AccumLightNamed(float xyz[3], const char * name);
-	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);
+	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);	
+	void	AccumSmoke(int cmd, float xyz[3], float size);
+ 
+	// tODO SMOKE PUFFS, SHOW HIDE ANIMS!
  
 	void	AccumAnimBegin(void);
 	void	AccumAnimEnd(void);
  	void	AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref); 	
  	void	AccumRotate(float axis[3], float r1, float r2, float v1, float v2, const char * ref);
+	void	AccumShow(float v1, float v2, const char * ref);
+	void	AccumHide(float v1, float v2, const char * ref);
+
+	void	AccumTranslateBegin(const char * ref);
+	void	AccumRotateBegin(float axis[3], const char * ref);
+ 	void	AccumTranslateKey(float v, float xyz[3]);
+ 	void	AccumRotateKey(float v, float a);
+	void	AccumTranslateEnd(void);
+	void	AccumRotateEnd(void);	
  
 	// A few status checks
-	inline int		IsHard(void) const		{ return hard;		}
+	inline string	IsHard(void) const		{ return hard;		}
 	inline int		IsCockpit(void) const	{ return cockpit;	}
  
  private:
@@ -72,15 +87,15 @@ struct	XObjLOD8;
  	XObj8 *		obj;
  	XObjLOD8 *	lod;
 
- 	int			hard;				int		o_hard;
+ 	string		hard;				string	o_hard;
  	int			flat;				int		o_flat;
  	int			two_sided;			int		o_two_sided;
- 	int			no_blend;			int		o_no_blend;
+ 	float		no_blend;			float	o_no_blend;
  	int			cockpit;			int		o_cockpit;
 
  	float		offset;				float	o_offset;
+	
 	float		shiny;				float	o_shiny;
-
 	float		diffuse[3];			float	o_diffuse[3];
 	float		emission[3];		float	o_emission[3];
 	

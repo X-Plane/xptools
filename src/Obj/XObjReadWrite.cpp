@@ -695,33 +695,39 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ANIM_rotate x y z r1 r2 v1 v2 dref
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", xfals))
 		{
+			animation.keyframes.clear();			
 			cmd.cmd = anim_Rotate;
 			cmd.idx_offset = outObj.animation.size();			
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv2[0] = animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[1] = animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[2] = animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv1[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes.push_back(XObjKey());
+			animation.keyframes.push_back(XObjKey());						
+			animation.axis[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.axis[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.axis[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[0].v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[0].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
 		}
 		// ANIM_trans x1 y1 z1 x2 y2 z2 v1 v2 dref
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_trans", xfals))
 		{
+			animation.keyframes.clear();
 			cmd.cmd = anim_Translate;
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv1[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv1[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv1[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes.push_back(XObjKey());
+			animation.keyframes.push_back(XObjKey());						
+			animation.keyframes[0].v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[0].v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[0].v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[0].key= TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
 		}
@@ -764,34 +770,97 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			outObj.lods.back().cmds.push_back(cmd);
 		}
-		// ATTR_hard_named <type>
-		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard_named", xfals))
+		// ATTR_hard [<type>]
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard", xtrue))
 		{
-			cmd.cmd = attr_Hard_Surface;
+			cmd.cmd = attr_Hard;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			outObj.lods.back().cmds.push_back(cmd);
+			if (cmd.name.empty()) cmd.name = "object";
+		}
+		// ATTR_no_blend <level>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_no_blend", xtrue))
+		{
+			cmd.cmd = attr_No_Blend;
+			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			if (cmd.params[0] == 0.0) cmd.params[0] = 0.5;
 			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// ANIM_hide <v1> <v2> <dataref>
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_hide", xfals))
 		{
+			animation.keyframes.clear();
 			cmd.cmd = anim_Hide;
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes.push_back(XObjKey());
+			animation.keyframes.push_back(XObjKey());
+			animation.keyframes[0].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
 		}
 		// ANIM_show <v1> <v2> <dataref>
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_show", xfals))
 		{
+			animation.keyframes.clear();
 			cmd.cmd = anim_Show;
 			cmd.idx_offset = outObj.animation.size();
 			outObj.lods.back().cmds.push_back(cmd);
-			animation.xyzrv1[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			animation.xyzrv2[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes.push_back(XObjKey());
+			animation.keyframes.push_back(XObjKey());			
+			animation.keyframes[0].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.keyframes[1].key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
+		}
+/******************************************************************************************************************************/
+		// ANIM_rotate_begin x y z dref
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_begin", xfals))
+		{
+			animation.keyframes.clear();			
+			cmd.cmd = anim_Rotate;
+			cmd.idx_offset = outObj.animation.size();			
+			outObj.lods.back().cmds.push_back(cmd);
+			animation.axis[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.axis[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			animation.axis[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
+			outObj.animation.push_back(animation);
+		}
+		// ANIM_trans_begin dref
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_begin", xfals))
+		{
+			animation.keyframes.clear();
+			cmd.cmd = anim_Translate;
+			cmd.idx_offset = outObj.animation.size();
+			outObj.lods.back().cmds.push_back(cmd);
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
+			outObj.animation.push_back(animation);		
+		}
+		// ANIM_rotate_key v r 
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_key", xfals))
+		{
+			outObj.animation.back().keyframes.push_back(XObjKey());
+			outObj.animation.back().keyframes.back().key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.animation.back().keyframes.back().v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+		}
+		// ANIM_trans_key v x y z
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_key", xfals))
+		{
+			outObj.animation.back().keyframes.push_back(XObjKey());
+			outObj.animation.back().keyframes.back().key = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.animation.back().keyframes.back().v[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.animation.back().keyframes.back().v[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			outObj.animation.back().keyframes.back().v[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+		}
+		// ANIM_rotate_end
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_end", xtrue))
+		{
+		}
+		// ANIM_trans_end
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_end", xtrue))
+		{
 		}
 /******************************************************************************************************************************/
 
@@ -813,15 +882,6 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			
 		}
 
-	obj8_LightCustom,			// all in name??  param is pos?
-	obj8_LightNamed,			// name has light name, param is pos
-	attr_Layer_Group,			// name has group name, param[0] has offset
-	attr_Hard_Surface,			// name has surface name
-	attr_No_Blend_Level,		// param 0 has blend level
-	
-	anim_Hide,					// only v1 and v2 are used
-	anim_Show,
-			
 		TXT_MAP_str_scan_eoln(cur_ptr, end_ptr, NULL);
 	} // While loop	
 	
@@ -894,27 +954,54 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 		{
 			switch(cmd->cmd) {
 			case anim_Rotate:
-				fprintf(fi, "ANIM_rotate %f %f %f %f %f %f %f %s" CRLF,
-					outObj.animation[cmd->idx_offset].xyzrv1[0],
-					outObj.animation[cmd->idx_offset].xyzrv1[1],
-					outObj.animation[cmd->idx_offset].xyzrv1[2],
-					outObj.animation[cmd->idx_offset].xyzrv1[3],
-					outObj.animation[cmd->idx_offset].xyzrv2[3],
-					outObj.animation[cmd->idx_offset].xyzrv1[4],
-					outObj.animation[cmd->idx_offset].xyzrv2[4],
-					outObj.animation[cmd->idx_offset].dataref.c_str());
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
+					fprintf(fi, "ANIM_rotate %f %f %f %f %f %f %f %s" CRLF,
+						outObj.animation[cmd->idx_offset].axis[0],
+						outObj.animation[cmd->idx_offset].axis[1],
+						outObj.animation[cmd->idx_offset].axis[2],
+						outObj.animation[cmd->idx_offset].keyframes[0].v[0],
+						outObj.animation[cmd->idx_offset].keyframes[1].v[0],
+						outObj.animation[cmd->idx_offset].keyframes[0].key,
+						outObj.animation[cmd->idx_offset].keyframes[1].key,
+						outObj.animation[cmd->idx_offset].dataref.c_str());
+				else
+				{
+					fprintf(fi, "ANIM_rotate_begin %f %f %f %s" CRLF, 
+						outObj.animation[cmd->idx_offset].axis[0],
+						outObj.animation[cmd->idx_offset].axis[1],
+						outObj.animation[cmd->idx_offset].axis[2],
+						outObj.animation[cmd->idx_offset].dataref.c_str());
+					for(n = 0; n < outObj.animation[cmd->idx_offset].keyframes.size(); ++n)
+						fprintf(fi, "ANIM_rotate_key %f %f" CRLF, 
+							outObj.animation[cmd->idx_offset].keyframes[n].key,
+							outObj.animation[cmd->idx_offset].keyframes[n].v[0]);
+					fprintf(fi, "ANIM_rotate_end" CRLF);
+				}
 				break;
 			case anim_Translate:
-				fprintf(fi, "ANIM_trans %f %f %f %f %f %f %f %f %s" CRLF,
-					outObj.animation[cmd->idx_offset].xyzrv1[0],
-					outObj.animation[cmd->idx_offset].xyzrv1[1],
-					outObj.animation[cmd->idx_offset].xyzrv1[2],
-					outObj.animation[cmd->idx_offset].xyzrv2[0],
-					outObj.animation[cmd->idx_offset].xyzrv2[1],
-					outObj.animation[cmd->idx_offset].xyzrv2[2],
-					outObj.animation[cmd->idx_offset].xyzrv1[4],
-					outObj.animation[cmd->idx_offset].xyzrv2[4],
-					outObj.animation[cmd->idx_offset].dataref.c_str());
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)			
+					fprintf(fi, "ANIM_trans %f %f %f %f %f %f %f %f %s" CRLF,
+						outObj.animation[cmd->idx_offset].keyframes[0].v[0],
+						outObj.animation[cmd->idx_offset].keyframes[0].v[1],
+						outObj.animation[cmd->idx_offset].keyframes[0].v[2],
+						outObj.animation[cmd->idx_offset].keyframes[1].v[0],
+						outObj.animation[cmd->idx_offset].keyframes[1].v[1],
+						outObj.animation[cmd->idx_offset].keyframes[1].v[2],
+						outObj.animation[cmd->idx_offset].keyframes[0].key,
+						outObj.animation[cmd->idx_offset].keyframes[1].key,
+						outObj.animation[cmd->idx_offset].dataref.c_str());
+				else
+				{
+					fprintf(fi, "ANIM_trans_begin %s" CRLF, 
+						outObj.animation[cmd->idx_offset].dataref.c_str());
+					for(n = 0; n < outObj.animation[cmd->idx_offset].keyframes.size(); ++n)
+						fprintf(fi, "ANIM_trans_key %f %f %f %f" CRLF, 
+							outObj.animation[cmd->idx_offset].keyframes[n].key,
+							outObj.animation[cmd->idx_offset].keyframes[n].v[0],
+							outObj.animation[cmd->idx_offset].keyframes[n].v[1],
+							outObj.animation[cmd->idx_offset].keyframes[n].v[2]);
+					fprintf(fi, "ANIM_trans_end" CRLF);
+				}
 				break;
 			case obj8_Tris:
 				fprintf(fi, "TRIS %d %d" CRLF, cmd->idx_offset, cmd->idx_count);
@@ -940,20 +1027,31 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Layer_Group:
 				fprintf(fi,"ATTR_layer_group %s %d" CRLF, cmd->name.c_str(), (int) cmd->params[0]);
 				break;
-			case attr_Hard_Surface:
-				fprintf(fi, "ATTR_hard_named %s" CRLF, cmd->name.c_str());
-				break;
 			case anim_Hide:
-				fprintf(fi, "ANIM_hide %f %f %s" CRLF, 
-					outObj.animation[cmd->idx_offset].xyzrv1[4],
-					outObj.animation[cmd->idx_offset].xyzrv2[4],
-					outObj.animation[cmd->idx_offset].dataref.c_str());
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)						
+					fprintf(fi, "ANIM_hide %f %f %s" CRLF, 
+						outObj.animation[cmd->idx_offset].keyframes[0].key,
+						outObj.animation[cmd->idx_offset].keyframes[1].key,
+						outObj.animation[cmd->idx_offset].dataref.c_str());
 				break;
 			case anim_Show:
-				fprintf(fi, "ANIM_show %f %f %s" CRLF, 
-					outObj.animation[cmd->idx_offset].xyzrv1[4],
-					outObj.animation[cmd->idx_offset].xyzrv2[4],
-					outObj.animation[cmd->idx_offset].dataref.c_str());
+				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)			
+					fprintf(fi, "ANIM_show %f %f %s" CRLF, 
+						outObj.animation[cmd->idx_offset].keyframes[0].key,
+						outObj.animation[cmd->idx_offset].keyframes[1].key,
+						outObj.animation[cmd->idx_offset].dataref.c_str());
+				break;
+			case attr_Hard:
+				if (cmd->name == "object")
+					fprintf(fi,"ATTR_hard" CRLF);
+				else
+					fprintf(fi,"ATTR_hard %s" CRLF, cmd->name.c_str());
+				break;
+			case attr_No_Blend:
+				if (cmd->params[0] == 0.5)
+					fprintf(fi,"ATTR_no_blend" CRLF);
+				else
+					fprintf(fi,"ATTR_no_blend %f" CRLF, cmd->params[0]);
 				break;
 			default: 
 				{

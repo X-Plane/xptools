@@ -107,8 +107,6 @@ enum {
 	obj8_LightCustom,			// all in name??  param is pos?
 	obj8_LightNamed,			// name has light name, param is pos
 	attr_Layer_Group,			// name has group name, param[0] has offset
-	attr_Hard_Surface,			// name has surface name
-	attr_No_Blend_Level,		// param 0 has blend level
 	anim_Hide,					// only v1 and v2 are used
 	anim_Show,
 	
@@ -167,10 +165,16 @@ int	FindIndexForCmd(int inCmd);
  * The library does not merge consecutive-indexed tri commands on read or write.
  *
  */ 
+ 
+struct XObjKey {
+	float					key;
+	float					v[3];		// angle for rotation, XYZ for translation
+};
+ 
 struct	XObjAnim8 {
 	string					dataref;
-	float					xyzrv1[5];
-	float					xyzrv2[5];
+	float					axis[3];	// Used for rotations
+	vector<XObjKey>			keyframes;
 };	
 
 struct	XObjCmd8 {
