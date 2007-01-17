@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D622A9960AEA91C700035F64 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */; };
+		D6726CD70AEE476700E2668E /* obj_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6726CD60AEE476700E2668E /* obj_model.cpp */; };
+		D6726E780AEE811400E2668E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6726E770AEE811400E2668E /* OpenGL.framework */; };
+		D6B331FD0B00CBFC001D7CCD /* ac_utils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F70B00CBFC001D7CCD /* ac_utils.h */; };
+		D6B331FE0B00CBFC001D7CCD /* bitmap_match.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F80B00CBFC001D7CCD /* bitmap_match.h */; };
+		D6B331FF0B00CBFC001D7CCD /* obj_radius.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F90B00CBFC001D7CCD /* obj_radius.h */; };
+		D6B332000B00CBFC001D7CCD /* obj_tools.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331FA0B00CBFC001D7CCD /* obj_tools.h */; };
+		D6B332010B00CBFC001D7CCD /* obj8_export.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331FB0B00CBFC001D7CCD /* obj8_export.h */; };
+		D6B332020B00CBFC001D7CCD /* obj8_import.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331FC0B00CBFC001D7CCD /* obj8_import.h */; };
+		D6B332050B00CC0E001D7CCD /* tcl_utils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B332030B00CC0E001D7CCD /* tcl_utils.h */; };
+		D6B332060B00CC0E001D7CCD /* tcl_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B332040B00CC0E001D7CCD /* tcl_utils.cpp */; };
+		D6B332890B00D45C001D7CCD /* obj_editor.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B332870B00D45C001D7CCD /* obj_editor.h */; };
+		D6B3328A0B00D45C001D7CCD /* obj_editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B332880B00D45C001D7CCD /* obj_editor.cpp */; };
+		D6B334C20B00E203001D7CCD /* Tcl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6B334C10B00E203001D7CCD /* Tcl.framework */; };
 		D6CD2501098F95D900B525DA /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */; };
 		D6CD2502098F95D900B525DA /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84C098E96D30061BE4C /* ObjPointPool.cpp */; };
 		D6CD2503098F95D900B525DA /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */; };
@@ -19,10 +33,55 @@
 		D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA779098E92980061BE4C /* obj8_export.c */; };
 		D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77A098E92980061BE4C /* obj8_import.c */; };
 		D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */ = {isa = PBXBuildFile; fileRef = D6DEA77B098E92980061BE4C /* xp_plugin.c */; };
-		D6F0AEA80A4AD19C00E9C6D4 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */; };
+		D6D287100B3881A100AC9899 /* obj_model.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6726CD50AEE476700E2668E /* obj_model.h */; };
+		D6D287110B3881A300AC9899 /* prefs.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */; };
+		D6ED20B50B0254850010DDDC /* obj_anim.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6ED20B30B0254840010DDDC /* obj_anim.h */; };
+		D6ED20B60B0254850010DDDC /* obj_anim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED20B40B0254840010DDDC /* obj_anim.cpp */; };
+		D6ED24720B03675D0010DDDC /* obj_update.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6ED24700B03675D0010DDDC /* obj_update.h */; };
+		D6ED24730B03675D0010DDDC /* obj_update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED24710B03675D0010DDDC /* obj_update.cpp */; };
+		D6FB81300AFF76DD004C1796 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		D6FB81270AFF76B4004C1796 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /Applications/ac3dmac/plugins;
+			dstSubfolderSpec = 0;
+			files = (
+				D6FB81300AFF76DD004C1796 /* XPlaneSupport.tcl in CopyFiles */,
+				D6B331FD0B00CBFC001D7CCD /* ac_utils.h in CopyFiles */,
+				D6B331FE0B00CBFC001D7CCD /* bitmap_match.h in CopyFiles */,
+				D6B331FF0B00CBFC001D7CCD /* obj_radius.h in CopyFiles */,
+				D6B332000B00CBFC001D7CCD /* obj_tools.h in CopyFiles */,
+				D6B332010B00CBFC001D7CCD /* obj8_export.h in CopyFiles */,
+				D6B332020B00CBFC001D7CCD /* obj8_import.h in CopyFiles */,
+				D6B332050B00CC0E001D7CCD /* tcl_utils.h in CopyFiles */,
+				D6B332890B00D45C001D7CCD /* obj_editor.h in CopyFiles */,
+				D6ED20B50B0254850010DDDC /* obj_anim.h in CopyFiles */,
+				D6ED24720B03675D0010DDDC /* obj_update.h in CopyFiles */,
+				D6D287100B3881A100AC9899 /* obj_model.h in CopyFiles */,
+				D6D287110B3881A300AC9899 /* prefs.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		D6726CD50AEE476700E2668E /* obj_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_model.h; sourceTree = "<group>"; };
+		D6726CD60AEE476700E2668E /* obj_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_model.cpp; sourceTree = "<group>"; };
+		D6726E770AEE811400E2668E /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		D6B331F70B00CBFC001D7CCD /* ac_utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ac_utils.h; sourceTree = "<group>"; };
+		D6B331F80B00CBFC001D7CCD /* bitmap_match.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = bitmap_match.h; sourceTree = "<group>"; };
+		D6B331F90B00CBFC001D7CCD /* obj_radius.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj_radius.h; sourceTree = "<group>"; };
+		D6B331FA0B00CBFC001D7CCD /* obj_tools.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj_tools.h; sourceTree = "<group>"; };
+		D6B331FB0B00CBFC001D7CCD /* obj8_export.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj8_export.h; sourceTree = "<group>"; };
+		D6B331FC0B00CBFC001D7CCD /* obj8_import.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj8_import.h; sourceTree = "<group>"; };
+		D6B332030B00CC0E001D7CCD /* tcl_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcl_utils.h; sourceTree = "<group>"; };
+		D6B332040B00CC0E001D7CCD /* tcl_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tcl_utils.cpp; sourceTree = "<group>"; };
+		D6B332870B00D45C001D7CCD /* obj_editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_editor.h; sourceTree = "<group>"; };
+		D6B332880B00D45C001D7CCD /* obj_editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_editor.cpp; sourceTree = "<group>"; };
+		D6B334C10B00E203001D7CCD /* Tcl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Tcl.framework; path = /System/Library/Frameworks/Tcl.framework; sourceTree = "<absolute>"; };
 		D6CD245F098EB16400B525DA /* XPlaneSupportMac.p.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = XPlaneSupportMac.p.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6CD2460098EB16400B525DA /* XPExporter-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "XPExporter-Info.plist"; sourceTree = "<group>"; };
 		D6DEA775098E92980061BE4C /* ac_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = ac_utils.c; sourceTree = "<group>"; };
@@ -37,8 +96,13 @@
 		D6DEA84D098E96D30061BE4C /* XObjBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjBuilder.cpp; path = src/Obj/XObjBuilder.cpp; sourceTree = SOURCE_ROOT; };
 		D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjDefs.cpp; path = src/Obj/XObjDefs.cpp; sourceTree = SOURCE_ROOT; };
 		D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = XObjReadWrite.cpp; path = src/Obj/XObjReadWrite.cpp; sourceTree = SOURCE_ROOT; };
+		D6ED20B30B0254840010DDDC /* obj_anim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_anim.h; sourceTree = "<group>"; };
+		D6ED20B40B0254840010DDDC /* obj_anim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_anim.cpp; sourceTree = "<group>"; };
+		D6ED24700B03675D0010DDDC /* obj_update.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_update.h; sourceTree = "<group>"; };
+		D6ED24710B03675D0010DDDC /* obj_update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_update.cpp; sourceTree = "<group>"; };
 		D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefs.h; sourceTree = "<group>"; };
 		D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = prefs.cpp; sourceTree = "<group>"; };
+		D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +110,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6726E780AEE811400E2668E /* OpenGL.framework in Frameworks */,
+				D6B334C20B00E203001D7CCD /* Tcl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +131,8 @@
 		08FB7795FE84155DC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				D6B334C10B00E203001D7CCD /* Tcl.framework */,
+				D6726E770AEE811400E2668E /* OpenGL.framework */,
 				D6DEA84A098E96AE0061BE4C /* OBJ */,
 				D6DEA849098E96A20061BE4C /* AC3DPlugins */,
 			);
@@ -82,15 +150,32 @@
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
 			isa = PBXGroup;
 			children = (
+				D6B331F70B00CBFC001D7CCD /* ac_utils.h */,
 				D6DEA775098E92980061BE4C /* ac_utils.c */,
+				D6B331F80B00CBFC001D7CCD /* bitmap_match.h */,
 				D6DEA776098E92980061BE4C /* bitmap_match.c */,
+				D6B331F90B00CBFC001D7CCD /* obj_radius.h */,
 				D6DEA777098E92980061BE4C /* obj_radius.c */,
+				D6B331FA0B00CBFC001D7CCD /* obj_tools.h */,
 				D6DEA778098E92980061BE4C /* obj_tools.c */,
+				D6B331FB0B00CBFC001D7CCD /* obj8_export.h */,
 				D6DEA779098E92980061BE4C /* obj8_export.c */,
+				D6B331FC0B00CBFC001D7CCD /* obj8_import.h */,
 				D6DEA77A098E92980061BE4C /* obj8_import.c */,
 				D6DEA77B098E92980061BE4C /* xp_plugin.c */,
 				D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */,
 				D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */,
+				D6726CD50AEE476700E2668E /* obj_model.h */,
+				D6726CD60AEE476700E2668E /* obj_model.cpp */,
+				D6B332030B00CC0E001D7CCD /* tcl_utils.h */,
+				D6B332040B00CC0E001D7CCD /* tcl_utils.cpp */,
+				D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */,
+				D6B332870B00D45C001D7CCD /* obj_editor.h */,
+				D6B332880B00D45C001D7CCD /* obj_editor.cpp */,
+				D6ED20B30B0254840010DDDC /* obj_anim.h */,
+				D6ED20B40B0254840010DDDC /* obj_anim.cpp */,
+				D6ED24700B03675D0010DDDC /* obj_update.h */,
+				D6ED24710B03675D0010DDDC /* obj_update.cpp */,
 			);
 			name = AC3DPlugins;
 			path = src/AC3DPlugins;
@@ -118,6 +203,7 @@
 				D6CD245C098EB16400B525DA /* Sources */,
 				D6CD245D098EB16400B525DA /* Frameworks */,
 				D6CD246F098EB73200B525DA /* ShellScript */,
+				D6FB81270AFF76B4004C1796 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -155,7 +241,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp $TARGET_BUILD_DIR/$EXECUTABLE_PATH /Applications/ac3dmac/plugins/\n";
+			shellScript = "install_name_tool -change /System/Library/Frameworks/Tcl.framework/Versions/8.4/Tcl @executable_path/../Frameworks/Tcl.framework/Versions/8.4/Tcl $TARGET_BUILD_DIR/$EXECUTABLE_PATH\ncp $TARGET_BUILD_DIR/$EXECUTABLE_PATH /Applications/ac3dmac/plugins/\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -176,7 +262,12 @@
 				D6CD250C098F95DF00B525DA /* obj8_export.c in Sources */,
 				D6CD250D098F95DF00B525DA /* obj8_import.c in Sources */,
 				D6CD250E098F95DF00B525DA /* xp_plugin.c in Sources */,
-				D6F0AEA80A4AD19C00E9C6D4 /* prefs.cpp in Sources */,
+				D622A9960AEA91C700035F64 /* prefs.cpp in Sources */,
+				D6726CD70AEE476700E2668E /* obj_model.cpp in Sources */,
+				D6B332060B00CC0E001D7CCD /* tcl_utils.cpp in Sources */,
+				D6B3328A0B00D45C001D7CCD /* obj_editor.cpp in Sources */,
+				D6ED20B60B0254850010DDDC /* obj_anim.cpp in Sources */,
+				D6ED24730B03675D0010DDDC /* obj_update.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +280,7 @@
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				EXECUTABLE_EXTENSION = p;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"APL=1",
 					"DEV=1",
@@ -200,6 +292,7 @@
 				MACH_O_TYPE = mh_bundle;
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}.p";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "src/AC3DPlugins src/Obj src/Utils $(USER_HEADER_SEARCH_PATHS)";
 			};
 			name = Debug;
@@ -207,6 +300,10 @@
 		1DEB915008733D8E0010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				EXECUTABLE_EXTENSION = p;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
@@ -221,6 +318,7 @@
 				MACH_O_TYPE = mh_bundle;
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}.p";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "src/AC3DPlugins src/Obj src/Utils $(USER_HEADER_SEARCH_PATHS)";
 			};
 			name = Release;
