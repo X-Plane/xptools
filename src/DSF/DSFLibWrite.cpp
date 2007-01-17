@@ -996,6 +996,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 				if (primIter->type == dsf_Tri)			WriteUInt8(fi, dsf_Cmd_TriangleCrossPool);
 				if (primIter->type == dsf_TriStrip)		WriteUInt8(fi, dsf_Cmd_TriangleStripCrossPool);
 				if (primIter->type == dsf_TriFan)		WriteUInt8(fi, dsf_Cmd_TriangleFanCrossPool);
+				if (primIter->indices.size() > 255)
+					Assert(!"WARNING: Overflow on cross-pool tri command.");	//, type = %d, %d indices\n", primIter->type, primIter->indices.size());
 				WriteUInt8(fi, primIter->indices.size());
 				for (n = 0; n < primIter->indices.size(); ++n)
 				{
