@@ -33,6 +33,7 @@
 
 #define __MSL_LONGLONG_SUPPORT__
 
+/*
 #if APL
 #define CRLF "\n"
 #elif IBM
@@ -58,3 +59,6 @@
 #include <math.h>
 using namespace std;
 using namespace Metrowerks;
+*/
+
+#include "XDefs.h"

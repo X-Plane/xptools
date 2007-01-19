@@ -286,7 +286,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		south >= 90.0 || south < -90.0 ||
 		north > 90.0 || north <= -90.0) 
 	{
-		fprintf(stderr, "ERROR: the DSF boundaries are out of range.  This can indicate a missing or corrupt sim/dimension properties.\n");
+		fprintf(stdout, "ERROR: the DSF boundaries are out of range.  This can indicate a missing or corrupt sim/dimension properties.\n");
 		return false;
 	}
 

@@ -2,6 +2,7 @@
 #include "EnvParser.h"
 #include "EnvDefs.h"
 #include "Persistence.h"
+#include <math.h>
 
 
 bool ENV2Overlay(const char * inFileName, const char * inDSF)
@@ -10,7 +11,7 @@ bool ENV2Overlay(const char * inFileName, const char * inDSF)
 	
 	if (ReadEnvFile(inFileName) != 0) 
 	{
-		fprintf(stderr, "ERROR: ENV file read failed for %s\n", inFileName);
+		fprintf(stdout, "ERROR: ENV file read failed for %s\n", inFileName);
 		return false;
 	}
 	

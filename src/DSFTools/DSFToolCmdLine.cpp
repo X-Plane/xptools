@@ -23,10 +23,12 @@
 #include <stdio.h>
 #include "AssertUtils.h"
 
+FILE * err_fi = stdout;
+
 void AssertShellBail(const char * condition, const char * file, int line)
 {
-	fprintf(stderr,"ERROR: %s\n", condition);
-	fprintf(stderr,"(%s, %d.)\n", file, line);
+	fprintf(err_fi,"ERROR: %s\n", condition);
+	fprintf(err_fi,"(%s, %d.)\n", file, line);
 	exit(1);
 }
 
@@ -38,17 +40,6 @@ int main(int argc, char * argv[])
 {
 	InstallDebugAssertHandler(AssertShellBail);
 	InstallAssertHandler(AssertShellBail);
-
-
-/*
-	if (argc < 2)
-	{
-		char * args[] = { "", "-text2dsf", "/code/XPTools/XPTools Mac/test.txt", "test.dsf" };
-		argv = args;
-		argc = sizeof(args) / sizeof(char *);
-	}
-*/	
-
 
 	if (argc < 2) goto help;
 	
@@ -67,7 +58,7 @@ int main(int argc, char * argv[])
 			if (ENV2Overlay(f1, f2))
 				printf("Converted %s to %s\n",f1, f2);
 			else
-				{ fprintf(stderr,"ERROR: Error converting %s to %s\n", f1, f2); exit(1); }
+				{ fprintf(err_fi,"ERROR: Error converting %s to %s\n", f1, f2); exit(1); }
 		}
 
 
@@ -80,11 +71,14 @@ int main(int argc, char * argv[])
 			if (n >= argc) goto help;
 			const char * f2 = argv[n];
 			
-			fprintf(stderr,"Converting %s from DSF to text as %s\n", f1, f2);
+			if (strcmp(f2,"-")==0)			// If we are directing the DSF text stream to stdout
+				err_fi=stderr;				// then put err msgs to stderr.
+			
+			fprintf(err_fi,"Converting %s from DSF to text as %s\n", f1, f2);
 			if (DSF2Text(f1, f2))
-				fprintf(stderr,"Converted %s to %s\n",f1, f2);
+				fprintf(err_fi,"Converted %s to %s\n",f1, f2);
 			else
-				{ fprintf(stderr,"ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
+				{ fprintf(err_fi,"ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}
 		
 		if (!strcmp(argv[n], "-text2dsf"))
@@ -100,14 +94,14 @@ int main(int argc, char * argv[])
 			if (Text2DSF(f1, f2))
 				printf("Converted %s to %s\n",f1, f2);
 			else
-				{ fprintf(stderr, "ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
+				{ fprintf(err_fi, "ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}		
 	}
 	
 	return 0;
 help:
-	fprintf(stderr, "Usage: dsftool -dsf2text [dsffile] [textfile]\n");
-	fprintf(stderr, "		dsftool -text2dsf [textfile] [dsffile]\n");
-	fprintf(stderr, "       dsftool -env2overlay [envfile] [dsffile]\n");
+	fprintf(err_fi, "Usage: dsftool -dsf2text [dsffile] [textfile]\n");
+	fprintf(err_fi, "		dsftool -text2dsf [textfile] [dsffile]\n");
+	fprintf(err_fi, "       dsftool -env2overlay [envfile] [dsffile]\n");
 	return 1;
 }
