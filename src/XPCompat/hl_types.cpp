@@ -22,7 +22,11 @@
  */
 #include "hl_types.h"
 #if APL && !defined(__MACHO__)
+#if defined(__MWERKS__)
 #include <Files.h>
+#else
+#include <Carbon/Carbon.h>
+#endif
 #endif
 
 #include "PlatformUtils.h"
