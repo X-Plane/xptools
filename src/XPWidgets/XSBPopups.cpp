@@ -30,7 +30,11 @@
 #include "XPWidgets.h"
 #include "XPLMUtilities.h"
 #include "XPWidgetUtils.h"
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl.h>
+#endif
 
 /************************************************************************
  *  X-PLANE UI INFRASTRUCTURE CODE

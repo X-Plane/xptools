@@ -22,9 +22,16 @@
  */
 #include "PlatformUtils.h"
 
-#define _STDINT_H_
 
-#include <Carbon/Carbon.h>
+#if __MWERKS__
+	#if defined(__MACH__)
+		#define _STDINT_H_
+	#endif
+	#include <Carbon.h>	
+#else
+	#define _STDINT_H_
+	#include <Carbon/Carbon.h>
+#endif
 #include <string.h>
 
 static	OSErr		FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname);

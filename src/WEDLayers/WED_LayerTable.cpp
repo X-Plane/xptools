@@ -5,6 +5,12 @@
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 enum {
 	col_Visible = 0,
 	col_Export,

@@ -68,7 +68,7 @@ template <class	T, class F>
 void WriteVector(IOWriter& writer, const T& v, F func)
 {
 	writer.WriteInt(v.size());
-	for (T::const_iterator i = v.begin(); i != v.end(); ++i)
+	for (typename T::const_iterator i = v.begin(); i != v.end(); ++i)
 	{
 		func(writer, *i);
 	}
@@ -82,7 +82,7 @@ void ReadVector(IOReader& reader, T& v, F func, const TokenConversionMap& c)
 	reader.ReadInt(counter);
 	while (counter--)
 	{
-		T::value_type item;
+		typename T::value_type item;
 		func(reader, item, c);
 		v.push_back(item);
 	}

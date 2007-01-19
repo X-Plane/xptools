@@ -20,37 +20,13 @@
  * THE SOFTWARE.
  *
  */
-#include "TIGERProcess.h"
-#include "TIGERTypes.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
-#include "XUtils.h"
+#ifndef MACSPEC_H
+#define MACSPEC_H
 
-// For maps, the hash key for an env is lat * 360 + lon.
+struct FSSpec;
 
-void	ReadTigerIndex(const char * inFileName, TigerMap& outMap)
-{
-	outMap.clear();
-	for (StTextFileScanner	scanner(inFileName, true); !scanner.done(); scanner.next())
-	{
-		string	line = scanner.get();
-		char	fname[32];
-		TigerAreaInfo_t	area;
-		
-		if (sscanf(line.c_str(), "%s %f %f %f %f",
-			fname, &area.lat_min, &area.lat_max, &area.lon_min, &area.lon_max) == 5)
-		{
-			area.name = fname;
-			int	yMin = floor(area.lat_min);
-			int yMax = ceil(area.lat_max);
-			int xMin = floor(area.lon_min);
-			int xMax = ceil(area.lon_max);
-			
-			for (int y = yMin; y < yMax; ++y)
-			for (int x = xMin; x < xMax; ++x)
-			{
-				long hash = y * 360 + x;
-				outMap[hash].push_back(area);
-			}
-		}
-	}
-}
+int		GetForkSizes(const char * inPath, long& outDF, long& outRF);
+bool	FilePathToFSSpec(const char * inPath, FSSpec& outSpec);
+
+#endif
+

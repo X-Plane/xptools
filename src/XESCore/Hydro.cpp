@@ -17,6 +17,7 @@
 #include "CompGeomUtils.h"
 #include "PlatformUtils.h"
 #if APL && !defined(__MACH__)
+#define __DEBUGGING__
 #include "XUtils.h"
 #endif
 #define HYDRO_BORDER	"Hydro"
@@ -91,12 +92,15 @@ struct DemPt {
 	}
 };
 
+HASH_MAP_NAMESPACE_START
 template <>
 struct hash<DemPt>
-	: _STD::unary_function<DemPt, _CSTD::size_t>
+	HASH_PARENT(DemPt, std::size_t)
 {
-	_CSTD::size_t operator()(const DemPt& key) const { return key.x + (key.y << 16); }
+	std::size_t operator()(const DemPt& key) const { return key.x + (key.y << 16); }
 };
+HASH_MAP_NAMESPACE_END
+
 
 typedef set<DemPt>				DemPtSet;
 typedef multimap<float, DemPt>	DemPtMap;

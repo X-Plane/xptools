@@ -23,6 +23,7 @@
 #include "PolyRasterUtils.h"
 #include <stdio.h>
 #include <algorithm>
+#include <math.h>
 
 #define DEBUG_RASTERIZER 0
 

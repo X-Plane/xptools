@@ -27,14 +27,19 @@
 
 #if BIG
 	#if APL
-
-	#include <libkern/OSByteOrder.h>
-
-		#define SWAP16(x) (OSSwapConstInt16(x))
-		#define SWAP32(x) (OSSwapConstInt32(x))
-		#define SWAP64(x) (OSSwapConstInt64(x))
+		#if defined (__MACH__)
+			#include <libkern/OSByteOrder.h>
+			#define SWAP16(x) (OSSwapConstInt16(x))
+			#define SWAP32(x) (OSSwapConstInt32(x))
+			#define SWAP64(x) (OSSwapConstInt64(x))
+		#else
+			#include <Endian.h>
+			#define SWAP16(x) (Endian16_Swap(x))
+			#define SWAP32(x) (Endian32_Swap(x))
+			#define SWAP64(x) (Endian64_Swap(x))
+		#endif
 	#else
-		#error need big endian swapping for non-MAc OS!
+		#error we do not have non-apple big endian swapping routines.
 	#endif
 #elif LIL
 	#define SWAP16(x) (x)

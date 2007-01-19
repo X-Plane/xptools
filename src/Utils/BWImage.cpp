@@ -24,7 +24,11 @@
 //#include "CGALTypes.h"
 #include "PolyRasterUtils.h"
 #include "XPLMGraphics.h"
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl.h>
+#endif
 #if APL && DEV && !defined(__MACH__)
 #include <agl.h>
 #endif

@@ -2,7 +2,11 @@
 #define GUI_APPLICATION_H
 
 #if APL
-#include <Carbon/Carbon.h>
+	#if defined(__MWERKS__)
+		#include <Carbon.h>
+	#else
+		#include <Carbon/Carbon.h>
+	#endif
 #endif
 
 #if APL

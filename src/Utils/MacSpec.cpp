@@ -22,9 +22,9 @@
  */
 #include "MacSpec.h"
 #if defined(__MWERKS__)
-#include <Files.h>
+	#include <Files.h>
 #else
-#include <Carbon/Carbon.h>
+	#include <Carbon/Carbon.h>
 #endif
 #include <string>
 using std::string;

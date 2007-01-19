@@ -71,7 +71,14 @@ double	RandRangeBias(double mmin, double mmax, double biasRatio, double randomAm
 
 #if APL && !defined(XUTILS_EXCLUDE_MAC_CRAP)
 
-#include <Carbon/Carbon.h>
+#if __MWERKS__
+	#if defined(__MACH__)
+		#define _STDINT_H_
+	#endif
+	#include <Carbon.h>
+#else
+	#include <Carbon/Carbon.h>
+#endif
 
 void	AppPath(string& outString);
 OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder);

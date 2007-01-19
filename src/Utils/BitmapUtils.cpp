@@ -56,8 +56,9 @@
 
 
 #if IBM
-#define XMD_H
-#define HAVE_BOOLEAN
+	#include <windows.h>
+	#define XMD_H
+	#define HAVE_BOOLEAN
 #endif
 
 // Note: the std jpeg lib does not have any #ifdef C++ name
@@ -65,20 +66,26 @@
 // add it ourself.  Gross, but perhaps better than hacking up
 // libjpeg??
 
-#if !defined(__MACH__)
+#if USE_JPEG
 extern "C" {
-#include <jpeglib.h>
-#include <jerror.h>
+	#include <jpeglib.h>
+	#include <jerror.h>
 }
-
-#if APL
-#include <Carbon.h>
 #endif
 
+
+#if APL
+	#if !defined(__MWERKS__)
+		#include <Carbon/Carbon.h>
+	#else
+		#include <Carbon.h>
+	#endif
 #endif
 
 #include <png.h>
+#if USE_TIF
 #include <tiffio.h>
+#endif
 
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
@@ -674,7 +681,7 @@ int	ConvertAlphaToBitmap(
 
 #pragma mark -
 
-#if !defined(__MACH__)
+#if USE_JPEG
 
 /*
  * JPEG in-memory source manager
@@ -690,7 +697,7 @@ typedef struct {
 	JOCTET * 	buffer;				// Buffer start and size
 	int			len;				//
 } mem_source_mgr;
-typedef struct mem_source_mgr *  mem_src_ptr;
+typedef mem_source_mgr *  mem_src_ptr;
 
 METHODDEF(void) mem_init_source (j_decompress_ptr cinfo)
 {
@@ -881,7 +888,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 	}
 }
 
-#endif /* !defined(__MACH_) */
+#endif /* USE_JPEG */
 
 
 void my_error  (png_structp,png_const_charp err){}
@@ -1090,6 +1097,8 @@ bail:
     
 }
 
+#if USE_TIF
+
 static	void	IgnoreTiffWarnings(const char *, const char*, va_list)
 {
 }
@@ -1153,3 +1162,4 @@ bail:
 	return -1;    
 }
 
+#endif

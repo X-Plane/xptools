@@ -102,6 +102,23 @@ void			TextScanner_TokenizeLine(MFTextScanner * inScanner, const char * inDelim,
 // Return the number of processed arguments, limited by eitiher format or number of tokens in the line.
 int				TextScanner_FormatScan(MFTextScanner * inScanner, const char * fmt, ...);
 
+/******************************************************************************
+ * TEXT PARSER
+ ******************************************************************************/
+struct	MFScanner {
+	const char *	begin;
+	const char *	cur;
+	const char *	end;
+};
+
+void	MFS_init(MFScanner * scanner, MFMemFile * inFile);
+void	MFS_init(MFScanner * scanner, const char * begin, const char * end);
+int		MFS_done(MFScanner * scanner);
+void	MFS_string_eol(MFScanner * scanner, string * out_string);
+void	MFS_string(MFScanner * scanner, string * out_string);
+int		MFS_string_match(MFScanner * s, const char * input, int eol_ok);
+int		MFS_int(MFScanner * scanner);
+double	MFS_double(MFScanner * scanner);
 
 /******************************************************************************
  * UTILITIES

@@ -21,6 +21,7 @@
  *
  */
 #include "XChunkyFileUtils.h"
+#include "AssertUtils.h"
 #include <vector>
 #include <string.h>
 
@@ -454,6 +455,7 @@ const char *	XAtomStringTable::GetNextString(const char * inString)
 	if (inString == NULL) return NULL;
 	int len = strlen(inString);
 	const char * str = inString + len + 1;
+	DebugAssert(str <= end);
 	if (str == end)
 		return NULL;
 	return str;

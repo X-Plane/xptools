@@ -50,14 +50,12 @@ bool	ReadAirportRawElevations(const char * inFile)
 	MFTextScanner *	s = NULL;
 	int n = 0;
 	map<string, double>	db_lat, db_lon, db_elev;
+	float	elev = -32768.0;	
+	char	last_icao[10] = { 0 };
 
 	f = MemFile_Open(inFile);		if (f == NULL) goto bail;
 	s = TextScanner_Open(f);		if (s == NULL) goto bail;
 		
-	float	elev = -32768.0;	
-
-	char	last_icao[10] = { 0 };
-
 	while (!TextScanner_IsDone(s))
 	{
 		RwyInfo	info;

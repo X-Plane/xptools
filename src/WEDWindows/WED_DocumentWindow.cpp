@@ -1,5 +1,12 @@
-#include "WED_DocumentWindow.h"
 #include "WED_Document.h"
+#include "WED_Progress.h"
+#include "XESIO.h"
+#include "AptIO.h"
+#include "MapAlgs.h"
+#include "WED_ObjectPlacements.h"
+#include "WED_Messages.h"
+#include "WED_DocumentWindow.h"
+
 #include "GUI_ScrollerPane.h"
 #include "GUI_Splitter.h"
 #include "GUI_Table.h"

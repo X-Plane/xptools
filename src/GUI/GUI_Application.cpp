@@ -6,7 +6,11 @@ vector<ACCEL>	gAccelTable;
 #endif
 
 #if APL
-#include <carbon/Carbon.h>
+	#if defined(__MWERKS__)
+		#include <Carbon.h>
+	#else
+		#include <Carbon/Carbon.h>
+	#endif
 #include "XUtils.h"
 
 

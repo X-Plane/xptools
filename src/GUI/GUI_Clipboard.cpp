@@ -1,7 +1,11 @@
 #include "GUI_Clipboard.h"
 
 #if APL
-#include <Carbon/Carbon.h>
+	#if defined(__MWERKS__)
+		#include <Carbon.h>
+	#else
+		#include <Carbon/Carbon.h>
+	#endif
 #elif IBM
 #include <Windows.h>
 #endif

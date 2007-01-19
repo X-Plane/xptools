@@ -110,12 +110,12 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 	if (last)
 	{
-		coords[0] = v_t->point().x;
-		coords[1] = v_t->point().y;
+		coords[0] = v_t->point().x();
+		coords[1] = v_t->point().y();
 		coords[2] = v_t->info().height;
 	} else {
-		coords[0] = v_s->point().x;
-		coords[1] = v_s->point().y;
+		coords[0] = v_s->point().x();
+		coords[1] = v_s->point().y();
 		coords[2] = v_s->info().height;
 	}
 	Vector3 nrml_s(0.0, 0.0, 0.0);
@@ -171,8 +171,8 @@ float GetParamConst(const GISFace * face, int e)
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 {
 	double lon, lat;
-	lon = (v_han->point().x);
-	lat = (v_han->point().y);
+	lon = CGAL::to_double(v_han->point().x());
+	lat = CGAL::to_double(v_han->point().y());
 	
 	
 	float ret = dem.value_linear(lon, lat);
@@ -292,8 +292,8 @@ double edge_len(const edge_wrapper& e)
 {
 	CDT::Vertex_handle	v_s = e.edge.first->vertex(CDT::ccw(e.edge.second));
 	CDT::Vertex_handle	v_t = e.edge.first->vertex(CDT:: cw(e.edge.second));
-	return LonLatDistMeters(v_s->point().x,v_s->point().y,
-									   v_t->point().x,v_t->point().y);
+	return LonLatDistMeters(v_s->point().x(),v_s->point().y(),
+									   v_t->point().x(),v_t->point().y());
 }
 
 bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
@@ -306,9 +306,9 @@ bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
 	
 	DebugAssert(e1t == e2s);
 	
-	Point2	p1(e1s->point().x,e1s->point().y);
-	Point2	p2(e1t->point().x,e1t->point().y);
-	Point2	p3(e2t->point().x,e2t->point().y);
+	Point2	p1(e1s->point().x(),e1s->point().y());
+	Point2	p2(e1t->point().x(),e1t->point().y());
+	Point2	p3(e2t->point().x(),e2t->point().y());
 	
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
@@ -326,9 +326,9 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 	
 	DebugAssert(e1t == e2s);
 	
-	Point2	p1(e1s->point().x,e1s->point().y);
-	Point2	p2(e1t->point().x,e1t->point().y);
-	Point2	p3(e2t->point().x,e2t->point().y);
+	Point2	p1(e1s->point().x(),e1s->point().y());
+	Point2	p2(e1t->point().x(),e1t->point().y());
+	Point2	p3(e2t->point().x(),e2t->point().y());
 	
 	Vector2	v1(p1,p2);
 	Vector2 v2(p2,p3);
@@ -386,8 +386,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	}
 
 	double		wave = (v_s->info().wave_height + v_t->info().wave_height) * 0.5;
-	double		len = LonLatDistMeters(v_s->point().x,v_s->point().y,
-									   v_t->point().x,v_t->point().y) + prev_len + next_len;
+	double		len = LonLatDistMeters(v_s->point().x(),v_s->point().y(),
+									   v_t->point().x(),v_t->point().y()) + prev_len + next_len;
 									   
 	double slope = tri->info().normal[2];
 	
@@ -399,8 +399,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 			wave <= gBeachInfoTable[i].max_sea &&
 			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
-			tri->vertex(0)->point().y >= gBeachInfoTable[i].min_lat && 
-			tri->vertex(0)->point().y <= gBeachInfoTable[i].max_lat &&
+			tri->vertex(0)->point().y() >= gBeachInfoTable[i].min_lat && 
+			tri->vertex(0)->point().y() <= gBeachInfoTable[i].max_lat &&
 			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
 			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
 			tri->info().debug_rain >= gBeachInfoTable[i].min_rain &&
@@ -501,17 +501,17 @@ struct	StNukeWriter {
 
 void 	CHECK_TRI(CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Vertex_handle c)
 {
-	if (a->point().x == b->point().x && a->point().y == b->point().y)
+	if (a->point().x() == b->point().x() && a->point().y() == b->point().y())
 	{
 		if (a == b)	fprintf(stderr, "Dupe point same handle"); else fprintf(stderr, "Dupe point, diff handle");
 		return;
 	}
-	if (a->point().x == c->point().x && a->point().y == c->point().y)
+	if (a->point().x() == c->point().x() && a->point().y() == c->point().y())
 	{
 		if (a == c)	fprintf(stderr, "Dupe point same handle"); else fprintf(stderr, "Dupe point, diff handle");
 		return;
 	}
-	if (b->point().x == c->point().x && b->point().y == c->point().y)
+	if (b->point().x() == c->point().x() && b->point().y() == c->point().y())
 	{
 		if (b == c)	fprintf(stderr, "Dupe point same handle"); else fprintf(stderr, "Dupe point, diff handle");
 		return;
@@ -642,7 +642,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 //	for (vert = inHiresMesh.finite_vertices_begin(); vert != inHiresMesh.finite_vertices_end(); ++vert)
 //	{
-//	 	vert->info().vege_density = inVegeDem.value_linear(vert->point().x, vert->point().y);
+//	 	vert->info().vege_density = inVegeDem.value_linear(vert->point().x(), vert->point().y());
 //	 	if (vert->info().vege_density > 1.0) vert->info().vege_density = 1.0;
 //	 	if (vert->info().vege_density < 0.0) vert->info().vege_density = 0.0;
 //	}
@@ -668,38 +668,38 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		fi->info().flag = 0;
 		
-		if (fi->vertex(0)->point().y >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y >= inLanduse.mNorth &&		
-			fi->vertex(2)->point().y >= inLanduse.mNorth)			continue;
+		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
+			fi->vertex(1)->point().y() >= inLanduse.mNorth &&		
+			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
 			
-		if (fi->vertex(0)->point().y <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y <= inLanduse.mSouth &&		
-			fi->vertex(2)->point().y <= inLanduse.mSouth)			continue;
+		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
+			fi->vertex(1)->point().y() <= inLanduse.mSouth &&		
+			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
 
-		if (fi->vertex(0)->point().x >= inLanduse.mEast &&
-			fi->vertex(1)->point().x >= inLanduse.mEast &&		
-			fi->vertex(2)->point().x >= inLanduse.mEast)			continue;
+		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
+			fi->vertex(1)->point().x() >= inLanduse.mEast &&		
+			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
 			
-		if (fi->vertex(0)->point().x <= inLanduse.mWest &&
-			fi->vertex(1)->point().x <= inLanduse.mWest &&		
-			fi->vertex(2)->point().x <= inLanduse.mWest)			continue;
+		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
+			fi->vertex(1)->point().x() <= inLanduse.mWest &&		
+			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
 			
 			
-		if (fi->vertex(0)->point().y == fi->vertex(1)->point().y &&
-			fi->vertex(0)->point().y == fi->vertex(2)->point().y)
+		if (fi->vertex(0)->point().y() == fi->vertex(1)->point().y() &&
+			fi->vertex(0)->point().y() == fi->vertex(2)->point().y())
 		{
 			printf("WARNING: Y-colinear triangle. skipping.\n");
 			continue;
 		}
-		if (fi->vertex(0)->point().x == fi->vertex(1)->point().x &&
-			fi->vertex(0)->point().x == fi->vertex(2)->point().x)
+		if (fi->vertex(0)->point().x() == fi->vertex(1)->point().x() &&
+			fi->vertex(0)->point().x() == fi->vertex(2)->point().x())
 		{
 			printf("WARNING: X-colinear triangle. skipping.\n");
 			continue;
 		}
 		
-		x = (fi->vertex(0)->point().x + fi->vertex(1)->point().x + fi->vertex(2)->point().x) / 3.0;
-		y = (fi->vertex(0)->point().y + fi->vertex(1)->point().y + fi->vertex(2)->point().y) / 3.0;
+		x = (fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x()) / 3.0;
+		y = (fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y()) / 3.0;
 		
 		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
 		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
@@ -711,9 +711,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (y == PATCH_DIM_HI) y = PATCH_DIM_HI-1;
 		if (x < 0 || y < 0 || x > PATCH_DIM_HI || y > PATCH_DIM_HI)
 			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y, 
-				fi->vertex(0)->point().x,fi->vertex(0)->point().y,
-				fi->vertex(1)->point().x,fi->vertex(1)->point().y,
-				fi->vertex(2)->point().x,fi->vertex(2)->point().y);
+				fi->vertex(0)->point().x(),fi->vertex(0)->point().y(),
+				fi->vertex(1)->point().x(),fi->vertex(1)->point().y(),
+				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
 		
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
@@ -729,24 +729,24 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 #if !NO_ORTHO
 	for (fi = inLoresMesh.finite_faces_begin(); fi != inLoresMesh.finite_faces_end(); ++fi)
 	{
-		if (fi->vertex(0)->point().y >= inLanduse.mNorth &&
-			fi->vertex(1)->point().y >= inLanduse.mNorth &&		
-			fi->vertex(2)->point().y >= inLanduse.mNorth)			continue;
+		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
+			fi->vertex(1)->point().y() >= inLanduse.mNorth &&		
+			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
 			
-		if (fi->vertex(0)->point().y <= inLanduse.mSouth &&
-			fi->vertex(1)->point().y <= inLanduse.mSouth &&		
-			fi->vertex(2)->point().y <= inLanduse.mSouth)			continue;
+		if (fi->vertex(0)->point().y() <= inLanduse.mSouth &&
+			fi->vertex(1)->point().y() <= inLanduse.mSouth &&		
+			fi->vertex(2)->point().y() <= inLanduse.mSouth)			continue;
 
-		if (fi->vertex(0)->point().x >= inLanduse.mEast &&
-			fi->vertex(1)->point().x >= inLanduse.mEast &&		
-			fi->vertex(2)->point().x >= inLanduse.mEast)			continue;
+		if (fi->vertex(0)->point().x() >= inLanduse.mEast &&
+			fi->vertex(1)->point().x() >= inLanduse.mEast &&		
+			fi->vertex(2)->point().x() >= inLanduse.mEast)			continue;
 			
-		if (fi->vertex(0)->point().x <= inLanduse.mWest &&
-			fi->vertex(1)->point().x <= inLanduse.mWest &&		
-			fi->vertex(2)->point().x <= inLanduse.mWest)			continue;
+		if (fi->vertex(0)->point().x() <= inLanduse.mWest &&
+			fi->vertex(1)->point().x() <= inLanduse.mWest &&		
+			fi->vertex(2)->point().x() <= inLanduse.mWest)			continue;
 
-		x = (fi->vertex(0)->point().x + fi->vertex(1)->point().x + fi->vertex(2)->point().x) / 3.0;
-		y = (fi->vertex(0)->point().y + fi->vertex(1)->point().y + fi->vertex(2)->point().y) / 3.0;
+		x = (fi->vertex(0)->point().x() + fi->vertex(1)->point().x() + fi->vertex(2)->point().x()) / 3.0;
+		y = (fi->vertex(0)->point().y() + fi->vertex(1)->point().y() + fi->vertex(2)->point().y()) / 3.0;
 		
 		x = (x - inLanduse.mWest) / (inLanduse.mEast - inLanduse.mWest);
 		y = (y - inLanduse.mSouth) / (inLanduse.mNorth - inLanduse.mSouth);
@@ -756,9 +756,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		
 		if (x < 0 || y < 0 || x >= PATCH_DIM_LO || y >= PATCH_DIM_LO)
 			fprintf(stderr, "Lores Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y, 
-				fi->vertex(0)->point().x,fi->vertex(0)->point().y,
-				fi->vertex(1)->point().x,fi->vertex(1)->point().y,
-				fi->vertex(2)->point().x,fi->vertex(2)->point().y);
+				fi->vertex(0)->point().x(),fi->vertex(0)->point().y(),
+				fi->vertex(1)->point().x(),fi->vertex(1)->point().y(),
+				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
 		
 		sLoResTris[(int) x + (int) y * PATCH_DIM_LO].push_back(fi);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
@@ -809,8 +809,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				++total_tri_fans;
 				total_tri_fan_pts += fan->faces.size();
 				cbs.BeginPrimitive_f(dsf_TriFan, writer);
-				coords8[0] = fan->center->point().x;
-				coords8[1] = fan->center->point().y;
+				coords8[0] = fan->center->point().x();
+				coords8[1] = fan->center->point().y();
 				coords8[2] = fan->center->info().height;
 				coords8[3] = fan->center->info().normal[0];
 				coords8[4] =-fan->center->info().normal[1];						
@@ -820,8 +820,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[4] <=  1.0);
 				cbs.AddPatchVertex_f(coords8, writer);						
 				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
-				coords8[0] = avert->point().x;
-				coords8[1] = avert->point().y;
+				coords8[0] = avert->point().x();
+				coords8[1] = avert->point().y();
 				coords8[2] = avert->info().height;
 				coords8[3] = avert->info().normal[0];
 				coords8[4] =-avert->info().normal[1];						
@@ -833,8 +833,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
 				{
 					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
-					coords8[0] = avert->point().x;
-					coords8[1] = avert->point().y;
+					coords8[0] = avert->point().x();
+					coords8[1] = avert->point().y();
 					coords8[2] = avert->info().height;
 					coords8[3] = avert->info().normal[0];
 					coords8[4] =-avert->info().normal[1];						
@@ -863,8 +863,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					f = fan_builder.GetNextRemainingTriangle();
 					for (v = 2; v >= 0; --v)
 					{
-						coords8[0] = f->vertex(v)->point().x;
-						coords8[1] = f->vertex(v)->point().y;
+						coords8[0] = f->vertex(v)->point().x();
+						coords8[1] = f->vertex(v)->point().y();
 						coords8[2] = f->vertex(v)->info().height;
 						coords8[3] = f->vertex(v)->info().normal[0];
 						coords8[4] =-f->vertex(v)->info().normal[1];
@@ -910,8 +910,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				++total_tri_fans;
 				total_tri_fan_pts += fan->faces.size();
 				cbs.BeginPrimitive_f(dsf_TriFan, writer);
-				coords8[0] = fan->center->point().x;
-				coords8[1] = fan->center->point().y;
+				coords8[0] = fan->center->point().x();
+				coords8[1] = fan->center->point().y();
 				coords8[2] = fan->center->info().height;
 				coords8[3] = fan->center->info().normal[0];
 				coords8[4] =-fan->center->info().normal[1];						
@@ -923,8 +923,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[4] <=  1.0);
 				cbs.AddPatchVertex_f(coords8, writer);						
 				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
-				coords8[0] = avert->point().x;
-				coords8[1] = avert->point().y;
+				coords8[0] = avert->point().x();
+				coords8[1] = avert->point().y();
 				coords8[2] = avert->info().height;
 				coords8[3] = avert->info().normal[0];
 				coords8[4] =-avert->info().normal[1];						
@@ -938,8 +938,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
 				{
 					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
-					coords8[0] = avert->point().x;
-					coords8[1] = avert->point().y;
+					coords8[0] = avert->point().x();
+					coords8[1] = avert->point().y();
 					coords8[2] = avert->info().height;
 					coords8[3] = avert->info().normal[0];
 					coords8[4] =-avert->info().normal[1];						
@@ -972,8 +972,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					CHECK_TRI(f->vertex(2),f->vertex(1),f->vertex(0));
 					for (v = 2; v >= 0; --v)
 					{
-						coords8[0] = f->vertex(v)->point().x;
-						coords8[1] = f->vertex(v)->point().y;
+						coords8[0] = f->vertex(v)->point().x();
+						coords8[1] = f->vertex(v)->point().y();
 						coords8[2] = f->vertex(v)->info().height;
 						coords8[3] = f->vertex(v)->info().normal[0];
 						coords8[4] =-f->vertex(v)->info().normal[1];						
@@ -1037,8 +1037,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					
 						for (vi = 2; vi >= 0 ; --vi)
 						{
-							coords8[0] = f->vertex(vi)->point().x;
-							coords8[1] = f->vertex(vi)->point().y;
+							coords8[0] = f->vertex(vi)->point().x();
+							coords8[1] = f->vertex(vi)->point().y();
 							coords8[2] = f->vertex(vi)->info().height;
 							coords8[3] = f->vertex(vi)->info().normal[0];
 							coords8[4] =-f->vertex(vi)->info().normal[1];

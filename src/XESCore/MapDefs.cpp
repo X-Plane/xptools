@@ -133,7 +133,7 @@ bool		GISFace::AreaMatch(const GISFace& rhs) const { return (mTerrainType == rhs
 void	GISFace::set_outer_ccb(GISHalfedge * outer) 			
 {
 	if (outer)
-		DebugAssert(mLinkPrev != NULL);
+		DebugAssert(mLinkPrev != NULL && mLinkPrev != NULL);
 	else
 		DebugAssert(mOuterCCB == NULL && mLinkPrev == NULL);
 	mOuterCCB = outer; 

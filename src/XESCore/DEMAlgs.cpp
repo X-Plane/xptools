@@ -39,7 +39,7 @@
 #include "MemFileUtils.h"
 #include "XESIO.h"
 
-extern DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
+DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
 
 struct	SnowLineInfo_t {
 	float	lat;

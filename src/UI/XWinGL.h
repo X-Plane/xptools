@@ -24,9 +24,13 @@
 #define XWINGL_H
 
 #if APL
-// hack for conflict with DebugAssert!
-#define __DEBUGGING__
-#include <AGL/AGL.h>
+	// hack for conflict with DebugAssert!
+	#define __DEBUGGING__
+	#if __MWERKS__
+		#include <AGL.h>
+	#else
+		#include <AGL/AGL.h>
+	#endif
 #endif
 #include "XWin.h"
 

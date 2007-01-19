@@ -10,7 +10,11 @@
 #define DEBUG_DRAWING_PHASES 0
 
 #if APL
+#if defined(__MWERKS__)
 #include <Events.h>
+#else 
+#include <Carbon/Carbon.h>
+#endif
 #endif
 
 #if IBM

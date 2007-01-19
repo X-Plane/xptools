@@ -36,7 +36,7 @@
 //					   int									inFloors,
 //					   XObj&							    outObject);
 
-//void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4]);
+void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4]);
 //void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4]);
 void 	OffsetObject(XObj& ioObj, double x, double y, double z);
 

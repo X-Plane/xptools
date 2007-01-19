@@ -26,8 +26,13 @@
 #include <ctype.h>
 #include <stdarg.h>
 #if APL
+#if defined(__MWERKS__)
 #include <CFURL.h>
 #include <CFString.h>
+#else
+#include <CoreFoundation/CoreFoundation.h>
+#include <Carbon/Carbon.h>
+#endif
 #endif
 /*
 	TODO - level two analysis
@@ -275,7 +280,7 @@ MFFileSet *		FileSet_Open(const char * inPath)
 		return ns;
 	} else {
 		FILE * fi = fopen(inPath, "rb");
-		char	sig[2];
+		unsigned char	sig[2];
 		if (fread(sig, 1, 2, fi) != 2)
 		{
 			fclose(fi);
@@ -1081,7 +1086,7 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 		// Read the first two bytes as a signature...that'll ID a ZIP vs. a 
 		FILE * fi = fopen(path, "rb");
 		if (!fi)	return mf_BadFile;
-		char	buf[2] = { 0 };
+		unsigned char	buf[2] = { 0 };
 		fread(buf, 2, 1, fi);
 		fclose(fi);
 		if (buf[0] == 'P' && buf[1] == 'K') return mf_ZipFile;
@@ -1131,7 +1136,11 @@ MF_GetDirectoryBulk(
 	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingMacRoman);
 	if (cfstr == NULL) return 0;
 	
-	cfurl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfstr, kCFURLHFSPathStyle, TRUE);
+	#if defined(__MWERKS__)
+		cfurl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfstr, kCFURLHFSPathStyle, TRUE);
+	#else
+ 		cfurl = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfstr, kCFURLPOSIXPathStyle, TRUE);
+	#endif
 	CFRelease(cfstr);
 	if (cfurl == NULL) return 0;
 
@@ -1247,4 +1256,86 @@ bail:
 	if (fi) fclose(fi);
 	if (gfi) gzclose(gfi);
 	return success;		
+}
+
+inline int iseoln(const char c) { return c == '\n' || c == '\r'; }
+
+void	MFS_init(MFScanner * scanner, MFMemFile * inFile)
+{
+	scanner->begin = scanner->cur = MemFile_GetBegin(inFile);
+					 scanner->end = MemFile_GetEnd(inFile);
+}
+
+void	MFS_init(MFScanner * scanner, const char * begin, const char * end)
+{
+	scanner->begin = scanner->cur = begin;
+					 scanner->end = end;
+}
+
+int		MFS_done(MFScanner * s)
+{
+	return (s->cur >= s->end);
+}
+
+
+void	MFS_string_eol(MFScanner * s, string * out_string)
+{
+	while(s->cur<s->end && isspace(*s->cur)						)s->cur++;	const char * c1=s->cur;
+	while(s->cur<s->end && !iseoln(*s->cur)						)s->cur++;	const char * c2=s->cur;	if(out_string)*out_string=string(c1,c2);
+	while(s->cur<s->end && (iseoln(*s->cur) || isspace(*s->cur)))s->cur++;
+}
+
+void	MFS_string(MFScanner * s, string * out_string)
+{
+	while(s->cur<s->end &&  isspace(*s->cur)						)s->cur++;	const char* c1=s->cur;
+	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur)	)s->cur++;	const char* c2=s->cur;	if(out_string)*out_string=string(c1,c2);
+}
+
+int		MFS_string_match(MFScanner * s, const char * input, int eol_ok)
+{
+	while(s->cur<s->end && isspace(*s->cur)			   ) s->cur++;				const char* c1=s->cur;
+	while(s->cur<s->end && *s->cur==*input && *input!=0){s->cur++; input++;}
+
+	if(*input==0 && 		  isspace(*s->cur))return 1;
+	if(*input==0 && eol_ok && iseoln(*s->cur) )return 1;
+	s->cur=c1;								   return 0;
+}
+
+int		MFS_int(MFScanner * s)
+{
+	while(s->cur<s->end && isspace(*s->cur))s->cur++;
+
+	xint sign_mult=1;
+	if(s->cur<s->end && *s->cur=='-'){sign_mult=-1;	s->cur++;}
+	if(s->cur<s->end && *s->cur=='+'){sign_mult= 1;	s->cur++;}
+
+	xint retval=0;
+	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur)){
+		retval=(10*retval)+(*s->cur)-'0';
+		s->cur++;}
+
+	return sign_mult * retval;
+}
+
+double	MFS_double(MFScanner * s)
+{
+	while(s->cur<s->end && isspace(*s->cur))s->cur++;
+
+	double	sign_mult	=1;
+	double	ret_val		=0;
+	int		decimals	=0;
+	int		has_decimal	=0;
+
+	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur))
+	{
+			 if(*s->cur=='-')sign_mult   =-1.0;
+		else if(*s->cur=='+')sign_mult   = 1.0;
+		else if(*s->cur=='.')has_decimal =1;
+		else{
+			ret_val=(10*ret_val)+(*s->cur)-'0';
+			if(has_decimal)decimals++;}
+
+		s->cur++;
+	}
+	return ret_val/pow((double)10,(double)decimals)*sign_mult;
 }

@@ -277,8 +277,9 @@ public:
 
 
 	const DEMGeo& operator[](int i) const {
+		static DEMGeo dummy;
 		hash_map<int, DEMGeo>::const_iterator f = this->find(i);
-		if (f == this->end()) return DEMGeo();
+		if (f == this->end()) return dummy;
 		return f->second;
 	}
  };

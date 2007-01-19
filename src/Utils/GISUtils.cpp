@@ -23,13 +23,17 @@
 #include "GISUtils.h"
 #include <geotiffio.h>
 #include <geo_normalize.h>
+#if defined(__MWERKS__)
 #include <libxtiff/xtiffio.h>
+#else
+#include <xtiffio.h>
+#endif
 #include <projects.h>
 #include <cpl_serv.h>
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
 
-static	bool	TransformTiffCorner(struct GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
+static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
 {
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )

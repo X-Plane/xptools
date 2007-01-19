@@ -35,3 +35,9 @@ int						inParam)
 {
 }
 
+void		WED_LayerPane::RecalcSize(void)
+{
+	#if !DEV
+		do this
+	#endif
+}

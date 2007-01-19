@@ -79,6 +79,7 @@ void	BuildTokenReverseMap(
 	inReverse.clear();
 	for (int i = 0; i < inTokens.size(); ++i)
 	{
+		printf("Token is: %s\n",inTokens[i].c_str());
 		inReverse.insert(TokenReverseMap::value_type(inTokens[i], i));
 	}
 }
@@ -121,7 +122,7 @@ void	ReadEnumsAtomFromFile(XAtomContainer& inAtomContainer, TokenMap& outTokens,
 		const char * i;
 		for (i = strings.GetFirstString(); i; i = strings.GetNextString(i))
 		{
-			outTokens.push_back(i);
+			outTokens.push_back(string(i));
 		}
 	}
 }

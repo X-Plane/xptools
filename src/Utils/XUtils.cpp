@@ -252,7 +252,11 @@ void		ExtractPath(string& ioPath)
 #if !defined(XUTILS_EXCLUDE_MAC_CRAP)
 
 #define _STDINT_H_
+#if __MWERKS__
+#include <Carbon.h>
+#else
 #include <Carbon/Carbon.h>
+#endif
 
 OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder)
 {

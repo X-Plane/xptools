@@ -21,7 +21,11 @@
  *
  */
 #include "UIUtils.h"
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl/gl.h>
+#endif
 
 DragHandleSet::DragHandleSet(
 							int 					inNumHandles, 

@@ -33,11 +33,17 @@
 #include "ObjTables.h"
 #include "GISUtils.h"
 #include "DEMTables.h"
+#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XESConstants.h"
-#if DEV
+#if DEV && OPENGL_MAP
 #include "WED_Selection.h"
 #endif
+
+#if !DEV
+	um, we should have a better tool than OPENGL_MAP
+#endif
+
 /*
 		
 	todo: 
@@ -388,7 +394,6 @@ bool VerticalOkay(vector<Polygon2>& bounds, const Point2& p, CoordTranslator& tr
 
 inline double remap_tval(double t)
 {
-//		return t;
 	t += 0.5;
 	if (t > 1.0) t -= 1.0;
 	return t;
@@ -1652,11 +1657,11 @@ void	InstantiateGTPolygonAll(
 	for (ComplexPolygonVector::const_iterator subarea = face->second.begin(); subarea != face->second.end(); ++subarea)
 	{
 		PROGRESS_CHECK(inProg, 0, 1, "Instantiating Face Objects...", ctr, inFaces.size(), 500)
-#if DEV
+#if DEV && OPENGL_MAP
 try {
 #endif
 		InstantiateGTPolygon(face->first, *subarea, inDEMs, inMesh);
-#if DEV
+#if DEV && OPENGL_MAP
 } catch (...) {
 		gFaceSelection.clear();
 		gFaceSelection.insert(face->first);

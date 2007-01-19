@@ -16,7 +16,11 @@
 #define	DEBUG_SHOW_ROWCOLUMNS	0
 
 #if APL
+#if defined(__MWERKS__)
 #include <Scrap.h>
+#else
+#include <Carbon/Carbon.h>
+#endif
 #endif
 
 

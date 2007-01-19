@@ -76,9 +76,18 @@ using namespace std;
 	using namespace std;				// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
 	using Metrowerks::hash_map;			// Pull hash map into the global domain too!
 	using Metrowerks::hash_multimap;
-	#define HASH_MAP_NAMESPACE Metrowerks
+	#define HASH_MAP_NAMESPACE_START namespace Metrowerks {
+	#define HASH_MAP_NAMESPACE_END }
+
+	#define HASH_PARENT(x,y) : std::unary_function<x,y>
 #endif
 #if __GNUC__							// gnuc is the x-code compiler
+
+	// Some code bases like CGAL think __powerpc__ is lower case - for some reason gcc has upper, so...
+//	#if defined(__POWERPC__) && !defined(__powerpc__)
+//		#define __powerpc__
+//	#endif
+	
 	#if APL
 		#include <ext/hash_map>
 		#include <ext/hash_fun.h>
@@ -91,6 +100,15 @@ using namespace std;
 				operator()(const std::string& __s) const
 				{ return __stl_hash_string(__s.c_str()); }
 			};
+			
+			template<>
+			struct hash<float>
+			{
+				size_t
+				operator()(const float& __s) const
+				{ return (size_t) __s; }
+			};
+			
 		}
 	#else
 		#include <hash_map>
@@ -99,7 +117,10 @@ using namespace std;
 	using namespace __gnu_cxx;			// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
 	using __gnu_cxx::hash_map;
 	using __gnu_cxx::hash;
-	#define HASH_MAP_NAMESPACE __gnu_cxx
+	#define HASH_MAP_NAMESPACE_START namespace __gnu_cxx {
+	#define HASH_MAP_NAMESPACE_END }
+	#define HASH_PARENT(x,y)
+	#define _MSL_THROW throw()
 #endif
 
 

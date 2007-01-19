@@ -25,6 +25,7 @@
 #include "ConfigSystem.h"
 #include "AssertUtils.h"
 #include "XESConstants.h"
+#include <math.h>
 
 NetFeatureInfoTable				gNetFeatures;
 NetEntityInfoTable				gNetEntities;

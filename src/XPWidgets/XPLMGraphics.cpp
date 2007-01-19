@@ -25,7 +25,7 @@
 #include "XPWidgetWin.h"
 
 #if APL
-#include <glut.h>
+#include <OpenGL/glext.h>
 #endif
 
 /*

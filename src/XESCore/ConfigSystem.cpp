@@ -30,6 +30,7 @@ using std::list;
 
 #include "PlatformUtils.h"
 #if APL && !defined(__MACH__)
+#define __DEBUGGING__
 #include "XUtils.h"
 #endif
 

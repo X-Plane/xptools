@@ -1,6 +1,7 @@
 #include "ogle.h"
 #include <vector>
 #include <ctype.h>
+#include <math.h>
 using std::vector;
 
 

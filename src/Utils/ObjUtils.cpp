@@ -21,6 +21,7 @@
  *
  */
 #include "ObjUtils.h"
+#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XObjReadWrite.h"
 #include "CompGeomUtils.h"
@@ -365,11 +366,10 @@ void	ApplyPrototype(const Prototype_t& 					inPrototype,
 
 #pragma mark -
 
-/*
 void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 {
-	xflt minxyz[3] = {  9.9e9, 9.9e9, 9.9e9 };
-	xflt maxxyz[3] = { -9.9e9,-9.9e9,-9.9e9 };
+	float minxyz[3] = {  9.9e9, 9.9e9, 9.9e9 };
+	float maxxyz[3] = { -9.9e9,-9.9e9,-9.9e9 };
 	
 	for (vector<XObjCmd>::const_iterator cmd = inObj.cmds.begin(); cmd != inObj.cmds.end(); ++cmd)
 	{
@@ -401,7 +401,7 @@ void	GetObjBoundingSphere(const XObj& inObj, float outSphere[4])
 				   (minxyz[1]-outSphere[1])*(minxyz[1]-outSphere[1])+
 				   (minxyz[2]-outSphere[2])*(minxyz[2]-outSphere[2]);
 }
-
+/*
 
 void	GetObjBoundingSphere8(const XObj8& inObj, float outSphere[4])
 {

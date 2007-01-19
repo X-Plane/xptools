@@ -21,16 +21,14 @@
  *
  */
 #include "XFileTwiddle.h"
-#if defined(__MWERKS__)
-#include <Files.h>
-#include <Script.h>
-#else
 #include <Carbon/Carbon.h>
-#endif
 #include <string.h>
 #include <stdlib.h>
 #include "MacSpec.h"
-#include "ErrMsg.h"
+#if !DEV
+what are we doing with this?
+#endif
+#include "../Installer/ErrMsg.h"
 #include <string>
 #include "PlatformUtils.h"
 

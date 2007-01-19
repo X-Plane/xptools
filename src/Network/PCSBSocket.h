@@ -34,10 +34,14 @@
 #define _PCSBSocket_h_
 
 #if IBM
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
+	#include <Winsock2.h>
+	#include <Ws2tcpip.h>
 #else
-#include <Carbon/Carbon.h>
+	#if defined(__MWERKS__)
+		#include <Carbon.h>
+	#else
+		#include <Carbon/Carbon.h>
+	#endif
 #endif
 
 class	PCSBSocket {

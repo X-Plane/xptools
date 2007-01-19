@@ -23,6 +23,8 @@
 #ifndef FAA_OBS_H
 #define FAA_OBS_H
 
+#include <math.h>
+
 class	Pmwx;
 
 struct	FAAObs_t {

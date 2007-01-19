@@ -31,7 +31,11 @@
  *
  */
 #include "PCSBSocket.h"
-#include <Carbon/Carbon.h>
+#if defined(__MWERKS__)
+	#include <Carbon.h>
+#else
+	#include <Carbon/Carbon.h>
+#endif
 
 // Use this to dump printfs out for the very low level open transport code!
 #define	LOG_MAC_SOCKETS	0

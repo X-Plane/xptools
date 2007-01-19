@@ -2,6 +2,12 @@
 #include "WED_ObjectPlacements.h"
 #include "GUI_GraphState.h"
 #include "WED_MapZoomer.h"
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 
 WED_ObjectLayers::WED_ObjectLayers(WED_ObjectRoot * root) : mRoot(root)
 {

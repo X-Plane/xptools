@@ -92,6 +92,8 @@ struct	ImageInfo {
  * in the imageInfo structure by loading the bitmap. */
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo);
 
+#if USE_JPEG
+
 /* Same as above, but uses IJG JPEG code. */
 int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageInfo);
 
@@ -99,11 +101,17 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
  * allows you to read the image yourself, or mem map it. */
 int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * outImageInfo);
 
+#endif
+
 /* Yada yada yada, libPng. */
 int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed);
 
+#if USE_TIF
+
 /* Yada yada yada, libtiff. */
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
+
+#endif
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file. 
  * Note that only 3-channel bitmaps may be written as .bmp files!! */

@@ -209,11 +209,41 @@ void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 	} // While loop on cmds
 }
 
-inline float rescale_float(float x1, float x2, float y1, float y2, float x)
+//inline float rescale_float(float x1, float x2, float y1, float y2, float x)
+//{
+//	if (x1 == x2) return y1;
+//	return y1 + ((y2 - y1) * (x - x1) / (x2 - x1));
+//}
+
+struct compare_key {
+	bool operator()(const XObjKey& lhs, float rhs) const {
+		return lhs.key < rhs;
+	}
+};
+
+inline float	extrap(float x1, float y1, float x2, float y2, float x)
 {
-	if (x1 == x2) return y1;
-	return y1 + ((y2 - y1) * (x - x1) / (x2 - x1));
+	if (x1 == x2) return (y1 + y2) * 0.5;
+	return (x-x1) * (y2 - y1) / (x2 - x1) + y1;
 }
+
+inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
+{
+	if (table.empty()) return 0.0f;
+	if (table.size() == 1) return table.front().v[n];
+	if (table.size() == 2) return extrap(table[0].key,table[0].v[n],table[1].key,table[1].v[n],input);
+	
+	vector<XObjKey>::const_iterator i = std::lower_bound(table.begin(), table.end(), input, compare_key());	
+	vector<XObjKey>::const_iterator p1, p2;
+	
+		 if (i == table.end())		{ p1 = i-2; p2 = i-1; }	
+	else if (i->key == input)		{ return i->v[n];	}
+	else if (i == table.begin())	{ p1 = i; p2 = i+1; }
+	else							{ p1 = i-1; p2 = i; }
+	
+	return extrap(p1->key,p1->v[n],p2->key,p2->v[n], input);
+}
+
 
 void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 {
@@ -305,17 +335,17 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 			case anim_End:		glPopMatrix(); CHECK_GL_ERR break;
 			case anim_Rotate:
 				anim = &obj.animation[cmd->idx_offset];
-				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->xyzrv1[4], anim->xyzrv2[4], ref);
-				v = rescale_float(anim->xyzrv1[4], anim->xyzrv2[4], anim->xyzrv1[3], anim->xyzrv2[3], v);
-				glRotatef(v, anim->xyzrv1[0], anim->xyzrv1[1], anim->xyzrv1[2]);
+				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
+				v = key_extrap(v, anim->keyframes, 0);
+				glRotatef(v, anim->axis[0], anim->axis[1], anim->axis[2]);
 				break;
 			case anim_Translate:
 				anim = &obj.animation[cmd->idx_offset];
-				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->xyzrv1[4], anim->xyzrv2[4], ref);
+				v = funcs->GetAnimParam(anim->dataref.c_str(), anim->keyframes.front().key, anim->keyframes.back().key, ref);
 				glTranslatef(
-					rescale_float(anim->xyzrv1[4], anim->xyzrv2[4], anim->xyzrv1[0], anim->xyzrv2[0], v),
-					rescale_float(anim->xyzrv1[4], anim->xyzrv2[4], anim->xyzrv1[1], anim->xyzrv2[1], v),
-					rescale_float(anim->xyzrv1[4], anim->xyzrv2[4], anim->xyzrv1[2], anim->xyzrv2[2], v));
+					key_extrap(v, anim->keyframes, 0),
+					key_extrap(v, anim->keyframes, 1),
+					key_extrap(v, anim->keyframes, 2));
 				break;
 	
 			case attr_Shade_Flat:	glShadeModel(GL_FLAT); 	 CHECK_GL_ERR break;

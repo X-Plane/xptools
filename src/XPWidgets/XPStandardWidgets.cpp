@@ -32,7 +32,11 @@
 #include <stdio.h>
 #include <algorithm>
 #include <string>
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl.h>
+#endif
 #include "XPUIGraphics.h"
 #include <math.h>
 

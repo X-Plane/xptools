@@ -25,34 +25,65 @@
 
 #include "ParamDefs.h"
 #include "DemDefs.h"
-#include "CompGeomDefs2.h"
-
-
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class GISFace;
 
+#include <CGAL/Simple_cartesian.h>
+
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Triangulation_face_base_with_info_2.h>
+
+typedef	CGAL::Simple_cartesian<double>						FastKernel;
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
 
-class	CDT_Vertex;
-class	CDT_Face;
+struct	MeshVertexInfo {
+	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
+	MeshVertexInfo(const MeshVertexInfo& rhs) : 
+								height(rhs.height), 
+								border_blend(rhs.border_blend) { 
+								normal[0] = rhs.normal[0]; 
+								normal[1] = rhs.normal[1]; 
+								normal[2] = rhs.normal[2]; }								
+	MeshVertexInfo& operator=(const MeshVertexInfo& rhs) { 
+								height = rhs.height; 
+								normal[0] = rhs.normal[0]; 
+								normal[1] = rhs.normal[1]; 
+								normal[2] = rhs.normal[2]; 
+								border_blend = rhs.border_blend; return *this; }
 
-class	CDT_Vertex_info {
-public:
 	double					height;					// Height of mesh at this vertex.
 	double					wave_height;			// ratio of vegetation to terrain at this vertex.
 	float					normal[3];				// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
+
 };
 
-class	CDT_Face_info {
-public:
+struct	MeshFaceInfo {
+	MeshFaceInfo() : terrain(NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
+	MeshFaceInfo(const MeshFaceInfo& rhs) : 
+								terrain(rhs.terrain),
+								feature(rhs.feature), 
+								flag(rhs.flag),
+								terrain_border(rhs.terrain_border) { 
+								normal[0] = rhs.normal[0]; 
+								normal[1] = rhs.normal[1]; 
+								normal[2] = rhs.normal[2];
+								orig_face = rhs.orig_face; }
+								
+								
+	MeshFaceInfo& operator=(const MeshFaceInfo& rhs) { 
+								terrain = rhs.terrain; 
+								feature = rhs.feature;
+								flag = rhs.flag;
+								terrain_border = rhs.terrain_border; 
+								normal[0] = rhs.normal[0]; 
+								normal[1] = rhs.normal[1]; 
+								normal[2] = rhs.normal[2];
+								orig_face = rhs.orig_face;
+								return *this; }
+
 	int				insert_x;
 	int				insert_y;
 	float			insert_err;
@@ -77,223 +108,17 @@ public:
 	float			debug_temp_range;
 	float			debug_rain;
 	float			debug_heading;
-
 };
 
-
-class	CDT_Vertex {
-private:
-	CDT_Vertex *	mPrev;
-	CDT_Vertex *	mNext;
-
-	Point2			mPoint;
-	CDT_Face *		mFace;
-	CDT_Vertex_info	mInfo;
-	
-public:
-
-			Point2&		point()							{ return mPoint; }
-	const	Point2&		point() const					{ return mPoint; }
-			void		set_point(const Point2& p)		{ mPoint = p; }
-			
-			CDT_Face *	face()							{return mFace; }
-	const	CDT_Face *	face() const					{ return mFace; }
-			void		set_face(CDT_Face * face)		{ mFace = face; }
-
-			CDT_Vertex_info&	info()					{ return mInfo; }
-	const	CDT_Vertex_info&	info() const			{ return mInfo; }
-			
-};
+typedef	CGAL::Triangulation_vertex_base_with_info_2<MeshVertexInfo, FastKernel>		Vb;
+typedef CGAL::Triangulation_face_base_with_info_2<MeshFaceInfo, FastKernel>			Fbi;
 
 
-class	CDT_Face {
-private:
-	CDT_Face *		mPrev;
-	CDT_Face *		mNext;
-	
-	CDT_Vertex *	mVertex[3];
-	CDT_Face *		mFace[3];
-	bool			mConstraint[3];
+typedef	CGAL::Constrained_triangulation_face_base_2<FastKernel, Fbi>				Fb;
+typedef	CGAL::Triangulation_data_structure_2<Vb, Fb>								TDS;
 
-	CDT_Face_info	mInfo;
+typedef	CGAL::Constrained_Delaunay_triangulation_2<FastKernel, TDS, CGAL::No_intersection_tag>	CDTBase;
 
-public:	
-
-	CDT_Vertex *	vertex(int n) ;
-	CDT_Face *		neighbor(int n);
-	int				index(const CDT_Vertex * v) const;
-	bool			has_vertex(const CDT_Vertex * v) const;
-
-		  CDT_Face_info&	info()		 { return mInfo; }
-	const CDT_Face_info&	info() const { return mInfo; }
-
-};
-
-class	CDT_Vertex_circulator {
-public:
-	CDT_Vertex_circulator();
-	CDT_Vertex_circulator(CDT_Vertex * v);
-	CDT_Vertex_circulator(const CDT_Vertex_circulator& rhs);
-	CDT_Vertex_circulator& operator=(const CDT_Vertex_circulator& rhs);
-	bool operator==(const CDT_Vertex_circulator& rhs) const;
-	bool operator==(const CDT_Vertex *			 rhs) const;
-	bool operator!=(const CDT_Vertex_circulator& rhs) const;
-	bool operator!=(const CDT_Vertex *			 rhs) const;
-	CDT_Vertex_circulator& operator++();
-	CDT_Vertex_circulator& operator++(int);
-	CDT_Vertex_circulator& operator--();
-	CDT_Vertex_circulator& operator--(int);
-	CDT_Vertex& operator*();
-	CDT_Vertex* operator->();
-	operator CDT_Vertex*();
-
-private:
-	friend class CDT;
-	CDT_Vertex *	mVert;
-	CDT_Face *		mFace;
-	int				mIndex;
-};
-
-class	CDT_Face_circulator {
-public:
-	CDT_Face_circulator();
-	CDT_Face_circulator(CDT_Face * v);
-	CDT_Face_circulator(const CDT_Face_circulator& rhs);
-	CDT_Face_circulator& operator=(const CDT_Face_circulator& rhs);
-	bool operator==(const CDT_Face_circulator& rhs) const;
-	bool operator==(const CDT_Face *		   rhs) const;
-	bool operator!=(const CDT_Face_circulator& rhs) const;
-	bool operator!=(const CDT_Face *		   rhs) const;
-	CDT_Face_circulator& operator++();
-	CDT_Face_circulator& operator++(int);
-	CDT_Face_circulator& operator--();
-	CDT_Face_circulator& operator--(int);
-	CDT_Face& operator*();
-	CDT_Face* operator->();
-	operator CDT_Face*();
-private:
-	friend class CDT;
-	CDT_Vertex *	mVert;
-	CDT_Face *		mFace;
-};
-
-class	CDT_Finite_faces_iterator {
-public:
-	CDT_Finite_faces_iterator();
-	CDT_Finite_faces_iterator(CDT_Face * f);
-	CDT_Finite_faces_iterator(const CDT_Finite_faces_iterator& rhs);
-	CDT_Finite_faces_iterator& operator=(const CDT_Finite_faces_iterator& rhs);
-	bool operator==(const CDT_Finite_faces_iterator& rhs) const;
-	bool operator==(const CDT_Face *				  rhs) const;
-	bool operator!=(const CDT_Finite_faces_iterator& rhs) const;
-	bool operator!=(const CDT_Face *				  rhs) const;
-	CDT_Finite_faces_iterator& operator++(int);
-	CDT_Finite_faces_iterator& operator++();
-	CDT_Finite_faces_iterator& operator--(int);
-	CDT_Finite_faces_iterator& operator--();
-	
-	CDT_Face& operator*();
-	CDT_Face* operator->();
-	operator CDT_Face *();
-private:
-	CDT_Face * mFace;
-};
-
-class	CDT_Finite_vertices_iterator {
-public:
-	CDT_Finite_vertices_iterator();
-	CDT_Finite_vertices_iterator(CDT_Vertex * f);
-	CDT_Finite_vertices_iterator(const CDT_Finite_vertices_iterator& rhs);
-	CDT_Finite_vertices_iterator& operator=(const CDT_Finite_vertices_iterator& rhs);
-	bool operator==(const CDT_Finite_vertices_iterator& rhs) const;
-	bool operator==(const CDT_Vertex *				  rhs) const;
-	bool operator!=(const CDT_Finite_vertices_iterator& rhs) const;
-	bool operator!=(const CDT_Vertex *				  rhs) const;
-	CDT_Finite_vertices_iterator& operator++(int);
-	CDT_Finite_vertices_iterator& operator++();
-	CDT_Finite_vertices_iterator& operator--(int);
-	CDT_Finite_vertices_iterator& operator--();
-	
-	CDT_Vertex& operator*();
-	CDT_Vertex* operator->();
-	operator CDT_Vertex *();
-private:
-	CDT_Vertex * mVertex;
-};
-
-
-class	CDT {
-public:
-
-	enum Locate_type {
-		VERTEX,
-		EDGE,
-		FACE,
-		OUTSIDE_CONVEX_HULL,
-		INSIDE_AFFINE_HULL
-	};
-
-	typedef pair<CDT_Face *, int>			Edge;
-	typedef Point2							Point;
-	typedef	CDT_Face *						Face_handle;
-	typedef CDT_Vertex *					Vertex_handle;
-	typedef	CDT_Vertex_circulator			Vertex_circulator;
-	typedef CDT_Face_circulator				Face_circulator;
-	typedef	CDT_Finite_faces_iterator		Finite_faces_iterator;	
-	typedef	CDT_Finite_vertices_iterator	Finite_vertices_iterator;	
-	
-	bool	is_edge(Vertex_handle a, Vertex_handle b, Face_handle& f, int& i) const;
-	bool	is_face(Vertex_handle a, Vertex_handle b, Vertex_handle c, Face_handle& f) const;
-	bool	is_constrained(const Edge& e) const;
-	bool	is_infinite(const Vertex_handle v) const;
-	bool	is_infinite(const Face_handle f) const;
-
-	bool	are_there_incident_constraints(Vertex_handle v) const;
-
-	Vertex_circulator			incident_vertices(Vertex_handle v) const;
-	Face_circulator				incident_faces(Vertex_handle v) const;
-
-	Finite_faces_iterator		finite_faces_begin();
-	Finite_faces_iterator		finite_faces_end();
-	Finite_vertices_iterator	finite_vertices_begin();
-	Finite_vertices_iterator	finite_vertices_end();
-
-	const Vertex_handle	infinite_vertex(void) const;
-	
-	Vertex_handle	insert(const Point2& p, Face_handle hint = NULL);
-	void			insert_constraint(Vertex_handle v1,Vertex_handle v2);
-	void			remove(Vertex_handle v);
-	Vertex_handle	safe_insert(const Point2& p, Face_handle hint);
-
-	Face_handle		locate(const Point2& p, Locate_type& lt, int& vnum, Face_handle face_hint = NULL);
-
-	void			clear();
-	
-	int				number_of_faces() const;
-
-	static	int			gen_cache_key(void);
-			Face_handle locate_cache(const Point& p, Locate_type& lt, int& li, int cache_key) const;
-			void		cache_reset(void);
-	
-	static int ccw(int n);
-	static int cw(int n);
-	
-private:
-
-	CDT_Face *	mFaceFirst;
-	CDT_Face *	mFaceLast;
-
-	CDT_Vertex *	mVertexFirst;
-	CDT_Vertex *	mVertexLast;
-	
-	CDT_Vertex *	mInfinite;
-	
-};
-
-#if !DEV
-	put this bakc
-#endif
-#if 0
 class CDT : public CDTBase { 
 public:
 
@@ -365,9 +190,8 @@ private:
 	mutable	HintMap	mHintMap;
 	
 };
-#endif
 
-//#define CONVERT_POINT(__X)	(CDT::Point((__X).x,(__X).y))
+#define CONVERT_POINT(__X)	(CDT::Point((__X).x,(__X).y))
 
 #endif
 

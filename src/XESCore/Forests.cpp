@@ -82,12 +82,12 @@ struct	tri_hash_t {
 int	tri_hash_t::accum_tri(CDT::Face_handle f)
 {
 	int c = 0;
-	int x1 = hash_x(f->vertex(0)->point().x);
-	int x2 = hash_x(f->vertex(2)->point().x);
-	int x3 = hash_x(f->vertex(1)->point().x);
-	int y1 = hash_y(f->vertex(0)->point().y);
-	int y2 = hash_y(f->vertex(2)->point().y);
-	int y3 = hash_y(f->vertex(1)->point().y);
+	int x1 = hash_x(f->vertex(0)->point().x());
+	int x2 = hash_x(f->vertex(2)->point().x());
+	int x3 = hash_x(f->vertex(1)->point().x());
+	int y1 = hash_y(f->vertex(0)->point().y());
+	int y2 = hash_y(f->vertex(2)->point().y());
+	int y3 = hash_y(f->vertex(1)->point().y());
 	int x_min = min(x1, min(x2, x3));
 	int y_min = min(y1, min(y2, y3));
 	int x_max = max(x1, max(x2, x3));
@@ -263,8 +263,10 @@ void GenerateForests(
 					if (tri_forest_type((*tri)->neighbor(s)) != *fiter ||
 						forest_tris.count((*tri)->neighbor(s)) == 0)
 					{
-						Point2 p1 = (*tri)->vertex(CDT::ccw(s))->point();
-						Point2 p2 = (*tri)->vertex(CDT:: cw(s))->point();
+						FastKernel::Point_2 dp1 = (*tri)->vertex(CDT::ccw(s))->point();
+						FastKernel::Point_2 dp2 = (*tri)->vertex(CDT:: cw(s))->point();
+						Point2 p1(dp1.x(), dp1.y());
+						Point2 p2(dp2.x(), dp2.y());
 						sides.insert(multimap<double, pair<Point2, Point2> >::value_type(min(p1.x,p2.x), pair<Point2, Point2>(p1, p2)));
 					}
 				}

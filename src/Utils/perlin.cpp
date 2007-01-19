@@ -21,6 +21,7 @@
  *
  */
 #include "perlin.h"
+#include <math.h>
 
 float gRandomRats	[RAN_RAT_DIM];	// seed random numbers
 

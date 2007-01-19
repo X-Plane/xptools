@@ -27,7 +27,12 @@
 #include <list>
 #include <string>
 #include <string.h>
+#if APL
+#include <OpenGL/gl.h>
+#else
 #include <gl.h>
+#endif
+
 #include <stdio.h>
 #include "XPStandardWidgetsPrivate.h"
 #include <map>

@@ -48,6 +48,7 @@ struct StProfileInit {
 	#else
 		#include <Timer.h>
 	#endif
+	#include <time.h>
 #elif IBM
 	#include <time.h>
 #elif LIN

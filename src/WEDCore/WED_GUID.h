@@ -32,14 +32,15 @@ public:
 
 };
 
-namespace HASH_MAP_NAMESPACE {
+HASH_MAP_NAMESPACE_START
 template <>
 struct hash<WED_GUID>
-	: std::unary_function<WED_GUID, std::size_t>
+	HASH_PARENT(WED_GUID, std::size_t)
 {
 	std::size_t operator()(const WED_GUID& key) const { return key.hash(); }
 };
-}
+HASH_MAP_NAMESPACE_END
+
 extern const WED_GUID	NULL_GUID;
 
 #endif /* WED_GUID_H */

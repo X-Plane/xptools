@@ -23,6 +23,12 @@
 #include "ErrMsg.h"
 #include <errno.h>
 
+#if APL
+	#if !defined(__MWERKS__)
+	#include <Carbon/Carbon.h>
+	#endif
+#endif
+
 static ErrFunc_f	efunc = NULL;
 static void *		eref = NULL;
 
@@ -78,7 +84,7 @@ EDOM,			"Numerical argument out of domain",
 EEXIST,			"File exists",
 EFAULT,			"Bad address",
 EFBIG,			"File too large",
-EFPOS,			"File Position Error",
+//EFPOS,			"File Position Error",
 EINTR,			"Interrupted system call",
 EINVAL,			"Invalid argument",
 EIO,			"Input/output error",
@@ -88,7 +94,7 @@ EMLINK,			"Too many links",
 ENFILE,			"Too many open files in system",
 ENODEV,			"Operation not supported by device",
 ENOENT,			"No such file or directory",
-ENOERR,			"No error detected",
+//ENOERR,			"No error detected",
 ENOEXEC,		"Exec format error",
 ENOLCK,			"No locks available",
 ENOMEM,			"Cannot allocate memory",
@@ -100,11 +106,11 @@ EPERM,			"Operation not permitted",
 EPIPE,			"Broken pipe",
 ERANGE,			"Result too large",
 EROFS,			"Read-only file system",
-ESIGPARM,		"Signal error",
+//ESIGPARM,		"Signal error",
 ESPIPE,			"Illegal seek",
 ESRCH,			"No such process",
-EUNKNOWN,		"Unknown error",
-EXDEV,			"Cross-device link",
+//EUNKNOWN,		"Unknown error",
+//EXDEV,			"Cross-device link",
 
 	0, 0,
 };

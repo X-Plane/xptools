@@ -5,6 +5,15 @@ DEFINE_PERSISTENT(WED_ObjectRoot)
 DEFINE_PERSISTENT(WED_ObjectLayer)
 DEFINE_PERSISTENT(WED_CustomObject)
 
+WED_CustomObject::WED_CustomObject(WED_Archive * archive, const WED_GUID& guid) :
+	WED_Persistent(archive, guid)
+{
+}
+
+WED_CustomObject::~WED_CustomObject()
+{
+}
+
 Point2			WED_CustomObject::GetLocation(void) const
 {
 	return mLocation;
@@ -42,6 +51,14 @@ void 			WED_CustomObject::WriteTo(IOWriter * writer)
 }
 
 //---------------------------------------------------------------------------------
+WED_ObjectLayer::WED_ObjectLayer(WED_Archive * archive, const WED_GUID& guid) :
+	WED_Persistent(archive, guid)
+{
+}
+
+WED_ObjectLayer::~WED_ObjectLayer()
+{
+}
 
 int						WED_ObjectLayer::CountObjects(void) const
 {
