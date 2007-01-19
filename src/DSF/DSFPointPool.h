@@ -87,12 +87,12 @@ private:
 	
 };
 
-namespace HASH_MAP_NAMESPACE{
+HASH_MAP_NAMESPACE_START
 template <>
-struct hash<DSFTuple> : std::unary_function<DSFTuple, std::size_t> {
+struct hash<DSFTuple> HASH_PARENT(DSFTuple, std::size_t) {
 	std::size_t operator()(const DSFTuple& key) const { return key.hash(); }
 };
-}
+HASH_MAP_NAMESPACE_END
 
 typedef	vector<DSFTuple>			DSFTupleVector;
 typedef list<DSFTupleVector>		DSFTupleVectorVector;

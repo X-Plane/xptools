@@ -66,13 +66,25 @@ char *	dsfErrorMessages[] = {
 #define DEBUG_MESSAGES 1
 
 // These debug macros are used to swap the headers around.
-#if APL && BIG
-	#include <libkern/OSByteOrder.h>
-	#define SWAP32(x) (OSSwapConstInt32(x))
-	#define SWAP16(x) (OSSwapConstInt16(x))
-#else
+#if BIG
+	#if APL
+		#if defined(__MACH__)
+			#include <libkern/OSByteOrder.h>
+			#define SWAP32(x) (OSSwapConstInt32(x))
+			#define SWAP16(x) (OSSwapConstInt16(x))
+		#else
+			#include <Endian.h>
+			#define SWAP32(x) (Endian32_Swap(x))
+			#define SWAP16(x) (Endian16_Swap(x))
+		#endif
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
 	#define SWAP32(x) (x)
 	#define SWAP16(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
 #endif	
 
 inline	double	DECODE_SCALED(
