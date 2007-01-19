@@ -33,6 +33,7 @@
 
 #define __MSL_LONGLONG_SUPPORT__
 
+/*
 #if APL
 #define CRLF "\n"
 #elif IBM
@@ -40,11 +41,15 @@
 #else
 #error NO PLATFORM!
 #endif
-
+*/
 #if APL
 //#define _STDINT_H_
 //#include <Carbon.h>
 #endif
+
+#include "XDefs.h"
+
+
 
 
 #include <vector>

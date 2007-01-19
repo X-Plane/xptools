@@ -1,5 +1,7 @@
 #pragma precompile_target "NGSDebugPCH"
 
+#define BIG 1
+#define LIL 0
 #define APL 1
 #define DEV 1
 #include "NGSPrefix.h"

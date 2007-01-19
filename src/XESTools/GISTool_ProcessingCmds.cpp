@@ -87,7 +87,7 @@ static int DoHydroSimplify(const vector<const char *>& args)
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Deriving raster parameters...\n");
-	DeriveDEMs(gMap, gDem,gProgress);			
+	DeriveDEMs(gMap, gDem,gApts, gAptIndex, gProgress);			
 	return 0;
 }
 

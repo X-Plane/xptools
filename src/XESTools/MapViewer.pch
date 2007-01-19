@@ -1,5 +1,7 @@
 #pragma precompile_target "MapViewerPCH"
 
+#define BIG 1
+#define LIL 0
 #define APL 1
 #define IBM 0
 #define DEV 1
