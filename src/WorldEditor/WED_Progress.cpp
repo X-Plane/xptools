@@ -21,7 +21,12 @@
  *
  */
 #include "WED_Progress.h"
-#include <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 #include "XPLMGraphics.h"
 #include "XPWidgetWin.h"
 
@@ -90,7 +95,7 @@ bool	WED_ProgressFunc(
 	XPLMDrawString(col, kTex1X, kTex1Y, inCurrentStageName, NULL, xplmFont_Basic);
 	XPLMDrawString(col, kTex2X, kTex2Y, uiProgBuf, NULL, xplmFont_Basic);
 	
-//	gWidgetWin->SwapBuffer();
+	gWidgetWin->SwapBuffer();
 	
 	return false;
 }

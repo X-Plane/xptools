@@ -1,5 +1,3 @@
-#if !DEV
-put this back
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -35,7 +33,13 @@ put this back
 #include "AssertUtils.h"
 #include "WED_DrawMap.h"
 #include "XPLMGraphics.h"
-#include "WED_Document.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 
 static const DragHandleInfo_t kHandleInfos[8] = {
 { /* BL */	-1, -1,		1,	1		},
@@ -163,21 +167,21 @@ void	WED_CropTool::NthButtonPressed(int n)
 		mCrop = false;
 		break;
 	case 3: /* CROP */
-		CropMap(gDocument->gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], false, WED_ProgressFunc);
-		DebugAssert(gDocument->gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gDocument->gMap));
+		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], false, WED_ProgressFunc);
+		DebugAssert(gMap.is_valid());
+		DebugAssert(ValidateMapDominance(gMap));
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		break;
 	case 4: /* DELETE */
-		CropMap(gDocument->gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], true, WED_ProgressFunc);
-		DebugAssert(gDocument->gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gDocument->gMap));
+		CropMap(gMap, mBounds[0], mBounds[1], mBounds[2], mBounds[3], true, WED_ProgressFunc);
+		DebugAssert(gMap.is_valid());
+		DebugAssert(ValidateMapDominance(gMap));
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		break;
 	case 5: /* REMOVE OCEANS */
-		RemoveUnboundedWater(gDocument->gMap);
-		DebugAssert(gDocument->gMap.is_valid());
-		DebugAssert(ValidateMapDominance(gDocument->gMap));
+		RemoveUnboundedWater(gMap);
+		DebugAssert(gMap.is_valid());
+		DebugAssert(ValidateMapDominance(gMap));
 		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		break;		
 	}
@@ -237,4 +241,3 @@ void		WED_CropTool::MoveHandleY(int handle, double deltaY)
 	if (y_ind < 4)
 		mBounds[y_ind] += deltaY;
 }
-#endif

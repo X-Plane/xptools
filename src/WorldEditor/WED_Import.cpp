@@ -1,7 +1,3 @@
-#if !DEV
-put this back
-
-
 #include "WED_Import.h"
 #include "XPWidgetDialogs.h"
 #include "XPWidgets.h"
@@ -15,7 +11,7 @@ put this back
 #include "PlatformUtils.h"
 #include "SimpleIO.h"
 #include "MapAlgs.h"
-#include "WED_Document.h"
+
 
 //
 // TODO: rescale, remapping, geotiff, ida+usgs 
@@ -212,7 +208,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				DoUserAlert("There was a problem importing the image file.");
 				return;
 			}
-			theDem = &gDocument->gDem[target_layer];
+			theDem = &gDem[target_layer];
 			theDem->resize(info.width, info.height);
 			
 			for (int x = 0; x < info.width; ++x)
@@ -233,7 +229,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 		
 		if (sImportState.format == import_USGSNatural)
 		{
-			theDem = &gDocument->gDem[target_layer];		
+			theDem = &gDem[target_layer];		
 			if (!ExtractUSGSNaturalFile(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read USGS Natural file.");
@@ -243,7 +239,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 		
 		if (sImportState.format == import_IDA)
 		{
-			theDem = &gDocument->gDem[target_layer];		
+			theDem = &gDem[target_layer];		
 			if (!ExtractIDAFile(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read IDA file.");
@@ -253,7 +249,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 
 		if (sImportState.format == import_GeoTIFF)
 		{
-			theDem = &gDocument->gDem[target_layer];		
+			theDem = &gDem[target_layer];		
 			if (!ExtractGeoTiff(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read GeoTIFF file.");
@@ -263,7 +259,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 		
 		if (sImportState.format == import_DTED)
 		{
-			theDem = &gDocument->gDem[target_layer];		
+			theDem = &gDem[target_layer];		
 			if (!ExtractDTED(*theDem, fileBuf))
 			{
 				DoUserAlert("Unable to read DTED file.");
@@ -276,7 +272,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			sImportState.format == import_Raw32LE || sImportState.format == import_Raw32BE ||
 			sImportState.format == import_RawFloatLE || sImportState.format == import_RawFloatBE)
 		{
-			theDem = &gDocument->gDem[target_layer];
+			theDem = &gDem[target_layer];
 			theDem->resize(sImportState.byte_width,sImportState.byte_height);
 
 			MFMemFile *	file = MemFile_Open(fileBuf);
@@ -435,7 +431,7 @@ static	void	LoadCLUT(XPWidgetID inID)
 
 void	DimsFromMap(XPWidgetID)
 {
-	if (gDocument->gMap.empty() && gDocument->gDem.empty())
+	if (gMap.empty() && gDem.empty())
 	{
 		sImportState.west = -180.0;
 		sImportState.east =  180.0;
@@ -444,12 +440,12 @@ void	DimsFromMap(XPWidgetID)
 	} else {
 			
 		Point2	sw(180.0, 90.0), ne(-180.0,-90.0);
-		CalcBoundingBox(gDocument->gMap, sw, ne);
+		CalcBoundingBox(gMap, sw, ne);
 		sImportState.west = sw.x;
 		sImportState.east = ne.x;
 		sImportState.south = sw.y;
 		sImportState.north = ne.y;
-		for (DEMGeoMap::iterator i = gDocument->gDem.begin(); i != gDocument->gDem.end(); ++i)
+		for (DEMGeoMap::iterator i = gDem.begin(); i != gDem.end(); ++i)
 		{
 			sImportState.west = min(sImportState.west, (float) i->second.mWest);
 			sImportState.south = min(sImportState.south, (float) i->second.mSouth);
@@ -461,10 +457,4 @@ void	DimsFromMap(XPWidgetID)
 	XPDataToItem(sImport, WED_IMPORT_NORTH);
 	XPDataToItem(sImport, WED_IMPORT_EAST );
 	XPDataToItem(sImport, WED_IMPORT_WEST );
-}
-
-#endif
-
-void	WED_ShowImportDialog(void)
-{
 }

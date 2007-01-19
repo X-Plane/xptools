@@ -1,15 +1,17 @@
-#if !DEV
-put this back
 #include "WED_TopoTester.h"
 #include "MapDefs.h"
 #include "XPLMGraphics.h"
 #include "WED_MapZoomer.h"
 #include "WED_DrawMap.h"
 #include "WED_Globals.h"
-#include "WED_Document.h"
 #include "WED_Selection.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
 
 WED_TopoTester::WED_TopoTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer), mRayShoot(false)
 {
@@ -56,14 +58,14 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		
 		while (st_p != mTarget)
 		{
-			mFoundHint = gDocument->gMap.ray_shoot(st_p, st_l, st_h,
+			mFoundHint = gMap.ray_shoot(st_p, st_l, st_h,
 									mTarget, mFound, mFoundLoc);
 			
 			
 			if (mFoundHint != NULL)
 			switch(mFoundLoc) {
 			case Pmwx::locate_Face:	
-				if (mFoundHint->face() != gDocument->gMap.unbounded_face())
+				if (mFoundHint->face() != gMap.unbounded_face())
 					gFaceSelection.insert(mFoundHint->face());
 				gSelectionMode = wed_Select_Face;
 				break;
@@ -86,7 +88,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 	{
 		mAnchor.x = GetZoomer()->XPixelToLon(mx);
 		mAnchor.y = GetZoomer()->YPixelToLat(my);
-		mAnchorHint = gDocument->gMap.locate_point(mAnchor, mAnchorLoc);
+		mAnchorHint = gMap.locate_point(mAnchor, mAnchorLoc);
 
 		gVertexSelection.clear();						
 		gFaceSelection.clear();						
@@ -95,7 +97,7 @@ void	WED_TopoTester::DrawFeedbackOverlay(
 		if (mAnchorHint != NULL)
 		switch(mAnchorLoc) {
 		case Pmwx::locate_Face:	
-			if (mAnchorHint->face() != gDocument->gMap.unbounded_face())
+			if (mAnchorHint->face() != gMap.unbounded_face())
 				gFaceSelection.insert(mAnchorHint->face());
 			gSelectionMode = wed_Select_Face;
 			break;
@@ -148,7 +150,7 @@ bool	WED_TopoTester::HandleClick(
 	case xplm_MouseUp:   
 		if (XPLMGetModifiers() & xplm_OptionAltFlag)
 		{
-			gDocument->gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
+			gMap.insert_edge(mAnchor, mTarget, NULL, NULL);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 		}
 		mRayShoot = false; 
@@ -185,4 +187,3 @@ char *	WED_TopoTester::GetStatusText(void)
 	
 	return NULL;
 }
-#endif

@@ -1,16 +1,20 @@
-#if !DEV
-put this back
 #include "WED_MeshTester.h"
 #include "MapDefs.h"
 #include "XPLMGraphics.h"
 #include "WED_MapZoomer.h"
 #include "WED_DrawMap.h"
 #include "WED_Globals.h"
-#include "WED_Document.h"
 #include "WED_Selection.h"
 #include "WED_Notify.h"
 #include "WED_Msgs.h"
 #include "MeshAlgs.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 
 WED_MeshTester::WED_MeshTester(WED_MapZoomer * inZoomer) : WED_MapTool(inZoomer)
 {
@@ -36,10 +40,10 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 		mTarget.x = GetZoomer()->XPixelToLon(mx);
 		mTarget.y = GetZoomer()->YPixelToLat(my);
 
-		double	x1 = gDocument->gDem[dem_Elevation].mWest;
-		double	x2 = gDocument->gDem[dem_Elevation].mEast;
-		double	y1 = gDocument->gDem[dem_Elevation].mSouth;
-		double	y2 = gDocument->gDem[dem_Elevation].mNorth;
+		double	x1 = gDem[dem_Elevation].mWest;
+		double	x2 = gDem[dem_Elevation].mEast;
+		double	y1 = gDem[dem_Elevation].mSouth;
+		double	y2 = gDem[dem_Elevation].mNorth;
 		
 		if (mTarget.x < x1) mTarget.x = x1;
 		if (mTarget.x > x2) mTarget.x = x2;
@@ -66,9 +70,9 @@ void	WED_MeshTester::DrawFeedbackOverlay(
 
 			static CDT_MarchOverTerrain_t march_info;
 			
-			MarchHeightStart(gDocument->gTriangulationHi, CDT::Point(mAnchor.x, mAnchor.y), march_info);
+			MarchHeightStart(gTriangulationHi, CDT::Point(mAnchor.x, mAnchor.y), march_info);
 			try {
-				MarchHeightGo(gDocument->gTriangulationHi, CDT::Point(mTarget.x, mTarget.y), march_info, found);
+				MarchHeightGo(gTriangulationHi, CDT::Point(mTarget.x, mTarget.y), march_info, found);
 			} catch (...) {
 				found.push_back(Point3(mTarget.x, mTarget.y, 0.0));
 				printf("Got err with: %lf,%lf->%lf,%lf\n", mAnchor.x,mAnchor.y,mTarget.x,mTarget.y);
@@ -132,4 +136,3 @@ char *	WED_MeshTester::GetStatusText(void)
 {
 	return NULL;
 }
-#endif

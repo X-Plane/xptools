@@ -1,5 +1,3 @@
-#if !DEV
-put this back
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -29,11 +27,15 @@ put this back
 #include "ParamDefs.h"
 #include "WED_MapZoomer.h"
 #include "WED_Globals.h"
-#include "WED_Document.h"
 #include "WED_Progress.h"
 #include "MeshAlgs.h"
 #include "DEMAlgs.h"
-#include <gl.h>
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 
 
 
@@ -70,7 +72,7 @@ bool	WED_TriTestTool::HandleClick(
 	{
 		WED_MapZoomer * z = GetZoomer();
 		Point2 p = Point2(z->XPixelToLon(inX), z->YPixelToLat(inY));
-		gDocument->gTriangulationHi.insert(CONVERT_POINT(p));
+		gTriangulationHi.insert(CONVERT_POINT(p));
 //		gTriangulationLo.insert(CONVERT_POINT(p));
 	}
 	return true;
@@ -100,17 +102,15 @@ char *	WED_TriTestTool::GetStatusText(void)
 	lon = GetZoomer()->XPixelToLon(x);	
 //	double h = MeshHeightAtPoint(gTriangulation, lon, lat);
 //	if (h == NO_DATA)
-	if (gDocument->gDem.find(dem_Elevation) != gDocument->gDem.end())
+	if (gDem.find(dem_Elevation) != gDem.end())
 	{
 		int x, y;
-		float h = gDocument->gDem[dem_Elevation].xy_nearest(lon, lat, x, y);
+		float h = gDem[dem_Elevation].xy_nearest(lon, lat, x, y);
 		if (h == NO_DATA)
-			sprintf(buf, "Hires: %d  (%d,%d NO DATA)", gDocument->gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y);
+			sprintf(buf, "Hires: %d  (%d,%d NO DATA)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y);
 		else
-			sprintf(buf, "Hires: %d  (%d, %d h=%f)", gDocument->gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y, h);
+			sprintf(buf, "Hires: %d  (%d, %d h=%f)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y, h);
 	} else
-		sprintf(buf, "Hires: %d ", gDocument->gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
+		sprintf(buf, "Hires: %d ", gTriangulationHi.number_of_faces()/*, gTriangulationLo.number_of_faces()*/);
 	return buf;
 }
-
-#endif

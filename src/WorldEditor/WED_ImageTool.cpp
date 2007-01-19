@@ -34,6 +34,12 @@
 #endif
 #include "PCSBSocket.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl.h>
+#endif
+
 static const DragHandleInfo_t kHandleInfos[4] = {
 { /* BL */	-1, -1,		1,	1		},
 { /* BR */	 1,	-1,		1,	1		},
