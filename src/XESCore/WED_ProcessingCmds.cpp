@@ -339,7 +339,8 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 										(cmd == procCmd_ExportDSFExisting) ? "Please pick your scenery package" : "Please name your scenery package", 
 										(cmd == procCmd_ExportDSFExisting) ? "Update" : "Create", 5, buf))
 				{
-					if (cmd != procCmd_ExportDSFExisting) strcat(buf, DIR_STR);
+//					if (cmd != procCmd_ExportDSFExisting) 
+					strcat(buf, DIR_STR);
 					CreatePackageForDSF(buf, (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
 					BuildDSF(buf2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, WED_ProgressFunc);
 				}
