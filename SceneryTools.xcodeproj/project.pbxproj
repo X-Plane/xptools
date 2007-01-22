@@ -146,7 +146,6 @@
 		D624363A0AE40408004F00E3 /* WED_LayerPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37EB0AB22C85003949C5 /* WED_LayerPane.cpp */; };
 		D624363B0AE40408004F00E3 /* WED_LayerTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37DD0AB22C85003949C5 /* WED_LayerTable.cpp */; };
 		D624363C0AE40408004F00E3 /* WED_MapPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */; };
-		D624363D0AE40408004F00E3 /* WED_MapZoomer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E50AB22C85003949C5 /* WED_MapZoomer.cpp */; };
 		D624363E0AE40408004F00E3 /* WED_Menus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */; };
 		D624363F0AE40408004F00E3 /* WED_ObjectLayers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37DF0AB22C85003949C5 /* WED_ObjectLayers.cpp */; };
 		D62436400AE40408004F00E3 /* WED_ObjectPlacements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37CA0AB22C85003949C5 /* WED_ObjectPlacements.cpp */; };
@@ -207,6 +206,8 @@
 		D656B33F0B518C9F003FF84F /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3360B518C9F003FF84F /* xmlrole.c */; };
 		D656B3400B518C9F003FF84F /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3380B518C9F003FF84F /* xmltok.c */; };
 		D656B3640B518D69003FF84F /* assertions.C in Sources */ = {isa = PBXBuildFile; fileRef = D656B3630B518D69003FF84F /* assertions.C */; };
+		D65E498E0B65117D004D7887 /* WED_MapZoomerNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */; };
+		D65E49AC0B651219004D7887 /* WED_MapZoomer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65E49AB0B651219004D7887 /* WED_MapZoomer.cpp */; };
 		D67EF4F10B5CF9F400D9190C /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D67EF4F30B5CF9F400D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF4F40B5CF9F400D9190C /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
@@ -316,28 +317,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF96F0B6135F400D9190C /* ObjConverter */;
+			remoteGlobalIDString = D67EF96F0B6135F400D9190C;
 			remoteInfo = ObjConverter;
 		};
 		D61C26EA0B61559C0092E098 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C /* DSFTool */;
+			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C;
 			remoteInfo = DSFTool;
 		};
 		D61C26EC0B61559E0092E098 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
+			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C;
 			remoteInfo = XGrinder;
 		};
 		D61C26EE0B6155A10092E098 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8D0C4E890486CD37000505A6 /* ObjView */;
+			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
 			remoteInfo = ObjView;
 		};
 /* End PBXContainerItemProxy section */
@@ -400,6 +401,9 @@
 		D656B33B0B518C9F003FF84F /* xmltok_impl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmltok_impl.h; sourceTree = "<group>"; };
 		D656B33C0B518C9F003FF84F /* xmltok_ns.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmltok_ns.c; sourceTree = "<group>"; };
 		D656B3630B518D69003FF84F /* assertions.C */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = assertions.C; sourceTree = "<group>"; };
+		D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomerNew.cpp; sourceTree = "<group>"; };
+		D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapZoomerNew.h; sourceTree = "<group>"; };
+		D65E49AB0B651219004D7887 /* WED_MapZoomer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomer.cpp; sourceTree = "<group>"; };
 		D67EF50A0B5CF9F400D9190C /* XGrinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XGrinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF50C0B5CFA2000D9190C /* XGrinderShell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGrinderShell.h; sourceTree = "<group>"; };
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
@@ -695,8 +699,6 @@
 		D6BC37E00AB22C85003949C5 /* WED_ObjectLayers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_ObjectLayers.h; sourceTree = "<group>"; };
 		D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapPane.cpp; sourceTree = "<group>"; };
 		D6BC37E40AB22C85003949C5 /* WED_MapPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapPane.h; sourceTree = "<group>"; };
-		D6BC37E50AB22C85003949C5 /* WED_MapZoomer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomer.cpp; sourceTree = "<group>"; };
-		D6BC37E60AB22C85003949C5 /* WED_MapZoomer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapZoomer.h; sourceTree = "<group>"; };
 		D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DocumentWindow.cpp; sourceTree = "<group>"; };
 		D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_DocumentWindow.h; sourceTree = "<group>"; };
 		D6BC37EB0AB22C85003949C5 /* WED_LayerPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LayerPane.cpp; sourceTree = "<group>"; };
@@ -1712,11 +1714,11 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */,
+				D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */,
 				D6BC37E20AB22C85003949C5 /* CVS.sandboxinfo */,
 				D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */,
 				D6BC37E40AB22C85003949C5 /* WED_MapPane.h */,
-				D6BC37E50AB22C85003949C5 /* WED_MapZoomer.cpp */,
-				D6BC37E60AB22C85003949C5 /* WED_MapZoomer.h */,
 			);
 			path = WEDMap;
 			sourceTree = "<group>";
@@ -1757,6 +1759,7 @@
 		D6BC37F40AB22C85003949C5 /* WorldEditor */ = {
 			isa = PBXGroup;
 			children = (
+				D65E49AB0B651219004D7887 /* WED_MapZoomer.cpp */,
 				D6BC37F90AB22C85003949C5 /* WED_Assert.cpp */,
 				D6BC37FA0AB22C85003949C5 /* WED_Assert.h */,
 				D6BC37FB0AB22C85003949C5 /* WED_CropTool.cpp */,
@@ -2329,7 +2332,6 @@
 				D624363A0AE40408004F00E3 /* WED_LayerPane.cpp in Sources */,
 				D624363B0AE40408004F00E3 /* WED_LayerTable.cpp in Sources */,
 				D624363C0AE40408004F00E3 /* WED_MapPane.cpp in Sources */,
-				D624363D0AE40408004F00E3 /* WED_MapZoomer.cpp in Sources */,
 				D624363E0AE40408004F00E3 /* WED_Menus.cpp in Sources */,
 				D624363F0AE40408004F00E3 /* WED_ObjectLayers.cpp in Sources */,
 				D62436400AE40408004F00E3 /* WED_ObjectPlacements.cpp in Sources */,
@@ -2387,6 +2389,8 @@
 				D6EDAF6B0B529EB900754E77 /* GUI_Application.cpp in Sources */,
 				D6EDAF6C0B529EB900754E77 /* GUI_Broadcaster.cpp in Sources */,
 				D6EDAFC30B52A01900754E77 /* GUI_Clipboard.cpp in Sources */,
+				D65E498E0B65117D004D7887 /* WED_MapZoomerNew.cpp in Sources */,
+				D65E49AC0B651219004D7887 /* WED_MapZoomer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
