@@ -36,6 +36,8 @@ struct	XObjLOD8;
  	 XObjBuilder(XObj8 * inObj);
  	~XObjBuilder();
  	
+	void	Finish(void);
+	
  	void	BeginLOD(float inNear, float inFar);
  	void	EndLOD(void);
  	
@@ -103,6 +105,9 @@ struct	XObjLOD8;
 	float		tex_repeat_t;
 	float		tex_offset_s;
 	float		tex_offset_t;
+	
+	string		layer_group;
+	int			layer_group_offset;
 	
 
 };

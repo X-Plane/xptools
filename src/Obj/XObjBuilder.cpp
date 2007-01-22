@@ -30,7 +30,8 @@ XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 	tex_repeat_t = 1.0;
 	tex_offset_s = 0.0;
 	tex_offset_t = 0.0;
-
+	layer_group_offset = 0;
+	
 	SetDefaultState();
 }
 
@@ -55,6 +56,18 @@ void	XObjBuilder::EndLOD(void)
 {
 	SetDefaultState();
 	lod = NULL;
+}
+
+void	XObjBuilder::Finish(void)
+{
+	if (!layer_group.empty() && !obj->lods.empty())
+	{
+		XObjCmd8 cmd;
+		cmd.cmd = attr_Layer_Group;
+		cmd.name = layer_group;
+		cmd.params[0] = layer_group_offset;
+		obj->lods.front().cmds.insert(obj->lods.front().cmds.begin(),cmd);
+	}
 }
 
 void	XObjBuilder::SetAttribute(int attr)
@@ -92,6 +105,11 @@ void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
 	if (attr == attr_Hard)
 	{
 		hard = s ? s : "";
+	}
+	else if (attr == attr_Layer_Group)
+	{
+		layer_group = s;
+		layer_group_offset = v;
 	}
 	else
 	{
