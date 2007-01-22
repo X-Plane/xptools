@@ -20,16 +20,16 @@
  * THE SOFTWARE.
  *
  */
-#ifndef WED_MAPZOOMER_H
-#define WED_MAPZOOMER_H
+#ifndef WED_MAPZOOMERNEW_H
+#define WED_MAPZOOMERNEW_H
 
 #include "GUI_ScrollerPane.h"
 
-class	WED_MapZoomer : public GUI_ScrollerPaneContent {
+class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
 
-					 WED_MapZoomer();
-	virtual			~WED_MapZoomer();
+					 WED_MapZoomerNew();
+	virtual			~WED_MapZoomerNew();
 	// The map zoomer converts lat/lon coordinates to pixel coordinates.
 	// This API is called by just about anything that needs to do coordinate
 	// conversion.

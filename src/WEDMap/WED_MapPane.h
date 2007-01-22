@@ -2,9 +2,9 @@
 #define WED_MAPPANE_H
 
 #include "GUI_Pane.h"
-#include "WED_MapZoomer.h"
+#include "WED_MapZoomerNew.h"
 
-class	WED_MapPane : public GUI_Pane, public WED_MapZoomer {
+class	WED_MapPane : public GUI_Pane, public WED_MapZoomerNew {
 public:
 		
 						 WED_MapPane();

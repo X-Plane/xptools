@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include "WED_MapZoomer.h"
+#include "WED_MapZoomerNew.h"
 #include "GUI_Messages.h"
 
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
@@ -28,8 +28,11 @@ inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 	return ((v - s1) * (d2 - d1) / (s2 - s1)) + d1;
 }
 
-WED_MapZoomer::WED_MapZoomer()
+WED_MapZoomerNew::WED_MapZoomerNew()
 {
+	printf("Size of zoomer is: %d\n", sizeof(WED_MapZoomerNew));
+	printf("Size of this is: %d\n", sizeof(*this));
+
 	mPixels[0] = 0.0;
 	mPixels[1] = 0.0;
 	mPixels[2] = 512.0;
@@ -41,31 +44,31 @@ WED_MapZoomer::WED_MapZoomer()
 	mAspectRatio = 1.0;
 }
 
-WED_MapZoomer::~WED_MapZoomer()
+WED_MapZoomerNew::~WED_MapZoomerNew()
 {
 }
 
-double	WED_MapZoomer::XPixelToLon(double x)
+double	WED_MapZoomerNew::XPixelToLon(double x)
 {
 	return rescale(mPixels[0], mPixels[2], mVisibleBounds[0], mVisibleBounds[2], x);
 }
 
-double	WED_MapZoomer::YPixelToLat(double y)
+double	WED_MapZoomerNew::YPixelToLat(double y)
 {
 	return rescale(mPixels[1], mPixels[3], mVisibleBounds[1], mVisibleBounds[3], y);
 }
 
-double	WED_MapZoomer::LonToXPixel(double lon)
+double	WED_MapZoomerNew::LonToXPixel(double lon)
 {
 	return rescale(mVisibleBounds[0], mVisibleBounds[2], mPixels[0], mPixels[2], lon);
 }
 
-double	WED_MapZoomer::LatToYPixel(double lat)
+double	WED_MapZoomerNew::LatToYPixel(double lat)
 {
 	return rescale(mVisibleBounds[1], mVisibleBounds[3], mPixels[1], mPixels[3], lat);
 }
 	
-void	WED_MapZoomer::SetPixelBounds(		
+void	WED_MapZoomerNew::SetPixelBounds(		
 					double 	inLeft,			
 					double	inBottom,
 					double	inRight,
@@ -77,7 +80,7 @@ void	WED_MapZoomer::SetPixelBounds(
 	mPixels[3] = inTop;
 }
 					
-void	WED_MapZoomer::SetMapVisibleBounds(
+void	WED_MapZoomerNew::SetMapVisibleBounds(
 					double	inWest,
 					double	inSouth,		
 					double	inEast,
@@ -89,7 +92,7 @@ void	WED_MapZoomer::SetMapVisibleBounds(
 	mVisibleBounds[3] = inNorth;
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }					
-void	WED_MapZoomer::SetMapLogicalBounds(	
+void	WED_MapZoomerNew::SetMapLogicalBounds(	
 					double	inWest,
 					double	inSouth,
 					double	inEast,
@@ -103,7 +106,7 @@ void	WED_MapZoomer::SetMapLogicalBounds(
 }					
 
 
-void	WED_MapZoomer::GetPixelBounds(		
+void	WED_MapZoomerNew::GetPixelBounds(		
 					double& outLeft,			
 					double&	outBottom,
 					double&	outRight,
@@ -115,7 +118,7 @@ void	WED_MapZoomer::GetPixelBounds(
 	outTop = mPixels[3];
 }
 					
-void	WED_MapZoomer::GetMapVisibleBounds(
+void	WED_MapZoomerNew::GetMapVisibleBounds(
 					double&	outWest,
 					double&	outSouth,		
 					double&	outEast,
@@ -126,7 +129,7 @@ void	WED_MapZoomer::GetMapVisibleBounds(
 	outEast = mVisibleBounds[2];
 	outNorth = mVisibleBounds[3];
 }					
-void	WED_MapZoomer::GetMapLogicalBounds(	
+void	WED_MapZoomerNew::GetMapLogicalBounds(	
 					double&	outWest,
 					double&	outSouth,
 					double&	outEast,
@@ -139,12 +142,12 @@ void	WED_MapZoomer::GetMapLogicalBounds(
 }					
 
 
-void	WED_MapZoomer::SetAspectRatio(double a)
+void	WED_MapZoomerNew::SetAspectRatio(double a)
 {
 	mAspectRatio = a;
 }
 
-void	WED_MapZoomer::ZoomShowAll(void)
+void	WED_MapZoomerNew::ZoomShowAll(void)
 {
 	double	mapWidth = mLogicalBounds[2] - mLogicalBounds[0];
 	double	mapHeight = mLogicalBounds[3] - mLogicalBounds[1];
@@ -188,7 +191,7 @@ void	WED_MapZoomer::ZoomShowAll(void)
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
-void	WED_MapZoomer::PanPixels(
+void	WED_MapZoomerNew::PanPixels(
 					double	x1,
 					double	y1,
 					double	x2,
@@ -208,7 +211,7 @@ void	WED_MapZoomer::PanPixels(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
-void	WED_MapZoomer::ZoomAround(
+void	WED_MapZoomerNew::ZoomAround(
 					double	zoomFactor,
 					double	centerXPixel,
 					double	centerYPixel)
@@ -232,7 +235,7 @@ void	WED_MapZoomer::ZoomAround(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }					
 
-void	WED_MapZoomer::ScrollReveal(
+void	WED_MapZoomerNew::ScrollReveal(
 				double	inLon,
 				double	inLat)
 {
@@ -246,7 +249,7 @@ void	WED_MapZoomer::ScrollReveal(
 	
 }
 
-void	WED_MapZoomer::ScrollReveal(
+void	WED_MapZoomerNew::ScrollReveal(
 				double	inWest,
 				double	inSouth,
 				double	inEast,
@@ -286,7 +289,7 @@ void	WED_MapZoomer::ScrollReveal(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
-void	WED_MapZoomer::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
+void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
 {
 	for (int n = 0; n < 4; ++n)
 	{
@@ -295,14 +298,14 @@ void	WED_MapZoomer::GetScrollBounds(float outTotalBounds[4], float outVisibleBou
 	}
 }
 
-void	WED_MapZoomer::ScrollH(float xOffset)
+void	WED_MapZoomerNew::ScrollH(float xOffset)
 {
 	mVisibleBounds[2] -= mVisibleBounds[0];
 	mVisibleBounds[0] = xOffset;
 	mVisibleBounds[2] += mVisibleBounds[0];
 }
 
-void	WED_MapZoomer::ScrollV(float yOffset)
+void	WED_MapZoomerNew::ScrollV(float yOffset)
 {
 	mVisibleBounds[3] -= mVisibleBounds[1];
 	mVisibleBounds[1] = yOffset;
