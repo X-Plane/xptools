@@ -1,32 +1,37 @@
 #include "prefs.h"
 #include <string.h>
-
 #include <ac_plugin.h>
-char *	g_default_layer_group	= STRING("");
-int		g_default_layer_offset	= 0;
-int		g_export_triangles		= 1;
-double	g_default_LOD			= 0.0f;
-char *	g_export_prefix			= STRING("");
-//export_prefix;
 
-//static PrefSpec	export_airport_lights_spec	;
-//static PrefSpec	default_LOD_spec			;
+#define DEFINE_PREF_STRING(n,d)	\
+	PrefSpec *	spec_##n;	\
+	char *		def_##n = STRING(d); \
+	const char * get_##n(void) {return *((char **) spec_##n->addr); }
 
-#define	MANAGE_PREF(__Var, __Type)	\
-	static PrefSpec	spec##__Var;				\
-	spec##__Var.name = "x-plane_" #__Var;	\
-	spec##__Var.type = __Type;				\
-	spec##__Var.addr = &g_##__Var;			\
-	prefs_append_prefspec(&spec##__Var);	\
-	ac_tcl_link_pref(&spec##__Var);
+#define DEFINE_PREF_INT(n,d)	\
+	PrefSpec *	spec_##n;	\
+	int			def_##n = d; \
+	int get_##n(void) {return *((int *) spec_##n->addr); }
+
+#define DEFINE_PREF_DOUBLE(n,d)	\
+	PrefSpec *	spec_##n;	\
+	double			def_##n = d; \
+	double get_##n(void) {return *((double *) spec_##n->addr); }
+
+PREFS_LIST
+
+#undef DEFINE_PREF_STRING
+#undef DEFINE_PREF_INT
+#undef DEFINE_PREF_DOUBLE
 
 void	prefs_init(void)
 {
-//	g_default_layer_group = STRING("none");
-	MANAGE_PREF(default_layer_group, PREF_STRING)
-	MANAGE_PREF(default_layer_offset, PREF_INT)
-	MANAGE_PREF(export_triangles, PREF_INT)
-	MANAGE_PREF(default_LOD, PREF_DOUBLE)
-	MANAGE_PREF(export_prefix, PREF_STRING);
-	
+	#define DEFINE_PREF_STRING(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_STRING, &def_##n);
+	#define DEFINE_PREF_INT(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_INT, &def_##n);
+	#define DEFINE_PREF_DOUBLE(n,d)	spec_##n = ac_create_and_link_pref("x-plane_" #n, PREF_DOUBLE, &def_##n);
+
+PREFS_LIST
+
+#undef DEFINE_PREF_STRING
+#undef DEFINE_PREF_INT
+#undef DEFINE_PREF_DOUBLE
 }

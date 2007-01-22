@@ -89,7 +89,7 @@ static int do_obj8_save_common(char * fname, ACObject * obj, bool convert);
 
 void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth)
 {
-	if (!g_export_triangles) return;
+	if (!get_export_triangles()) return;
 		SVertex * s1, * s2, *s3;
 
 	s3 = ((SVertex *)s->vertlist->data);
@@ -111,7 +111,7 @@ void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smooth)
 
 void obj8_output_polyline(XObjBuilder * builder, Surface *s)
 {
-	if (!g_export_triangles) return;
+	if (!get_export_triangles()) return;
 
 	Vertex *p1, *p2;
 	int n;
@@ -456,16 +456,16 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 
 	XObjBuilder		builder(&obj8);
 
-	if (g_default_layer_group && g_default_layer_group[0] && strcmp(g_default_layer_group,"none"))
-		builder.SetAttribute1Named(attr_Layer_Group, g_default_layer_offset, g_default_layer_group);
+	if (get_default_layer_group() && get_default_layer_group()[0] && strcmp(get_default_layer_group(),"none"))
+		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
 
     obj8_output_object(&builder, obj, obj);
     
-	if (g_default_LOD > 0.0f)
+	if (get_default_LOD() > 0.0f)
 	if (obj8.lods.size() == 1 && obj8.lods.front().lod_far == 0.0)
 	{
 		obj8.lods[0].lod_near = 0.0f;
-		obj8.lods[0].lod_far = g_default_LOD;
+		obj8.lods[0].lod_far = get_default_LOD();
 	}
 
 	string obj_path(fname);
@@ -476,7 +476,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
     if (obj8.texture.size() > 4)
 	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);
 
-	obj_path.insert(p+1,string(g_export_prefix));
+	obj_path.insert(p+1,string(get_export_prefix()));
 
 	builder.Finish();
 
