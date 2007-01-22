@@ -3,6 +3,8 @@ catch {namespace import combobox::*}
 set MAX_KEYFRAMES 50
 set MAX_SEL 5
 
+set USE_KEYFRAMES 0
+
 ##########################################################################################################################################################
 # UTILS
 ##########################################################################################################################################################
@@ -48,7 +50,8 @@ proc make_labeled_entry_pair { path name1 var1 name2 var2 } {
 ##########################################################################################################################################################
 
 proc xplane_convert_dir {} {
-	xplane_dir_eval "ac3d clear_all;ac3d load_ac \$filename;set filename \[string replace \$filename \[string last . \$filename\] end \".obj\"\];ac3d exporter_write_file OBJ8Save \$filename" "*.ac"
+#	xplane_dir_eval "ac3d clear_all;ac3d load_ac \$filename;set filename \[string replace \$filename \[string last . \$filename\] end \".obj\"\];ac3d exporter_write_file OBJ8Save \$filename" "*.ac"
+	xplane_dir_eval {ac3d clear_all;ac3d load_ac $filename;set filename [string replace $filename [string last . $filename] end ".obj"];ac3d exporter_write_file OBJ8Save $filename} "*.ac"
 }
 
 
@@ -132,11 +135,6 @@ proc xplane_tex_rescale_dialog {} {
 	raise        .xp_rescale
 }
 
-
-
-
-# -underline 6 -accelerator \[accel F6\]
-
 ##########################################################################################################################################################
 # PREFS DIALOG
 ##########################################################################################################################################################
@@ -144,20 +142,43 @@ proc xplane_tex_rescale_dialog {} {
 ac3d add_pref window_geom_xplane_prefs_dialog ""
 
 proc xplane_prefs_dialog {} {
-	global export_airport_lights;
-	global default_LOD;
 
+	global xplane_layer_group_options
+#	global prefs_x-plane_default_layer_group
+	
 	if ![winfo exists .xp_prefs] {
 
+#		if { [set prefs_x-plane_default_layer_group] == "NULL" } {
+#			set prefs_x-plane_default_layer_group "none"
+#		}
+
 		new_toplevel_tracked .xp_prefs "X-Plane export prefs" prefs_window_geom_xplane_prefs_dialog
+
+		label		.xp_prefs.layer_btn_label -text "Default Layer Group:"
+		menubutton .xp_prefs.layer_btn -menu .xp_prefs.layer_btn.menu -direction flush -textvariable prefs_x-plane_default_layer_group -padx 30 -pady 5
+		menu .xp_prefs.layer_btn.menu
+		foreach item $xplane_layer_group_options {
+			.xp_prefs.layer_btn.menu add radiobutton -label $item -variable prefs_x-plane_default_layer_group
+		}
+
+		label		.xp_prefs.layer_offset_label -text "Default Offset:"
+		spinbox		.xp_prefs.layer_offset -from -5 -increment 1 -to 5 -textvariable prefs_x-plane_default_layer_offset
 		
-		checkbutton .xp_prefs.apt_lights -variable prefs_x-plane_export_airport_lights -text "Export as airport light"
+#		checkbutton .xp_prefs.apt_lights		-variable prefs_x-plane_export_airport_lights -text "Export as airport light"
+		checkbutton .xp_prefs.triangles			-variable prefs_x-plane_export_triangles	  -text "Export Geometry"
 		
 		label	.xp_prefs.default_lod_label -text "Default LOD:"
 		spinbox .xp_prefs.default_lod_value -from 0 -increment 100 -to 1000 -textvariable prefs_x-plane_default_LOD
 
-		grid	x .xp_prefs.apt_lights -sticky news
+		label	.xp_prefs.export_prefix_label -text "Bulk Export Prefix:"
+		entry	.xp_prefs.export_prefix -textvariable prefs_x-plane_export_prefix
+
+		grid	.xp_prefs.layer_btn_label .xp_prefs.layer_btn
+		grid	.xp_prefs.layer_offset_label .xp_prefs.layer_offset
+
+		grid	x .xp_prefs.triangles -sticky news
 		grid	.xp_prefs.default_lod_label	.xp_prefs.default_lod_value -sticky news
+		grid	.xp_prefs.export_prefix_label .xp_prefs.export_prefix
 
 	}
 
@@ -171,7 +192,6 @@ proc xplane_prefs_dialog {} {
 ##########################################################################################################################################################
 
 proc recurse_menu { base path } {
-#	global log
 	set path_parent [lrange $path 0 end-1]
 	
 	set widget_parent $base.[join $path_parent "."]
@@ -187,16 +207,11 @@ proc recurse_menu { base path } {
 		}
 	}
 	
-#	puts $log [concat "building @" $widget_itself "@"]
-	menu $widget_itself
-	
-#	puts $log [concat "adding " [lindex $path end] " to " $widget_parent]
+	menu $widget_itself	
 	$widget_parent add cascade -label [lindex $path end] -menu $widget_itself		
 }
 
 proc build_popup { popup textvar } {
-#	global log
-#	set log [open "popup_log.txt" w]
 	menu $popup.test_menu
 	$popup.test_menu add command -label "none" -command "set $textvar none"
 
@@ -212,7 +227,6 @@ proc build_popup { popup textvar } {
 			   set dref_parents [lrange $dref_path 0 end-1]   
 			   set widget [join $dref_path "."]
 			   set widget_parent [join $dref_parents "."]
-#			   puts $log [concat $widget_parent $widget $dref_name]
 			   
 			   if ![winfo exists $popup.test_menu.$widget_parent] {
 				  recurse_menu $popup.test_menu $dref_parents
@@ -263,8 +277,8 @@ proc xplane_inspector_sync {} {
 			pack $container.obj 
 			global xplane_obj_name$x
 			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]
-			pack forget $container.obj.anim_type_btn
-			if {$anim_type == 1} { pack $container.obj.anim_type_btn -anchor nw }
+#			pack forget $container.obj.anim_type_btn
+#			if {$anim_type == 1} { pack $container.obj.anim_type_btn -anchor nw }
 			xplane_obj_sync $x $container
 		}
 		if {$sel_type == 3} { 
@@ -360,11 +374,12 @@ proc xplane_inspector {} {
 	
 	global xplane_hard_surface_options
 	global xplane_light_options
+	global xplane_layer_group_options
+	global USE_KEYFRAMES
 	
 	if ![winfo exists .xp_view] {
 
 		new_toplevel_tracked .xp_view "X-Plane Properties" prefs_window_geom_xplane_inspector
-#		new_toplevel .xp_view "X-Plane Properties"
 		
 		for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 
@@ -429,7 +444,6 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.light.dataref "T1:" xplane_light_t1$idx
 				make_labeled_entry $container.light.dataref "S2:" xplane_light_s2$idx
 				make_labeled_entry $container.light.dataref "T2:" xplane_light_t2$idx
-#				make_labeled_entry $container.light.dataref "Dataref:" xplane_light_dataref$idx
 				menubutton $container.light.dataref.dref_btn -menu $container.light.dataref.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_light_dataref$idx
 				build_popup $container.light.dataref.dref_btn xplane_light_dataref$idx
 				pack $container.light.dataref.dref_btn
@@ -451,12 +465,15 @@ proc xplane_inspector {} {
 			label $container.obj.name -textvariable xplane_obj_name$idx
 			pack $container.obj.name_label $container.obj.name
 
-			menubutton $container.obj.anim_type_btn -menu $container.obj.anim_type_btn.menu -direction flush  -textvariable xplane_anim_type$idx -padx 30 -pady 5
-			menu $container.obj.anim_type_btn.menu
-			foreach anim_mode [list "no animation" "rotate" "translate" "static" "show" "hide" ] {
-				$container.obj.anim_type_btn.menu add radiobutton -label $anim_mode -variable xplane_anim_type$idx -command "xplane_obj_sync_all"
-			}		
-			pack $container.obj.anim_type_btn
+			# Ben says: this would make a static label showing the animation type - not needed since the group that surrounds the animation type handles this.
+#			label $container.obj.anim_type_btn -textvariable xplane_anim_type$idx -padx 30 -pady 5
+			# This creates a popup letting us see the animation type.  We have this disabled because changing an animation's type will cause insanity.
+#			menubutton $container.obj.anim_type_btn -menu $container.obj.anim_type_btn.menu -direction flush  -textvariable xplane_anim_type$idx -padx 30 -pady 5
+#			menu $container.obj.anim_type_btn.menu
+#			foreach anim_mode [list "no animation" "rotate" "translate" "static" "show" "hide" ] {
+#				$container.obj.anim_type_btn.menu add radiobutton -label $anim_mode -variable xplane_anim_type$idx -command "xplane_obj_sync_all"
+#			}		
+#			pack $container.obj.anim_type_btn
 			
 			labelframe $container.obj.none -text "Object:"		
 				label	$container.obj.none.poly_os_label -text "Polygon Offset:"
@@ -481,11 +498,18 @@ proc xplane_inspector {} {
 			labelframe $container.obj.rotate -text "Rotation:"
 				for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
 					make_labeled_entry_pair $container.obj.rotate "value $x" xplane_anim_value$x$idx "angle $x" xplane_anim_angle$x$idx
-					button $container.obj.rotate.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
-					button $container.obj.rotate.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+					if {$USE_KEYFRAMES} {
+						button $container.obj.rotate.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
+						button $container.obj.rotate.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+					}
 					button $container.obj.rotate.xplane_anim_value$x$idx.go -text "Go" -command "ac3d xplane_set_anim_keyframe $x $idx"
-					pack $container.obj.rotate.xplane_anim_value$x$idx.delete $container.obj.rotate.xplane_anim_value$x$idx.add $container.obj.rotate.xplane_anim_value$x$idx.go -side left -anchor nw
+					if {$USE_KEYFRAMES} {
+						pack $container.obj.rotate.xplane_anim_value$x$idx.delete $container.obj.rotate.xplane_anim_value$x$idx.add $container.obj.rotate.xplane_anim_value$x$idx.go -side left -anchor nw
+					} else {
+						pack $container.obj.rotate.xplane_anim_value$x$idx.go -side left -anchor nw
+					}
 				}
+				# This would make a dataref text field instead of popup menu
 #				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx
 				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 				build_popup $container.obj.rotate.dref_btn xplane_anim_dataref$idx
@@ -495,10 +519,16 @@ proc xplane_inspector {} {
 			labelframe $container.obj.trans -text "Translation:"
 				for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
 					make_labeled_entry $container.obj.trans "value $x" xplane_anim_value$x$idx
-					button $container.obj.trans.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
-					button $container.obj.trans.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+					if {$USE_KEYFRAMES} {
+						button $container.obj.trans.xplane_anim_value$x$idx.delete -text "Delete" -command "ac3d xplane_delete_keyframe $x $idx"
+						button $container.obj.trans.xplane_anim_value$x$idx.add -text "Add" -command "ac3d xplane_add_keyframe $x $idx"
+					}
 					button $container.obj.trans.xplane_anim_value$x$idx.go -text "Go" -command "ac3d xplane_set_anim_keyframe $x $idx"
-					pack $container.obj.trans.xplane_anim_value$x$idx.delete $container.obj.trans.xplane_anim_value$x$idx.add $container.obj.trans.xplane_anim_value$x$idx.go -side left -anchor nw
+					if {$USE_KEYFRAMES} {						
+						pack $container.obj.trans.xplane_anim_value$x$idx.delete $container.obj.trans.xplane_anim_value$x$idx.add $container.obj.trans.xplane_anim_value$x$idx.go -side left -anchor nw
+					} else {
+						pack $container.obj.trans.xplane_anim_value$x$idx.go -side left -anchor nw
+					}
 				}
 				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
@@ -544,6 +574,17 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.grp.lod "Far LOD:" xplane_lod_far$idx
 			grid $container.grp.lod -columnspan 2 -sticky nw
 
+			labelframe $container.grp.layer_group -text "Layer Group:"
+
+				menubutton $container.grp.layer_group.layer_btn -menu $container.grp.layer_group.layer_btn.menu -direction flush -textvariable xplane_layer_group$idx -padx 30 -pady 5
+				menu $container.grp.layer_group.layer_btn.menu
+				foreach item $xplane_layer_group_options {
+					$container.grp.layer_group.layer_btn.menu add radiobutton -label $item -variable xplane_layer_group$idx
+				}
+				pack $container.grp.layer_group.layer_btn -anchor nw
+				make_labeled_entry $container.grp.layer_group "Group Offset:" xplane_layer_group_offset$idx
+			grid $container.grp.layer_group -columnspan 2 -sticky nw
+
 			grid columnconfigure $container.grp 0 -weight 0
 			grid columnconfigure $container.grp 1 -weight 1
 
@@ -576,9 +617,19 @@ proc xplane_inspector_update { name1 name2 op } {
 }
 
 
-set xplane_light_options [list none "black smoke" "white smoke" rgb custom taxi_b]
-set xplane_hard_surface_options [list none object concrete grass]
-
+set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
+	headlight taillight \
+	airplane_landing airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
+	ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
+	carrier_datum carrier_waveoff carrier_meatball1 carrier_meatball2 carrier_meatball3	carrier_meatball4 carrier_meatball5	carrier_mast_strobe	carrier_deck_blue_s	carrier_deck_blue_w \
+	carrier_deck_blue_n	carrier_deck_blue_e	carrier_pitch_lights carrier_foul_line_red carrier_foul_line_white carrier_center_white	carrier_edge_white carrier_thresh_white \
+	frigate_SGSI_lo	frigate_SGSI_on	frigate_SGSI_hi	frigate_deck_green oilrig_deck_blue \
+	town_light_60 town_light_90 town_light_150 town_light_180 town_light_220 town_light_280 0town_light_330 town_light_350 town_light_omni \
+	town_tiny_light_60 town_tiny_light_90 town_tiny_light_150 town_tiny_light_180 town_tiny_light_220 town_tiny_light_280 town_tiny_light_330 town_tiny_light_350 town_tiny_light_omni \
+	obs_strobe_day obs_strobe_night obs_red_day obs_red_night]
+	
+set xplane_hard_surface_options [list none object water concrete asphalt grass dirt gravel lakebed snow shoulder blastpad]
+set xplane_layer_group_options [list none terrain beaches shoulders taxiways runways markings airports roads objects light_objects cars]
 
 trace add variable select_info write xplane_inspector_update
 for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
@@ -666,7 +717,8 @@ set UI(menu_xplane) .mbar.xplane.menu
 
 .mbar.xplane.menu add command -label "X-Plane Object Properties..." -command "xplane_inspector"
 .mbar.xplane.menu add command -label "Calculate X-Plane LOD" -command "ac3d xplane_calc_lod"
-.mbar.xplane.menu add command -label "Make LOD Group" -command "ac3d xplane_make_named_group LOD"
+# No make LOD group cmd needed - LOD grop is a group
+#.mbar.xplane.menu add command -label "Make LOD Group" -command "ac3d xplane_make_named_group LOD"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Remap Texture Coordinates..." -command "xplane_tex_rescale_dialog"
 .mbar.xplane.menu add command -label "Change Texture..." -command "ac3d xplane_change_texture"
@@ -678,7 +730,8 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add command -label "Make Rotation" -command "ac3d xplane_make_anim_typed rotate"
 .mbar.xplane.menu add command -label "Make Show" -command "ac3d xplane_make_anim_typed show"
 .mbar.xplane.menu add command -label "Make Hide" -command "ac3d xplane_make_anim_typed hide"
-.mbar.xplane.menu add command -label "Bake Static Transitions" -command "ac3d xplane_bake_static"
+# no need to bake static translations - it's done for us
+#.mbar.xplane.menu add command -label "Bake Static Transitions" -command "ac3d xplane_bake_static"
 .mbar.xplane.menu add command -label "Animation Time..." -command "xplane_anim_window"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Make Trees" -command "ac3d xplane_make_tree"

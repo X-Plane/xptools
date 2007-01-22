@@ -2,7 +2,8 @@
 #include <string.h>
 
 #include <ac_plugin.h>
-int		g_export_airport_lights	= 0;
+char *	g_default_layer_group	= STRING("");
+int		g_default_layer_offset	= 0;
 int		g_export_triangles		= 1;
 double	g_default_LOD			= 0.0f;
 char *	g_export_prefix			= STRING("");
@@ -21,7 +22,9 @@ char *	g_export_prefix			= STRING("");
 
 void	prefs_init(void)
 {
-	MANAGE_PREF(export_airport_lights, PREF_INT)
+//	g_default_layer_group = STRING("none");
+	MANAGE_PREF(default_layer_group, PREF_STRING)
+	MANAGE_PREF(default_layer_offset, PREF_INT)
 	MANAGE_PREF(export_triangles, PREF_INT)
 	MANAGE_PREF(default_LOD, PREF_DOUBLE)
 	MANAGE_PREF(export_prefix, PREF_STRING);

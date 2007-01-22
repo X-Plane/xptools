@@ -34,6 +34,9 @@ void		OBJ_set_light_dataref(ACObject * obj, const char * dataref);
 void		OBJ_set_LOD_near(ACObject * obj, float near_dis);
 void		OBJ_set_LOD_far(ACObject * obj, float far_dis);
 
+void		OBJ_set_layer_group(ACObject * obj, const char * layer);
+void		OBJ_set_layer_group_offset(ACObject * obj, int offset);
+
 void		OBJ_set_animation_group(ACObject * obj, int is_group);
 void		OBJ_set_anim_type(ACObject * obj, int anim_type);
 void		OBJ_set_anim_dataref(ACObject * obj, const char * dataref);
@@ -71,6 +74,9 @@ const char *	OBJ_get_light_dataref(ACObject * obj, char * buf);
 
 float			OBJ_get_LOD_near(ACObject * obj);
 float			OBJ_get_LOD_far(ACObject * obj);
+
+const char *	OBJ_get_layer_group(ACObject * obj, char * buf);
+int				OBJ_get_layer_group_offset(ACObject * obj);
 
 int				OBJ_get_animation_group(ACObject * obj);
 int				OBJ_get_anim_type(ACObject * obj);

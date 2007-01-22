@@ -282,6 +282,12 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 		builder->BeginLOD(lod_start, lod_end);
 	}
 	
+	if (OBJ_get_layer_group(obj, buf))
+	{
+		if (buf[0] != 0 && strcmp(buf,"none"))
+		builder->SetAttribute1Named(attr_Layer_Group, OBJ_get_layer_group_offset(obj), buf);		
+	}
+	
 	if (OBJ_get_animation_group(obj))
 	{
 		builder->AccumAnimBegin();
@@ -450,8 +456,8 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 
 	XObjBuilder		builder(&obj8);
 
-	if (g_export_airport_lights)
-		builder.SetAttribute1Named(attr_Layer_Group, 0, "light_objects");
+	if (g_default_layer_group && g_default_layer_group[0] && strcmp(g_default_layer_group,"none"))
+		builder.SetAttribute1Named(attr_Layer_Group, g_default_layer_offset, g_default_layer_group);
 
     obj8_output_object(&builder, obj, obj);
     
@@ -470,20 +476,24 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
     if (obj8.texture.size() > 4)
 	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);
 
+	obj_path.insert(p+1,string(g_export_prefix));
+
+	builder.Finish();
+
 	if (convert)
 	{
 		XObj	obj7;
 		Obj8ToObj7(obj8, obj7);
-		if (!XObjWrite(fname, obj7))
+		if (!XObjWrite(obj_path.c_str(), obj7))
 	    {
-	        message_dialog("can't open file '%s' for writing", fname);
+	        message_dialog("can't open file '%s' for writing", obj_path.c_str());
 	        return 0;
 	    }
 		
 	} else {
-		if (!XObj8Write(fname, obj8))
+		if (!XObj8Write(obj_path.c_str(), obj8))
 	    {
-	        message_dialog("can't open file '%s' for writing", fname);
+	        message_dialog("can't open file '%s' for writing", obj_path.c_str());
 	        return 0;
 	    }
 	}    

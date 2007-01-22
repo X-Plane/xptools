@@ -61,6 +61,12 @@ Simply copy the AC3D plugin file XPlaneSupportWin.p or XPlaneSupportMac.p
 (depending on your operating system) and the file XPlaneSupport.tcl into
 the "plugins" folder for AC3D while it is not running, then start AC3D.
 
+You must also download "datarefs.txt" from the X-Plane SDK website here:
+
+http://www.xsquawkbox.net/xpsdk/docs/DataRefs.txt
+
+Put this into the ac3d plugins folder.
+
 -------------------------------------------------------------------------------
 USING THE PLUGIN
 -------------------------------------------------------------------------------
@@ -208,75 +214,114 @@ You can view and edit X-Plane specific properties using the "X-Plane Object
 Properties..." command, which will show the X-Plane object inspector.  As you
 select different objects, different options will be visible.
 
+For any selection of up to 5 objects, you will see 5 sets of properties
+horizontally in the inspector.  Click "apply to all" to edit all 5 at once.
+
+If you have more than 5 objects of the same type selected, you will see one
+property editor for the first object - you can use the "apply to all" button
+to edit large numbers of objects at once.
+
+If you have more than 5 objects of different kinds, the pane will simply
+indicate "multiple objects selected".
+
+
 -------------------------------------------------------------------------------
-HARD POLYGONS, POLYGON OFFSET, AND BLENDING CONTROL
+OBJECT ATTRIBUTES: HARD POLYGONS, POLYGON OFFSET, MATERIALS, BLENDING CONTROL
 -------------------------------------------------------------------------------
 
-Polygon hardness (whether the polygon interacts physically with the plane
-causing collisions) polygon offset (a method for making polygons on the ground
-draw properly) and blending control (turning off and on translucency) can all
-be set using the X-Plane Object properties panel, but not previewed in AC3D.
+For objects you can set the following properties.  Please note that object
+properties can affect performance and can be complex - see the performance
+section at the end of this document as well as the X-Plane scenery website.
 
-Polygon offset can be set from 0 to 5 - use this to help polygons that overlap
-the terrain from Z-thrashing.
+Polygon hardness
 
-Normally the alpha channel of an object's texture creates translucent objects.
-You can disable the blending effect (resulting in all pixels being either
-totally opaque or transparent) by unchecking "blending".  When you uncheck
-blending you can then set the cutoff point (for the alpha channel) between 
-transparency and opacity.  The default is 0.5 (50% alpha).
+	Polygon hardness indicates whether the polygons of this object will 
+	interact with X-Plane's physics model.  The default is "none" for
+	no interaction.  By picking other hardnesses, you can make the surface
+	be physically interactive and select what surface type the polygon
+	acts like (e.g. grass, dirt, etc.).  The surface type "object" emulates
+	the perfectly smooth surface that X-Plane 7 and 8 provided.
+		
+Polygon Offset
 
-A popup lets you pick whether the object's polygons are treated as "hard" (that
-is, whether they interact with the physics engine).  You can pick from a number
-of surface types.  "object" provides the surface type that objects used before
-X-Plane 850 - this surface type is very smooth.
+	Polygon offset can be set from 0 to 5 - use this to help polygons that
+	overlap the terrain from Z-thrashing.
+		
+Blending
+
+	X-Plane normally uses alpha blending to draw objects.  By unchecking 
+	this option you can tell X-Plane to make the polygon either 100% opaque
+	or transparent. 
+	
+	When blending is off, a cutoff level is shown - only pixels with more
+	than this percentage opacity will be shown.
+	
+Materials
+
+	Normally the X-Plane AC3D plugin does not generate material commands.
+	However if you check this, then the current AC3D material will be exported
+	as part of the object.
+	
+	Please note that the only aspects of the AC3D material that are supported
+	are: the diffuse color, the emissive color, and the specular color (which
+	is treated as gray-scale since X-Plane only supports specular hilighting,
+	not setting the specular color in RGB).
 
 NOTE: X-Plane before 850 does not support specific object surface types or 
-blending cutoff levels.
-
-Also make sure to read the PERFORMANCE section for notes on changing these 
-attributes.
+blending cutoff levels.  For objects that work with older versions of X-Plane
+8 always use the "object" hard surface type and a blend cutoff of 0.5.
 
 -------------------------------------------------------------------------------
-MATERIALS
+LIGHT ATTRIBUTES: LIGHTS AND SMOKE
 -------------------------------------------------------------------------------
 
-****
+Point lights in AC3D are used for both lights and smoke generation points in
+X-Plane.  When you select a light, a popup menu lets you edit what it is 
+used for:
+
+None
+
+	If you set a light's type to "none" it will not be exported.  If you are
+	using AC3D's lights to create real illumination effects (e.g. to simulate
+	the sun and moon) use this to have the light be ignored.
+	
+Black Smoke, White Smoke
+
+	These choices will cause the point light to be expored as a smoke-
+	generation point.  You can set the puff size.
+	
+RGB
+
+	This sets an RGB-style light.  The red, green, and blue values can be
+	set from 0 to 1 (or a few special values - see the OBJ8 specification).
+	
+	(Note: it is better to use named lights to create special effects than
+	to use special RGB values.  Please see below.)
+	
+Custom
+
+	This creates a custom light animated by a dataref.  This is only useful
+	for expert modelers - see the OBJ8 specification for the meaning of
+	LIGHT_CUSTOM commands.
+	
+(All other choices)
+
+	The rest of the choices in this menu are "named lights" - that is, premade
+	light definitions that X-Plane knows how to create.  This is the best way
+	to create lights, as X-Plane will use the best available rendering 
+	technology to create the light.
 
 -------------------------------------------------------------------------------
-LIGHTS AND SMOKE
+GROUPS: LEVEL OF DETAIL AND LAYER GROUPS
 -------------------------------------------------------------------------------
 
-AC3D will export light objects as X-Plane lights.  Use the naem _RGB=r,g,b 
-where r, g and b are fractions from 0-1 to set the light color.  You can set
-these to negative for a flashing light or use the following special effects:
+When you select one of the top-most groups in an object, you will see the
+"level of detail" parameters.  Use these to set the level of detail range
+for a group.
 
-R   G   B    Effect
-9.9 9.9 9.9  Pulsing red (for radio towers)
-9.8 9.8 9.8  Strobe light (for radio toweres)
-9.7 9.7 9.7  Traffic light (cycles red-green-yellow)
-
--------------------------------------------------------------------------------
-LEVEL OF DETAIL
--------------------------------------------------------------------------------
-
-OBJs are imported into AC3D with groups for each level of detail of the object.
-For anything but an object with no LODs, the LOD is represented via a string
-name of the form:
-
-LOD xxxx/yyyyy
-
-where xxxx and yyyy are the range in meters.  So if you see this:
-
--World
-   LOD 0/3000
-     Disk1
-     Disk2
-   LOD 3000/6000
-     Disk3
-
-Then disk1 and disk2 will be in the first LOD of the object (range 0 to 3000 
-meters) and the second LOD contain disk 3 (in the range of 3000-6000 meters).
+If you leave the level of detail distances at 0 for each distance, then
+no level of detail will be exported and X-Plane will select a level of detail
+for you.
 
 To get a feel for how this works, try importing the KSBD sample object.  Note
 that after import, multiple versions of the object are visible; you may want 
@@ -284,38 +329,99 @@ to hide a version of the object (this can be done by right-clicking on an
 object in the hierarchy window and picking 'hide') to reduce clutter on the 
 screen.
 
+Groups can also have "layer group" information.  Layer groups are an advanced
+concept - for more info, see the OBJ8 specification.
+
+If you set a group to have a layer group other than "none", the plugin will
+export an ATTR_layer_group attribute.  Please note that there can be only
+one ATTR_layer_group for an entire object, so if you have conflicting layer
+groups specified, the results will be inconsistent.
+
 -------------------------------------------------------------------------------
 ANIMATION
 -------------------------------------------------------------------------------
 
-While AC3D does not support animation directly, you can make animated OBJ8
-files by using animation.  Animation works as follows:
+Probably the biggest new feature in the AC3D plugin is animation.  Please read
+this section carefully because animation support for the plugin has been 
+completely rewritten.
 
-To animate a series of objects in AC3D, place them within a group with the
-name ANIMATION.  A command exists to simplify this - see below.
+Animation in an X-Plane object always happens inside an animation group.  An
+animation group is represented by a group in AC3D that you create with the
+"Make animation group" command.  Animations will only function when they are
+inside an animation group.
 
-Place the actual animation steps you want into the user data of the ANIMATION
-group, one action per line.  The supported syntax is:
+You create animations using the commands in the X-Plane menu.  Animations are
+represented in AC3D by lines - the meaning of these lines depends on the
+type of animation.
 
-ROTATE x y z r1 r2 v1 v2 dataref
-TRANSLATE x1 y1 z1 x2 y2 z2 v1 v2 dataref
+- Translations: the line represents a relative movement in 3-d space.
+- Rotations: the ilne represents the axis to rotate around.
+- Show/hide: the animation line is just a placeholder.
 
-Where all of these parameters except for 'dataref' are numbers and 'dataref'
-is a string name of an X-Plane dataref without spaces.  See the X-Plane plugin
-web page (http://www.xsquawkbox.net/xpskd/) and click on Documentation to find
-the full set of datarefs.  (A dataref is a flight simulator variable.)
+Once you create an animation object, selecting it will show the animation
+properties in the X-Plane property editor:
 
-For the rotate command, x y z form an axis to rotate around; the roation is
-counterclockwise when looking down the axis.  (So 0 1 0 means counterclockwise
-when viewed from above.)  r1 and r2 are the start and end angles, and v1 and v2
-are the range of values for the dataref that will give you a rotation of r1 and
-r2 respectively.
+Low Value/High Value
 
-For the TRANSLATE command x1,y1,z1 and x2,y2,z2 are distances to offset when
-the dataref is at the values v1 and v2 respectively.
+	For a show/hide animation, this is the range that the dataref must
+	be in to cause the object to appear or disappear.
 
-There is a tutorial on AC3D animation on the scenery SDK website: 
-http://www.xsquawkbox.net/scenery/ - click on tutorials.
+Value 0/Value 1
+
+	These are the values that the dataref must take on to map to the
+	beginning and end of the animation.
+	
+Angle 0/Angle 1
+
+	For rotations, this defines the angles to rotate for each dataref.
+	
+Anchor
+
+	For translations, this defines which point in the translation 
+	(0 or 1) represents no movement of your model.  The default is
+	0.
+	
+Dataref
+
+	For any type of animation, this is the dataref
+	to link to.  NOTE: if you want to use your own datarefs, you must
+	edit the copy of datarefs.txt that can be found in the ac3d plugins
+	folder.
+	
+You can click the "go" button next to the value 0 and value 1 fields to change
+the current preview of your model to this time.
+
+Use the "Animation time..." command to show the animation time controller 
+window.  This window has the following options:
+
+Show Animation
+
+	Check this to enable animation previews.
+
+For each dataref
+
+	The slider will move the previewed value of the dataref, animating
+	your model.
+	
+	The "select" button will add any animation command lines that use
+	this dataref to the current selection.
+
+Resync
+
+	Sometimes the current list of datarefs won't match your model - click
+	resync to update this window.
+	
+WARNING: the animation preview will affect where you see your model but
+will NOT affect AC3D editing.  You should turn off animation preview when 
+editing to assure that AC3D's user interface works correctly.
+
+-------------------------------------------------------------------------------
+UPDATING OLD .AC FILES
+-------------------------------------------------------------------------------
+
+If you have an AC3D .ac file with animations from the old 2.0-style plugin you
+must update your model in order to see datarefs and have the special X-Plane
+attributes be exported.  Simply pick "Update from old plugin" once to update.
 
 -------------------------------------------------------------------------------
 PERFORMANCE
@@ -434,6 +540,29 @@ in an urban setting and you want to reduce the object count to increase
 framerate.)
 
 -------------------------------------------------------------------------------
+REMAP TEXTURE COORDINATES
+-------------------------------------------------------------------------------
+
+This opens up the texture coordinate remapper.  By entering texture ST 
+coordinates in this window you can change the textures of an object.
+
+For example, if your texture is 512x128 but you decide to expand it to 512x256
+(putting the old texture in the top half of the new one) to make more space
+for yourself, you would use these remap values:
+
+Old Left:	0		New Left:	0
+Old Bottom:	0		New Bottom:	0.5
+Old Right:	1		New Right:	1
+Old Top:	1		New Top:	1
+
+Use "remap selected" to change the current selection.
+
+Use "remap directory" to change an entire directory of .ac files.
+
+WARNING: remapping a directory will delete the current model as the entire
+directory is opened, converted, saved, and closed!
+
+-------------------------------------------------------------------------------
 MAKE TRANSPARENT COMMAND
 -------------------------------------------------------------------------------
 
@@ -455,17 +584,6 @@ used in the selected objects are changed to look like night lighting.
 
 You can use the 'reload texture' command from AC3D's texture menu (under
 the object menu) to reload the normal daytime texture.
-
--------------------------------------------------------------------------------
-MAKE ANIMATION GROUP COMMAND
--------------------------------------------------------------------------------
-
-You can easily make animation groups in AC3D as follows: select all of the 
-objects you want to contain within the group and then pick "Make Animation
-Group" from the Tools menu.  This will make a new group called ANIMATION and
-nest the objects inside.  Unlike the AC3D group command, this command will
-run in "Object" selection mdoe, and it will let you place a single object into
-an animation group.
 
 -------------------------------------------------------------------------------
 MAKE TREES COMMAND
@@ -526,6 +644,66 @@ green) and a strange looking tree.
 By setting the normals of the entire tree to point straight up, the entire tree
 picks up a general brightness from the time of day, but does not have 
 incongruent lighting.
+
+-------------------------------------------------------------------------------
+CONVERT DIRECTORY TO OBJ8
+-------------------------------------------------------------------------------
+
+You can convert an entire directory of .ac files to OBJ8 files.  Pick this 
+command and select a directory.  The plugin will open every .ac file and
+save it as an OBJ file with the same name in the same directory.
+
+WARNING: this command will trash whatever model you have open!
+
+-------------------------------------------------------------------------------
+BULK EXPORT
+-------------------------------------------------------------------------------
+
+This command will export every "top level" object (object in the top of the 
+hierarchy) as an OBJ.  The object's name is used as a file name.
+
+If you have a complex model like an airport that is exported as multiple OBJs,
+use this to export the whole thing quickly.
+
+-------------------------------------------------------------------------------
+X-PLANE EXPORT SETTINGS
+-------------------------------------------------------------------------------
+
+A few settings can be customized for the plugin:
+
+Default layer group (and offset)
+
+	Normally a layer group must be specified per object.  But if you
+	set this preference, any objects that don't have layer groups will
+	be exported using this layer group (and offset) instead.  
+	
+	See the OBJ8 spec (ATTR_layer_group) for more info on layer groups.
+	
+	This feature can be used to export a whole series of objects all 
+	with a special layer group.
+
+Export Geometry
+
+	If this is unchecked, no polygons will be exported from your object.
+	This defaults to on, and 99.9% of the time you should leave it on!
+
+Default LOD
+
+	Normally if you don't specify LOD in an object, no LOD is placed in that
+	object.  By putting a number other than zero here, the plugin will export
+	an LOD range of 0..N for any unlabeled objects.
+	
+	(If you have a large number of objects that all nee artificial LOD
+	restrictions this can help!)
+
+Bulk Export Prefix
+
+	This string will be prefixed to the name of any file that is exported,
+	from the bulk conversion, bulk export, or file->export menu items.
+	
+	You can use a partial file path to export into a directory.  For example
+	preview/ is a valid prefix that would cause everything to be saved in
+	a subdirectory called preview.
 
 -------------------------------------------------------------------------------
 WARNING MESSAGES

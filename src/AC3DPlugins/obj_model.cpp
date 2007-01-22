@@ -212,6 +212,9 @@ STR_PROP(light_dataref,light_dataref)
 FLT_PROP(LOD_near,lod_near)
 FLT_PROP(LOD_far,lod_far)
 
+STR_PROP(layer_group,layer_group)
+INT_PROP(layer_group_offset,layer_group_offset)
+
 INT_PROP(animation_group,animated)
 STR_PROP(anim_dataref,dataref)
 

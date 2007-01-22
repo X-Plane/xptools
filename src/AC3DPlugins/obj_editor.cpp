@@ -75,7 +75,9 @@ static ACObject * get_sel_single_light(int n)
 
 #define SIMPLE_PROPERTY_MAPPINGS_GRP \
 	SIMPLE_PROPERTY_FLT(lod_near,get_sel_single_grp,OBJ_set_LOD_near,OBJ_get_LOD_near) \
-	SIMPLE_PROPERTY_FLT(lod_far,get_sel_single_grp,OBJ_set_LOD_far,OBJ_get_LOD_far)
+	SIMPLE_PROPERTY_FLT(lod_far,get_sel_single_grp,OBJ_set_LOD_far,OBJ_get_LOD_far) \
+	SIMPLE_PROPERTY_STR(layer_group,get_sel_single_grp,OBJ_set_layer_group,OBJ_get_layer_group, "", "none") \
+	SIMPLE_PROPERTY_INT(layer_group_offset,get_sel_single_grp,OBJ_set_layer_group_offset,OBJ_get_layer_group_offset)
 
 #define	SIMPLE_PROPERTY_MAPPINGS_LGT	\
 	SIMPLE_PROPERTY_STR(light_type,get_sel_single_light,OBJ_set_light_named, OBJ_get_light_named,"","none") \

@@ -111,7 +111,7 @@ ACObject *	do_obj8_load(char *filename)
 		Obj7ToObj8(obj7, obj8);
 	} 
 		
-    group_obj = new_object(OBJECT_NORMAL);	
+    group_obj = new_object(OBJECT_GROUP);	
     
     string	fname(filename);
     string::size_type p = fname.find_last_of("\\/");	
@@ -324,7 +324,12 @@ ACObject *	do_obj8_load(char *filename)
 #endif							
 				two_side = true;	
 				break;
-				
+			
+			case attr_Layer_Group:
+				OBJ_set_layer_group(group_obj, cmd->name.c_str());
+				OBJ_set_layer_group_offset(group_obj, cmd->params[0]);
+				break;
+						
 			case anim_Begin:
 				{
 					stuff_obj = NULL;

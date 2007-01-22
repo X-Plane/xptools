@@ -6,6 +6,7 @@
 #include "obj_model.h"
 #include "ac_utils.h"
 #include "obj8_export.h"
+#include "prefs.h"
 #include "obj8_import.h"
 
 #include <math.h>
@@ -348,12 +349,13 @@ void do_bulk_export(void)
     for (iter = kids; iter != NULL; iter = iter->next)
     {
     	ACObject * child = (ACObject *)iter->data;
-		char * exp_name = pull_str_attr (child, "_EXPORT=");
+		char * exp_name = ac_object_get_name(child);
 		if (exp_name && ac_object_is_visible(child))
 		{
 			char path[1024];
 			strcpy(path, fn);
 			strcat(path, "/");
+//			strcat(path,g_export_prefix);
 			strcat(path, exp_name);
 			do_obj8_save(path, child);
 		}

@@ -360,7 +360,7 @@ void	sync_datarefs()
 
 #pragma mark -
 
-void make_anim_group(void)
+static void make_anim_group(void)
 {
 	add_undoable_all("Make animation group");
 	List * objs_l = ac_selection_get_objects();
@@ -422,7 +422,7 @@ static void do_bake_selection(void)
 
 
 
-void make_anim_of_type(int argc, char * argv[])
+static void make_anim_of_type(int argc, char * argv[])
 {
 	add_undoable_all("Make Animation");
 
@@ -687,7 +687,7 @@ static float get_dataref_value(const char * dataref)
 	return i->second.now_v;
 }
 
-void anim_pre_func(ACObject * ob, Boolean is_primary_render)
+static void anim_pre_func(ACObject * ob, Boolean is_primary_render)
 {
 	if (!g_anim_enabled) return;
 	if (OBJ_get_animation_group(ob))
@@ -697,7 +697,7 @@ void anim_pre_func(ACObject * ob, Boolean is_primary_render)
 	}
 }
 
-void anim_post_func(ACObject * ob, Boolean is_primary_render)
+static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 {
 	if (!g_anim_enabled) return;
 	if (OBJ_get_animation_group(ob))
