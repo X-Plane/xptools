@@ -4,14 +4,15 @@
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
 
-class WED_ObjectLayers;
-class WED_LayerGroup;
-class WED_LayerTable;
-class WED_LayerTableGeometry;
+//class WED_ObjectLayers;
+//class WED_LayerGroup;
+//class WED_LayerTable;
+//class WED_LayerTableGeometry;
 
 
 
 class	WED_Document;
+class	WED_PropertyTable;
 
 class	WED_DocumentWindow : public GUI_Window, public GUI_Listener {
 public:
@@ -38,10 +39,12 @@ private:
 
 	WED_Document *		mDocument;
 
-	WED_ObjectLayers *		mObjects;
-	WED_LayerGroup *		mObjectGroup;	
-	WED_LayerTable *		mLayerTable;
-	WED_LayerTableGeometry*	mLayerTableGeometry;
+	WED_PropertyTable *	mTestTable;	
+
+//	WED_ObjectLayers *		mObjects;
+//	WED_LayerGroup *		mObjectGroup;	
+//	WED_LayerTable *		mLayerTable;
+//	WED_LayerTableGeometry*	mLayerTableGeometry;
 };
 
 #endif

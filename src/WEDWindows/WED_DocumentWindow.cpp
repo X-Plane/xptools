@@ -3,16 +3,17 @@
 #include "XESIO.h"
 #include "AptIO.h"
 #include "MapAlgs.h"
-#include "WED_ObjectPlacements.h"
 #include "WED_Messages.h"
 #include "WED_DocumentWindow.h"
+#include "WED_PropertyTable.h"
 
+#include "GUI_TextTable.h"
 #include "GUI_ScrollerPane.h"
 #include "GUI_Splitter.h"
 #include "GUI_Table.h"
 
 #include "WED_LayerGroup.h"
-#include "WED_ObjectLayers.h"
+//#include "WED_ObjectLayers.h"
 #include "WED_LayerTable.h"
 
 #include "WED_MapPane.h"
@@ -31,17 +32,29 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	mDocument->AddListener(this);
 	
-	mObjects = new WED_ObjectLayers(mDocument->GetObjectRoot());
-	mObjectGroup = new WED_LayerGroup(
-							wed_Layer_Hide | wed_Layer_Rename | wed_Layer_Reorder,
-							wed_Flag_Visible | wed_Flag_Children,
-							"Objects",
-							mObjects);
-	
-	mLayerTable = new WED_LayerTable;
-	mLayerTable->SetLayers(mObjectGroup);
-	mLayerTableGeometry = new WED_LayerTableGeometry;
-	mLayerTableGeometry->SetLayers(mObjectGroup);
+//	mObjects = new WED_ObjectLayers(mDocument->GetObjectRoot());
+//	mObjectGroup = new WED_LayerGroup(
+//							wed_Layer_Hide | wed_Layer_Rename | wed_Layer_Reorder,
+//							wed_Flag_Visible | wed_Flag_Children,
+//							"Objects",
+//							mObjects);
+		
+	vector<WED_ColumnDesc> cols;
+	WED_ColumnDesc init_col;
+	init_col.content_type = gui_Cell_EditText;
+	cols.resize(5, init_col);
+	cols[0].column_name = "table_name";
+	cols[1].column_name = "col";
+	cols[2].column_name = "name";
+	cols[3].column_name = "type";
+	cols[4].column_name = "foreign_key";
+		
+	mTestTable = new WED_PropertyTable(mDocument->GetDB(), "WED_properties",cols);
+
+//	mLayerTable = new WED_LayerTable;
+//	mLayerTable->SetLayers(mObjectGroup);
+//	mLayerTableGeometry = new WED_LayerTableGeometry;
+//	mLayerTableGeometry->SetLayers(mObjectGroup);
 	
 	int		splitter_b[4];	
 	GUI_Splitter * splitter = new GUI_Splitter(gui_Split_Horizontal);;
@@ -69,9 +82,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	map_scroller->PositionInContentArea(map);
 	map_scroller->SetContent(map);
 	
+	GUI_TextTable * text_table = new GUI_TextTable;
+	text_table->SetProvider(mTestTable);
+	
 	GUI_Table *	layer_table = new GUI_Table;
-	layer_table->SetGeometry(mLayerTableGeometry);
-	layer_table->SetContent(mLayerTable);
+	layer_table->SetGeometry(mTestTable);
+	layer_table->SetContent(text_table);
 	layer_table->SetParent(layer_scroller);
 	layer_table->Show();
 	layer_scroller->PositionInContentArea(layer_table);
@@ -88,10 +104,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 WED_DocumentWindow::~WED_DocumentWindow()
 {
-	delete mObjects;
-	delete mObjectGroup;	
-	delete mLayerTable;
-	delete mLayerTableGeometry;
+//	delete mObjects;
+//	delete mObjectGroup;	
+//	delete mLayerTable;
+//	delete mLayerTableGeometry;
+	delete mTestTable;
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
