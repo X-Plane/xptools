@@ -34,6 +34,27 @@ using std::vector;
 struct	Point2;
 struct	Vector2;
 
+
+
+enum {
+	LEFT_TURN = 1,
+	COLLINEAR = 0,
+	RIGHT_TURN = -1,
+	
+	NEGATIVE = -1,
+	ZERO = 0,
+	POSITIVE = 1,
+
+	CLOCKWISE = -1,
+	COUNTERCLOCKWISE = 1,
+	
+	ON_UNBOUNDED_SIDE = -1,
+	ON_BOUNDARY = 0,
+	ON_BOUNDED_SIDE = 1
+
+};
+
+
 /****************************************************************************************************
  * Point2
  ****************************************************************************************************/
@@ -92,6 +113,7 @@ struct	Vector2 {
 	bool	left_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) > 0.0; }
 	bool	right_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) < 0.0; }
 	bool	no_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) == 0.0; }
+	int		turn_direction(const Vector2& v) const { double d = -dy * v.dx + dx * v.dy; if (d > 0.0) return LEFT_TURN; if (d < 0.0) return RIGHT_TURN; return COLLINEAR; }
 	
 	// Signed area = the area of the triangle formed by placing V after this.  
 	// If they form a counter-clockwise triangle, the area is positive, clockwise = negative
@@ -134,7 +156,7 @@ struct	Segment2 {
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
 	bool	on_right_side(const Point2& p) const { return Vector2(p1, p2).right_turn(Vector2(p1, p)); }
 	bool	collinear(const Point2& p) const { return Vector2(p1, p2).no_turn(Vector2(p1, p)); }
-	
+	int		side_of_line(const Point2& p) const { return Vector2(p1, p2).turn_direction(Vector2(p1, p));  }
 	
 	bool	could_intersect(const Segment2& rhs) const;
 	bool	intersect(const Segment2& rhs, Point2& p) const;
@@ -193,6 +215,7 @@ struct	Line2 {
 	bool	on_left_side(const Point2& p) const { return (a * p.x + b * p.y + c) > 0; }
 	bool	on_right_side(const Point2& p) const { return (a * p.x + b * p.y + c) < 0; }
 	bool	collinear(const Point2& p) const { return (a * p.x + b * p.y + c) == 0; }
+	int		side_of_line(const Point2& p) const { double v = (a * p.x + b * p.y + c); if (v > 0.0) return LEFT_TURN; if (v < 0.0) return RIGHT_TURN; return COLLINEAR; }
 	
 	double	a;
 	double	b;
@@ -304,6 +327,30 @@ public:
 	Point2	c1;
 	Point2	c2;
 };
+
+/****************************************************************************************************
+ * FREE FUNCS
+ ****************************************************************************************************/
+
+inline bool	right_turn(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	return Vector2(p1,p2).right_turn(Vector2(p2,p3));
+}
+
+inline bool	left_turn(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	return Vector2(p1,p2).left_turn(Vector2(p2,p3));
+}
+
+inline bool	collinear(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	return Vector2(p1,p2).no_turn(Vector2(p2,p3));
+}
+
+inline int	turn_direction(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	return Vector2(p1,p2).turn_direction(Vector2(p2,p3));
+}
 
 /****************************************************************************************************
  * Comparison
