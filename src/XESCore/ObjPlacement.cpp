@@ -36,7 +36,10 @@
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XESConstants.h"
-#if DEV && OPENGL_MAP
+
+#define DEBUG_PLACEMENT 0
+
+#if DEBUG_PLACEMENT
 #include "WED_Selection.h"
 #endif
 
@@ -1657,11 +1660,11 @@ void	InstantiateGTPolygonAll(
 	for (ComplexPolygonVector::const_iterator subarea = face->second.begin(); subarea != face->second.end(); ++subarea)
 	{
 		PROGRESS_CHECK(inProg, 0, 1, "Instantiating Face Objects...", ctr, inFaces.size(), 500)
-#if DEV && OPENGL_MAP
+#if DEBUG_PLACEMENT
 try {
 #endif
 		InstantiateGTPolygon(face->first, *subarea, inDEMs, inMesh);
-#if DEV && OPENGL_MAP
+#if DEBUG_PLACEMENT
 } catch (...) {
 		gFaceSelection.clear();
 		gFaceSelection.insert(face->first);
