@@ -1,6 +1,7 @@
 #include "GUI_Fonts.h"
 #include "FontMgr.h"
 #include "GUI_GraphState.h"
+#include "GUI_Resources.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -9,7 +10,7 @@
 #endif
 
 static const char * kFontNames[font_Max] = {
-	"LucidaGrande.ttf"
+	"Courier.ttf"
 //	"Arial"
 };
 
@@ -38,7 +39,9 @@ static void	EstablishFont(int id)
 	}	
 	if (sFonts[id] == NULL)
 	{
-		sFonts[id] = sFontMgr->LoadFont(kFontNames[id], kFontSizes[id], true);	
+		string full_path;
+		if (GUI_GetResourcePath(kFontNames[id],full_path))
+			sFonts[id] = sFontMgr->LoadFont(full_path.c_str(), kFontSizes[id], true);	
 	}
 }
 
