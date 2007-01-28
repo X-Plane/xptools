@@ -5,7 +5,7 @@
 #include "AssertUtils.h"
 #include <ShapeFil.h>
 #include "MapAlgs.h"
-#include "SDTSReadTVP.h"
+//#include "SDTSReadTVP.h"
 #include "GISUtils.h"
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
@@ -86,7 +86,7 @@ static void	import_tiger_repository(const string& rt)
 	}
 }
 
-
+/*
 static int DoSDTSImport(const vector<const char *>& args)
 {
 	try {
@@ -96,7 +96,7 @@ static int DoSDTSImport(const vector<const char *>& args)
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 static int DoTigerIndex(const vector<const char *>& args)
 {
@@ -613,7 +613,7 @@ int DoWetMask(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
-{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
+//{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 { "-tiger", 		1, -1, 	DoTigerImport, 			"Import tiger line file.", "" },
 { "-tigerindex", 	1, 1, 	DoTigerIndex, 			"Import tiger line files.", "" },
 { "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },

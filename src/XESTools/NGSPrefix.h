@@ -47,9 +47,6 @@
 //#include <Carbon.h>
 #endif
 
-#define USE_JPEG 1
-#define USE_TIF 1
-
 
 #include "XDefs.h"
 

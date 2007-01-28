@@ -5,4 +5,6 @@
 #define APL 1
 #define IBM 0
 #define DEV 0
+
+#define USE_JPEG 1
 #include "NGSPrefix.h"

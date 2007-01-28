@@ -1,7 +1,7 @@
 #include "GISTool_DumpCmds.h"
-#include <sdts++/io/sio_ConverterFactory.h>
-#include <sdts++/container/sc_Record.h>
-#include "SDTSRead.h"
+//#include <sdts++/io/sio_ConverterFactory.h>
+//#include <sdts++/container/sc_Record.h>
+//#include "SDTSRead.h"
 #include "GISTool_Utils.h"
 #include "SDTSReadTVP.h"
 #include "VPFImport.h"
@@ -14,7 +14,7 @@
 
 extern int	PrintDSFFile(const char * inPath, FILE * output, bool print_it);
 
-
+#if 0
 static void	dump_sdts(const char *  ifs_name, const char * modName)
 {
 	printf("Showiwng %s module %s\n", ifs_name, modName);
@@ -62,6 +62,7 @@ static void	dump_sdts(const char *  ifs_name, const char * modName)
 
   MemFile_Close(mf);
 }
+#endif
 
 static void dump_vpf_table(const char * inFileName)
 {
@@ -155,12 +156,14 @@ static int DoDumpVPF(const vector<const char *>& args)
 	dump_vpf_table(args[0]);
 	return 0;
 }
-		
+
+/*		
 static int DoDumpSDTS(const vector<const char *>& args)
 {
 	dump_sdts(args[0], args[1]);
 	return 0;
 }
+*/
 
 static int DoDumpShapeFile(const vector<const char *>& args)
 {
@@ -202,7 +205,7 @@ static	GISTool_RegCmd_t		sDumpCmds[] = {
 { "-dumpobs", 		0, 0, DoDumpObs, 		"Dump current FAA objects.", "" },
 { "-dumpdsf", 		1, -1, DoDumpDSF, 		"Dump contents of a DSF file.", "" },
 { "-dumpvpf", 		1, 1, DoDumpVPF, 		"Dump a VPF table.", "" },
-{ "-dumpsdts", 		2, 2, DoDumpSDTS, 		"Dump an SDTS module.", "" },
+//{ "-dumpsdts", 		2, 2, DoDumpSDTS, 		"Dump an SDTS module.", "" },
 { "-dumpshp",		1, 1, DoDumpShapeFile,	"Dump an ESRI shape file.", "" },
 { "-dumpmap",		0, 0, DoDumpMap,		"Dump current map as text.", "" },
 

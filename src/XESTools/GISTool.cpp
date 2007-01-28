@@ -38,6 +38,8 @@
 #if USE_CHUD
 #include <CHUD/CHUD.h>
 #endif
+#include <CGAL/assertions.h>
+
 
 extern void	SelfTestAll(void);
 

@@ -109,6 +109,7 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 			fprintf(stderr, "Command %s not known.\n", cname);
 			return 1;
 		} else {
+			printf("Doing: %s, verbose=%d\n",cname,gVerbose);
 			++n;
 			vector<const char *> cmdargs;
 			while (n < args.size() && !GISTool_IsCommand(args[n]) && (maxp == -1 || cmdargs.size() < maxp))
