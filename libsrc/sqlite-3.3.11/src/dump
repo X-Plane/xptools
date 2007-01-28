@@ -1,0 +1,622 @@
+1.1          (drh      31-May-00): /*
+1.14         (drh      16-Sep-01): ** 2001 September 15
+1.1          (drh      31-May-00): **
+1.14         (drh      16-Sep-01): ** The author disclaims copyright to this source code.  In place of
+1.14         (drh      16-Sep-01): ** a legal notice, here is a blessing:
+1.1          (drh      31-May-00): **
+1.14         (drh      16-Sep-01): **    May you do good and not evil.
+1.14         (drh      16-Sep-01): **    May you find forgiveness for yourself and forgive others.
+1.14         (drh      16-Sep-01): **    May you share freely, never taking more than you give.
+1.1          (drh      31-May-00): **
+1.1          (drh      31-May-00): *************************************************************************
+1.1          (drh      31-May-00): ** This file contains C code routines that are called by the parser
+1.1          (drh      31-May-00): ** to handle UPDATE statements.
+1.1          (drh      31-May-00): **
+1.133        (drh      27-Jun-06): ** $Id$
+1.1          (drh      31-May-00): */
+1.1          (drh      31-May-00): #include "sqliteInt.h"
+1.1          (drh      31-May-00): 
+1.133        (drh      27-Jun-06): #ifndef SQLITE_OMIT_VIRTUALTABLE
+1.127        (drh      16-Jun-06): /* Forward declaration */
+1.127        (drh      16-Jun-06): static void updateVirtualTable(
+1.127        (drh      16-Jun-06):   Parse *pParse,       /* The parsing context */
+1.127        (drh      16-Jun-06):   SrcList *pSrc,       /* The virtual table to be modified */
+1.127        (drh      16-Jun-06):   Table *pTab,         /* The virtual table */
+1.127        (drh      16-Jun-06):   ExprList *pChanges,  /* The columns to change in the UPDATE statement */
+1.127        (drh      16-Jun-06):   Expr *pRowidExpr,    /* Expression used to recompute the rowid */
+1.127        (drh      16-Jun-06):   int *aXRef,          /* Mapping from columns of pTab to entries in pChanges */
+1.127        (drh      16-Jun-06):   Expr *pWhere         /* WHERE clause of the UPDATE statement */
+1.127        (drh      16-Jun-06): );
+1.133        (drh      27-Jun-06): #endif /* SQLITE_OMIT_VIRTUALTABLE */
+1.127        (drh      16-Jun-06): 
+1.1          (drh      31-May-00): /*
+1.113        (drh      14-Nov-05): ** The most recently coded instruction was an OP_Column to retrieve the
+1.113        (drh      14-Nov-05): ** i-th column of table pTab. This routine sets the P3 parameter of the 
+1.105        (danielk1 09-Mar-05): ** OP_Column to the default value, if any.
+1.105        (danielk1 09-Mar-05): **
+1.105        (danielk1 09-Mar-05): ** The default value of a column is specified by a DEFAULT clause in the 
+1.105        (danielk1 09-Mar-05): ** column definition. This was either supplied by the user when the table
+1.105        (danielk1 09-Mar-05): ** was created, or added later to the table definition by an ALTER TABLE
+1.105        (danielk1 09-Mar-05): ** command. If the latter, then the row-records in the table btree on disk
+1.105        (danielk1 09-Mar-05): ** may not contain a value for the column and the default value, taken
+1.105        (danielk1 09-Mar-05): ** from the P3 parameter of the OP_Column instruction, is returned instead.
+1.105        (danielk1 09-Mar-05): ** If the former, then all row-records are guaranteed to include a value
+1.105        (danielk1 09-Mar-05): ** for the column and the P3 value is not required.
+1.105        (danielk1 09-Mar-05): **
+1.105        (danielk1 09-Mar-05): ** Column definitions created by an ALTER TABLE command may only have 
+1.105        (danielk1 09-Mar-05): ** literal default values specified: a number, null or a string. (If a more
+1.105        (danielk1 09-Mar-05): ** complicated default expression value was provided, it is evaluated 
+1.105        (danielk1 09-Mar-05): ** when the ALTER TABLE is executed and one of the literal values written
+1.105        (danielk1 09-Mar-05): ** into the sqlite_master table.)
+1.105        (danielk1 09-Mar-05): **
+1.105        (danielk1 09-Mar-05): ** Therefore, the P3 parameter is only required if the default value for
+1.105        (danielk1 09-Mar-05): ** the column is a literal number, string or null. The sqlite3ValueFromExpr()
+1.105        (danielk1 09-Mar-05): ** function is capable of transforming these types of expressions into
+1.105        (danielk1 09-Mar-05): ** sqlite3_value objects.
+1.105        (danielk1 09-Mar-05): */
+1.105        (danielk1 09-Mar-05): void sqlite3ColumnDefault(Vdbe *v, Table *pTab, int i){
+1.105        (danielk1 09-Mar-05):   if( pTab && !pTab->pSelect ){
+1.105        (danielk1 09-Mar-05):     sqlite3_value *pValue;
+1.118        (danielk1 09-Jan-06):     u8 enc = ENC(sqlite3VdbeDb(v));
+1.105        (danielk1 09-Mar-05):     Column *pCol = &pTab->aCol[i];
+1.105        (danielk1 09-Mar-05):     sqlite3ValueFromExpr(pCol->pDflt, enc, pCol->affinity, &pValue);
+1.110        (drh      21-Jul-05):     if( pValue ){
+1.110        (drh      21-Jul-05):       sqlite3VdbeChangeP3(v, -1, (const char *)pValue, P3_MEM);
+1.110        (drh      21-Jul-05):     }else{
+1.110        (drh      21-Jul-05):       VdbeComment((v, "# %s.%s", pTab->zName, pCol->zName));
+1.110        (drh      21-Jul-05):     }
+1.105        (danielk1 09-Mar-05):   }
+1.105        (danielk1 09-Mar-05): }
+1.105        (danielk1 09-Mar-05): 
+1.105        (danielk1 09-Mar-05): /*
+1.1          (drh      31-May-00): ** Process an UPDATE statement.
+1.61         (drh      20-Apr-03): **
+1.61         (drh      20-Apr-03): **   UPDATE OR IGNORE table_wxyz SET a=b, c=d WHERE e<5 AND f NOT NULL;
+1.61         (drh      20-Apr-03): **          \_______/ \________/     \______/       \________________/
+1.61         (drh      20-Apr-03): *            onError   pTabList      pChanges             pWhere
+1.1          (drh      31-May-00): */
+1.71         (danielk1 08-May-04): void sqlite3Update(
+1.1          (drh      31-May-00):   Parse *pParse,         /* The parser context */
+1.55         (drh      20-Mar-03):   SrcList *pTabList,     /* The table in which we should change things */
+1.1          (drh      31-May-00):   ExprList *pChanges,    /* Things to be changed */
+1.29         (drh      29-Jan-02):   Expr *pWhere,          /* The WHERE clause.  May be null */
+1.29         (drh      29-Jan-02):   int onError            /* How to handle constraint errors */
+1.1          (drh      31-May-00): ){
+1.1          (drh      31-May-00):   int i, j;              /* Loop counters */
+1.1          (drh      31-May-00):   Table *pTab;           /* The table to be updated */
+1.84         (danielk1 16-Jun-04):   int addr = 0;          /* VDBE instruction address of the start of the loop */
+1.1          (drh      31-May-00):   WhereInfo *pWInfo;     /* Information about the WHERE clause */
+1.1          (drh      31-May-00):   Vdbe *v;               /* The virtual database engine */
+1.1          (drh      31-May-00):   Index *pIdx;           /* For looping over indices */
+1.1          (drh      31-May-00):   int nIdx;              /* Number of indices that need updating */
+1.30         (drh      29-Jan-02):   int nIdxTotal;         /* Total number of indices */
+1.65         (drh      02-May-03):   int iCur;              /* VDBE Cursor number of pTab */
+1.88         (drh      06-Sep-04):   sqlite3 *db;           /* The database structure */
+1.1          (drh      31-May-00):   Index **apIdx = 0;     /* An array of indices that need updating too */
+1.61         (drh      20-Apr-03):   char *aIdxUsed = 0;    /* aIdxUsed[i]==1 if the i-th index is used */
+1.1          (drh      31-May-00):   int *aXRef = 0;        /* aXRef[i] is the index in pChanges->a[] of the
+1.8          (drh      21-Jun-00):                          ** an expression for the i-th column of the table.
+1.8          (drh      21-Jun-00):                          ** aXRef[i]==-1 if the i-th column is not changed. */
+1.108        (drh      12-Jun-05):   int chngRowid;         /* True if the record number is being changed */
+1.108        (drh      12-Jun-05):   Expr *pRowidExpr = 0;  /* Expression defining the new record number */
+1.84         (danielk1 16-Jun-04):   int openAll = 0;       /* True if all indices need to be opened */
+1.64         (drh      25-Apr-03):   AuthContext sContext;  /* The authorization context */
+1.104        (danielk1 29-Jan-05):   NameContext sNC;       /* The name-context to resolve expressions in */
+1.115        (danielk1 05-Jan-06):   int iDb;               /* Database containing the table being updated */
+1.1          (drh      31-May-00): 
+1.92         (drh      04-Nov-04): #ifndef SQLITE_OMIT_TRIGGER
+1.92         (drh      04-Nov-04):   int isView;                  /* Trying to update a view */
+1.98         (drh      07-Dec-04):   int triggers_exist = 0;      /* True if any row triggers exist */
+1.92         (drh      04-Nov-04): #endif
+1.37         (danielk1 15-May-02): 
+1.37         (danielk1 15-May-02):   int newIdx      = -1;  /* index of trigger "new" temp table       */
+1.37         (danielk1 15-May-02):   int oldIdx      = -1;  /* index of trigger "old" temp table       */
+1.37         (danielk1 15-May-02): 
+1.64         (drh      25-Apr-03):   sContext.pParse = 0;
+1.121        (danielk1 18-Jan-06):   if( pParse->nErr || sqlite3MallocFailed() ){
+1.120        (drh      11-Jan-06):     goto update_cleanup;
+1.120        (drh      11-Jan-06):   }
+1.15         (drh      23-Sep-01):   db = pParse->db;
+1.55         (drh      20-Mar-03):   assert( pTabList->nSrc==1 );
+1.11         (drh      11-Apr-01): 
+1.61         (drh      20-Apr-03):   /* Locate the table which we want to update. 
+1.1          (drh      31-May-00):   */
+1.71         (danielk1 08-May-04):   pTab = sqlite3SrcListLookup(pParse, pTabList);
+1.60         (drh      17-Apr-03):   if( pTab==0 ) goto update_cleanup;
+1.115        (danielk1 05-Jan-06):   iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
+1.91         (drh      31-Oct-04): 
+1.91         (drh      31-Oct-04):   /* Figure out if we have any triggers and if the table being
+1.91         (drh      31-Oct-04):   ** updated is a view
+1.91         (drh      31-Oct-04):   */
+1.91         (drh      31-Oct-04): #ifndef SQLITE_OMIT_TRIGGER
+1.98         (drh      07-Dec-04):   triggers_exist = sqlite3TriggersExist(pParse, pTab, TK_UPDATE, pChanges);
+1.63         (drh      24-Apr-03):   isView = pTab->pSelect!=0;
+1.91         (drh      31-Oct-04): #else
+1.98         (drh      07-Dec-04): # define triggers_exist 0
+1.91         (drh      31-Oct-04): # define isView 0
+1.91         (drh      31-Oct-04): #endif
+1.91         (drh      31-Oct-04): #ifdef SQLITE_OMIT_VIEW
+1.91         (drh      31-Oct-04): # undef isView
+1.91         (drh      31-Oct-04): # define isView 0
+1.91         (drh      31-Oct-04): #endif
+1.91         (drh      31-Oct-04): 
+1.98         (drh      07-Dec-04):   if( sqlite3IsReadOnly(pParse, pTab, triggers_exist) ){
+1.63         (drh      24-Apr-03):     goto update_cleanup;
+1.63         (drh      24-Apr-03):   }
+1.131        (danielk1 19-Jun-06):   if( sqlite3ViewGetColumnNames(pParse, pTab) ){
+1.131        (danielk1 19-Jun-06):     goto update_cleanup;
+1.60         (drh      17-Apr-03):   }
+1.83         (drh      13-Jun-04):   aXRef = sqliteMallocRaw( sizeof(int) * pTab->nCol );
+1.1          (drh      31-May-00):   if( aXRef==0 ) goto update_cleanup;
+1.1          (drh      31-May-00):   for(i=0; i<pTab->nCol; i++) aXRef[i] = -1;
+1.1          (drh      31-May-00): 
+1.61         (drh      20-Apr-03):   /* If there are FOR EACH ROW triggers, allocate cursors for the
+1.61         (drh      20-Apr-03):   ** special OLD and NEW tables
+1.61         (drh      20-Apr-03):   */
+1.98         (drh      07-Dec-04):   if( triggers_exist ){
+1.37         (danielk1 15-May-02):     newIdx = pParse->nTab++;
+1.37         (danielk1 15-May-02):     oldIdx = pParse->nTab++;
+1.37         (danielk1 15-May-02):   }
+1.37         (danielk1 15-May-02): 
+1.48         (drh      16-Jul-02):   /* Allocate a cursors for the main database table and for all indices.
+1.48         (drh      16-Jul-02):   ** The index cursors might not be used, but if they are used they
+1.48         (drh      16-Jul-02):   ** need to occur right after the database cursor.  So go ahead and
+1.48         (drh      16-Jul-02):   ** allocate enough space, just in case.
+1.48         (drh      16-Jul-02):   */
+1.65         (drh      02-May-03):   pTabList->a[0].iCursor = iCur = pParse->nTab++;
+1.48         (drh      16-Jul-02):   for(pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext){
+1.48         (drh      16-Jul-02):     pParse->nTab++;
+1.48         (drh      16-Jul-02):   }
+1.48         (drh      16-Jul-02): 
+1.104        (danielk1 29-Jan-05):   /* Initialize the name-context */
+1.104        (danielk1 29-Jan-05):   memset(&sNC, 0, sizeof(sNC));
+1.104        (danielk1 29-Jan-05):   sNC.pParse = pParse;
+1.104        (danielk1 29-Jan-05):   sNC.pSrcList = pTabList;
+1.104        (danielk1 29-Jan-05): 
+1.64         (drh      25-Apr-03):   /* Resolve the column names in all the expressions of the
+1.64         (drh      25-Apr-03):   ** of the UPDATE statement.  Also find the column index
+1.52         (drh      12-Jan-03):   ** for each column to be updated in the pChanges array.  For each
+1.52         (drh      12-Jan-03):   ** column to be updated, make sure we have authorization to change
+1.52         (drh      12-Jan-03):   ** that column.
+1.1          (drh      31-May-00):   */
+1.108        (drh      12-Jun-05):   chngRowid = 0;
+1.1          (drh      31-May-00):   for(i=0; i<pChanges->nExpr; i++){
+1.104        (danielk1 29-Jan-05):     if( sqlite3ExprResolveNames(&sNC, pChanges->a[i].pExpr) ){
+1.1          (drh      31-May-00):       goto update_cleanup;
+1.1          (drh      31-May-00):     }
+1.1          (drh      31-May-00):     for(j=0; j<pTab->nCol; j++){
+1.71         (danielk1 08-May-04):       if( sqlite3StrICmp(pTab->aCol[j].zName, pChanges->a[i].zName)==0 ){
+1.26         (drh      14-Jan-02):         if( j==pTab->iPKey ){
+1.108        (drh      12-Jun-05):           chngRowid = 1;
+1.108        (drh      12-Jun-05):           pRowidExpr = pChanges->a[i].pExpr;
+1.23         (drh      21-Dec-01):         }
+1.1          (drh      31-May-00):         aXRef[j] = i;
+1.1          (drh      31-May-00):         break;
+1.1          (drh      31-May-00):       }
+1.1          (drh      31-May-00):     }
+1.1          (drh      31-May-00):     if( j>=pTab->nCol ){
+1.71         (danielk1 08-May-04):       if( sqlite3IsRowid(pChanges->a[i].zName) ){
+1.108        (drh      12-Jun-05):         chngRowid = 1;
+1.108        (drh      12-Jun-05):         pRowidExpr = pChanges->a[i].pExpr;
+1.67         (drh      01-Jun-03):       }else{
+1.71         (danielk1 08-May-04):         sqlite3ErrorMsg(pParse, "no such column: %s", pChanges->a[i].zName);
+1.67         (drh      01-Jun-03):         goto update_cleanup;
+1.67         (drh      01-Jun-03):       }
+1.1          (drh      31-May-00):     }
+1.52         (drh      12-Jan-03): #ifndef SQLITE_OMIT_AUTHORIZATION
+1.53         (drh      13-Jan-03):     {
+1.53         (drh      13-Jan-03):       int rc;
+1.71         (danielk1 08-May-04):       rc = sqlite3AuthCheck(pParse, SQLITE_UPDATE, pTab->zName,
+1.115        (danielk1 05-Jan-06):                            pTab->aCol[j].zName, db->aDb[iDb].zName);
+1.53         (drh      13-Jan-03):       if( rc==SQLITE_DENY ){
+1.53         (drh      13-Jan-03):         goto update_cleanup;
+1.53         (drh      13-Jan-03):       }else if( rc==SQLITE_IGNORE ){
+1.53         (drh      13-Jan-03):         aXRef[j] = -1;
+1.53         (drh      13-Jan-03):       }
+1.52         (drh      12-Jan-03):     }
+1.52         (drh      12-Jan-03): #endif
+1.1          (drh      31-May-00):   }
+1.1          (drh      31-May-00): 
+1.22         (drh      21-Nov-01):   /* Allocate memory for the array apIdx[] and fill it with pointers to every
+1.1          (drh      31-May-00):   ** index that needs to be updated.  Indices only need updating if their
+1.25         (drh      31-Dec-01):   ** key includes one of the columns named in pChanges or if the record
+1.25         (drh      31-Dec-01):   ** number of the original table entry is changing.
+1.1          (drh      31-May-00):   */
+1.30         (drh      29-Jan-02):   for(nIdx=nIdxTotal=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, nIdxTotal++){
+1.108        (drh      12-Jun-05):     if( chngRowid ){
+1.23         (drh      21-Dec-01):       i = 0;
+1.23         (drh      21-Dec-01):     }else {
+1.23         (drh      21-Dec-01):       for(i=0; i<pIdx->nColumn; i++){
+1.23         (drh      21-Dec-01):         if( aXRef[pIdx->aiColumn[i]]>=0 ) break;
+1.23         (drh      21-Dec-01):       }
+1.1          (drh      31-May-00):     }
+1.8          (drh      21-Jun-00):     if( i<pIdx->nColumn ) nIdx++;
+1.1          (drh      31-May-00):   }
+1.30         (drh      29-Jan-02):   if( nIdxTotal>0 ){
+1.83         (drh      13-Jun-04):     apIdx = sqliteMallocRaw( sizeof(Index*) * nIdx + nIdxTotal );
+1.10         (drh      14-Mar-01):     if( apIdx==0 ) goto update_cleanup;
+1.30         (drh      29-Jan-02):     aIdxUsed = (char*)&apIdx[nIdx];
+1.10         (drh      14-Mar-01):   }
+1.30         (drh      29-Jan-02):   for(nIdx=j=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, j++){
+1.108        (drh      12-Jun-05):     if( chngRowid ){
+1.23         (drh      21-Dec-01):       i = 0;
+1.23         (drh      21-Dec-01):     }else{
+1.23         (drh      21-Dec-01):       for(i=0; i<pIdx->nColumn; i++){
+1.23         (drh      21-Dec-01):         if( aXRef[pIdx->aiColumn[i]]>=0 ) break;
+1.23         (drh      21-Dec-01):       }
+1.1          (drh      31-May-00):     }
+1.30         (drh      29-Jan-02):     if( i<pIdx->nColumn ){
+1.30         (drh      29-Jan-02):       apIdx[nIdx++] = pIdx;
+1.30         (drh      29-Jan-02):       aIdxUsed[j] = 1;
+1.30         (drh      29-Jan-02):     }else{
+1.30         (drh      29-Jan-02):       aIdxUsed[j] = 0;
+1.30         (drh      29-Jan-02):     }
+1.1          (drh      31-May-00):   }
+1.1          (drh      31-May-00): 
+1.1          (drh      31-May-00):   /* Begin generating code.
+1.1          (drh      31-May-00):   */
+1.71         (danielk1 08-May-04):   v = sqlite3GetVdbe(pParse);
+1.1          (drh      31-May-00):   if( v==0 ) goto update_cleanup;
+1.94         (drh      05-Nov-04):   if( pParse->nested==0 ) sqlite3VdbeCountChanges(v);
+1.115        (danielk1 05-Jan-06):   sqlite3BeginWriteOperation(pParse, 1, iDb);
+1.1          (drh      31-May-00): 
+1.127        (drh      16-Jun-06): #ifndef SQLITE_OMIT_VIRTUALTABLE
+1.127        (drh      16-Jun-06):   /* Virtual tables must be handled separately */
+1.127        (drh      16-Jun-06):   if( IsVirtual(pTab) ){
+1.127        (drh      16-Jun-06):     updateVirtualTable(pParse, pTabList, pTab, pChanges, pRowidExpr, aXRef,
+1.127        (drh      16-Jun-06):                        pWhere);
+1.127        (drh      16-Jun-06):     pWhere = 0;
+1.127        (drh      16-Jun-06):     pTabList = 0;
+1.127        (drh      16-Jun-06):     goto update_cleanup;
+1.127        (drh      16-Jun-06):   }
+1.127        (drh      16-Jun-06): #endif
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06):   /* Resolve the column names in all the expressions in the
+1.127        (drh      16-Jun-06):   ** WHERE clause.
+1.127        (drh      16-Jun-06):   */
+1.127        (drh      16-Jun-06):   if( sqlite3ExprResolveNames(&sNC, pWhere) ){
+1.127        (drh      16-Jun-06):     goto update_cleanup;
+1.127        (drh      16-Jun-06):   }
+1.127        (drh      16-Jun-06): 
+1.129        (danielk1 17-Jun-06):   /* Start the view context
+1.129        (danielk1 17-Jun-06):   */
+1.129        (danielk1 17-Jun-06):   if( isView ){
+1.129        (danielk1 17-Jun-06):     sqlite3AuthContextPush(pParse, &sContext, pTab->zName);
+1.129        (danielk1 17-Jun-06):   }
+1.129        (danielk1 17-Jun-06): 
+1.111        (drh      08-Sep-05):   /* If we are trying to update a view, realize that view into
+1.111        (drh      08-Sep-05):   ** a ephemeral table.
+1.63         (drh      24-Apr-03):   */
+1.63         (drh      24-Apr-03):   if( isView ){
+1.64         (drh      25-Apr-03):     Select *pView;
+1.71         (danielk1 08-May-04):     pView = sqlite3SelectDup(pTab->pSelect);
+1.124        (drh      11-Jun-06):     sqlite3Select(pParse, pView, SRT_EphemTab, iCur, 0, 0, 0, 0);
+1.71         (danielk1 08-May-04):     sqlite3SelectDelete(pView);
+1.63         (drh      24-Apr-03):   }
+1.63         (drh      24-Apr-03): 
+1.1          (drh      31-May-00):   /* Begin the database scan
+1.1          (drh      31-May-00):   */
+1.107        (drh      22-Apr-05):   pWInfo = sqlite3WhereBegin(pParse, pTabList, pWhere, 0);
+1.1          (drh      31-May-00):   if( pWInfo==0 ) goto update_cleanup;
+1.1          (drh      31-May-00): 
+1.125        (drh      14-Jun-06):   /* Remember the rowid of every item to be updated.
+1.1          (drh      31-May-00):   */
+1.125        (drh      14-Jun-06):   sqlite3VdbeAddOp(v, IsVirtual(pTab) ? OP_VRowid : OP_Rowid, iCur, 0);
+1.109        (drh      08-Jul-05):   sqlite3VdbeAddOp(v, OP_FifoWrite, 0, 0);
+1.1          (drh      31-May-00): 
+1.1          (drh      31-May-00):   /* End the database scan loop.
+1.1          (drh      31-May-00):   */
+1.71         (danielk1 08-May-04):   sqlite3WhereEnd(pWInfo);
+1.1          (drh      31-May-00): 
+1.19         (drh      15-Oct-01):   /* Initialize the count of updated rows
+1.19         (drh      15-Oct-01):   */
+1.37         (danielk1 15-May-02):   if( db->flags & SQLITE_CountRows && !pParse->trigStack ){
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_Integer, 0, 0);
+1.19         (drh      15-Oct-01):   }
+1.19         (drh      15-Oct-01): 
+1.98         (drh      07-Dec-04):   if( triggers_exist ){
+1.59         (drh      15-Apr-03):     /* Create pseudo-tables for NEW and OLD
+1.59         (drh      15-Apr-03):     */
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_OpenPseudo, oldIdx, 0);
+1.76         (danielk1 18-May-04):     sqlite3VdbeAddOp(v, OP_SetNumColumns, oldIdx, pTab->nCol);
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_OpenPseudo, newIdx, 0);
+1.76         (danielk1 18-May-04):     sqlite3VdbeAddOp(v, OP_SetNumColumns, newIdx, pTab->nCol);
+1.37         (danielk1 15-May-02): 
+1.59         (drh      15-Apr-03):     /* The top of the update loop for when there are triggers.
+1.59         (drh      15-Apr-03):     */
+1.109        (drh      08-Jul-05):     addr = sqlite3VdbeAddOp(v, OP_FifoRead, 0, 0);
+1.37         (danielk1 15-May-02): 
+1.63         (drh      24-Apr-03):     if( !isView ){
+1.106        (kwel     08-Apr-05):       sqlite3VdbeAddOp(v, OP_Dup, 0, 0);
+1.106        (kwel     08-Apr-05):       sqlite3VdbeAddOp(v, OP_Dup, 0, 0);
+1.106        (kwel     08-Apr-05):       /* Open a cursor and make it point to the record that is
+1.106        (kwel     08-Apr-05):       ** being updated.
+1.106        (kwel     08-Apr-05):       */
+1.116        (danielk1 07-Jan-06):       sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenRead);
+1.63         (drh      24-Apr-03):     }
+1.77         (drh      19-May-04):     sqlite3VdbeAddOp(v, OP_MoveGe, iCur, 0);
+1.37         (danielk1 15-May-02): 
+1.59         (drh      15-Apr-03):     /* Generate the OLD table
+1.59         (drh      15-Apr-03):     */
+1.108        (drh      12-Jun-05):     sqlite3VdbeAddOp(v, OP_Rowid, iCur, 0);
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_RowData, iCur, 0);
+1.108        (drh      12-Jun-05):     sqlite3VdbeAddOp(v, OP_Insert, oldIdx, 0);
+1.37         (danielk1 15-May-02): 
+1.59         (drh      15-Apr-03):     /* Generate the NEW table
+1.59         (drh      15-Apr-03):     */
+1.108        (drh      12-Jun-05):     if( chngRowid ){
+1.108        (drh      12-Jun-05):       sqlite3ExprCodeAndCache(pParse, pRowidExpr);
+1.59         (drh      15-Apr-03):     }else{
+1.108        (drh      12-Jun-05):       sqlite3VdbeAddOp(v, OP_Rowid, iCur, 0);
+1.59         (drh      15-Apr-03):     }
+1.99         (drh      07-Dec-04):     for(i=0; i<pTab->nCol; i++){
+1.59         (drh      15-Apr-03):       if( i==pTab->iPKey ){
+1.108        (drh      12-Jun-05):         sqlite3VdbeAddOp(v, OP_Null, 0, 0);
+1.59         (drh      15-Apr-03):         continue;
+1.59         (drh      15-Apr-03):       }
+1.59         (drh      15-Apr-03):       j = aXRef[i];
+1.59         (drh      15-Apr-03):       if( j<0 ){
+1.71         (danielk1 08-May-04):         sqlite3VdbeAddOp(v, OP_Column, iCur, i);
+1.105        (danielk1 09-Mar-05):         sqlite3ColumnDefault(v, pTab, i);
+1.37         (danielk1 15-May-02):       }else{
+1.99         (drh      07-Dec-04):         sqlite3ExprCodeAndCache(pParse, pChanges->a[j].pExpr);
+1.37         (danielk1 15-May-02):       }
+1.37         (danielk1 15-May-02):     }
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_MakeRecord, pTab->nCol, 0);
+1.74         (danielk1 16-May-04):     if( !isView ){
+1.74         (danielk1 16-May-04):       sqlite3TableAffinityStr(v, pTab);
+1.74         (danielk1 16-May-04):     }
+1.74         (danielk1 16-May-04):     if( pParse->nErr ) goto update_cleanup;
+1.108        (drh      12-Jun-05):     sqlite3VdbeAddOp(v, OP_Insert, newIdx, 0);
+1.63         (drh      24-Apr-03):     if( !isView ){
+1.71         (danielk1 08-May-04):       sqlite3VdbeAddOp(v, OP_Close, iCur, 0);
+1.63         (drh      24-Apr-03):     }
+1.37         (danielk1 15-May-02): 
+1.63         (drh      24-Apr-03):     /* Fire the BEFORE and INSTEAD OF triggers
+1.59         (drh      15-Apr-03):     */
+1.98         (drh      07-Dec-04):     if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_BEFORE, pTab,
+1.44         (danielk1 11-Jun-02):           newIdx, oldIdx, onError, addr) ){
+1.39         (danielk1 19-May-02):       goto update_cleanup;
+1.39         (danielk1 19-May-02):     }
+1.37         (danielk1 15-May-02):   }
+1.37         (danielk1 15-May-02): 
+1.125        (drh      14-Jun-06):   if( !isView && !IsVirtual(pTab) ){
+1.63         (drh      24-Apr-03):     /* 
+1.63         (drh      24-Apr-03):     ** Open every index that needs updating.  Note that if any
+1.63         (drh      24-Apr-03):     ** index could potentially invoke a REPLACE conflict resolution 
+1.63         (drh      24-Apr-03):     ** action, then we need to open all indices because we might need
+1.63         (drh      24-Apr-03):     ** to be deleting some records.
+1.63         (drh      24-Apr-03):     */
+1.116        (danielk1 07-Jan-06):     sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenWrite); 
+1.63         (drh      24-Apr-03):     if( onError==OE_Replace ){
+1.63         (drh      24-Apr-03):       openAll = 1;
+1.63         (drh      24-Apr-03):     }else{
+1.63         (drh      24-Apr-03):       openAll = 0;
+1.63         (drh      24-Apr-03):       for(pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext){
+1.63         (drh      24-Apr-03):         if( pIdx->onError==OE_Replace ){
+1.63         (drh      24-Apr-03):           openAll = 1;
+1.63         (drh      24-Apr-03):           break;
+1.63         (drh      24-Apr-03):         }
+1.30         (drh      29-Jan-02):       }
+1.30         (drh      29-Jan-02):     }
+1.63         (drh      24-Apr-03):     for(i=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, i++){
+1.63         (drh      24-Apr-03):       if( openAll || aIdxUsed[i] ){
+1.119        (danielk1 10-Jan-06):         KeyInfo *pKey = sqlite3IndexKeyinfo(pParse, pIdx);
+1.115        (danielk1 05-Jan-06):         sqlite3VdbeAddOp(v, OP_Integer, iDb, 0);
+1.78         (drh      20-May-04):         sqlite3VdbeOp3(v, OP_OpenWrite, iCur+i+1, pIdx->tnum,
+1.119        (danielk1 10-Jan-06):                        (char*)pKey, P3_KEYINFO_HANDOFF);
+1.65         (drh      02-May-03):         assert( pParse->nTab>iCur+i+1 );
+1.63         (drh      24-Apr-03):       }
+1.30         (drh      29-Jan-02):     }
+1.1          (drh      31-May-00): 
+1.63         (drh      24-Apr-03):     /* Loop over every record that needs updating.  We have to load
+1.63         (drh      24-Apr-03):     ** the old data for each record to be updated because some columns
+1.63         (drh      24-Apr-03):     ** might not change and we will need to copy the old value.
+1.125        (drh      14-Jun-06):     ** Also, the old data is needed to delete the old index entries.
+1.63         (drh      24-Apr-03):     ** So make the cursor point at the old record.
+1.63         (drh      24-Apr-03):     */
+1.98         (drh      07-Dec-04):     if( !triggers_exist ){
+1.109        (drh      08-Jul-05):       addr = sqlite3VdbeAddOp(v, OP_FifoRead, 0, 0);
+1.71         (danielk1 08-May-04):       sqlite3VdbeAddOp(v, OP_Dup, 0, 0);
+1.63         (drh      24-Apr-03):     }
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_NotExists, iCur, addr);
+1.63         (drh      24-Apr-03): 
+1.63         (drh      24-Apr-03):     /* If the record number will change, push the record number as it
+1.63         (drh      24-Apr-03):     ** will be after the update. (The old record number is currently
+1.63         (drh      24-Apr-03):     ** on top of the stack.)
+1.63         (drh      24-Apr-03):     */
+1.108        (drh      12-Jun-05):     if( chngRowid ){
+1.108        (drh      12-Jun-05):       sqlite3ExprCode(pParse, pRowidExpr);
+1.71         (danielk1 08-May-04):       sqlite3VdbeAddOp(v, OP_MustBeInt, 0, 0);
+1.63         (drh      24-Apr-03):     }
+1.1          (drh      31-May-00): 
+1.63         (drh      24-Apr-03):     /* Compute new data for this record.  
+1.63         (drh      24-Apr-03):     */
+1.63         (drh      24-Apr-03):     for(i=0; i<pTab->nCol; i++){
+1.63         (drh      24-Apr-03):       if( i==pTab->iPKey ){
+1.108        (drh      12-Jun-05):         sqlite3VdbeAddOp(v, OP_Null, 0, 0);
+1.63         (drh      24-Apr-03):         continue;
+1.63         (drh      24-Apr-03):       }
+1.63         (drh      24-Apr-03):       j = aXRef[i];
+1.63         (drh      24-Apr-03):       if( j<0 ){
+1.71         (danielk1 08-May-04):         sqlite3VdbeAddOp(v, OP_Column, iCur, i);
+1.105        (danielk1 09-Mar-05):         sqlite3ColumnDefault(v, pTab, i);
+1.63         (drh      24-Apr-03):       }else{
+1.71         (danielk1 08-May-04):         sqlite3ExprCode(pParse, pChanges->a[j].pExpr);
+1.63         (drh      24-Apr-03):       }
+1.63         (drh      24-Apr-03):     }
+1.23         (drh      21-Dec-01): 
+1.63         (drh      24-Apr-03):     /* Do constraint checks
+1.63         (drh      24-Apr-03):     */
+1.108        (drh      12-Jun-05):     sqlite3GenerateConstraintChecks(pParse, pTab, iCur, aIdxUsed, chngRowid, 1,
+1.63         (drh      24-Apr-03):                                    onError, addr);
+1.1          (drh      31-May-00): 
+1.63         (drh      24-Apr-03):     /* Delete the old indices for the current record.
+1.63         (drh      24-Apr-03):     */
+1.123        (drh      24-Feb-06):     sqlite3GenerateRowIndexDelete(v, pTab, iCur, aIdxUsed);
+1.30         (drh      29-Jan-02): 
+1.63         (drh      24-Apr-03):     /* If changing the record number, delete the old record.
+1.63         (drh      24-Apr-03):     */
+1.108        (drh      12-Jun-05):     if( chngRowid ){
+1.71         (danielk1 08-May-04):       sqlite3VdbeAddOp(v, OP_Delete, iCur, 0);
+1.63         (drh      24-Apr-03):     }
+1.30         (drh      29-Jan-02): 
+1.63         (drh      24-Apr-03):     /* Create the new index entries and the new record.
+1.63         (drh      24-Apr-03):     */
+1.108        (drh      12-Jun-05):     sqlite3CompleteInsertion(pParse, pTab, iCur, aIdxUsed, chngRowid, 1, -1);
+1.23         (drh      21-Dec-01):   }
+1.23         (drh      21-Dec-01): 
+1.30         (drh      29-Jan-02):   /* Increment the row counter 
+1.19         (drh      15-Oct-01):   */
+1.37         (danielk1 15-May-02):   if( db->flags & SQLITE_CountRows && !pParse->trigStack){
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_AddImm, 1, 0);
+1.19         (drh      15-Oct-01):   }
+1.19         (drh      15-Oct-01): 
+1.63         (drh      24-Apr-03):   /* If there are triggers, close all the cursors after each iteration
+1.63         (drh      24-Apr-03):   ** through the loop.  The fire the after triggers.
+1.63         (drh      24-Apr-03):   */
+1.98         (drh      07-Dec-04):   if( triggers_exist ){
+1.63         (drh      24-Apr-03):     if( !isView ){
+1.63         (drh      24-Apr-03):       for(i=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, i++){
+1.63         (drh      24-Apr-03):         if( openAll || aIdxUsed[i] )
+1.71         (danielk1 08-May-04):           sqlite3VdbeAddOp(v, OP_Close, iCur+i+1, 0);
+1.63         (drh      24-Apr-03):       }
+1.71         (danielk1 08-May-04):       sqlite3VdbeAddOp(v, OP_Close, iCur, 0);
+1.37         (danielk1 15-May-02):     }
+1.98         (drh      07-Dec-04):     if( sqlite3CodeRowTrigger(pParse, TK_UPDATE, pChanges, TRIGGER_AFTER, pTab, 
+1.44         (danielk1 11-Jun-02):           newIdx, oldIdx, onError, addr) ){
+1.39         (danielk1 19-May-02):       goto update_cleanup;
+1.39         (danielk1 19-May-02):     }
+1.37         (danielk1 15-May-02):   }
+1.37         (danielk1 15-May-02): 
+1.1          (drh      31-May-00):   /* Repeat the above with the next record to be updated, until
+1.1          (drh      31-May-00):   ** all record selected by the WHERE clause have been updated.
+1.1          (drh      31-May-00):   */
+1.71         (danielk1 08-May-04):   sqlite3VdbeAddOp(v, OP_Goto, 0, addr);
+1.112        (drh      20-Sep-05):   sqlite3VdbeJumpHere(v, addr);
+1.37         (danielk1 15-May-02): 
+1.37         (danielk1 15-May-02):   /* Close all tables if there were no FOR EACH ROW triggers */
+1.127        (drh      16-Jun-06):   if( !triggers_exist ){
+1.37         (danielk1 15-May-02):     for(i=0, pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext, i++){
+1.37         (danielk1 15-May-02):       if( openAll || aIdxUsed[i] ){
+1.71         (danielk1 08-May-04):         sqlite3VdbeAddOp(v, OP_Close, iCur+i+1, 0);
+1.37         (danielk1 15-May-02):       }
+1.37         (danielk1 15-May-02):     }
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_Close, iCur, 0);
+1.39         (danielk1 19-May-02):   }else{
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_Close, newIdx, 0);
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_Close, oldIdx, 0);
+1.37         (danielk1 15-May-02):   }
+1.37         (danielk1 15-May-02): 
+1.19         (drh      15-Oct-01):   /*
+1.93         (danielk1 05-Nov-04):   ** Return the number of rows that were changed. If this routine is 
+1.93         (danielk1 05-Nov-04):   ** generating code because of a call to sqlite3NestedParse(), do not
+1.93         (danielk1 05-Nov-04):   ** invoke the callback function.
+1.19         (drh      15-Oct-01):   */
+1.93         (danielk1 05-Nov-04):   if( db->flags & SQLITE_CountRows && !pParse->trigStack && pParse->nested==0 ){
+1.71         (danielk1 08-May-04):     sqlite3VdbeAddOp(v, OP_Callback, 1, 0);
+1.79         (danielk1 25-May-04):     sqlite3VdbeSetNumCols(v, 1);
+1.122        (danielk1 10-Feb-06):     sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows updated", P3_STATIC);
+1.12         (drh      13-Sep-01):   }
+1.1          (drh      31-May-00): 
+1.1          (drh      31-May-00): update_cleanup:
+1.71         (danielk1 08-May-04):   sqlite3AuthContextPop(&sContext);
+1.1          (drh      31-May-00):   sqliteFree(apIdx);
+1.1          (drh      31-May-00):   sqliteFree(aXRef);
+1.71         (danielk1 08-May-04):   sqlite3SrcListDelete(pTabList);
+1.71         (danielk1 08-May-04):   sqlite3ExprListDelete(pChanges);
+1.71         (danielk1 08-May-04):   sqlite3ExprDelete(pWhere);
+1.1          (drh      31-May-00):   return;
+1.1          (drh      31-May-00): }
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06): #ifndef SQLITE_OMIT_VIRTUALTABLE
+1.127        (drh      16-Jun-06): /*
+1.127        (drh      16-Jun-06): ** Generate code for an UPDATE of a virtual table.
+1.127        (drh      16-Jun-06): **
+1.127        (drh      16-Jun-06): ** The strategy is that we create an ephemerial table that contains
+1.127        (drh      16-Jun-06): ** for each row to be changed:
+1.127        (drh      16-Jun-06): **
+1.127        (drh      16-Jun-06): **   (A)  The original rowid of that row.
+1.127        (drh      16-Jun-06): **   (B)  The revised rowid for the row. (note1)
+1.127        (drh      16-Jun-06): **   (C)  The content of every column in the row.
+1.127        (drh      16-Jun-06): **
+1.127        (drh      16-Jun-06): ** Then we loop over this ephemeral table and for each row in
+1.127        (drh      16-Jun-06): ** the ephermeral table call VUpdate.
+1.127        (drh      16-Jun-06): **
+1.127        (drh      16-Jun-06): ** When finished, drop the ephemeral table.
+1.127        (drh      16-Jun-06): **
+1.127        (drh      16-Jun-06): ** (note1) Actually, if we know in advance that (A) is always the same
+1.127        (drh      16-Jun-06): ** as (B) we only store (A), then duplicate (A) when pulling
+1.127        (drh      16-Jun-06): ** it out of the ephemeral table before calling VUpdate.
+1.127        (drh      16-Jun-06): */
+1.127        (drh      16-Jun-06): static void updateVirtualTable(
+1.127        (drh      16-Jun-06):   Parse *pParse,       /* The parsing context */
+1.127        (drh      16-Jun-06):   SrcList *pSrc,       /* The virtual table to be modified */
+1.127        (drh      16-Jun-06):   Table *pTab,         /* The virtual table */
+1.127        (drh      16-Jun-06):   ExprList *pChanges,  /* The columns to change in the UPDATE statement */
+1.127        (drh      16-Jun-06):   Expr *pRowid,        /* Expression used to recompute the rowid */
+1.127        (drh      16-Jun-06):   int *aXRef,          /* Mapping from columns of pTab to entries in pChanges */
+1.127        (drh      16-Jun-06):   Expr *pWhere         /* WHERE clause of the UPDATE statement */
+1.127        (drh      16-Jun-06): ){
+1.127        (drh      16-Jun-06):   Vdbe *v = pParse->pVdbe;  /* Virtual machine under construction */
+1.127        (drh      16-Jun-06):   ExprList *pEList = 0;     /* The result set of the SELECT statement */
+1.127        (drh      16-Jun-06):   Select *pSelect = 0;      /* The SELECT statement */
+1.127        (drh      16-Jun-06):   Expr *pExpr;              /* Temporary expression */
+1.127        (drh      16-Jun-06):   int ephemTab;             /* Table holding the result of the SELECT */
+1.127        (drh      16-Jun-06):   int i;                    /* Loop counter */
+1.127        (drh      16-Jun-06):   int addr;                 /* Address of top of loop */
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06):   /* Construct the SELECT statement that will find the new values for
+1.127        (drh      16-Jun-06):   ** all updated rows. 
+1.127        (drh      16-Jun-06):   */
+1.127        (drh      16-Jun-06):   pEList = sqlite3ExprListAppend(0, sqlite3CreateIdExpr("_rowid_"), 0);
+1.127        (drh      16-Jun-06):   if( pRowid ){
+1.128        (danielk1 17-Jun-06):     pEList = sqlite3ExprListAppend(pEList, sqlite3ExprDup(pRowid), 0);
+1.127        (drh      16-Jun-06):   }
+1.132        (danielk1 24-Jun-06):   assert( pTab->iPKey<0 );
+1.127        (drh      16-Jun-06):   for(i=0; i<pTab->nCol; i++){
+1.132        (danielk1 24-Jun-06):     if( aXRef[i]>=0 ){
+1.127        (drh      16-Jun-06):       pExpr = sqlite3ExprDup(pChanges->a[aXRef[i]].pExpr);
+1.127        (drh      16-Jun-06):     }else{
+1.127        (drh      16-Jun-06):       pExpr = sqlite3CreateIdExpr(pTab->aCol[i].zName);
+1.127        (drh      16-Jun-06):     }
+1.127        (drh      16-Jun-06):     pEList = sqlite3ExprListAppend(pEList, pExpr, 0);
+1.127        (drh      16-Jun-06):   }
+1.127        (drh      16-Jun-06):   pSelect = sqlite3SelectNew(pEList, pSrc, pWhere, 0, 0, 0, 0, 0, 0);
+1.127        (drh      16-Jun-06):   
+1.127        (drh      16-Jun-06):   /* Create the ephemeral table into which the update results will
+1.127        (drh      16-Jun-06):   ** be stored.
+1.127        (drh      16-Jun-06):   */
+1.127        (drh      16-Jun-06):   assert( v );
+1.127        (drh      16-Jun-06):   ephemTab = pParse->nTab++;
+1.127        (drh      16-Jun-06):   sqlite3VdbeAddOp(v, OP_OpenEphemeral, ephemTab, pTab->nCol+1+(pRowid!=0));
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06):   /* fill the ephemeral table 
+1.127        (drh      16-Jun-06):   */
+1.127        (drh      16-Jun-06):   sqlite3Select(pParse, pSelect, SRT_Table, ephemTab, 0, 0, 0, 0);
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06):   /*
+1.127        (drh      16-Jun-06):   ** Generate code to scan the ephemeral table and call VDelete and
+1.127        (drh      16-Jun-06):   ** VInsert
+1.127        (drh      16-Jun-06):   */
+1.127        (drh      16-Jun-06):   sqlite3VdbeAddOp(v, OP_Rewind, ephemTab, 0);
+1.127        (drh      16-Jun-06):   addr = sqlite3VdbeCurrentAddr(v);
+1.127        (drh      16-Jun-06):   sqlite3VdbeAddOp(v, OP_Column,  ephemTab, 0);
+1.127        (drh      16-Jun-06):   if( pRowid ){
+1.127        (drh      16-Jun-06):     sqlite3VdbeAddOp(v, OP_Column, ephemTab, 1);
+1.127        (drh      16-Jun-06):   }else{
+1.128        (danielk1 17-Jun-06):     sqlite3VdbeAddOp(v, OP_Dup, 0, 0);
+1.127        (drh      16-Jun-06):   }
+1.127        (drh      16-Jun-06):   for(i=0; i<pTab->nCol; i++){
+1.127        (drh      16-Jun-06):     sqlite3VdbeAddOp(v, OP_Column, ephemTab, i+1+(pRowid!=0));
+1.127        (drh      16-Jun-06):   }
+1.130        (danielk1 17-Jun-06):   pParse->pVirtualLock = pTab;
+1.127        (drh      16-Jun-06):   sqlite3VdbeOp3(v, OP_VUpdate, 0, pTab->nCol+2, 
+1.127        (drh      16-Jun-06):                      (const char*)pTab->pVtab, P3_VTAB);
+1.127        (drh      16-Jun-06):   sqlite3VdbeAddOp(v, OP_Next, ephemTab, addr);
+1.127        (drh      16-Jun-06):   sqlite3VdbeAddOp(v, OP_Close, ephemTab, 0);
+1.127        (drh      16-Jun-06): 
+1.127        (drh      16-Jun-06):   /* Cleanup */
+1.127        (drh      16-Jun-06):   sqlite3SelectDelete(pSelect);  
+1.127        (drh      16-Jun-06): }
+1.127        (drh      16-Jun-06): #endif /* SQLITE_OMIT_VIRTUALTABLE */
