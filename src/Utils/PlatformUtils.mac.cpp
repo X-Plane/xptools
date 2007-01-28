@@ -80,66 +80,86 @@ int		GetFilePathFromUser(
 					int					inID,
 					char * 				outFileName)
 {
-		OSErr				err;
-		NavReplyRecord		reply;
-		NavDialogOptions	options;
-		FSRef				fileSpec;
+		OSErr						err;
+		NavDialogCreationOptions	options;
+		FSRef						fileSpec;
+		NavDialogRef				dialog = NULL;
 		
-	reply.version = kNavReplyRecordVersion;
-	err = NavGetDefaultDialogOptions(&options);
-	if (err != noErr)
-		return 0;
+	err = NavGetDefaultDialogCreationOptions(&options);	
+	if (err != noErr) goto bail;
 		
 	if (inType == getFile_Save)
-	{
-		options.savedFileName[0] = strlen(outFileName);
-		memcpy(options.savedFileName+1, outFileName, options.savedFileName[0]);
-	}
+		options.saveFileName = CFStringCreateWithCString(kCFAllocatorDefault,outFileName,kCFStringEncodingMacRoman);
 
-	options.message[0] = strlen(inPrompt);
-	memcpy(options.message+1,inPrompt, options.message[0]);
-	options.actionButtonLabel[0] = strlen(inAction);
-	memcpy(options.actionButtonLabel+1,inAction, options.actionButtonLabel[0]);
-	options.dialogOptionFlags &= ~kNavAllowMultipleFiles;
+	options.message = CFStringCreateWithCString(kCFAllocatorDefault,inPrompt,kCFStringEncodingMacRoman);
+	options.actionButtonLabel = CFStringCreateWithCString(kCFAllocatorDefault,inAction,kCFStringEncodingMacRoman);
+	options.optionFlags &= ~kNavAllowMultipleFiles;
+	options.optionFlags &= ~kNavAllowStationery	;
+	options.optionFlags |=  kNavAllFilesInPopup	;
 	options.preferenceKey = inID;
+
 	NavEventUPP eventUPP = NewNavEventUPP(event_proc);
 	
 	switch(inType) {
 	case getFile_Open:
-		err = NavGetFile(NULL, &reply, &options, eventUPP, NULL, NULL, NULL, NULL);
-		if ((err != noErr) && (err != userCanceledErr))
-			return 0;
+		err = NavCreateGetFileDialog(&options, NULL, eventUPP, NULL, NULL, NULL, &dialog);
+		if (err != noErr) goto bail;
 		break;
 	case getFile_Save:
-		err = NavPutFile(NULL, &reply, &options, eventUPP, 0, 0, NULL);
-		if ((err != noErr) && (err != userCanceledErr))
-			return 0;
+		err = NavCreatePutFileDialog(&options, 0, 0, eventUPP, NULL, &dialog);
+		if (err != noErr) goto bail;
 		break;
 	case getFile_PickFolder:
-		err = NavChooseFolder(NULL, &reply, &options, eventUPP, NULL, NULL);
-		if ((err != noErr) && (err != userCanceledErr))
-			return 0;
-		break;
+		err = NavCreateChooseFolderDialog(&options, eventUPP, NULL, NULL, &dialog);
+		if (err != noErr) goto bail;
 	}	
+	
+	err = NavDialogRun(dialog);
+	if (err != noErr) goto bail;
+	
+	CFRelease(options.message);
+	CFRelease(options.actionButtonLabel);
+	if(options.saveFileName) CFRelease(options.saveFileName);
+	
+	NavUserAction action = NavDialogGetUserAction(dialog);
+	if (action !=kNavUserActionCancel && action != kNavUserActionNone)
+	{
+		NavReplyRecord	reply;
+		err = NavDialogGetReply(dialog, &reply);
+		if (err != noErr) goto bail;
+	
+		err = AEGetNthPtr(&reply.selection, 1, typeFSRef, NULL, NULL, &fileSpec, sizeof(fileSpec), NULL);
+		if (err != noErr)
+			goto bail;
+
+		err = FSRefToPathName(&fileSpec, outFileName);
+		if (err != noErr)
+			goto bail;
+		
+		NavDisposeReply(&reply);
+
+		if (inType == getFile_Save)
+		{	
+			CFStringRef str = NavDialogGetSaveFileName(dialog);
+			
+			strcat(outFileName,DIR_STR);
+			int p = strlen(outFileName);			
+			int len = CFStringGetLength(str);
+			int got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outFileName+p, len, NULL);
+			outFileName[p+len] = 0;
+		}
+		
+	}
+	
+	
+	NavDialogDispose(dialog);
+	dialog = NULL;
+
 	DisposeNavEventUPP(eventUPP);			
-	if (!reply.validRecord)
-		goto bail;
-
-	/* Convert the result from an AEDesc to a Mac file spec. */
-	err = AEGetNthPtr(&reply.selection, 1, typeFSRef, NULL, NULL, &fileSpec, sizeof(fileSpec), NULL);
-	if (err != noErr)
-		goto bail;
-
-	/* Then convert the FSSpec to a full path. */
-	err = FSRefToPathName(&fileSpec, outFileName);
-	if (err != noErr)
-		goto bail;
-
-	NavDisposeReply(&reply);
-	return 1;
+	return (action !=kNavUserActionCancel && action != kNavUserActionNone);
 
 bail:
-	NavDisposeReply(&reply);
+	if(dialog)		NavDialogDispose(dialog);
 	return 0;
 
 
@@ -251,7 +271,7 @@ OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname)
 	
 	CFURLPathStyle st = kCFURLPOSIXPathStyle;
 	#if defined(__MWERKS__)
-	CFURLPathStyle st = kCFURLHFSPathStyle;
+	st = kCFURLHFSPathStyle;
 	#endif
 	CFStringRef	str = CFURLCopyFileSystemPath(url, st);
 	CFRelease(url);

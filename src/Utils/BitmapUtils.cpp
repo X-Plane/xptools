@@ -75,7 +75,7 @@ extern "C" {
 
 
 #if APL
-	#if !defined(__MWERKS__)
+	#if !defined(__MWERKS__) || defined(__MACH__)
 		#include <Carbon/Carbon.h>
 	#else
 		#include <Carbon.h>
