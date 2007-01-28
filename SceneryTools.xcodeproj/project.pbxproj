@@ -26,8 +26,6 @@
 
 /* Begin PBXBuildFile section */
 		8D0C4E920486CD37000505A6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
-		D61C275C0B615CCD0092E098 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
-		D61C275D0B615CCD0092E098 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D62433910AE3CB4B004F00E3 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338E0AE3CB4B004F00E3 /* libpng.a */; };
 		D624339E0AE3CDFF004F00E3 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
@@ -57,20 +55,6 @@
 		D62435460AE40216004F00E3 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
 		D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
-		D62435B60AE40384004F00E3 /* GUI_Commander.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC367F0AB22C84003949C5 /* GUI_Commander.cpp */; };
-		D62435B70AE40384004F00E3 /* GUI_Control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36810AB22C84003949C5 /* GUI_Control.cpp */; };
-		D62435B80AE40384004F00E3 /* GUI_Fonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36840AB22C84003949C5 /* GUI_Fonts.cpp */; };
-		D62435B90AE40384004F00E3 /* GUI_GraphState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36860AB22C84003949C5 /* GUI_GraphState.cpp */; };
-		D62435BA0AE40384004F00E3 /* GUI_Listener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36880AB22C84003949C5 /* GUI_Listener.cpp */; };
-		D62435BB0AE40384004F00E3 /* GUI_Pane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC368C0AB22C84003949C5 /* GUI_Pane.cpp */; };
-		D62435BC0AE40384004F00E3 /* GUI_ScrollBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC368E0AB22C84003949C5 /* GUI_ScrollBar.cpp */; };
-		D62435BD0AE40384004F00E3 /* GUI_ScrollerPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36900AB22C84003949C5 /* GUI_ScrollerPane.cpp */; };
-		D62435BE0AE40384004F00E3 /* GUI_SimpleScroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36920AB22C84003949C5 /* GUI_SimpleScroller.cpp */; };
-		D62435BF0AE40384004F00E3 /* GUI_Splitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36940AB22C84003949C5 /* GUI_Splitter.cpp */; };
-		D62435C00AE40384004F00E3 /* GUI_Table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36960AB22C84003949C5 /* GUI_Table.cpp */; };
-		D62435C10AE40384004F00E3 /* GUI_TextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36980AB22C84003949C5 /* GUI_TextField.cpp */; };
-		D62435C20AE40384004F00E3 /* GUI_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369A0AB22C84003949C5 /* GUI_Timer.cpp */; };
-		D62435C30AE40384004F00E3 /* GUI_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369C0AB22C84003949C5 /* GUI_Window.cpp */; };
 		D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D00AB22C84003949C5 /* HTTPClient.cpp */; };
 		D62435C90AE40392004F00E3 /* PCSBSocket.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D30AB22C84003949C5 /* PCSBSocket.mac.cpp */; };
 		D62435CB0AE40392004F00E3 /* PCSBSocketUDP.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D60AB22C84003949C5 /* PCSBSocketUDP.mac.cpp */; };
@@ -180,8 +164,6 @@
 		D656B28C0B51892D003FF84F /* libgeotiff.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B28B0B51892D003FF84F /* libgeotiff.a */; };
 		D656B2A40B5189B0003FF84F /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
 		D656B2A80B5189B0003FF84F /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
-		D656B2E40B518A62003FF84F /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
-		D656B2E50B518A62003FF84F /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
 		D656B33D0B518C9F003FF84F /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B32A0B518C9F003FF84F /* xmlparse.c */; };
 		D656B33F0B518C9F003FF84F /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3360B518C9F003FF84F /* xmlrole.c */; };
 		D656B3400B518C9F003FF84F /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3380B518C9F003FF84F /* xmltok.c */; };
@@ -199,8 +181,6 @@
 		D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D65E4B2F0B65427C004D7887 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D65E4B300B65427C004D7887 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
-		D65E4B310B65427C004D7887 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
-		D65E4B320B65427C004D7887 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
 		D65E4B330B65427C004D7887 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D65E4B350B65427C004D7887 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D65E4B360B65427C004D7887 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -322,8 +302,6 @@
 		D67EF8700B5E5EAD00D9190C /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D67EF8740B5E5EC500D9190C /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
-		D67EF8750B5E5EC600D9190C /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D67EF9740B6135F400D9190C /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
 		D67EF9750B6135F400D9190C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
@@ -337,8 +315,6 @@
 		D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF97E0B6135F400D9190C /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
 		D67EF97F0B6135F400D9190C /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
-		D67EF9800B6135F400D9190C /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
-		D67EF9810B6135F400D9190C /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
 		D67EF9820B6135F400D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D67EF9840B6135F400D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF9850B6135F400D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -353,6 +329,18 @@
 		D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D67EF9C20B61424F00D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D69FD7470B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD7480B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D69FD7490B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD74A0B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD74C0B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD74E0B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D69FD7530B6CF880008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D69FD7540B6CF883008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD75A0B6CF8B5008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */; };
 		D6BC3A6E0AB22E5C003949C5 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
@@ -491,8 +479,6 @@
 		D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D6ED372D0B67964D00D5484E /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
 		D6ED372E0B67964D00D5484E /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
-		D6ED372F0B67964D00D5484E /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E00B518A62003FF84F /* unzip.c */; };
-		D6ED37300B67964D00D5484E /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2E20B518A62003FF84F /* zip.c */; };
 		D6ED37310B67964D00D5484E /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B32A0B518C9F003FF84F /* xmlparse.c */; };
 		D6ED37320B67964D00D5484E /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3360B518C9F003FF84F /* xmlrole.c */; };
 		D6ED37330B67964D00D5484E /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B3380B518C9F003FF84F /* xmltok.c */; };
@@ -532,9 +518,6 @@
 		D6ED40440B6AD47300D5484E /* WED_UndoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */; };
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
-		D6EDAF6B0B529EB900754E77 /* GUI_Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF690B529EB900754E77 /* GUI_Application.cpp */; };
-		D6EDAF6C0B529EB900754E77 /* GUI_Broadcaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAF6A0B529EB900754E77 /* GUI_Broadcaster.cpp */; };
-		D6EDAFC30B52A01900754E77 /* GUI_Clipboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EDAFC20B52A01900754E77 /* GUI_Clipboard.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -602,10 +585,6 @@
 		D656B28B0B51892D003FF84F /* libgeotiff.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgeotiff.a; path = ../../usr/local/lib/libgeotiff.a; sourceTree = "<group>"; };
 		D656B2980B5189B0003FF84F /* dbfopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = dbfopen.c; sourceTree = "<group>"; };
 		D656B29C0B5189B0003FF84F /* shpopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = shpopen.c; sourceTree = "<group>"; };
-		D656B2E00B518A62003FF84F /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
-		D656B2E10B518A62003FF84F /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
-		D656B2E20B518A62003FF84F /* zip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
-		D656B2E30B518A62003FF84F /* zip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
 		D656B32A0B518C9F003FF84F /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmlparse.c; sourceTree = "<group>"; };
 		D656B32B0B518C9F003FF84F /* xmlparse.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = xmlparse.h; sourceTree = "<group>"; };
 		D656B32D0B518C9F003FF84F /* ascii.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ascii.h; sourceTree = "<group>"; };
@@ -633,6 +612,10 @@
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9890B6135F400D9190C /* ObjConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjConverter; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9930B61367100D9190C /* ConvertObjUI.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ConvertObjUI.cpp; sourceTree = "<group>"; };
+		D69FD7430B6CF765008E3AEC /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
+		D69FD7440B6CF765008E3AEC /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
+		D69FD7450B6CF765008E3AEC /* zip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
+		D69FD7460B6CF765008E3AEC /* zip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
 		D6BC36450AB22C84003949C5 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
 		D6BC36460AB22C84003949C5 /* DSFLib.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLib.cpp; sourceTree = "<group>"; };
 		D6BC36470AB22C84003949C5 /* DSFLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFLib.h; sourceTree = "<group>"; };
@@ -1391,7 +1374,6 @@
 			children = (
 				D656B3600B518D29003FF84F /* src */,
 				D656B3250B518C82003FF84F /* expat */,
-				D656B2DD0B518A39003FF84F /* minizip */,
 				D656B2920B518971003FF84F /* shapelib-1.2.10 */,
 			);
 			name = libsrc;
@@ -1405,18 +1387,6 @@
 			);
 			name = "shapelib-1.2.10";
 			path = "libsrc/shapelib-1.2.10";
-			sourceTree = "<group>";
-		};
-		D656B2DD0B518A39003FF84F /* minizip */ = {
-			isa = PBXGroup;
-			children = (
-				D656B2E00B518A62003FF84F /* unzip.c */,
-				D656B2E10B518A62003FF84F /* unzip.h */,
-				D656B2E20B518A62003FF84F /* zip.c */,
-				D656B2E30B518A62003FF84F /* zip.h */,
-			);
-			name = minizip;
-			path = "libsrc/zlib-1.1.4/contrib/minizip";
 			sourceTree = "<group>";
 		};
 		D656B3250B518C82003FF84F /* expat */ = {
@@ -1830,6 +1800,10 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D69FD7430B6CF765008E3AEC /* unzip.c */,
+				D69FD7440B6CF765008E3AEC /* unzip.h */,
+				D69FD7450B6CF765008E3AEC /* zip.c */,
+				D69FD7460B6CF765008E3AEC /* zip.h */,
 				D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */,
 				D6BC376C0AB22C85003949C5 /* AssertUtils.h */,
 				D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */,
@@ -2588,20 +2562,6 @@
 				D62435460AE40216004F00E3 /* DSFLib.cpp in Sources */,
 				D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */,
 				D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */,
-				D62435B60AE40384004F00E3 /* GUI_Commander.cpp in Sources */,
-				D62435B70AE40384004F00E3 /* GUI_Control.cpp in Sources */,
-				D62435B80AE40384004F00E3 /* GUI_Fonts.cpp in Sources */,
-				D62435B90AE40384004F00E3 /* GUI_GraphState.cpp in Sources */,
-				D62435BA0AE40384004F00E3 /* GUI_Listener.cpp in Sources */,
-				D62435BB0AE40384004F00E3 /* GUI_Pane.cpp in Sources */,
-				D62435BC0AE40384004F00E3 /* GUI_ScrollBar.cpp in Sources */,
-				D62435BD0AE40384004F00E3 /* GUI_ScrollerPane.cpp in Sources */,
-				D62435BE0AE40384004F00E3 /* GUI_SimpleScroller.cpp in Sources */,
-				D62435BF0AE40384004F00E3 /* GUI_Splitter.cpp in Sources */,
-				D62435C00AE40384004F00E3 /* GUI_Table.cpp in Sources */,
-				D62435C10AE40384004F00E3 /* GUI_TextField.cpp in Sources */,
-				D62435C20AE40384004F00E3 /* GUI_Timer.cpp in Sources */,
-				D62435C30AE40384004F00E3 /* GUI_Window.cpp in Sources */,
 				D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */,
 				D62435C90AE40392004F00E3 /* PCSBSocket.mac.cpp in Sources */,
 				D62435CB0AE40392004F00E3 /* PCSBSocketUDP.mac.cpp in Sources */,
@@ -2705,16 +2665,13 @@
 				D656B2440B5181F0003FF84F /* make_interface.c in Sources */,
 				D656B2A40B5189B0003FF84F /* dbfopen.c in Sources */,
 				D656B2A80B5189B0003FF84F /* shpopen.c in Sources */,
-				D656B2E40B518A62003FF84F /* unzip.c in Sources */,
-				D656B2E50B518A62003FF84F /* zip.c in Sources */,
 				D656B33D0B518C9F003FF84F /* xmlparse.c in Sources */,
 				D656B33F0B518C9F003FF84F /* xmlrole.c in Sources */,
 				D656B3400B518C9F003FF84F /* xmltok.c in Sources */,
 				D656B3640B518D69003FF84F /* assertions.C in Sources */,
-				D6EDAF6B0B529EB900754E77 /* GUI_Application.cpp in Sources */,
-				D6EDAF6C0B529EB900754E77 /* GUI_Broadcaster.cpp in Sources */,
-				D6EDAFC30B52A01900754E77 /* GUI_Clipboard.cpp in Sources */,
 				D65E49AC0B651219004D7887 /* WED_MapZoomer.cpp in Sources */,
+				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
+				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2734,8 +2691,6 @@
 				D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */,
 				D65E4B2F0B65427C004D7887 /* md5.c in Sources */,
 				D65E4B300B65427C004D7887 /* PlatformUtils.mac.cpp in Sources */,
-				D65E4B310B65427C004D7887 /* unzip.c in Sources */,
-				D65E4B320B65427C004D7887 /* zip.c in Sources */,
 				D65E4B330B65427C004D7887 /* EndianUtils.c in Sources */,
 				D65E4B460B65430B004D7887 /* GISTool.cpp in Sources */,
 				D65E4B470B65430C004D7887 /* GISTool_CoreCmds.cpp in Sources */,
@@ -2815,6 +2770,8 @@
 				D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */,
 				D65E4C380B654901004D7887 /* perlin.cpp in Sources */,
 				D65E4C390B654908004D7887 /* hl_types.cpp in Sources */,
+				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
+				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2836,8 +2793,8 @@
 				D67EF5000B5CF9F400D9190C /* XUtils.cpp in Sources */,
 				D67EF50E0B5CFA2000D9190C /* XGrinderShell.cpp in Sources */,
 				D67EF5B70B5D34BE00D9190C /* MemFileUtils.cpp in Sources */,
-				D61C275C0B615CCD0092E098 /* zip.c in Sources */,
-				D61C275D0B615CCD0092E098 /* unzip.c in Sources */,
+				D69FD7530B6CF880008E3AEC /* zip.c in Sources */,
+				D69FD7540B6CF883008E3AEC /* unzip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2860,9 +2817,9 @@
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
 				D67EF86E0B5E5E9D00D9190C /* md5.c in Sources */,
 				D67EF8700B5E5EAD00D9190C /* PlatformUtils.mac.cpp in Sources */,
-				D67EF8740B5E5EC500D9190C /* unzip.c in Sources */,
-				D67EF8750B5E5EC600D9190C /* zip.c in Sources */,
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,
+				D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */,
+				D69FD74C0B6CF765008E3AEC /* zip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2882,8 +2839,6 @@
 				D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */,
 				D67EF97E0B6135F400D9190C /* md5.c in Sources */,
 				D67EF97F0B6135F400D9190C /* PlatformUtils.mac.cpp in Sources */,
-				D67EF9800B6135F400D9190C /* unzip.c in Sources */,
-				D67EF9810B6135F400D9190C /* zip.c in Sources */,
 				D67EF9820B6135F400D9190C /* EndianUtils.c in Sources */,
 				D67EF98B0B61363300D9190C /* ConvertObj3DS.cpp in Sources */,
 				D67EF98C0B61363600D9190C /* ConvertObjDXF.cpp in Sources */,
@@ -2893,6 +2848,8 @@
 				D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */,
 				D67EF9C20B61424F00D9190C /* ObjPointPool.cpp in Sources */,
 				D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */,
+				D69FD75A0B6CF8B5008E3AEC /* unzip.c in Sources */,
+				D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3028,8 +2985,6 @@
 				D6ED372B0B67964D00D5484E /* perlin.cpp in Sources */,
 				D6ED372D0B67964D00D5484E /* dbfopen.c in Sources */,
 				D6ED372E0B67964D00D5484E /* shpopen.c in Sources */,
-				D6ED372F0B67964D00D5484E /* unzip.c in Sources */,
-				D6ED37300B67964D00D5484E /* zip.c in Sources */,
 				D6ED37310B67964D00D5484E /* xmlparse.c in Sources */,
 				D6ED37320B67964D00D5484E /* xmlrole.c in Sources */,
 				D6ED37330B67964D00D5484E /* xmltok.c in Sources */,
@@ -3053,6 +3008,8 @@
 				D6ED40440B6AD47300D5484E /* WED_UndoLayer.cpp in Sources */,
 				D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */,
 				D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */,
+				D69FD7470B6CF765008E3AEC /* unzip.c in Sources */,
+				D69FD7480B6CF765008E3AEC /* zip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
