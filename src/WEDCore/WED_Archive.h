@@ -1,9 +1,27 @@
 #ifndef WED_ARCHIVE_H
 #define WED_ARCHIVE_H
 
-#include "WED_GUID.h"	// Strange STL note - if we forward declare it this WILL compile
-						// but with some @#$@ed implicit hash func that is autogeneated -
-						// we get a cryptic double-declare later.  Creepy.
+/*
+
+	A quick note on the concept of "dirtiness"
+	
+	Objects are saved to and from databases.
+	An object is dirty if and only if its in-memory setup has CHANGED from the database.
+	
+	Therefore the rules for dirtiness are these:
+	1. Any NEW objects are "born" dirty - that is, if we make a new obj in mem, it clearly doesn't come from the DB.		[persistent]
+	2. Any time we LOAD an obj from the DB, we clear the dirty flag, because we know at that instant that we're clean.		[archive]
+	3. Any time we save, if save IF AND ONLY IF we're dirty, and we then get to clear the dirty flag.						[archive]
+	
+	This saves us database I/O - even though we have to touch the whole DB for read when we load our file (for now), we don't have
+	to touch the whole DB for right and blast the hell out of all indices.
+	
+	Also note that undo DOESN'T restore dirtiness yet - if we delete an obj and undo, the same data WILL be written out to the archive
+	because the undo system isn't smart enough to see what happened.
+
+*/
+
+struct sqlite3;
 
 class	WED_Persistent;
 class	WED_UndoLayer;
@@ -15,21 +33,24 @@ public:
 					WED_Archive();
 					~WED_Archive();
 
-	// Find an object in the archive by GUID
-	WED_Persistent *	Fetch(const WED_GUID& inGUID) const;
+	// Find an object in the archive by ID
+	WED_Persistent *	Fetch(int in_id) const;
 
 	// Attach an undo layer - must be attached and detached with NULL in sequence.
-	void				SetUndo(WED_UndoLayer * inUndo);
+	void			SetUndo(WED_UndoLayer * inUndo);
+
+	void			LoadFromDB(sqlite3 * db);
+	void			SaveToDB(sqlite3 * db);
 
 private:
 
-	void			ChangedObject(WED_Persistent * inObject);	
-	void			AddObject(WED_Persistent * inObject);
-	void			RemoveObject(WED_Persistent * inObject);
+	void			ChangedObject	(WED_Persistent * inObject);	
+	void			AddObject		(WED_Persistent * inObject);
+	void			RemoveObject	(WED_Persistent * inObject);
 
 	friend class	WED_Persistent;
 
-	typedef hash_map<WED_GUID, WED_Persistent *>	ObjectMap;	
+	typedef hash_map<int, WED_Persistent *>	ObjectMap;	
 
 	ObjectMap		mObjects;		// Our objects!
 	bool			mDying;			// Flag to self - WE are killing ourselves - ignore objects.

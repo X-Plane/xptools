@@ -1,14 +1,15 @@
 #include "WED_Package.h"
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
-#include "XFileTwiddle.h"
+#include "FileUtils.h"
+//#include "XFileTwiddle.h"
 #include "WED_Document.h"
 #include "GISUtils.h"
 #include "WED_Errors.h"
 #include "WED_Messages.h"
 
-#define		EDIT_DIR_NAME		DIR_STR "WED" DIR_STR
-#define		EARTH_DIR_NAME		DIR_STR "Earth nav data" DIR_STR
+#define		EDIT_DIR_NAME		DIR_STR "WED"
+#define		EARTH_DIR_NAME		DIR_STR "Earth nav data" 
 
 inline int lon_lat_to_idx  (int lon, int lat) { return lon + 180 + 360 * (lat + 90); }
 inline int lon_lat_to_idx10(int lon, int lat) { return (lon/10) + 18  +  36 * ((lat/10) +  9); }
@@ -75,12 +76,13 @@ WED_Package::WED_Package(const char * inPath, bool inCreate)
 	{
 		string wed_folder = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME;
 		string earth_folder = mPackageBase + EARTH_DIR_NAME;
-		if (!MakeDirExist(mPackageBase.c_str()))
-			WED_ThrowPrintf("Unable to create directory %s", mPackageBase.c_str());
-		if (!MakeDirExist(wed_folder.c_str()))
-			WED_ThrowPrintf("Unable to create directory %s", wed_folder.c_str());
-		if (!MakeDirExist(earth_folder.c_str()))
-			WED_ThrowPrintf("Unable to create directory %s", earth_folder.c_str());
+		int err;
+		if (err = FILE_make_dir_exist(mPackageBase.c_str()))
+			WED_ThrowPrintf("Unable to create directory %s: %d", mPackageBase.c_str(), err);
+		if (err = FILE_make_dir_exist(wed_folder.c_str()))
+			WED_ThrowPrintf("Unable to create directory %s: %d", wed_folder.c_str(), err);
+		if (err = FILE_make_dir_exist(earth_folder.c_str()))
+			WED_ThrowPrintf("Unable to create directory %s: %d", earth_folder.c_str(), err);
 	}
 	
 	Rescan();		
@@ -109,12 +111,21 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 {
 	double bounds[4] = { lon, lat, lon + 1, lat + 1 };
 	char partial[30];
-	sprintf(partial, "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
+	sprintf(partial, DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
 	string path = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;
+
+	sprintf(partial, DIR_STR "%+03d%+04d", latlon_bucket(lat),latlon_bucket(lon));
+	string parent = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;
+	int err;
+	if (err = FILE_make_dir_exist(parent.c_str()))
+		WED_ThrowPrintf("Unable to open create %s: %d", parent.c_str(), err);
 
 	WED_Document * tile = new WED_Document(path, this, bounds);
 	mTiles[lon_lat_to_idx(lon, lat)] = tile;
-	tile->Load();
+	#if !DEV
+	revisit - is opening and creating a tile really different?>?
+	#endif
+//	tile->Load();
 	return tile;
 }
 
@@ -122,7 +133,7 @@ WED_Document *	WED_Package::NewTile(int lon, int lat)
 {
 	double bounds[4] = { lon, lat, lon + 1, lat + 1 };
 	char partial[30];
-	sprintf(partial, "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
+	sprintf(partial, DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
 	string path = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;
 
 	WED_Document * tile = new WED_Document(path, this, bounds);
@@ -152,7 +163,7 @@ void			WED_Package::Rescan(void)
 	for (lon = -180; lon < 180; lon+=10)
 	{
 		char dname[25];
-		sprintf(dname,"%+03d%+04d" DIR_STR, lat, lon);
+		sprintf(dname,"/%+03d%+04d" DIR_STR, lat, lon);
 		string dsf_subdir_str = dsf_dir_str + dname;
 		string xes_subdir_str = xes_dir_str + dname;
 		

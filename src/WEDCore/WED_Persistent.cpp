@@ -4,23 +4,27 @@
 WED_Persistent::WED_Persistent(WED_Archive * parent) 
 	: mArchive(parent)
 {
+	mDirty = true;
 	mArchive->AddObject(this);
 }
 
-WED_Persistent::WED_Persistent(WED_Archive * parent, const WED_GUID& inGUID) :
-	mArchive(parent), mGUID(inGUID)
+WED_Persistent::WED_Persistent(WED_Archive * parent, int id) :
+	mArchive(parent), mID(id)
 {
+	mDirty = true;
 	mArchive->AddObject(this);
 }
 
 WED_Persistent::WED_Persistent(const WED_Persistent& rhs) :
 	mArchive(rhs.mArchive)
 {
+	mDirty = true;
 	mArchive->AddObject(this);
 }
 
 WED_Persistent& WED_Persistent::operator=(const WED_Persistent& rhs)
 {
+	mDirty = true;
 	DebugAssert(mArchive == rhs.mArchive);
 	return *this;
 }
@@ -28,15 +32,17 @@ WED_Persistent& WED_Persistent::operator=(const WED_Persistent& rhs)
 void			WED_Persistent::WED_Persistent::Delete(void)
 {
 	mArchive->RemoveObject(this);
+	delete this;
 }
 			 
-WED_Persistent *		WED_Persistent::Fetch(const WED_GUID& inGUID) const
+WED_Persistent *		WED_Persistent::FetchPeer(int id) const
 {
-	return mArchive->Fetch(inGUID);
+	return mArchive->Fetch(id);
 }
 
 void 			WED_Persistent::StateChanged(void)
 {
+	mDirty = true;
 	mArchive->ChangedObject(this);
 }
 
@@ -59,7 +65,18 @@ void WED_Persistent::Register(
 		sStaticCtors[id] = ctor;
 }
 
-WED_Persistent * WED_Persistent::CreateByClass(const char * id, WED_Archive * parent, const WED_GUID& inGUID)
+WED_Persistent * WED_Persistent::CreateByClass(const char * class_id, WED_Archive * parent, int id)
 {
-	return sStaticCtors[id](parent, inGUID);
+	return sStaticCtors[class_id](parent, id);
 }
+
+void			WED_Persistent::SetDirty(int dirty)
+{
+	mDirty = dirty;
+}
+
+int			WED_Persistent::GetDirty(void) const
+{
+	return mDirty;
+}
+

@@ -2,6 +2,9 @@
 #include "WED_Persistent.h"
 #include "WED_UndoLayer.h"
 #include "AssertUtils.h"
+#include "WED_Errors.h"
+#include "sqlite3.h"
+#include "SQLUtils.h"
 
 WED_Archive::WED_Archive() : mDying(false), mUndo(NULL)
 {
@@ -23,9 +26,9 @@ void WED_Archive::SetUndo(WED_UndoLayer * inUndo)
 	mUndo = inUndo;
 }
 
-WED_Persistent *	WED_Archive::Fetch(const WED_GUID& inGUID) const
+WED_Persistent *	WED_Archive::Fetch(int id) const
 {
-	ObjectMap::const_iterator iter = mObjects.find(inGUID);
+	ObjectMap::const_iterator iter = mObjects.find(id);
 	if (iter == mObjects.end()) return NULL;
 	return iter->second;
 }
@@ -39,19 +42,74 @@ void		WED_Archive::ChangedObject(WED_Persistent * inObject)
 void		WED_Archive::AddObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
-	DebugAssert(mObjects.count(inObject->GetGUID()) == 0);
+	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
+	DebugAssert(iter == mObjects.end() || iter->second == NULL);
 	
-	mObjects.insert(ObjectMap::value_type(inObject->GetGUID(), inObject));
+	if (iter == mObjects.end())			mObjects.insert(ObjectMap::value_type(inObject->GetID(), inObject));
+	else								iter->second = inObject;
+	
 	if (mUndo) mUndo->ObjectCreated(inObject);
 }
 
 void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
-	WED_GUID guid;
 	
-	ObjectMap::iterator iter = mObjects.find(inObject->GetGUID());
+	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
 	Assert(iter != mObjects.end());
-	mObjects.erase(iter);
+	iter->second = NULL;
 	if (mUndo) mUndo->ObjectDestroyed(inObject);
+}
+
+void	WED_Archive::LoadFromDB(sqlite3 * db)
+{
+	{
+		sql_command		fetch_objects(db, "SELECT WED_entities.id, WED_classes.name FROM WED_entities JOIN WED_classes on WED_entities.class_id = WED_classes.id;", NULL);
+		
+		sql_row2<int,string>	an_obj;
+		fetch_objects.begin();
+		int err;
+		while((err = fetch_objects.get_row(an_obj)) == SQLITE_ROW)
+		{
+			WED_Persistent * new_obj = WED_Persistent::CreateByClass(an_obj.b.c_str(), this, an_obj.a);
+		}
+		if (err != SQLITE_DONE)	
+			WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+	}
+	
+	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
+	if (ob->second != NULL)
+	if (ob->second->GetDirty())
+	{
+		ob->second->FromDB(db);
+		ob->second->SetDirty(false);
+	}
+}
+
+void	WED_Archive::SaveToDB(sqlite3 * db)
+{
+	sql_command nuke_obj(db,"DELETE FROM WED_entities WHERE id=@id;","@id");
+	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
+	{
+		
+		if (ob->second == NULL)
+		{
+			sql_row1<int>	key(ob->first);
+			int err = nuke_obj.simple_exec(key);
+			if (err != SQLITE_DONE)
+				WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+		}
+		else
+		{
+			if (ob->second->GetDirty())
+			{
+				ob->second->ToDB(db);
+				ob->second->SetDirty(false);
+			}
+		}
+	}
+	
+	#if !DEV
+		we need something like DELETE FROM runways where id not in (select id from entities);
+	#endif
 }

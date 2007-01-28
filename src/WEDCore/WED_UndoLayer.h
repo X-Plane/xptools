@@ -1,7 +1,6 @@
 #ifndef WED_UNDOLAYER_H
 #define WED_UNDOLAYER_H
 
-#include "WED_GUID.h"
 class	WED_Archive;
 class	WED_Buffer;
 class	WED_Persistent;
@@ -30,12 +29,12 @@ private:
 	
 	struct ObjInfo {
 		LayerOp			op;
-		WED_GUID		guid;
+		int				id;
 		const char *	the_class;
 		WED_Buffer *	buffer;
 	};
 	
-	typedef hash_map<WED_GUID, ObjInfo>		ObjInfoMap;
+	typedef hash_map<int, ObjInfo>		ObjInfoMap;
 	
 	ObjInfoMap		mObjects;
 	WED_Archive *	mArchive;

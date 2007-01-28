@@ -34,6 +34,7 @@ int		WED_Application::HandleCommand(int command)
 {
 	char buf[1024];
 	int pack_bounds[4] = { 50, 50, 550, 300 };
+	buf[0] = 0;
 	
 	switch(command) { 
 	case wed_NewPackage:
@@ -54,7 +55,6 @@ int		WED_Application::HandleCommand(int command)
 		if (GetFilePathFromUser(getFile_PickFolder, "Please pick your scenery package", "Open", FILE_DIALOG_OPEN_PROJECT, buf))
 		{
 			try {
-				buf[strlen(buf)-1]=0;
 				WED_Package * pack = new WED_Package(buf, false);
 				WED_PackageWindow * wind = new WED_PackageWindow(LastPart(buf), pack_bounds, this, pack);
 			} catch (...) {

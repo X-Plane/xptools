@@ -20,7 +20,7 @@ WED_UndoLayer::~WED_UndoLayer(void)
 
 void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 {
-	ObjInfoMap::iterator iter = mObjects.find(inObject->GetGUID());
+	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
 		// There is only one possible "rewrite" - if we are creating and knew
@@ -37,16 +37,16 @@ void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 		ObjInfo	info;
 		info.the_class = inObject->GetClass();
 		info.op = op_Created;
-		info.guid = inObject->GetGUID();
+		info.id = inObject->GetID();
 		info.buffer = NULL;
-		mObjects.insert(ObjInfoMap::value_type(inObject->GetGUID(), info));
+		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}
 }
 
 
 void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 {
-	ObjInfoMap::iterator iter = mObjects.find(inObject->GetGUID());
+	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
 		// Object is changed - it must not have been destroyed before!
@@ -67,16 +67,16 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 		ObjInfo	info;
 		info.the_class = inObject->GetClass();
 		info.op = op_Changed;
-		info.guid = inObject->GetGUID();
+		info.id = inObject->GetID();
 		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
-		mObjects.insert(ObjInfoMap::value_type(inObject->GetGUID(), info));
+		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}	
 }
 
 void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 {
-	ObjInfoMap::iterator iter = mObjects.find(inObject->GetGUID());
+	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
 		// Object destroyed.  Object better not already be destroyed.
@@ -99,10 +99,10 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		ObjInfo	info;
 		info.the_class = inObject->GetClass();
 		info.op = op_Destroyed;
-		info.guid = inObject->GetGUID();
+		info.id = inObject->GetID();
 		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
-		mObjects.insert(ObjInfoMap::value_type(inObject->GetGUID(), info));
+		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}
 	
 }
