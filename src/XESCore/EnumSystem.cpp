@@ -79,7 +79,6 @@ void	BuildTokenReverseMap(
 	inReverse.clear();
 	for (int i = 0; i < inTokens.size(); ++i)
 	{
-		printf("Token is: %s\n",inTokens[i].c_str());
 		inReverse.insert(TokenReverseMap::value_type(inTokens[i], i));
 	}
 }
