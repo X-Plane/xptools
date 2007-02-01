@@ -38,7 +38,7 @@ int	gInterface = 1;
 
 #include "FontMgr.h"
 
-#define UI_FONT_SIZE 10
+#define UI_FONT_SIZE 9
 static FontMgr * 		sMgr = NULL;
 static FontHandle		sFont = NULL;
 static void MyGenerateTextures(int n,			int* textures) { glGenTextures (n, (unsigned long *) textures); }
@@ -98,6 +98,7 @@ int				XPLMMeasureString(
 									int					inCount)
 {
 	if (sFont == NULL) InitFonts();	
+	if (inCount == -1) inCount = strlen(inChar);
 	return sMgr->MeasureRange(sFont,sMgr->GetLineHeight(sFont,UI_FONT_SIZE),inChar,inChar+inCount);
 
 }
