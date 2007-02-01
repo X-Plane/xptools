@@ -176,14 +176,14 @@ PlaneC3<R>::point() const
   return point_on_plane(*this);
 }
 
-template < class R >
-inline
-typename PlaneC3<R>::Point_3
-PlaneC3<R>::
-projection(const typename PlaneC3<R>::Point_3 &p) const
-{
-  return CGAL::projection_plane(p, *this); // FIXME : CGAL:: needed ?
-}
+//template < class R >
+//inline
+//typename PlaneC3<R>::Point_3
+//PlaneC3<R>::
+//projection(const typename PlaneC3<R>::Point_3 &p) const;
+//{
+//  return CGAL::projection_plane(p, *this); // FIXME : CGAL:: needed ?
+//}
 
 template < class R >
 inline
