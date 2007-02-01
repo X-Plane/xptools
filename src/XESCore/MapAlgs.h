@@ -467,7 +467,7 @@ int		SetupRasterizerForDEM(const set<GISHalfedge *>& inEdges, const DEMGeo& dem,
  * the map gets pretty badly beaten up.
  *
  */
-void	InsetPmwx(Pmwx& inMap, GISFace * inFace);
+void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist);
 
 /************************************************************************************************
  * INLINE STUFF

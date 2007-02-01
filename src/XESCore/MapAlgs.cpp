@@ -1930,349 +1930,318 @@ static bool __crunch_edge(Pmwx& ioMap, GISHalfedge * e, GISHalfedge * s)
 	}
 }
 
+// This is mapped FROM the vertices of the face...
+// but defined NOT by a vertex as a key but by TWO halfedges!
+// where one follows the other.  We key by the original incoming
+// edge!
+struct	he_buffer_point {
+	GISHalfedge *		prev;
+	GISHalfedge *		next;	
+	GISVertex *			orig;		// 
+	int					cap;
+	int					split;
+	Point2				p1;
+	Point2				p2;
+	GISHalfedge *		v1;
+	GISHalfedge *		v2;
+	GISHalfedge *		span;
+};
 
-void	InsetPmwx(Pmwx& inMap, GISFace * inFace)
+struct	he_buffer_struct {
+	he_buffer_struct(he_buffer_point * iv1, he_buffer_point * iv2,GISHalfedge * iorig) : v1(iv1), v2(iv2), orig(iorig), p(NULL) { }
+	he_buffer_point *	v1;
+	he_buffer_point *	v2;
+	GISHalfedge	*		orig;
+	GISHalfedge *		p;
+	int					flipped;
+};
+
+typedef multimap<GISHalfedge *,GISHalfedge *>		HalfedgeSplitMap;
+typedef	vector<GISHalfedge *>						InsertVector;
+typedef	pair<HalfedgeSplitMap*,InsertVector*>		SplitNotifInfo;
+
+static void split_notif(GISHalfedge * e1, GISHalfedge * e2, void * r)
 {
-	/********************************************************
-	 * PRE-SANITIZE
-	 ********************************************************/
-	// Before we try to work with this polygon, we need to clean it up a bit!
-	// Keep trying until we fix no pinches.
-	
-	Pmwx::Ccb_halfedge_circulator circ, stop;
-	
-	bool did_work;
-	do {
-		DebugAssert(inMap.is_valid());
-		did_work = false;
-
-		// First go around and merge any pointless splits.  This keeps us from going
-		// berzerk later due to false breaks in a polygon.
-		for (Pmwx::Holes_iterator hole = inFace->holes_begin(); ; ++hole)
-		{
-			stop = circ = ((hole == inFace->holes_end()) ? inFace->outer_ccb() : *hole);
-			do {
-				if (__crunch_edge(inMap,circ, circ))
-				{
-					did_work = true;
-					goto retry;
-				}
-				++circ;
-			} while (circ != stop);
-			
-			if (hole == inFace->holes_end())
-				break;
-		}
-
-		// We are going to go over all vectors looking for tight left turns - "pinches".
-		// We're going to "fix" them by just cutting them off.  In our terms, the 
-		// incoming segment is the first part of the 'V' of the pinch we hit as we go
-		// around our CCW border, and the outgoing is the second.  Prev is before the V
-		// and Next is after.
-
-		for (Pmwx::Holes_iterator hole = inFace->holes_begin(); ; ++hole)
-		{
-			stop = circ = ((hole == inFace->holes_end()) ? inFace->outer_ccb() : *hole);
-			do {
-				
-				GISHalfedge * prev = circ;
-				GISHalfedge * inc = prev->next();
-				GISHalfedge * out = inc->next();
-				GISHalfedge * next = out->next();
-				
-				// If we hit a triangle, bail out now.
-				if (out->next() == inc)
-				{
-					DebugAssert(inc->twin() == out);
-					DebugAssert(hole != inFace->holes_end());
-					break;
-				}
-				
-				// Only evaluate turns that are left and more than 90 degrees
-				Vector2	incv(inc->source()->point(), inc->target()->point());
-				Vector2	outv(out->source()->point(), out->target()->point());
-				if (inc->twin() != out && incv.left_turn(outv) && incv.dot(outv) < 0.0)
-				{
-					// Calculate how much space we need for the inset, and how 
-					// much we actually have.
-					incv.normalize();
-					outv.normalize();
-					bool pinch = false;
-					Segment2	outs(out->source()->point(), out->target()->point());
-					Segment2	incs(inc->target()->point(), inc->source()->point());
-					DebugAssert(incs.p1 == outs.p1);
-					double	margin_for_long ;
-					double	needed_for_long ;
-					double	needed_for_short;
-					if (incs.squared_length() > outs.squared_length())
-					{
-						margin_for_long = Line2(incs).squared_distance(outs.p2);
-						needed_for_long = (double) inc->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
-						needed_for_short = (double) out->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
-						
-					} else {
-
-						margin_for_long = Line2(outs).squared_distance(incs.p2);
-						needed_for_long = (double) out->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
-						needed_for_short = (double) inc->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR);
-					}
-					needed_for_long += needed_for_short;
-					needed_for_long *= needed_for_long;
-					if (margin_for_long < needed_for_long)
-					{
-						// We have a pinch!  If inc and out are left in place, the intersection of the
-						// two will be off in the middle of the poly - it'll make a mess.
-						if (prev == next)
-						{
-							// Check closed triangle - we better be an outer CCB!
-							// Just kill the face and bail.
-							DebugAssert(hole == inFace->holes_end());
-							inFace->mTerrainType = terrain_Water;
-							return;
-						}
-						
-						// Fixing the pinch - first we need to find the two incoming/outgoing sides.
-						// if they aren't going to intersect nicely, we'll just use normals to the 
-						// pinched vertices.
-						
-						Vector2	next_v(next->source()->point(), next->target()->point());
-						Vector2	prev_v(prev->source()->point(), prev->target()->point());
-						
-						// Some protection: if our previous segment forms a pinch in the other
-						// direction or is forming a convex angle, it's not appropriate to try
-						// to use it to chop off the V - just use something perpendicular to the V.
-						if (prev_v.dot(incv) < 0.0 || prev_v.left_turn(incv))
-							prev_v = incv.perpendicular_ccw();
-						if (next_v.dot(outv) < 0.0 || outv.left_turn(outv))
-							next_v = outv.perpendicular_cw();
-						
-						bool	inc_ant = prev->twin() == inc;
-						bool	out_ant = next->twin() == out;
-						bool	inc_thin = inc->face() == inc->twin()->face();
-						bool	out_thin = out->face() == out->twin()->face();
-						
-						// Hit computation: intersect the prev and next segments against the V.
-						// This is like "if the previous road kept going, how would it form a more
-						// shallow V".  The idea here is that if we have a deep V inside a shallow
-						// V, preserve the shallow V; if we just cut things off, we tend to get rounding
-						// which under-utilizes the pinched real-estate.  Of course if we fail to extend
-						// prev and next we will just punt and cut off the V.
-						
-						Point2	i_hit;
-						Point2	o_hit;
-						Point2	mid_p;
-						bool	i_on = false;		// Does next extend to the incoming segment?
-						bool	o_on = false;		// Does prev extend to the outgoing segment?
-						bool	has_m = false;		// Do both lines cross somewhere?
-																							
-						if (Line2(incs.p2, prev_v).intersect(Line2(outs), o_hit))
-							o_on = outs.collinear_has_on(o_hit) && o_hit != outs.p1 && o_hit != outs.p2;
-						if (Line2(outs.p2, next_v).intersect(Line2(incs), i_hit))
-							i_on = incs.collinear_has_on(i_hit) && i_hit != incs.p1 && i_hit != incs.p2;
-						if (i_on && o_on && Line2(incs.p2, prev_v).intersect(Line2(outs.p2, next_v), mid_p))
-							has_m = true;
-						
-						set<GISHalfedge *>	new_e_prev, new_e_next;
-						GISHalfedge * outk = out_ant ? NULL : out;
-						GISHalfedge * inck = inc_ant ? NULL : inc;
-						
-						// We are now going to handle the four crossing cases:
-						
-						if (i_on && o_on && has_m)
-						{
-							/* CASE 1 */
-							// Double intersect case.  Extending prev and next hits at some midpoint.
-							// Build a smaller V into the bigger V.
-							// (Note that because we require i_on and o_on, we _know_ that has_m
-							// is somewhere in the pinched V - otherwise both prev and next wouldn't
-							// hit the pinched V.
-							inMap.insert_edge(outs.p2, mid_p, __Inset_CollectNotifier, &new_e_prev);
-							inMap.insert_edge(mid_p, incs.p2, __Inset_CollectNotifier, &new_e_next);						
-						} 
-						else if (i_on && !o_on)
-						{
-							/* CASE 2 */
-							// Next projects back into the incoming side of the V but not vice versa.  We are
-							// going to insert one line from the outgoing point of V (shared with next) to
-							// halfway throuhg the incoming side.  This line is colinear with next, simplifying
-							// the V.
-							
-							// Split check - If our hit point is not incident with a vertex, pre-split.  insert_edge
-							// does NOT correctly handle an insert onto a halfedge!!
-							if (i_hit != incs.p1 && i_hit != incs.p2)
-								inck = inMap.split_edge(inc, i_hit)->next();
-	
-							// Reversal check!  Next was projected to the incoming side but we do NOT know if it points
-							// toward or away from the incoming side.  We have to know this - if we insert this edge from
-							// the wrong side of next, we're going to get a line along next but extending beyond it -
-							// another case the Pmwx will vommit all over.  So check now.
-							if (Vector2(outs.p2, i_hit).dot(next_v) > 0.0)
-								inMap.insert_edge(next->target()->point(), i_hit, __Inset_CollectNotifier, &new_e_next);
-							else
-								inMap.insert_edge(outs.p2, i_hit, __Inset_CollectNotifier, &new_e_next);
-						} 
-						else if (o_on && !i_on)
-						{
-							/* CASE 3 */
-							// Prev projects into the outgoing side, but not vice versa.  This case exactly
-							// mirrors the one above.
-							if (o_hit != outs.p1 && o_hit != outs.p2)
-								outk = inMap.split_edge(out, o_hit);
-
-							if (Vector2(o_hit, incs.p2).dot(prev_v) > 0.0)
-								inMap.insert_edge(o_hit, prev->source()->point(), __Inset_CollectNotifier, &new_e_prev);						
-							else							
-								inMap.insert_edge(o_hit, incs.p2, __Inset_CollectNotifier, &new_e_prev);						
-						}
-						else
-						{
-							/* CASE 4 */
-							// Neither next nor prev intersect with each other.  This will happen if, for example,
-							// we have a tight pinch and equal-length sides of the V, and prev and next don't point
-							// any where useful.  In this case we punt and just chop the whole sucker off.
-							inMap.insert_edge(outs.p2, incs.p2, __Inset_CollectNotifier, &new_e_prev);
-						}
-						
-						// Water mark - set all of our added segments to water.  We track who came from prev and
-						// next to preserve variable-width insets to that the inset border is continuous.						
-						for (set<GISHalfedge *>::iterator ee = new_e_prev.begin(); ee != new_e_prev.end(); ++ee)
-						{
-							(*ee)->twin()->mTransition = prev->mTransition;
-							(*ee)->face()->mTerrainType = terrain_Water;
-						}
-						for (set<GISHalfedge *>::iterator ee = new_e_next.begin(); ee != new_e_next.end(); ++ee)
-						{
-							(*ee)->twin()->mTransition = next->mTransition;
-							(*ee)->face()->mTerrainType = terrain_Water;
-						}
-						
-						// Delete unused sides - we may need to wipe out part of the V.  This is important because
-						// we want to simplify the polygon once the V has been removed.
-						if (outk && !out_thin)
-						{
-							if (outk->twin()->face() == inFace)
-								outk = outk->twin();
-							DebugAssert(outk->twin()->face() != inFace);
-							inMap.remove_edge(outk);
-						}
-						if (inck && !inc_thin)
-						{
-							if (inck->twin()->face() == inFace)
-								inck = inck->twin();
-							DebugAssert(inck->twin()->face() != inFace);
-							inMap.remove_edge(inck);
-						}
-						
-						// Now that the V is potetially gone, remove colinear sides.
-						if (!inc_ant) __crunch_edge(inMap,prev, next);
-						if (!out_ant) __crunch_edge(inMap,next->twin(), next->twin());
-						
-						// At this point get the hell out....we've done a lot of work - odds are our iterators are totally useless.
-						did_work = true;
-						DebugAssert(inMap.is_valid());
-						goto retry;						
-					}					
-				}
-				
-				++circ;
-			} while (circ != stop);
-			
-			if (hole == inFace->holes_end())
-				break;
-		}
-
-retry:
-		;
-		
-	} while (did_work);
-
-	DebugAssert(inMap.is_valid());
-	
-	/********************************************************
-	 * INSET CALCULATION
-	 ********************************************************/
-	// First we must figure out what we're going to insert.  If we insert while
-	// we iterate, we'll destroy the face structure as we explore it - not good.
-	
-	vector<Polygon2>	  rings;	// These will be a series of inset rings.
-	vector<Polygon2>	  insets;	// These will be a series of inset rings.
-	vector<vector<bool> > is_news;
-	
-	for (Pmwx::Holes_iterator hole = inFace->holes_begin(); ; ++hole)
+	SplitNotifInfo * m = (SplitNotifInfo *) r;
+	if (e1 && e2)
 	{
-		stop = circ = ((hole == inFace->holes_end()) ? inFace->outer_ccb() : *hole);
-		rings.push_back(Polygon2());
-		vector<double>	ratios;
-		do {
-			rings.back().push_back(circ->source()->point());
-			ratios.push_back((double) circ->mTransition / (DEG_TO_NM_LAT * NM_TO_MTR));
-			++circ;
-		} while (circ != stop);
-		
-		insets.push_back(Polygon2());
-		is_news.push_back(vector<bool>(rings.back().size(), false));
-		InsetPolygon2(rings.back(), &*ratios.begin(), 1.0, true, insets.back(), __AntennaFunc, &is_news.back());
-		if (hole == inFace->holes_end())
-			break;
+		m->first->insert(HalfedgeSplitMap::value_type(e1,e2));
+		m->first->insert(HalfedgeSplitMap::value_type(e1->twin(),e2->twin()));
+	} else if (e1)
+		m->second->push_back(e1);
+	else if (e2)
+		m->second->push_back(e2);
+}
+
+GISHalfedge * insert_into_map_proxy(Pmwx& io_map, const Point2& p1, const Point2& p2, HalfedgeSplitMap * mapping)
+{
+	SplitNotifInfo s;
+	InsertVector v;
+	s.first = mapping;
+	s.second = &v;
+	io_map.insert_edge(p1,p2,split_notif,&s);
+	for (int n = 1; n < v.size(); ++n)
+	{
+		mapping->insert(HalfedgeSplitMap::value_type(v[0],v[n]));
+		mapping->insert(HalfedgeSplitMap::value_type(v[0]->twin(),v[n]->twin()));
 	}
+	return v[0];
+}
+
+void	calc_vertex_ext(he_buffer_point * hbp, double dist)
+{
+	Segment2	s1(hbp->prev->source()->point(),hbp->prev->target()->point());
+	Segment2	s2(hbp->next->source()->point(),hbp->next->target()->point());
+	Vector2		v1(s1.p1,s1.p2);
+	Vector2		v2(s2.p1,s2.p2);
 	
-	set<GISHalfedge *> edges;
+	if (v1.right_turn(v2) && v1.dot(v2) < 0.8)	hbp->cap = true;
 
-	// Now go through and insert all of the edges.  We'll remember the last one as a hint because 99%
-	// of the time we're in a ring.  This saves us time spent doing locate_point in the pmwx.  We still
-	// suffer a bit because we have to do ray shoots - these are edges that WILL intersect!
+	if (hbp->cap)
+	{
+		hbp->split = true;
+		v1.normalize();
+		v2.normalize();
+		Vector2		vc(v1-v2);
+		vc.normalize();
+		vc *= dist;
+		v1 = v1.perpendicular_ccw();
+		v2 = v2.perpendicular_ccw();
+		v1 *= dist;
+		v2 *= dist;
+		
+		s1.p1 += v1;
+		s1.p2 += v1;
+		s2.p1 += v2;
+		s2.p2 += v2;
 
-#if DEV
-	try {
-#endif
-			
-		GISHalfedge * hint = NULL;
+		Point2 me(hbp->prev->target()->point());
 
-#if DEBUG_SHOW_INSET				
-		gMeshLines.clear();
-#endif		
-		int ctr = 0;
-		int fast = 0, slow = 0;
-		for (int p = 0; p < insets.size(); ++p)
+		
+		Line2	line1(s1);
+		Line2	line2(s2);
+		Line2	cross_bar(me+vc,vc.perpendicular_ccw());
+
+		if (!line1.intersect(cross_bar,hbp->p1))
+			DebugAssert(!"Mitre 1 failed.");
+		
+		if (!line2.intersect(cross_bar,hbp->p2))
+			DebugAssert(!"Mitre 2 failed.");
+	}
+	else
+	{
+		v1 = v1.perpendicular_ccw();
+		v2 = v2.perpendicular_ccw();
+		v1.normalize();
+		v2.normalize();
+		
+		if (v1.dot(v2) > 0.99)
 		{
-			int on = 0;
-			for (int n = 0; n < insets[p].size(); ++n)
+			Vector2	va(v1+v2);
+			va.normalize();
+			va *= dist;
+			hbp->p1 = hbp->p2 = s1.p2 + va;
+		} 
+		else 
+		{			
+			v1 *= dist;
+			v2 *= dist;
+			
+			s1.p1 += v1;
+			s1.p2 += v1;
+			s2.p1 += v2;
+			s2.p2 += v2;
+			
+			if (s1.intersect(s2,hbp->p1))
 			{
-				Segment2	inset = insets[p].side(n);
-#if DEBUG_SHOW_INSET				
-				gMeshLines.push_back(inset.p1);
-				gMeshLines.push_back(inset.p2);
-#endif
-//				printf("GOING TO INSERT (S): %lf, %lf (%016llx, %016llx)\n", inset.p1.x, inset.p1.y, inset.p1.x, inset.p1.y);
-//				printf("GOING TO INSERT (T): %lf, %lf (%016llx, %016llx)\n", inset.p2.x, inset.p2.y, inset.p2.x, inset.p2.y);
-
-#if 1 || !DEBUG_SHOW_INSET
-				if (hint && hint->target()->point() == inset.p1)
-				{
-					++fast;
-					hint = inMap.insert_edge(inset.p1, inset.p2, hint, Pmwx::locate_Vertex, __Inset_CollectNotifier, &edges);
-				} else {
-					hint = inMap.insert_edge(inset.p1, inset.p2, __Inset_CollectNotifier, &edges);
-					++slow;
-				}
-#endif				
-				++ctr;			
+				hbp->split = false;
+				hbp->p2 = hbp->p1;
+			} else
+			{
+				hbp->split = true;
+				hbp->p1 = s1.p2;
+				hbp->p2 = s2.p1;
 			}
 		}
-//		printf("Fast: %d, Slow = %d\n", fast, slow);
-		
-#if DEV		
-	} catch (...) {
-//		gMap = inMap;
-		throw;
-	}	
-#endif	
+	}
+}
 
-	// Mark the sides of the edges as wet - this voids out the space outside the inset polygon.	
-	for (set<GISHalfedge *>::iterator e = edges.begin(); e != edges.end(); ++e)
-		(*e)->twin()->face()->mTerrainType = terrain_Water;
+void	extend_edge_set(set<GISHalfedge *>& in_set, set<GISHalfedge *>& out_set, HalfedgeSplitMap& mapping)
+{
+	out_set.clear();
+	pair<HalfedgeSplitMap::iterator,HalfedgeSplitMap::iterator> range;
+	
+	while(!in_set.empty())
+	{
+		GISHalfedge * k = *in_set.begin();
+		in_set.erase(k);
+		out_set.insert(k);
+		range = mapping.equal_range(k);
+		for (HalfedgeSplitMap::iterator i = range.first; i != range.second; ++i)
+		{
+			DebugAssert(out_set.count(i->second)==0);
+			in_set.insert(i->second);
+		}
+	}
+}
+
+
+void	InsetPmwx(GISFace * inFace, Pmwx& outMap, double dist)
+{
+	outMap = *inFace;
+	map<GISHalfedge *,he_buffer_point>		vert_table;
+	vector<he_buffer_struct>				edge_table;
+	HalfedgeSplitMap						splits;	
+	
+	GISFace * face = (*outMap.unbounded_face()->holes_begin())->twin()->face();
+
+	DebugAssert(!face->is_unbounded());
+	outMap.unbounded_face()->mTerrainType=0;
+	face->mTerrainType = 1;
+	
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	Pmwx::Holes_iterator h;
+	// FIRST process over all vertices...compute the locations of the extended vertices.
+	circ = stop = face->outer_ccb();
+	do {
+		he_buffer_point * hbp = &vert_table[circ];
+		hbp->prev = circ;
+		hbp->next = circ->next();
+		hbp->orig = circ->target();
+		hbp->cap = circ->twin() == circ->next();
+		calc_vertex_ext(hbp, dist);
+		++circ;
+	} while (circ != stop);
+	for (h = face->holes_begin(); h != face->holes_end(); ++h)
+	{
+		circ = stop = *h;
+		do {
+			he_buffer_point * hbp = &vert_table[circ];
+			hbp->orig = circ->target();
+			hbp->prev = circ;
+			hbp->next = circ->next();
+			hbp->cap = circ->twin() == circ->next();
+			calc_vertex_ext(hbp, dist);
+			++circ;
+		} while (circ != stop);
+	}
+	
+	// SECOND - go over edges - make the buffer spans
+	circ = stop = face->outer_ccb();
+	do {
+		edge_table.push_back(he_buffer_struct(
+					&vert_table[circ],
+					&vert_table[circ->next()],
+					circ->next()));
+		Vector2	v1(circ->next()->source()->point(),circ->next()->target()->point());
+		Vector2	v2(edge_table.back().v1->p2,edge_table.back().v2->p1);
+		edge_table.back().flipped = (v1.dot(v2) < 0);
+		++circ;
+	} while (circ != stop);
+	for (h = face->holes_begin(); h != face->holes_end(); ++h)
+	{
+		circ = stop = *h;
+		do {
+			edge_table.push_back(he_buffer_struct(
+						&vert_table[circ],
+						&vert_table[circ->next()],
+						circ->next()));
+		Vector2	v1(circ->next()->source()->point(),circ->next()->target()->point());
+		Vector2	v2(edge_table.back().v1->p2,edge_table.back().v2->p1);
+		edge_table.back().flipped = (v1.dot(v2) < 0);
+			++circ;
+		} while (circ != stop);
+	}
+	
+	// THIRD insert all the vertex elements
+	
+	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
+	{
+		he_buffer_point * hbp = &v->second;
+		hbp->v1 = insert_into_map_proxy(outMap,
+							hbp->orig->point(),
+							hbp->p1,
+							&splits);
+		if (hbp->split)
+		hbp->v2 = insert_into_map_proxy(outMap,
+							hbp->orig->point(),
+							hbp->p2,
+							&splits);
+		else 
+			hbp->v2 = hbp->v1;
+	}
+
+	// FOUR - build the cross-caps
+
+	for (vector<he_buffer_struct>::iterator hbs = edge_table.begin(); hbs != edge_table.end(); ++hbs)
+	if (!hbs->flipped)
+	{
+		hbs->p = insert_into_map_proxy(outMap,
+							hbs->v1->p2,
+							hbs->v2->p1,
+							&splits);		
+	}
+	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
+	if (v->second.cap)
+	{
+		he_buffer_point * hbp = &v->second;
+		hbp->span = insert_into_map_proxy(outMap,
+							hbp->p1, hbp->p2,
+							&splits);		
+	}
+	
+	// FIFTH flood fill!
+//	for(Pmwx::Face_iterator fi = outMap.faces_begin(); fi != outMap.faces_end(); ++fi)
+//		fi->mTerrainType = 0;
+
+	for (vector<he_buffer_struct>::iterator hbs = edge_table.begin(); hbs != edge_table.end(); ++hbs)
+	if (!hbs->flipped)
+	{
+		set<GISHalfedge *>	reg, ext_reg;
+		set<GISFace *>		faces;
+		reg.insert(hbs->orig);
+		reg.insert(hbs->p->twin());
+		reg.insert(hbs->v1->v2->twin());
+		reg.insert(hbs->v2->v1);
 		
-	DebugAssert(inMap.is_valid());
+		extend_edge_set(reg,ext_reg,splits);
+		FindFacesForEdgeSet(ext_reg,faces);
+		for (set<GISFace *>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
+			(*fi)->mTerrainType = 0;
+	}
+	
+	for (vector<he_buffer_struct>::iterator hbs = edge_table.begin(); hbs != edge_table.end(); ++hbs)
+	if (hbs->flipped)
+	{
+		hbs->orig->face()->mTerrainType = 0;
+	}	
+
+	for (map<GISHalfedge *,he_buffer_point>::iterator v = vert_table.begin(); v != vert_table.end(); ++v)
+	if (v->second.cap)
+	{
+		he_buffer_point * hbp = &v->second;
+		set<GISHalfedge *>	reg, ext_reg;
+		set<GISFace *>		faces;
+		reg.insert(hbp->v1->twin());
+		reg.insert(hbp->v2);
+		reg.insert(hbp->span->twin());
+		
+		extend_edge_set(reg,ext_reg,splits);
+		FindFacesForEdgeSet(ext_reg,faces);
+		for (set<GISFace *>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
+			(*fi)->mTerrainType = 0;
+	}
+
+	// SIXTH - kill unneeded edges!
+	set<GISHalfedge *>	dead_list;
+	for (Pmwx::Halfedge_iterator he = outMap.halfedges_begin(); he != outMap.halfedges_end(); ++he)
+	if (he->mDominant)
+	if (he->face()->mTerrainType == he->twin()->face()->mTerrainType)
+		dead_list.insert(he);
+		
+	for (set<GISHalfedge *>::iterator d=dead_list.begin(); d != dead_list.end(); ++d)
+		outMap.remove_edge(*d);
+	
 }
 
 inline bool Near(double x, double y)

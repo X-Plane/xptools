@@ -62,7 +62,7 @@
 #include "ParamDefs.h"
 #include "AssertUtils.h"
 #include "CompGeomUtils.h"
-#include "XBuckets_inline.h"
+#include "QuadTree.h"
 
 // This causes validate to check for dupe vertices.  Makes validate real slow.
 #define VALIDATE_CHECK_NO_DUPE_VERTICES 0
@@ -377,7 +377,14 @@ GISHalfedge *	GISVertex::rightmost_rising()
 
 #pragma mark -
 
-Pmwx::Pmwx()
+#if !DEV
+better mem management for these traits?
+#endif
+
+Pmwx::Pmwx() : 
+	mFaceBuckets(Bbox2(-360,-180,360,180),MapFaceBucketTraits()),
+	mHalfedgeBuckets(Bbox2(-360,-180,360,180),MapHalfedgeBucketTraits()),
+	mVertexBuckets(Bbox2(-360,-180,360,180),MapVertexBucketTraits())
 {
 	mVertices = mHalfedges = 0;
 	mFaces = 1;
@@ -388,7 +395,10 @@ Pmwx::Pmwx()
 	mUnbounded->mTerrainType = terrain_Water;	
 }
 
-Pmwx::Pmwx(const Pmwx& rhs)
+Pmwx::Pmwx(const Pmwx& rhs) :
+	mFaceBuckets(Bbox2(-360,-180,360,180),MapFaceBucketTraits()),
+	mHalfedgeBuckets(Bbox2(-360,-180,360,180),MapHalfedgeBucketTraits()),
+	mVertexBuckets(Bbox2(-360,-180,360,180),MapVertexBucketTraits())
 {
 	mVertexIndex.clear();
 	mVertices = mHalfedges = 0;
@@ -402,7 +412,10 @@ Pmwx::Pmwx(const Pmwx& rhs)
 }
 
 
-Pmwx::Pmwx(const GISFace& rhs)
+Pmwx::Pmwx(const GISFace& rhs) :
+	mFaceBuckets(Bbox2(-360,-180,360,180),MapFaceBucketTraits()),
+	mHalfedgeBuckets(Bbox2(-360,-180,360,180),MapHalfedgeBucketTraits()),
+	mVertexBuckets(Bbox2(-360,-180,360,180),MapVertexBucketTraits())
 {
 	mVertices = mHalfedges = 0;
 	mFaces = 1;
@@ -2642,55 +2655,189 @@ void			Pmwx::delete_face(GISFace * fe)
  *****************************************************************************/
 #pragma mark -
 
+struct	cull_bbox_overlap {
+	Bbox2	e;
+	cull_bbox_overlap(const Bbox2& ie) : e(ie) { }
+	bool operator()(const Bbox2& b) const { return e.overlap(b); }
+};
+
+struct	face_overlap_collector {
+	Bbox2				e;
+	vector<GISFace *> *	c;
+	face_overlap_collector(const Bbox2& ie, vector<GISFace *> * ic) : c(ic), e(ie) { }
+	bool operator()(GISFace * g) const
+	{
+		for (GISFace * i = g; i; i = i->next_index())
+		if (e.overlap(i->mBoundsCache))
+			c->push_back(i);
+	}
+};
+
+struct	face_contains_collector {
+	Bbox2				e;
+	vector<GISFace *> *	c;
+	face_contains_collector(const Bbox2& ie, vector<GISFace *> * ic) : c(ic), e(ie) { }
+	bool operator()(GISFace * g) const
+	{
+		for (GISFace * i = g; i; i = i->next_index())
+		if (e.contains(i->mBoundsCache))
+			c->push_back(i);
+	}
+};
+
+struct	face_contains_pt_collector {
+	Point2				p;
+	vector<GISFace *> *	c;
+	face_contains_pt_collector(const Point2& ip, vector<GISFace *> * ic) : c(ic), p(ip) { }
+	bool operator()(GISFace * g) const
+	{
+		for (GISFace * i = g; i; i = i->next_index())
+		if (i->mBoundsCache.contains(p))
+		{
+
+			Polygon2	poly;
+			Pmwx::Ccb_halfedge_circulator	circ = i->outer_ccb();
+			Pmwx::Ccb_halfedge_circulator	start = circ;
+			do {
+				poly.push_back(circ->source()->point());
+				
+				++circ;
+			} while (circ != start);
+
+			if (poly.inside(p))
+			{
+				bool inside = true;
+				for (Pmwx::Holes_iterator h = i->holes_begin(); h != i->holes_end(); ++h)
+				{
+					Polygon2	poly2;
+					circ = *h;
+					start = circ;
+					do {
+						poly2.push_back(circ->source()->point());
+						
+						++circ;
+					} while (circ != start);
+					if (poly2.inside(p))
+					{
+						inside = false;
+						break;
+					}
+				}
+				if (inside)
+					c->push_back(i);				
+			} // inside outer CCB?
+		} // inside bounds?
+	}
+};
+
+struct	halfedge_overlap_collector {
+	Bbox2					e;
+	vector<GISHalfedge *> *	c;
+	halfedge_overlap_collector(const Bbox2& ie, vector<GISHalfedge *> * ic) : c(ic), e(ie) { }
+	bool operator()(GISHalfedge * g) const
+	{
+		for (GISHalfedge * i = g; i; i = i->next_index())
+		{
+			Bbox2	b(i->source()->point(),i->target()->point());
+			if (e.overlap(b))
+				c->push_back(i);
+			}
+	}
+};
+
+struct	halfedge_contains_collector {
+	Bbox2				e;
+	vector<GISHalfedge *> *	c;
+	halfedge_contains_collector(const Bbox2& ie, vector<GISHalfedge *> * ic) : c(ic), e(ie) { }
+	bool operator()(GISHalfedge * g) const
+	{
+		for (GISHalfedge * i = g; i; i = i->next_index())
+		{
+			Bbox2	b(i->source()->point(),i->target()->point());
+			if (e.contains(b))
+				c->push_back(i);
+		}
+	}
+};
+
+struct	vertex_contains_collector {
+	Bbox2					e;
+	vector<GISVertex *> *	c;
+	vertex_contains_collector(const Bbox2& ie, vector<GISVertex *> * ic) : c(ic), e(ie) { }
+	bool operator()(GISVertex * g) const
+	{
+		for (GISVertex * i = g; i; i = i->next_index())
+		if (e.contains(i->point()))
+			c->push_back(i);
+	}
+};
+
+struct	vertex_contains_pt_collector {
+	Point2				p;
+	vector<GISVertex *> *	c;
+	vertex_contains_pt_collector(const Point2& ip, vector<GISVertex *> * ic) : c(ic), p(ip) { }
+	bool operator()(GISVertex * g) const
+	{
+		for (GISVertex * i = g; i; i = i->next_index())
+		if (p == i->point())
+			c->push_back(i);
+	}
+};
+
+
+
+
 void		Pmwx::FindFaceTouchesPt(const Point2& p1, vector<GISFace *>& ids)
 {
-	mFaceBuckets.FindTouchesPt(p1, ids);
+	ids.clear();
+	Bbox2	key(p1);
+	mFaceBuckets.iterate_cull(cull_bbox_overlap(key),face_contains_pt_collector(p1,&ids));
 }
-
-void		Pmwx::FindFaceTouchesRect(const Point2& p1, const Point2& p2, vector<GISFace *>& ids)
+void		Pmwx::FindFaceTouchesRectFast(const Point2& p1, const Point2& p2, vector<GISFace *>& ids)
 {
-	mFaceBuckets.FindTouchesRect(p1, p2, ids);
+	ids.clear();
+	Bbox2	key(p1,p2);
+	mFaceBuckets.iterate_cull(cull_bbox_overlap(key),face_overlap_collector(key,&ids));
 }
-
 void		Pmwx::FindFaceFullyInRect(const Point2& p1, const Point2& p2, vector<GISFace *>& ids)
 {
-	mFaceBuckets.FindFullyInRect(p1, p2, ids);
+	ids.clear();
+	Bbox2	key(p1,p2);
+	mFaceBuckets.iterate_cull(cull_bbox_overlap(key),face_contains_collector(key,&ids));
 }
 
-
-void		Pmwx::FindHalfedgeTouchesPt(const Point2& p1, vector<GISHalfedge *>& ids)
+void		Pmwx::FindHalfedgeTouchesRectFast(const Point2& p1, const Point2& p2, vector<GISHalfedge *>& ids)
 {
-	mHalfedgeBuckets.FindTouchesPt(p1, ids);
-}
-void		Pmwx::FindHalfedgeTouchesRect(const Point2& p1, const Point2& p2, vector<GISHalfedge *>& ids)
-{
-	mHalfedgeBuckets.FindTouchesRect(p1, p2, ids);
+	ids.clear();
+	Bbox2	key(p1,p2);
+	mHalfedgeBuckets.iterate_cull(cull_bbox_overlap(key),halfedge_overlap_collector(key,&ids));
 }
 void		Pmwx::FindHalfedgeFullyInRect(const Point2& p1, const Point2& p2, vector<GISHalfedge *>& ids)
 {
-	mHalfedgeBuckets.FindFullyInRect(p1, p2, ids);
+	ids.clear();
+	Bbox2	key(p1,p2);
+	mHalfedgeBuckets.iterate_cull(cull_bbox_overlap(key),halfedge_contains_collector(key,&ids));
 }
+
 
 void		Pmwx::FindVerticesTouchesPt(const Point2& p1, vector<GISVertex *>& ids)
 {
-	mVertexBuckets.FindTouchesPt(p1, ids);
+	ids.clear();
+	Bbox2	key(p1);
+	mVertexBuckets.iterate_cull(cull_bbox_overlap(key),vertex_contains_pt_collector(p1,&ids));
 }
-
 void		Pmwx::FindVerticesTouchesRect(const Point2& p1, const Point2& p2, vector<GISVertex *>& ids)
 {
-	mVertexBuckets.FindTouchesRect(p1, p2, ids);
-}
-
-void		Pmwx::FindVerticesFullyInRect(const Point2& p1, const Point2& p2, vector<GISVertex *>& ids)
-{
-	mVertexBuckets.FindFullyInRect(p1, p2, ids);
+	ids.clear();
+	Bbox2	key(p1,p2);
+	mVertexBuckets.iterate_cull(cull_bbox_overlap(key),vertex_contains_collector(key,&ids));
 }
 
 void		Pmwx::Index(void)
 {
-	mFaceBuckets.RemoveAllAndDestroy();
-	mHalfedgeBuckets.RemoveAllAndDestroy();
-	mVertexBuckets.RemoveAllAndDestroy();
+	mFaceBuckets.remove_all();
+	mHalfedgeBuckets.remove_all();
+	mVertexBuckets.remove_all();
 
 	Point2	minp(9999, 9999), maxp(-9999, -9999);
 	for (Pmwx::Vertex_iterator i = vertices_begin(); i != vertices_end(); ++i)
@@ -2704,236 +2851,120 @@ void		Pmwx::Index(void)
 	xd *= 0.001;					yd *= 0.001;
 	minp.x -= xd;					minp.y -= yd;
 	maxp.x += xd;					maxp.y += yd;
-	mFaceBuckets.Reset(8, minp, maxp, bucket_Organize_Test);
-	mHalfedgeBuckets.Reset(8, minp, maxp, bucket_Organize_Test);
-	mVertexBuckets.Reset(8, minp, maxp, bucket_Organize_Test);
+	mFaceBuckets.set_extent(Bbox2(minp, maxp));
+	mHalfedgeBuckets.set_extent(Bbox2(minp, maxp));
+	mVertexBuckets.set_extent(Bbox2(minp, maxp));
 
 	for (Pmwx::Face_iterator i = faces_begin(); i != faces_end(); ++i)
 	{
 		if (!i->is_unbounded())
-			mFaceBuckets.Insert(i);
+		{
+			Pmwx::Ccb_halfedge_circulator	circ = i->outer_ccb();
+			Pmwx::Ccb_halfedge_circulator	start = circ;
+			i->mBoundsCache = Bbox2(circ->source()->point());
+			do {
+				i->mBoundsCache += circ->source()->point();
+				++circ;
+			} while (circ != start);
+
+			mFaceBuckets.insert(i,8);
+		}
 	}
 
 	for (Pmwx::Halfedge_iterator i = halfedges_begin(); i != halfedges_end(); ++i)
 	{
 		if (i->mDominant)
-			mHalfedgeBuckets.Insert(i);
+			mHalfedgeBuckets.insert(i,8);
 	}
 
 	for (Pmwx::Vertex_iterator i = vertices_begin(); i != vertices_end(); ++i)
 	{
-		mVertexBuckets.Insert(i);
+		mVertexBuckets.insert(i,8);
 	}
 }
 
+#pragma mark -
 
-void	MapFaceBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
+#if !DEV
+	need better caching scheme for this!  It is called possibly frequently!
+#endif
+void	MapFaceBucketTraits::get_cull(ValueType * v, CullType& c)
 {
-	Polygon2	poly;
-	
-	if (o->is_unbounded())
-	{
-		p1 = Point2(-9999.0, -9999.0);
-		p2 = Point2(-9998.0, -9998.0);
-		return;
+	Polygon2	poly;	
+	c = v->mBoundsCache;
+}
+
+void		MapBucketTraits::expand_by(CullType& io_cull, const CullType& part)
+{
+	io_cull += part;
+}
+
+void		MapBucketTraits::set_empty(CullType& c)
+{
+	c = Bbox2();
+}
+
+inline void bbox_ratio(const Bbox2& old, Bbox2& n, double l, double b, double r, double t)
+{
+	n.p1.x = old.p1.x + (old.p2.x - old.p1.x) * l;
+	n.p2.x = old.p1.x + (old.p2.x - old.p1.x) * r;
+	n.p1.y = old.p1.y + (old.p2.y - old.p1.y) * b;
+	n.p2.y = old.p1.y + (old.p2.y - old.p1.y) * t;
+
+}
+
+void		MapBucketTraits::subkey(const KeyType& e, KeyType& k, int n)
+{
+	Point2 c = e.centroid();
+	switch(n) {
+	case 0:		bbox_ratio(e,k,	0,	0,	0.5,	0.5);	break;
+	case 1:		bbox_ratio(e,k,	0,	0.5,0.5,	1.0);	break;
+	case 2:		bbox_ratio(e,k,	0.5,0,	1.0,	0.5);	break;
+	case 3:		bbox_ratio(e,k,	0.5,0.5,1.0,	1.0);	break;
+	case 4:		bbox_ratio(e,k, 0,	0.25,0.5,	0.75);	break;
+	case 5:		bbox_ratio(e,k,	0.5,0.25,1.0,	0.75);	break;
+	case 6:		bbox_ratio(e,k,0.25,0,	0.75,	0.5);	break;
+	case 7:		bbox_ratio(e,k,0.25,0.5,0.75,	1.0);	break;
+	case 8:		bbox_ratio(e,k,0.25,0.25,0.75,0.75);	break;
 	}
-
-	Pmwx::Ccb_halfedge_circulator	circ = o->outer_ccb();
-	Pmwx::Ccb_halfedge_circulator	start = circ;
-	o->mBoundsCache = Bbox2(circ->source()->point());
-	do {
-		o->mBoundsCache += circ->source()->point();
-		++circ;
-	} while (circ != start);
-
-	p1 = Point2(o->mBoundsCache.xmin(), o->mBoundsCache.ymin());
-	p2 = Point2(o->mBoundsCache.xmax(), o->mBoundsCache.ymax());		
 }
 
-bool	MapFaceBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
+bool		MapBucketTraits::contains(const KeyType& outer, const KeyType& inner)
 {
-	if (o->is_unbounded()) return false;
-	
-	if (p.x < o->mBoundsCache.xmin() ||
-		p.x > o->mBoundsCache.xmax() ||
-		p.y < o->mBoundsCache.ymin() ||
-		p.y > o->mBoundsCache.ymax())	return false;
-
-	Polygon2	poly;
-	Pmwx::Ccb_halfedge_circulator	circ = o->outer_ccb();
-	Pmwx::Ccb_halfedge_circulator	start = circ;
-	do {
-		poly.push_back(circ->source()->point());
-		
-		++circ;
-	} while (circ != start);
-
-	if (poly.inside(p))
-	{
-		for (Pmwx::Holes_iterator h = o->holes_begin(); h != o->holes_end(); ++h)
-		{
-			Polygon2	poly2;
-			circ = *h;
-			start = circ;
-			do {
-				poly2.push_back(circ->source()->point());
-				
-				++circ;
-			} while (circ != start);
-			if (poly2.inside(p))
-				return false;
-		}
-		return true;
-	}
-	return false;
+	return outer.contains(inner);
 }
 
-bool	MapFaceBucketTraits::ObjectTouchesRect(Object o, const Point2& p1, const Point2& p2)
+void		MapBucketTraits::make_key(
+					const CullType&		cull,
+						  KeyType&		key)
 {
-	if (o->is_unbounded()) return false;
-
-	Bbox2			selection(
-						p1.x,
-						p1.y,
-						p2.x,
-						p2.y);
-
-	return o->mBoundsCache.overlap(selection);	
+	key = cull;
 }
 
-bool	MapFaceBucketTraits::ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2)
+void *		MapBucketTraits::alloc(size_t bytes)
 {
-	if (o->is_unbounded()) return false;
-
-	Bbox2	selection(
-					p1.x,
-					p1.y,
-					p2.x,
-					p2.y);
-
-	return (
-			o->mBoundsCache.xmin() >= selection.xmin() &&
-			o->mBoundsCache.ymin() >= selection.ymin() &&
-			o->mBoundsCache.xmax() <= selection.xmax() &&
-			o->mBoundsCache.ymax() <= selection.ymax());
+	void * a = malloc(bytes);
+	alloc_list.push_back(a);
+	return a;
 }
 
-void	MapFaceBucketTraits::DestroyObject(Object o)
+MapBucketTraits::~MapBucketTraits()
 {
+	for (list<void *>::iterator p = alloc_list.begin(); p != alloc_list.end(); ++p)
+		free(*p);
 }
 
+void		MapHalfedgeBucketTraits::get_cull(ValueType * v, CullType& c)
+{
+	c = Bbox2(v->source()->point(), v->target()->point());
+}
+
+void		MapVertexBucketTraits::get_cull(ValueType * v, CullType& c)
+{
+	c = Bbox2(v->point());
+}
 
 #pragma mark -
-
-void	MapHalfedgeBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
-{
-	Bbox2	box(o->source()->point());
-	box += o->target()->point();
-	
-	p1 = Point2(box.xmin(), box.ymin());
-	p2 = Point2(box.xmax(), box.ymax());		
-}
-
-bool	MapHalfedgeBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
-{
-	return false;
-
-	Segment2	seg(o->source()->point(), o->target()->point());
-	
-	Point2	proj = seg.projection(p);
-	if (!seg.collinear_has_on(proj)) return false;
-	
-	return true;
-}
-
-bool	MapHalfedgeBucketTraits::ObjectTouchesRect(Object o, const Point2& p1, const Point2& p2)
-{
-	Bbox2	selection(
-						p1.x,
-						p1.y,
-						p2.x,
-						p2.y);
-	Bbox2	box(o->source()->point());
-	 box += o->target()->point();
-
-	// Warning: this isn't quite right...it's overzealous.
-	return box.overlap(selection);	
-}
-
-bool	MapHalfedgeBucketTraits::ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2)
-{
-	Bbox2	selection(
-						p1.x,
-						p1.y,
-						p2.x,
-						p2.y);
-	Bbox2	box(o->source()->point());
-	box += o->target()->point();
-
-	return (
-			box.xmin() >= selection.xmin() &&
-			box.ymin() >= selection.ymin() &&
-			box.xmax() <= selection.xmax() &&
-			box.ymax() <= selection.ymax());
-}
-
-void	MapHalfedgeBucketTraits::DestroyObject(Object o)
-{
-}
-
-
-#pragma mark -
-
-void	MapVertexBucketTraits::GetObjectBounds(Object o, Point2& p1, Point2& p2)
-{
-	p1 = o->point();
-	p2 = o->point();
-}
-
-bool	MapVertexBucketTraits::ObjectTouchesPoint(Object o, const Point2& p)
-{
-	return o->point() == p;
-}
-
-bool	MapVertexBucketTraits::ObjectTouchesRect(Object o, const Point2& p1, const Point2& p2)
-{
-	Bbox2	selection(
-						p1.x,
-						p1.y,
-						p2.x,
-						p2.y);
-	Bbox2	box(o->point());
-
-	// Warning: need to check edge cases here!
-	return box.overlap(selection);
-}
-
-bool	MapVertexBucketTraits::ObjectFullyInRect(Object o, const Point2& p1, const Point2& p2)
-{
-	Bbox2	selection(
-						p1.x,
-						p1.y,
-						p2.x,
-						p2.y);
-	Bbox2	box(o->point());
-
-	return (
-			box.xmin() >= selection.xmin() &&
-			box.ymin() >= selection.ymin() &&
-			box.xmax() <= selection.xmax() &&
-			box.ymax() <= selection.ymax());
-}
-
-void	MapVertexBucketTraits::DestroyObject(Object o)
-{
-}
-
-
-#pragma mark -
-
-template class XBuckets<Pmwx::Face_handle, MapFaceBucketTraits>;
-template class XBuckets<Pmwx::Halfedge_handle, MapHalfedgeBucketTraits>;
-template class XBuckets<Pmwx::Vertex_handle, MapVertexBucketTraits>;
 
 
 #if 0

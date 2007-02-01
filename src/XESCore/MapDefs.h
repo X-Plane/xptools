@@ -26,6 +26,8 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <list>
+using std::list;
 
 #include "CompGeomDefs2.h"
 
@@ -265,8 +267,12 @@ class	GISHalfedge {
 	GISFace *		mFace;
 	GISVertex *		mTarget;
 
+	GISHalfedge *	mNextIndex;
+	friend class	MapHalfedgeBucketTraits;
 
 public:
+
+	GISHalfedge *		next_index()	{ return mNextIndex; }
 
 	GISHalfedge *		twin() 			{ return mTwin; }
 	const GISHalfedge *	twin() const	{ return mTwin; }
@@ -376,10 +382,15 @@ class	GISVertex {
 	typedef	GISHalfedge::Halfedge_around_vertex_circulator			Halfedge_around_vertex_circulator;
 	typedef	GISHalfedge::Halfedge_around_vertex_const_circulator	Halfedge_around_vertex_const_circulator;
 
+	GISVertex *		mNextIndex;
+	friend class	MapVertexBucketTraits;
+
 public:
 
-	Point2&			point() 					{ return mPoint; }
-	const Point2&	point() const 				{ return mPoint; }
+	GISVertex *			next_index()	{ return mNextIndex; }
+
+	Point2&				point() 				{ return mPoint; }
+	const Point2&		point() const 			{ return mPoint; }
 	GISHalfedge *		halfedge()				{ return mHalfedge; }
 	const GISHalfedge *	halfedge() const		{ return mHalfedge; }
 
@@ -463,9 +474,14 @@ class	GISFace {
 	typedef	set<GISHalfedge *>::const_iterator			Holes_const_iterator;
 	typedef GISHalfedge::Ccb_halfedge_circulator		Ccb_halfedge_circulator;
 	typedef GISHalfedge::Ccb_halfedge_const_circulator	Ccb_halfedge_const_circulator;
+
+	GISFace *		mNextIndex;
+	friend class	MapFaceBucketTraits;
 	
 public:
 
+	GISFace *					next_index()			{ return mNextIndex; }
+	
 	bool						is_unbounded() const 	{ return mOuterCCB == NULL; }
 	Holes_iterator				holes_begin() 			{ return mHoles.begin(); }
 	Holes_const_iterator		holes_begin() const 	{ return mHoles.begin(); }
@@ -525,64 +541,66 @@ private:
  * SPATIAL INDEXING HELPERS
  ************************************************************************/
 
-#include "XBuckets.h"
+// Planar map uses quad trees to provide spatial indexing.  Basically
+// the index is okay FROM when we call "index until when we edit.
+// Fast accessors return queries/
 
-class	MapFaceBucketTraits {
+// Please note that vertices are also stored in a 1-d map by Y coordinate.
+// This is NOT useful for spatial range queries - instead it is used for
+// fast exact-vert location - that is, recovering a vertex by its point coordinates.
+// This is very useful in certain construction ops.
+
+#include "QuadTree.h"
+
+class	MapBucketTraits {
 public:
 
-	typedef	::Point2				Point2;
-	typedef	double				Scalar;
-	typedef	GISFace *			Object;
+	typedef	Bbox2		KeyType;
+	typedef	Bbox2		CullType;
 
-	static	Scalar	X(const Point2& p) { return (p.x); }
-	static	Scalar	Y(const Point2& p) { return (p.y); }
-	static	void	MakePoint(Scalar x, Scalar y, Point2& p) {	p = Point2(x, y); }
+	void		expand_by(CullType& io_cull, const CullType& part);		// expand io_cull by part
+	void		set_empty(CullType& c);									// make zero-area cull
 
-	static	void	GetObjectBounds(Object, Point2&, Point2&);
-	static	bool	ObjectTouchesPoint(Object, const Point2&);
-	static	bool	ObjectTouchesRect(Object, const Point2&, const Point2&);
-	static	bool	ObjectFullyInRect(Object, const Point2&, const Point2&);
-	static	void	DestroyObject(Object);
-};	
-
-class	MapHalfedgeBucketTraits {
-public:
-
-	typedef	::Point2				Point2;
-	typedef	double					Scalar;
-	typedef	GISHalfedge *			Object;
-
-	static	Scalar	X(const Point2& p) { return (p.x); }
-	static	Scalar	Y(const Point2& p) { return (p.y); }
-	static	void	MakePoint(Scalar x, Scalar y, Point2& p) {	p = Point2(x, y); }
-
-	static	void	GetObjectBounds(Object, Point2&, Point2&);
-	static	bool	ObjectTouchesPoint(Object, const Point2&);
-	static	bool	ObjectTouchesRect(Object, const Point2&, const Point2&);
-	static	bool	ObjectFullyInRect(Object, const Point2&, const Point2&);
-	static	void	DestroyObject(Object);
+	void		subkey(const KeyType& e, KeyType& k, int n);			// change K to be the Nth quadrant subkey of E
+	bool		contains(const KeyType& outer, const KeyType& inner);	// return true if outer fully contains inner	
+	void		make_key(const CullType& cull, KeyType&	key);
 	
+	void *		alloc(size_t bytes);		
+
+	~MapBucketTraits();
+
+	list<void *>	alloc_list;
+
 };	
 
-class	MapVertexBucketTraits {
+class	MapFaceBucketTraits : public MapBucketTraits {
 public:
 
-	typedef	::Point2			Point2;
-	typedef	double				Scalar;
-	typedef	GISVertex *			Object;
-
-	static	Scalar	X(const Point2& p) { return (p.x); }
-	static	Scalar	Y(const Point2& p) { return (p.y); }
-	static	void	MakePoint(Scalar x, Scalar y, Point2& p) {	p = Point2(x, y); }
-
-	static	void	GetObjectBounds(Object, Point2&, Point2&);
-	static	bool	ObjectTouchesPoint(Object, const Point2&);
-	static	bool	ObjectTouchesRect(Object, const Point2&, const Point2&);
-	static	bool	ObjectFullyInRect(Object, const Point2&, const Point2&);
-	static	void	DestroyObject(Object);
-	
+	typedef	GISFace		ValueType;
+	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
+	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
+	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
 };	
 
+class	MapHalfedgeBucketTraits : public MapBucketTraits {
+public:
+
+	typedef	GISHalfedge		ValueType;
+	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
+	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
+	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
+
+};
+
+class	MapVertexBucketTraits : public MapBucketTraits {
+public:
+
+	typedef	GISVertex		ValueType;
+	void		get_cull(ValueType * v, CullType& c);					// get cull radius of V
+	ValueType *	get_next(ValueType * v) { return v->mNextIndex; }
+	void		set_next(ValueType * v, ValueType * n) { v->mNextIndex = n; }
+
+};
 
 /************************************************************************
  * MAP
@@ -761,25 +779,23 @@ public:
 	 * SPATIAL INDEXING
 	 *****************************************************************************/
 	
-	void		FindFaceTouchesPt(const Point2&, vector<GISFace *>& outIDs);
-	void		FindFaceTouchesRect(const Point2&, const Point2&, vector<GISFace *>& outIDs);
-	void		FindFaceFullyInRect(const Point2&, const Point2&, vector<GISFace *>& outIDs);
+	void		FindFaceTouchesPt(const Point2&, vector<GISFace *>& outIDs);									// Fully checks for pt containment
+	void		FindFaceTouchesRectFast(const Point2&, const Point2&, vector<GISFace *>& outIDs);				// Intersects with face bbox, not face
+	void		FindFaceFullyInRect(const Point2&, const Point2&, vector<GISFace *>& outIDs);					// Full containment
 
-	void		FindHalfedgeTouchesPt(const Point2&, vector<GISHalfedge *>& outIDs);
-	void		FindHalfedgeTouchesRect(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);
-	void		FindHalfedgeFullyInRect(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);
+	void		FindHalfedgeTouchesRectFast(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);		// Intersects with half-edge bbox, not half-edge
+	void		FindHalfedgeFullyInRect(const Point2&, const Point2&, vector<GISHalfedge *>& outIDs);			// Full containment
 
-	void		FindVerticesTouchesPt(const Point2&, vector<GISVertex *>& outIDs);
-	void		FindVerticesTouchesRect(const Point2&, const Point2&, vector<GISVertex *>& outIDs);
-	void		FindVerticesFullyInRect(const Point2&, const Point2&, vector<GISVertex *>& outIDs);
+	void		FindVerticesTouchesPt(const Point2&, vector<GISVertex *>& outIDs);								// Perfect equalty.
+	void		FindVerticesTouchesRect(const Point2&, const Point2&, vector<GISVertex *>& outIDs);				// Full containment (any containment is full for pts)
 
 	void		Index(void);
 		
 private:
 
-	typedef	XBuckets<Pmwx::Face_handle, MapFaceBucketTraits>			MapFaceBuckets;
-	typedef	XBuckets<Pmwx::Halfedge_handle, MapHalfedgeBucketTraits>	MapHalfedgeBuckets;
-	typedef	XBuckets<Pmwx::Vertex_handle, MapVertexBucketTraits>		MapVertexBuckets;
+	typedef	QuadTree<MapFaceBucketTraits,9>			MapFaceBuckets;
+	typedef	QuadTree<MapHalfedgeBucketTraits,9>		MapHalfedgeBuckets;
+	typedef	QuadTree<MapVertexBucketTraits,4>		MapVertexBuckets;
 
 		MapFaceBuckets			mFaceBuckets;
 		MapHalfedgeBuckets		mHalfedgeBuckets;
