@@ -37,6 +37,7 @@
 #include "WED_Progress.h"
 #include "WED_SelectionTool.h"
 #include "WED_CropTool.h"
+#include "WED_BezierTestTool.h"
 #include "WED_ImageTool.h"
 #include "WED_TerraTool.h"
 #include "WED_TopoTester.h"
@@ -87,7 +88,7 @@
 const int 	kInfoStripHeight = 18;
 
 const char *	kSelButtonLabels[] = { "V", "E", "F", "P", 0 };
-const char *	kToolButtonLabels[] = { "Select", "Crop", "Image", "Terra", "TTEST", "MTEST", 0 };
+const char *	kToolButtonLabels[] = { "Select", "Crop", "Bezier", "Image", "Terra", "TTEST", "MTEST", 0 };
 
 struct	DEMViewInfo_t {
 	int				dem;
@@ -362,6 +363,7 @@ WED_MapView::WED_MapView(
 
 	mTools.push_back(new WED_SelectionTool(mZoomer));	
 	mTools.push_back(new WED_CropTool(mZoomer));	
+	mTools.push_back(new WED_BezierTestTool(mZoomer));		
 	mTools.push_back(new WED_ImageTool(mZoomer));	
 	mTools.push_back(new WED_TerraTool(mZoomer));	
 	mTools.push_back(new WED_TopoTester(mZoomer));	

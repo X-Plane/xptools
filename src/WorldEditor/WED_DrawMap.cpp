@@ -474,8 +474,8 @@ void	DrawMapBucketed(
 	vector<Pmwx::Face_handle>		faces;
 	vector<Pmwx::Halfedge_handle>	halfedges;
 	vector<Pmwx::Vertex_handle>		vertices;
-	inMap.FindFaceTouchesRect(Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), faces);
-	inMap.FindHalfedgeTouchesRect(Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), halfedges);
+	inMap.FindFaceTouchesRectFast(Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), faces);
+	inMap.FindHalfedgeTouchesRectFast(Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), halfedges);
 	inMap.FindVerticesTouchesRect(Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), vertices);
 
 //	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f) faces.push_back(f);
