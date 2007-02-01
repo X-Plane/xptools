@@ -34,6 +34,7 @@ using std::vector;
 struct	Point2;
 struct	Vector2;
 
+	
 
 
 enum {
@@ -41,10 +42,6 @@ enum {
 	COLLINEAR = 0,
 	RIGHT_TURN = -1,
 	
-	NEGATIVE = -1,
-	ZERO = 0,
-	POSITIVE = 1,
-
 	CLOCKWISE = -1,
 	COUNTERCLOCKWISE = 1,
 	
@@ -226,9 +223,23 @@ struct	Line2 {
  * Bbox2
  ****************************************************************************************************/
 
-class	Bbox2 {
-public:
-				Bbox2() : p1(0,0), p2(0, 0) { }
+/*
+	Bbox2 - this is a bounding box, used for a lot of spatial indexing.  A few notes:
+	An EMPTY bbox has either an equal lower/upper side of equal left/rgiht side.  In otherwords, it CONTAINS no area.
+	A Point bbox has the extent of a single point.
+	A NULL bbox is "non-existent" and is symbolized by having p2 < p1 for some coordinate.  This is used to define an "empty set" when unioning bboxes.
+	
+	So...the empty ctor makes a null bbox.
+	Operator += is a union and is null-box aware.
+	A point makes a point bbox
+	
+	"overlap" and "contains" are both defined with the boundary as "in" - this seems to be the most useful op for bboxes - we'll provide more specific
+	predicates later if needed.  Usually a bbox is a proxy for another shape with a different boundary, which is why specific boundary tests are
+	usually not useful.
+*/
+
+struct	Bbox2 {
+				Bbox2() : p1(0,0), p2(-1, -1) { }
 				Bbox2(double x1, double y1, double x2, double y2) : p1(x1, y1), p2(x2, y2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
 				Bbox2(const Point2& in_p1, const Point2& in_p2) : p1(in_p1), p2(in_p2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
 				Bbox2(const Point2& inp) : p1(inp), p2(inp) { }
@@ -238,29 +249,24 @@ public:
 	bool		operator==(const Bbox2& rhs) const { return p1 == rhs.p1 && p2 == rhs.p2; }
 	bool		operator!=(const Bbox2& rhs) const { return p1 != rhs.p1 || p2 != rhs.p2; }
 	
-	Bbox2&		operator+=(const Point2& p) { 	p1.x = min(p1.x, p.x);	p1.y = min(p1.y, p.y); 
-												p2.x = max(p2.x, p.x);	p2.y = max(p2.y, p.y); return *this; }
+	Bbox2&		operator+=(const Point2& p);
+	Bbox2&		operator+=(const Bbox2& o);
 
 	double		xmin() const { return p1.x; }
 	double		ymin() const { return p1.y; }
 	double		xmax() const { return p2.x; }
 	double		ymax() const { return p2.y; }
 
-	bool		empty() { return p1 == p2; }
+	bool		is_empty() const { return p1.x == p2.x || p1.y == p2.y; }
+	bool		is_point() const { return p1 == p2; }
+	bool		is_null() const { return p1.x > p2.x || p1.y > p2.y; }
 	
-	bool		overlap(const Bbox2& rhs) const {	
-	    return 	(xmax() >= rhs.xmin() && rhs.xmax() >= xmin() &&
-				 ymax() >= rhs.ymin() && rhs.ymax() >= ymin()); 			}
+	bool		overlap(const Bbox2& rhs) const;
+	bool		contains(const Bbox2& rhs) const;
+	bool		contains(const Point2& p) const;
 
-	bool		contains(const Bbox2& rhs) const {	
-	    return 	(xmax() >= rhs.xmax() && rhs.xmin() >= xmin() &&
-				 ymax() >= rhs.ymax() && rhs.ymin() >= ymin()); 			}
-				 
-	bool		contains(const Point2& p) const {
-		return (xmin() <= p.x && p.x <= xmax() &&
-				ymin() <= p.y && p.y <= ymax()); }
-
-	void		expand(double v) { p1.x -= v; p1.y -= v; p2.x += v; p2.y += v; }
+	void		expand(double v) { p1.x -= v; p1.y -= v; p2.x += v; p2.y += v; }	
+	Point2		centroid(void) const { return Point2((p1.x + p2.x) * 0.5,(p1.y+p2.y) * 0.5); }
 
 	Point2	p1;
 	Point2	p2;
@@ -271,8 +277,7 @@ public:
  * Polygon2
  ****************************************************************************************************/
 
-class	Polygon2 : public vector<Point2> {
-public:
+struct	Polygon2 : public vector<Point2> {
 				Polygon2() 						: vector<Point2>() 		{ }
 				Polygon2(const Polygon2& rhs)   : vector<Point2>(rhs) 	{ }
 				Polygon2(int x) 				: vector<Point2>(x) 	{ }
@@ -310,8 +315,7 @@ public:
  * Bezier2
  ****************************************************************************************************/
 
-class	Bezier2 {
-public:
+struct	Bezier2 {
 	Bezier2() { }
 	Bezier2(const Point2& ip1, const Point2& ic1, const Point2& ic2, const Point2& ip2) : p1(ip1), p2(ip2), c1(ic1), c2(ic2) { }
 	Bezier2(const Bezier2& x) : p1(x.p1), p2(x.p2), c1(x.c1), c2(x.c2) { }
@@ -321,7 +325,10 @@ public:
 	bool operator!=(const Bezier2& x) const { return p1 != x.p1 || p2 != x.p2 || c1 != x.c1 || c2 != x.c2; }
 	
 	Point2	midpoint(double t=0.5) const;	
-	
+	void	partition(Bezier2& lhs, Bezier2& rhs, double t=0.5) const;
+	int		x_monotone(void) const;
+	int		y_monotone(void) const;
+	int		monotone_regions(double& t1, double& t2, double& t3, double& t4);
 	Point2	p1;
 	Point2	p2;
 	Point2	c1;
@@ -569,6 +576,56 @@ inline void Line2::normalize()
 	}
 }
 
+inline Bbox2& Bbox2::operator+=(const Point2& rhs)
+{
+	if (is_null())	p1 = p2 = rhs;
+	else {
+		p1.x = min(p1.x,rhs.x);
+		p1.y = min(p1.y,rhs.y);
+		p2.x = max(p2.x,rhs.x);
+		p2.y = max(p2.y,rhs.y);
+	}
+	return *this;
+}
+
+inline Bbox2& Bbox2::operator+=(const Bbox2& rhs)
+{
+	if (rhs.is_null()) 	return *this;
+	if (is_null()) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
+	else {
+		p1.x = min(p1.x,rhs.p1.x);
+		p1.y = min(p1.y,rhs.p1.y);
+		p2.x = max(p2.x,rhs.p2.x);
+		p2.y = max(p2.y,rhs.p2.y);
+		return *this;
+	}
+}	
+
+inline	bool		Bbox2::overlap(const Bbox2& rhs) const 
+{		
+	if (is_null()) return false;
+	if (rhs.is_null()) return false;
+	return 	(xmax() >= rhs.xmin() && rhs.xmax() >= xmin() &&
+			 ymax() >= rhs.ymin() && rhs.ymax() >= ymin()); 			
+}
+
+inline	bool		Bbox2::contains(const Bbox2& rhs) const 
+{	
+	if (is_null()) return false;
+	if (rhs.is_null()) return false;
+	return 	(xmax() >= rhs.xmax() && rhs.xmin() >= xmin() &&
+			 ymax() >= rhs.ymax() && rhs.ymin() >= ymin()); 			
+}
+				 
+inline	bool		Bbox2::contains(const Point2& p) const 
+{
+	if (is_null()) return false;
+	return (xmin() <= p.x && p.x <= xmax() &&
+			ymin() <= p.y && p.y <= ymax()); 
+}
+
+
+
 inline	Point2	Midpoint2(const Point2& p1, const Point2& p2)	{ return Point2((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5); }
 
 inline	double	Polygon2::area(void) const
@@ -698,6 +755,107 @@ inline	Point2	Bezier2::midpoint(double t) const
 	return Point2(w0 * p1.x + w1 * c1.x + w2 * c2.x + w3 * p2.x,
 				  w0 * p1.y + w1 * c1.y + w2 * c2.y + w3 * p2.y);
 }
+
+inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
+{
+	lhs.p1 = p1;
+	rhs.p2 = p2;	
+
+	Point2 m = Segment2(c1,c2).midpoint(t);
+
+	lhs.c1 = Segment2(p1,c1).midpoint(t);
+	rhs.c2 = Segment2(c2,p2).midpoint(t);
+	lhs.c2 = Segment2(lhs.c1,m).midpoint(t);
+	rhs.c1 = Segment2(m,rhs.c2).midpoint(t);
+	lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint(t);
+}
+
+inline int		Bezier2::x_monotone(void) const
+{
+	// The weighting of the control points is for (1-t) and t...
+	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
+	double A =     -p1.x + 3 * c1.x - 3 * c2.x + p2.x;
+	double B =  3 * p1.x - 6 * c1.x + 3 * c2.x;
+	double C = -3 * p1.x + 3 * c1.x;
+	double D =		p1.x;
+	
+	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
+	double a = 3 * A;
+	double b = 2 * B;
+	double c = c;
+
+	if (a == 0) 
+	{
+		// we have a linear equation for the derivative:
+		// x = bt + c
+		
+		if (b == 0) return 1; // actually we have a CONSTANT equation - in other words, the bezier itself is a line!  So of COURSE it's monotone.
+		
+		double t = -c / b;
+		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
+	}
+	
+	// r is the determinant in quad equation - how many roots do we have?
+	double r = b * b - 4 * a * c;
+	if (r < 0) return 1;		// No roots - never changes dir - is monotone!
+	
+	if (r == 0)
+	{
+		double t = -b / 2 * a;
+		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
+	}
+	else
+	{
+		r = sqrt(r);
+		double t1 = (-b + r) / 2 * a;
+		double t2 = (-b -r ) / 2 * a;
+		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 0.0);	// If either dir change is out of 0..1 we're monotone
+	}
+}
+
+inline int		Bezier2::y_monotone(void) const
+{
+	// The weighting of the control points is for (1-t) and t...
+	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
+	double A =     -p1.y + 3 * c1.y - 3 * c2.y + p2.y;
+	double B =  3 * p1.y - 6 * c1.y + 3 * c2.y;
+	double C = -3 * p1.y + 3 * c1.y;
+	double D =		p1.y;
+	
+	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
+	double a = 3 * A;
+	double b = 2 * B;
+	double c = c;
+
+	if (a == 0) 
+	{
+		// we have a linear equation for the derivative:
+		// x = bt + c
+		
+		if (b == 0) return 1; // actually we have a CONSTANT equation - in other words, the bezier itself is a line!  So of COURSE it's monotone.
+		
+		double t = -c / b;
+		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
+	}
+	
+	// r is the determinant in quad equation - how many roots do we have?
+	double r = b * b - 4 * a * c;
+	if (r < 0) return 1;		// No roots - never changes dir - is monotone!
+	
+	if (r == 0)
+	{
+		double t = -b / 2 * a;
+		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
+	}
+	else
+	{
+		r = sqrt(r);
+		double t1 = (-b + r) / 2 * a;
+		double t2 = (-b -r ) / 2 * a;
+		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 0.0);	// If either dir change is out of 0..1 we're monotone
+	}
+}
+
 
 
 void	TEST_CompGeomDefs2(void);

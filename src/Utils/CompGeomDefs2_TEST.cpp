@@ -248,10 +248,10 @@ static void TEST_Line2(void)
 
 static void TEST_Bbox2(void)
 {
-	TEST_Run(Bbox2().empty());
+	TEST_Run(Bbox2().is_null());
 	TEST_Run(Bbox2() == Bbox2(0, 0, 0, 0));
 	TEST_Run(Bbox2() != Bbox2(4, 0, 4, 0));
-	TEST_Run(Bbox2(4, 0, 4, 0).empty());
+	TEST_Run(Bbox2(4, 0, 4, 0).is_empty());
 	TEST_Run(Bbox2(Point2(3, 3), Point2(6, 6)) == Bbox2(Point2(6, 3), Point2(3, 6)));
 	TEST_Run(Bbox2(3, 3, 7, 7) == Bbox2(3, 7, 7, 3));
 	TEST_Run(Bbox2(3, 3, 7, 8) != Bbox2(3, 7, 7, 3));
