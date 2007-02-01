@@ -1,15 +1,18 @@
 #include "WED_PropertyTable.h"
-#include "SQLUtils.h"
-#if !DEV
-	this is the worst code ever - trivial sql crap to just get us up and looking
-#endif
+#include "WED_Archive.h"
+#include "WED_Thing.h"
+
+inline int count_strs(const char ** p) { int n = 0; while(*p) ++p, ++n; return n; }
 
 WED_PropertyTable::WED_PropertyTable(
-						sqlite3 *							db,
-						const string&						table_name,
-						const vector<WED_ColumnDesc>&		columns)
- : mDB(db), mColumns(columns), mTable(table_name)
+									WED_Thing *				root,
+									const char **			col_names,
+									int *					def_col_widths)
+	:	mArchive(root->GetArchive()), mEntity(root->GetID()),
+		mGeometry(count_strs(col_names),this,def_col_widths,20)
 {
+	while(*col_names)
+		mColNames.push_back(*col_names++);
 }
 
 WED_PropertyTable::~WED_PropertyTable()
@@ -21,15 +24,47 @@ void	WED_PropertyTable::GetCellContent(
 						int							cell_y, 
 						GUI_CellContent&			the_content)
 {
-	char query[1024];
-	sprintf(query,"SELECT %s FROM %s LIMIT 1 OFFSET %d;",
-		mColumns[cell_x].column_name.c_str(),
-		mTable.c_str(),
-		cell_y);
-		
-	int err = sql_do_hack(mDB, query, &the_content.text_val);
-	the_content.can_edit = 0;
-	the_content.content_type = mColumns[cell_x].content_type;
+	the_content.content_type = gui_Cell_None;
+	
+	WED_Thing * t = FetchNth(cell_y);
+	
+	int idx = t->FindProperty(mColNames[cell_x].c_str());
+	if (idx == -1) return;
+	
+	PropertyInfo_t	inf;
+	PropertyVal_t	val;
+	t->GetNthPropertyInfo(idx,inf);
+	t->GetNthProperty(idx, val);
+	
+	switch(inf.prop_kind) {
+	case prop_Int:
+		the_content.content_type = gui_Cell_Integer;
+		the_content.int_val = val.int_val;
+		break;
+	case prop_Double:
+		the_content.content_type = gui_Cell_Double;
+		the_content.double_val = val.double_val;
+		break;
+	case prop_String:
+		the_content.content_type = gui_Cell_EditText;
+		the_content.text_val = val.string_val;
+		break;
+	case prop_Bool:
+		the_content.content_type = gui_Cell_CheckBox;
+		the_content.int_val = val.int_val;
+		break;
+	case prop_Enum:
+		the_content.content_type = gui_Cell_Enum;
+		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
+		break;
+	}
+	
+	the_content.can_edit = inf.can_edit;
+	the_content.can_disclose = (cell_x == 0) && t->CountChildren() > 0;
+	the_content.is_disclosed = 1;
+	#if !DEV
+		enforce entity locking here?
+	#endif
 }
 
 void	WED_PropertyTable::GetEnumDictionary(
@@ -37,7 +72,6 @@ void	WED_PropertyTable::GetEnumDictionary(
 						int							cell_y, 
 						map<int, string>&			out_dictionary)
 {
-	out_dictionary = mColumns[cell_x].enum_dict;
 }
 
 void	WED_PropertyTable::AcceptEdit(
@@ -47,70 +81,43 @@ void	WED_PropertyTable::AcceptEdit(
 {
 }
 
-int			WED_PropertyTable::GetColCount(void)
+
+WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
-	return mColumns.size();
+	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
+	if (!root) return NULL;
+	return FetchNthRecursive(root, row);
 }
 
-int			WED_PropertyTable::GetRowCount(void)
+WED_Thing *	WED_PropertyTable::FetchNthRecursive(WED_Thing * e, int& row)
 {
-	char query[1024];
-	sprintf(query,"SELECT COUNT(*) FROM %s;",
-		mTable.c_str());
-		
-	string foo;	
-	int err = sql_do_hack(mDB, query, &foo);
-	if (err != SQLITE_OK) return 0;
-	int r = atoi(foo.c_str());
-	return r;
-}
+	if (e == NULL) return NULL;
 	
-	
-int			WED_PropertyTable::GetCellLeft (int n)
-{
-	return n * 100;
+	if (row == 0) return e;
+	--row;
+	for (int n = 0; n < e->CountChildren(); ++n)
+	{
+		WED_Thing * c = FetchNthRecursive(e->GetNthChild(n), row);
+		if (c) return c;
+	}
+	return NULL;
 }
 
-int			WED_PropertyTable::GetCellRight(int n)
+int			WED_PropertyTable::CountRows(void)
 {
-	return n * 100 + 100;
+	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
+	CountRowsRecursive(root);
 }
 
-int			WED_PropertyTable::GetCellWidth(int n)
+int			WED_PropertyTable::CountRowsRecursive(WED_Thing * e)
 {
-	return 100;
-}
-
-int			WED_PropertyTable::GetCellBottom(int n)
-{
-	return n * 20;
-}
-
-int			WED_PropertyTable::GetCellTop	 (int n)
-{
-	return n * 20 + 20;
-}
-
-int			WED_PropertyTable::GetCellHeight(int n)
-{
-	return 20;
-}
-	
-int			WED_PropertyTable::ColForX(int n)
-{
-	return n / 100;
-}
-
-int			WED_PropertyTable::RowForY(int n)
-{
-	return n / 20;
-}
-	
-void		WED_PropertyTable::SetCellWidth (int n, int w)
-{
-}
-
-void		WED_PropertyTable::SetCellHeight(int n, int h)
-{
+	if (e == NULL) return 0;
+	int total = 1;
+	int cc = e->CountChildren();
+	for (int c = 0; c < cc; ++c)
+	{
+		total += CountRowsRecursive(e->GetNthChild(c));
+	}
+	return total;
 }
 

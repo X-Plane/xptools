@@ -5,6 +5,7 @@
 #include "MapAlgs.h"
 #include "WED_Messages.h"
 #include "WED_DocumentWindow.h"
+#include "WED_Thing.h"
 #include "WED_PropertyTable.h"
 
 #include "GUI_TextTable.h"
@@ -38,18 +39,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 //							wed_Flag_Visible | wed_Flag_Children,
 //							"Objects",
 //							mObjects);
-		
-	vector<WED_ColumnDesc> cols;
-	WED_ColumnDesc init_col;
-	init_col.content_type = gui_Cell_EditText;
-	cols.resize(5, init_col);
-	cols[0].column_name = "table_name";
-	cols[1].column_name = "col";
-	cols[2].column_name = "name";
-	cols[3].column_name = "type";
-	cols[4].column_name = "foreign_key";
-		
-	mTestTable = new WED_PropertyTable(mDocument->GetDB(), "WED_properties",cols);
+				
+	static const char * titles[] = { "name", "locked", "hidden", 0 };
+	static int widths[] = { 100, 50, 50 };
+	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(0));
+	mTestTable = new WED_PropertyTable(root,titles, widths);
 
 //	mLayerTable = new WED_LayerTable;
 //	mLayerTable->SetLayers(mObjectGroup);
@@ -86,7 +80,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	text_table->SetProvider(mTestTable);
 	
 	GUI_Table *	layer_table = new GUI_Table;
-	layer_table->SetGeometry(mTestTable);
+	layer_table->SetGeometry(mTestTable->GetGeometry());
 	layer_table->SetContent(text_table);
 	layer_table->SetParent(layer_scroller);
 	layer_table->Show();

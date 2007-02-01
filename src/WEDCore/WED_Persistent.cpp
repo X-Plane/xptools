@@ -67,6 +67,7 @@ void WED_Persistent::Register(
 
 WED_Persistent * WED_Persistent::CreateByClass(const char * class_id, WED_Archive * parent, int id)
 {
+	if(sStaticCtors.count(class_id) == 0) return NULL;
 	return sStaticCtors[class_id](parent, id);
 }
 
@@ -79,4 +80,5 @@ int			WED_Persistent::GetDirty(void) const
 {
 	return mDirty;
 }
+
 

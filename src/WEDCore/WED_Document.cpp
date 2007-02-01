@@ -46,11 +46,6 @@ WED_Document::~WED_Document()
 	BroadcastMessage(msg_DocumentDestroyed, 0);
 }
 
-sqlite3 *			WED_Document::GetDB(void)
-{
-	return mDB.get();
-}
-
 string				WED_Document::GetFilePath(void) const
 {
 	return mFilePath;
@@ -69,3 +64,8 @@ SELECT COUNT(*) FROM properties WHERE key = 'key' AND value IS NOT NULL;
 SELECT value FROM properties WHERE key = 'key';
 DELETE FROM propeties WHERE key = 'key';
 */
+
+WED_Archive *		WED_Document::GetArchive(void)
+{
+	return &mArchive;
+}

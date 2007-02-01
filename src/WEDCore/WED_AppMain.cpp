@@ -44,6 +44,8 @@
 #include "WED_Menus.h"
 
 #include "WED_Entity.h"
+#include "WED_Group.h"
+#include "WED_ObjPlacement.h"
 
 #include "GUI_ScrollerPane.h"
 #include "GUI_Textfield.h"
@@ -169,7 +171,8 @@ int main(int argc, const char * argv[])
 	WED_AssertInit();
 	
 	WED_Entity::Register();
-
+	WED_ObjPlacement::Register();
+	WED_Group::Register();
 	
 //	XPInitDefaultMargins();
 /*

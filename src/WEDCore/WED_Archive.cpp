@@ -64,7 +64,7 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 void	WED_Archive::LoadFromDB(sqlite3 * db)
 {
 	{
-		sql_command		fetch_objects(db, "SELECT WED_entities.id, WED_classes.name FROM WED_entities JOIN WED_classes on WED_entities.class_id = WED_classes.id;", NULL);
+		sql_command		fetch_objects(db, "SELECT WED_things.id, WED_classes.name FROM WED_things JOIN WED_classes on WED_things.class_id = WED_classes.id;", NULL);
 		
 		sql_row2<int,string>	an_obj;
 		fetch_objects.begin();
@@ -72,6 +72,8 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 		while((err = fetch_objects.get_row(an_obj)) == SQLITE_ROW)
 		{
 			WED_Persistent * new_obj = WED_Persistent::CreateByClass(an_obj.b.c_str(), this, an_obj.a);
+			if(new_obj==NULL)
+				WED_ThrowPrintf("Unable to instantiate object of class: %s, id=%d.",an_obj.b.c_str(), an_obj.a);
 		}
 		if (err != SQLITE_DONE)	
 			WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
@@ -88,7 +90,7 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 
 void	WED_Archive::SaveToDB(sqlite3 * db)
 {
-	sql_command nuke_obj(db,"DELETE FROM WED_entities WHERE id=@id;","@id");
+	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{
 		

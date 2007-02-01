@@ -25,11 +25,11 @@ public:
 						~WED_Document();
 
 	// Management
-	sqlite3 *			GetDB(void);
-	
 	string				GetFilePath(void) const;
 	
 	void				GetBounds(double bounds[4]);
+
+	WED_Archive *		GetArchive(void);
 
 	// LEGACY STUFF
 	

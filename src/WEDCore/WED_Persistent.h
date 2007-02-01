@@ -9,6 +9,19 @@ class	IOReader;
 class	IOWriter;
 
 /*
+	WED_Persistent.h - THEORY OF OPERATION
+
+	WED_Persistent is the base for an object that participates in the file format via tables and the undo system.
+	
+	Persistent classes have class ID, and the objects have object IDs within an archive.  Clients must define:
+	
+	1. The casting supported - function-based casting is used here.
+	2. Streaming methods via IODef reader/writers for the undo system.
+	3. Persistence methods via sqlite for the file format.
+	
+*/
+
+/*
  * Persistent object header macros.  All persistent objects must have this 
  * stuff - use the declare macro in the class and the define macro in the
  * translation unit.  It makes:
@@ -19,10 +32,26 @@ class	IOWriter;
  * - A Static constructor.
  * - A convenient registration function for that static constuctor.
  * - Private constructor/destructors (to force proper dynamic creation.
+ *
+ *
+ * MACROS
+ *
+ * In the header, inside the class, use:
+ *
+ *	DECLARE_PERSISTENT(CLASS)
+ *
+ * to set up the boiler plate.  In the CPP you must use these:
+ *
+ *	DEFINE_PERSISTENT(CLASS) 
+ *	IMPLEMENTS_INTERFACE(CLASS)					Use this to implement an abstract interface.
+ *	INHERITS_FROM(CLASS)						Use this to inherit all of the behavior of one base class.
+ *	BASE_CASE									Use this if you do not inherit from any class.
+ *	END_CASTING									Use this to close off the casting control block.
+ *
  */
+ 
 #define DECLARE_PERSISTENT(__Class)		 							\
 public: 															\
-	static const char * class_ID;									\
 	static WED_Persistent * Create(									\
 								WED_Archive *	parent,				\
 								int				inID);				\
@@ -32,7 +61,7 @@ public: 															\
 	static void				Register(void);							\
 	virtual const char * 	GetClass(void) const;					\
 	virtual void * 			SafeCast(const char * class_id);		\
-private:															\
+protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
 	virtual ~__Class();
@@ -40,8 +69,6 @@ private:															\
 
 
 #define DEFINE_PERSISTENT(__Class)								\
-																\
-const char * __Class::class_ID = #__Class;						\
 																\
 WED_Persistent * __Class::Create(								\
 								WED_Archive * parent,			\
@@ -59,23 +86,35 @@ __Class * __Class::CreateTyped(									\
 																\
 void __Class::Register(void) 									\
 {																\
-	WED_Persistent::Register(class_ID, Create);					\
+	WED_Persistent::Register(#__Class, Create);					\
 }																\
 																\
 const char * __Class::GetClass(void) const						\
 {																\
-	return __Class::class_ID;									\
+	return #__Class;											\
 }																\
 																\
 void * __Class::SafeCast(const char * class_id)					\
 {																\
-	if (!strcmp(class_id, class_ID)) 	return this; 			\
-										return NULL; 			\
+	if (!strcmp(class_id, #__Class))							\
+		return this;
+
+#define IMPLEMENTS_INTERFACE(CLASS)								\
+	if (!strcmp(class_id, #CLASS))								\
+		return (CLASS*)this;
+
+#define INHERITS_FROM(CLASS)									\
+	return CLASS::SafeCast(class_id);
+
+#define BASE_CASE												\
+										return NULL; 
+	
+#define END_CASTING												\
 }
 
 
 // Safe cast macro based on safe-cast mechanism
-#define SAFE_CAST(__Class, __Var) reinterpret_cast<__Class *>((__Var)->SafeCast(__Class::class_ID));
+#define SAFE_CAST(__Class, __Var) reinterpret_cast<__Class *>((__Var)->SafeCast(#__Class));
 
 
 
@@ -123,7 +162,7 @@ public:
 	// These are for the archive's use..
 			void			SetDirty(int dirty);
 			int				GetDirty(void) const;
-	
+
 protected:
 
 	// Dtor protected to prevent instantiation.
