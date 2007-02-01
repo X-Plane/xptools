@@ -52,6 +52,12 @@ extern "C" {
 #  include <float.h>
 #elif defined __sgi
 #  include <sys/fpu.h>
+#elif defined _MSC_VER || defined __sparc__ || \
+     (defined __i386__ && !defined __PGI)
+   // Nothing to include.
+#else
+   // By default we use the ISO C99 version.
+#  include <fenv.h>
 #endif
 
 
@@ -287,7 +293,17 @@ typedef unsigned short FPU_CW_t;
 #define CGAL_FE_DOWNWARD     (0x400 | 0x127f)
 
 #else
-#error Architecture not supported
+// This is a version following the ISO C99 standard, which aims at portability.
+// The drawbacks are speed on one hand, and also, on x86, it doesn't fix the
+// extended mantissa issue (this is not a problem for IA, but it is one for
+// Fixed_precision_nt, and some future modular computations as well).
+#define CGAL_IA_SETFPCW(CW)  fesetround(CW)
+#define CGAL_IA_GETFPCW(CW)  CW = fegetround()
+typedef int FPU_CW_t;
+#define CGAL_FE_TONEAREST    FE_TONEAREST
+#define CGAL_FE_TOWARDZERO   FE_TOWARDZERO
+#define CGAL_FE_UPWARD       FE_UPWARD
+#define CGAL_FE_DOWNWARD     FE_DOWNWARD
 #endif
 
 // User interface:

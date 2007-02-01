@@ -279,8 +279,25 @@ bool do_intersect(const typename CGAL_WRAP(K)::Triangle_3 &t1,
       &&  orientation(*s_max1,*t_max1,*t_max2,*s_max2) != POSITIVE ;
 }
 
+template <class K>
+bool  _intersection_test_vertex(const typename K::Point_3 * p, 
+				const typename K::Point_3 * q, 
+				const typename K::Point_3 * r,
+				const typename K::Point_3 * a, 
+				const typename K::Point_3 * b, 
+				const typename K::Point_3 * c,
+				const K & k);
 
 
+template <class K>
+bool  _intersection_test_edge(const typename K::Point_3 * p, 
+			      const typename K::Point_3 * q, 
+			      const typename K::Point_3 * r,
+			      const typename K::Point_3 * a, 
+			      const typename K::Point_3 * b, 
+			      const typename K::Point_3 * c,
+			      const K & k);
+ 
 
 template <class K>
 bool do_intersect_coplanar(const typename CGAL_WRAP(K)::Triangle_3 &t1, 

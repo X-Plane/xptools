@@ -30,6 +30,9 @@
 // assertions
 // ----------
 
+#ifndef KERNEL_ASSERTIONS_INCLUDE_GUARD_H
+#define KERNEL_ASSERTIONS_INCLUDE_GUARD_H
+
 
 #if defined(CGAL_KERNEL_NO_ASSERTIONS) || defined(CGAL_NO_ASSERTIONS) \
   || defined(NDEBUG)
@@ -284,4 +287,6 @@
 #  define CGAL_kernel_expensive_exactness_warnings 1
 #endif // CGAL_KERNEL_NO_WARNINGS
 
+
+#endif /* KERNEL_ASSERTIONS_INCLUDE_GUARD_H */
 

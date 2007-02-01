@@ -80,9 +80,9 @@ CGAL_END_NAMESPACE
 
 #include <CGAL/Number_type_traits.h>
 #include <CGAL/number_utils.h>
-#include <CGAL/number_utils_classes.h>
 #include <CGAL/double.h>
 #include <CGAL/float.h>
 #include <CGAL/int.h>
+#include <CGAL/number_utils_classes.h>
 
 #endif // CGAL_NUMBER_TYPE_BASIC_H
