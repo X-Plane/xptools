@@ -85,3 +85,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 {
 }
 
+void		GUI_TextTable::Deactivate(void)
+{
+}
+
