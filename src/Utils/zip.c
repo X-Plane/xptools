@@ -10,7 +10,7 @@
 #include <string.h>
 #include "zlib.h"
 #include "zip.h"
-#include "zutil.h"
+//#include "zutil.h"
 
 #ifdef STDC
 #  include <stddef.h>
@@ -481,7 +481,7 @@ extern int ZEXPORT zipOpenNewFileInZip (
         zi->ci.stream.opaque = (voidpf)0;
 
         err = deflateInit2(&zi->ci.stream, level,
-               Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL, 0);
+               Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, 0);
 
         if (err==Z_OK)
             zi->ci.stream_initialised = 1;
