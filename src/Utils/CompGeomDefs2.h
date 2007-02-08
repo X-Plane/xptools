@@ -264,6 +264,7 @@ struct	Bbox2 {
 	bool		overlap(const Bbox2& rhs) const;
 	bool		contains(const Bbox2& rhs) const;
 	bool		contains(const Point2& p) const;
+	bool		interior_overlap(const Bbox2& rhs) const;
 
 	void		expand(double v) { p1.x -= v; p1.y -= v; p2.x += v; p2.y += v; }	
 	Point2		centroid(void) const { return Point2((p1.x + p2.x) * 0.5,(p1.y+p2.y) * 0.5); }
@@ -324,15 +325,25 @@ struct	Bezier2 {
 	bool operator==(const Bezier2& x) const { return p1 == x.p1 && p2 == x.p2 && c1 == x.c1 && c2 == x.c2; }
 	bool operator!=(const Bezier2& x) const { return p1 != x.p1 || p2 != x.p2 || c1 != x.c1 || c2 != x.c2; }
 	
-	Point2	midpoint(double t=0.5) const;	
-	void	partition(Bezier2& lhs, Bezier2& rhs, double t=0.5) const;
-	int		x_monotone(void) const;
+	Point2	midpoint(double t=0.5) const;											// Returns a point on curve at time T
+	Vector2 derivative(double t) const;												// Gives derivative vector at time T.  Length may be zero!
+	void	partition(Bezier2& lhs, Bezier2& rhs, double t=0.5) const;				// Splits curve at time T
+	void	bounds_fast(Bbox2& bounds) const;										// Returns reasonable bounding box
+	int		x_monotone(void) const;									
 	int		y_monotone(void) const;
-	int		monotone_regions(double& t1, double& t2, double& t3, double& t4);
+	int		monotone_regions(double t[4]) const;									// Returns up to 4 "t's" where the curve changes dirs.  NOT sorted!
+	void	bounds(Bbox2& bounds) const;											// Returns true bounding box
+	
+	bool	self_intersect(int depth) const;										// True if curve intersects itself except at end-points
+	bool	intersect(const Bezier2& rhs, int depth) const;							// True if curves intersect except at end-points
+	
 	Point2	p1;
 	Point2	p2;
 	Point2	c1;
 	Point2	c2;
+	
+private:
+	bool	self_intersect_recursive(const Bezier2& rhs, int depth) const;
 };
 
 /****************************************************************************************************
@@ -609,6 +620,14 @@ inline	bool		Bbox2::overlap(const Bbox2& rhs) const
 			 ymax() >= rhs.ymin() && rhs.ymax() >= ymin()); 			
 }
 
+inline	bool		Bbox2::interior_overlap(const Bbox2& rhs) const 
+{		
+	if (is_null()) return false;
+	if (rhs.is_null()) return false;
+	return 	(xmax() > rhs.xmin() && rhs.xmax() > xmin() &&
+			 ymax() > rhs.ymin() && rhs.ymax() > ymin()); 			
+}
+
 inline	bool		Bbox2::contains(const Bbox2& rhs) const 
 {	
 	if (is_null()) return false;
@@ -747,6 +766,7 @@ inline	Point2	Bezier2::midpoint(double t) const
 	// A bezier curve is just a cubic interpolation
 	// between four points weighted via a cub equation, 
 	// hence A(1-t)^3 + 3B(1-t)^2t + 3C(1-t)t^2 + Dt^3
+	
 	double nt = 1.0 - t;
 	double w0 = nt * nt * nt;
 	double w1 = 3.0 * nt * nt * t;
@@ -756,8 +776,27 @@ inline	Point2	Bezier2::midpoint(double t) const
 				  w0 * p1.y + w1 * c1.y + w2 * c2.y + w3 * p2.y);
 }
 
+inline Vector2 Bezier2::derivative(double t) const 
+{
+	// Derivative taking by putting the formula in Ax^3+Bx^2+Cx+D form and taking 1st derivative.
+	return Vector2(
+		3.0 * t * t * (       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x) +
+		2.0 * t     * ( -3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x		) +
+					  ( -3.0 * p1.x + 3.0 * c1.x					),
+		3.0 * t * t * (       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y) +
+		2.0 * t     * ( -3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y		) +
+					  ( -3.0 * p1.y + 3.0 * c1.y					)
+	);
+}
+
+
+
+
 inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
 {
+	// Partition based on de Casteljau's algorithm - 
+	// http://www.math.washington.edu/~king/coursedir/m445w01/lab/lab04/lab04.html
+	// http://www.faqs.org/faqs/graphics/algorithms-faq/
 	lhs.p1 = p1;
 	rhs.p2 = p2;	
 
@@ -770,19 +809,47 @@ inline void	Bezier2::partition(Bezier2& lhs, Bezier2& rhs, double t) const
 	lhs.p2 = rhs.p1 = Segment2(lhs.c2,rhs.c1).midpoint(t);
 }
 
+inline void Bezier2::bounds_fast(Bbox2& bounds) const
+{	
+	// If a curve is monotone, it doesn't exceed the span of its end-points in 
+	// any dimension.
+	// If a curve is not monotone, it doesn't exceed the span of its bounding or control points.
+	// Use this to find the best fast bounding box we can.
+	
+	// If we needed better bounding boxes, we could calculate the 4 roots (2 roots in a quadratic
+	// derivative, for X and Y) and use all points at T = 0,1, and any roots within (0,1).  This
+	// would give us a true bounding box.
+	bounds = Bbox2(p1,p2);
+	if (!x_monotone())
+	{
+		bounds.p1.x = min(bounds.p1.x,c1.x);
+		bounds.p1.x = min(bounds.p1.x,c2.x);
+		bounds.p2.x = max(bounds.p2.x,c1.x);
+		bounds.p2.x = max(bounds.p2.x,c2.x);
+	}
+	if (!y_monotone())
+	{
+		bounds.p1.y = min(bounds.p1.y,c1.y);
+		bounds.p1.y = min(bounds.p1.y,c2.y);
+		bounds.p2.y = max(bounds.p2.y,c1.y);
+		bounds.p2.y = max(bounds.p2.y,c2.y);
+	}	
+}
+
+
 inline int		Bezier2::x_monotone(void) const
 {
 	// The weighting of the control points is for (1-t) and t...
 	// this gives us an explicit equation in terms of x = At^3 + Bt^2 + Ct + D.
-	double A =     -p1.x + 3 * c1.x - 3 * c2.x + p2.x;
-	double B =  3 * p1.x - 6 * c1.x + 3 * c2.x;
-	double C = -3 * p1.x + 3 * c1.x;
-	double D =		p1.x;
+	double A =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
+	double B =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
+	double C = -3.0 * p1.x + 3.0 * c1.x;
+	double D =		  p1.x;
 	
 	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
-	double a = 3 * A;
-	double b = 2 * B;
-	double c = c;
+	double a = 3.0 * A;
+	double b = 2.0 * B;
+	double c = C;
 
 	if (a == 0) 
 	{
@@ -796,20 +863,20 @@ inline int		Bezier2::x_monotone(void) const
 	}
 	
 	// r is the determinant in quad equation - how many roots do we have?
-	double r = b * b - 4 * a * c;
+	double r = b * b - 4.0 * a * c;
 	if (r < 0) return 1;		// No roots - never changes dir - is monotone!
 	
 	if (r == 0)
 	{
-		double t = -b / 2 * a;
+		double t = -b / (2.0 * a);
 		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
 	}
 	else
 	{
 		r = sqrt(r);
-		double t1 = (-b + r) / 2 * a;
-		double t2 = (-b -r ) / 2 * a;
-		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 0.0);	// If either dir change is out of 0..1 we're monotone
+		double t1 = (-b + r) / (2.0 * a);
+		double t2 = (-b - r) / (2.0 * a);
+		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 1.0);	// If either dir change is out of 0..1 we're monotone
 	}
 }
 
@@ -825,7 +892,7 @@ inline int		Bezier2::y_monotone(void) const
 	// This is the derivative - which is a quadratic in the form of x = at^2 + bt + c
 	double a = 3 * A;
 	double b = 2 * B;
-	double c = c;
+	double c = C;
 
 	if (a == 0) 
 	{
@@ -844,16 +911,150 @@ inline int		Bezier2::y_monotone(void) const
 	
 	if (r == 0)
 	{
-		double t = -b / 2 * a;
+		double t = -b / (2 * a);
 		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
 	}
 	else
 	{
 		r = sqrt(r);
-		double t1 = (-b + r) / 2 * a;
-		double t2 = (-b -r ) / 2 * a;
-		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 0.0);	// If either dir change is out of 0..1 we're monotone
+		double t1 = (-b + r) / (2 * a)	;
+		double t2 = (-b -r ) / (2 * a);
+		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 1.0);	// If either dir change is out of 0..1 we're monotone
 	}
+}
+
+inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
+{
+	Bbox2	lhs_bbox, rhs_bbox;
+	
+	this->bounds(lhs_bbox);
+	rhs.bounds(rhs_bbox);
+
+	if (d < 0)									return true;	
+	if (!lhs_bbox.interior_overlap(rhs_bbox))	return false;
+
+	// Ben says: it is NOT good enough to say that if the underlying segments cross, the curves cross EVEN if they're monotone.  Why?
+	// One can curve AROUND the other.  
+	
+	// If we could CLIP the curves to the bounding box that is the INTERSECTION of the two bounding 
+	// boxes, we would get shorter curves (smaller time range T).  This would clip off the section where the curve goes "around" and
+	// give us a new segment.  Those NEW segments would not overlap and we would get a correct "no intersect" result in the around case.
+
+	// However, that approach is totally not worth it because:
+	// - we'd have to, given XY-space clip rects, find T such that we cross the clip bounds.  That would involve cubic root finding, which
+	// while O(k) time is still a PITA.  
+	// - we'd only get an approximate intersection anyway, so just recursing a few steps more with bounding boxes gives us about the same
+	// level of info.
+/*
+	bool l_mono = lhs.x_monotone() && lhs.y_monotone();
+	bool r_mono = rhs.x_monotone() && rhs.y_monotone();
+
+	if (l_mono && r_mono)
+	{
+		Segment2 l(lhs.p1,lhs.p2);
+		Segment2 r(rhs.p1,rhs.p2);
+		b1 = lhs_bbox;
+		b2 = rhs_bbox;		
+		Point2 dummy;
+		return l.intersect(r, dummy) ? 2 : 0;
+	}
+*/
+	
+	Bezier2	l1,l2,r1,r2;
+	
+	this->partition(l1,l2);
+	rhs.partition(r1,r2);
+	
+	return 
+		l1.intersect(r1,d-1) ||
+		l1.intersect(r2,d-1) ||
+		l2.intersect(r1,d-1) ||
+		l2.intersect(r2,d-1);
+}
+
+
+inline bool Bezier2::self_intersect_recursive(const Bezier2& rhs, int d) const
+{
+	if (d < 1) return this->intersect(rhs,d);
+
+	Bezier2 l1,l2,r1,r2;
+	this->partition(l1,l2);
+	rhs.partition(r1,r2);
+		
+	return this->intersect(rhs,d-1) ||
+		l1.self_intersect_recursive(l2,d-1) ||
+		r1.self_intersect_recursive(r2,d-1);
+}
+
+inline bool	Bezier2::self_intersect(int d) const
+{
+	Bbox2 d1,d2;
+	Bezier2	b1, b2;
+	this->partition(b1,b2,0.5f);
+	return b1.self_intersect_recursive(b2,d);
+}
+
+inline void insert_into(double v, int& num, double * values, double low, double high)
+{
+	if (v <= low || v >= high) return;		// Ignore anything outside bounds
+	for (int n = 0; n < num; ++n)			// Ignore repeated roots!
+		if (v == values[n]) return;
+	values[num++] = v;
+}
+
+inline int		Bezier2::monotone_regions(double times[4]) const
+{
+	// Basic idea: we do two derivatives - one of the X cubic and one of the Y.
+	// These are quadratic and have up to 2 roots each.  This gives us any
+	// point the curve changes directions.
+	int ret = 0;
+	
+	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
+	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
+	double Cx = -3.0 * p1.x + 3.0 * c1.x;
+	double Dx =		   p1.x;
+	double ax = 3.0 * Ax;
+	double bx = 2.0 * Bx;
+	double cx =		  Cx;
+
+	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
+	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
+	double Cy = -3.0 * p1.y + 3.0 * c1.y;
+	double Dy =		   p1.y;
+	double ay = 3.0 * Ay;
+	double by = 2.0 * By;
+	double cy =		  Cy;
+
+	double r;
+
+	if (ax == 0) {
+		if (bx != 0)						insert_into( -cx      /        bx,  ret, times, 0.0, 1.0);		// Linear case - slope of curve is linear and crosses X axis.
+	} else {
+		r = bx *  bx - 4.0 * ax * cx;
+		if (r == 0)							insert_into( -bx      / (2.0 * ax), ret, times, 0.0, 1.0);		// One root quadratic - apex of parabola touches X axis.
+		else if (r > 0.0) { r = sqrt(r);	insert_into((-bx - r) / (2.0 * ax), ret, times, 0.0, 1.0);		// Two root cases - quadratic crosses X axis twice.
+											insert_into((-bx + r) / (2.0 * ax), ret, times, 0.0, 1.0); }
+	}
+
+	if (ay == 0) {
+		if (by != 0)						insert_into( -cy      /        by,  ret, times, 0.0, 1.0);		// Linear case - slope of curve is linear and crosses X axis.
+	} else {
+		r = by *  by - 4.0 * ay * cy;
+		if (r == 0)							insert_into( -by      / (2.0 * ay), ret, times, 0.0, 1.0);		// One root quadratic - apex of parabola touches X axis.
+		else if (r > 0.0) { r = sqrt(r);	insert_into((-by - r) / (2.0 * ay), ret, times, 0.0, 1.0);		// Two root cases - quadratic crosses X axis twice.
+											insert_into((-by + r) / (2.0 * ay), ret, times, 0.0, 1.0); }	
+	}
+
+	return ret;
+}
+
+inline void	Bezier2::bounds(Bbox2& bounds) const
+{
+	double t[4];
+	int n = monotone_regions(t);
+	bounds = Bbox2(p1,p2);				// bounding box is exetended by the endpoints and
+	for (int i = 0; i < n; ++i)			// any point where we change monotonacity.  This is equivalent to breaking the 
+		bounds += midpoint(t[i]);		// curve into up to 4 monotone pieces, taking those 4 bounding box endpoints, and unioning them all!
 }
 
 
