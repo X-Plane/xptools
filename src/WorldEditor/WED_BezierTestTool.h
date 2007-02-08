@@ -70,7 +70,8 @@ private:
 
 	int				mSegs;
 	double			mSplit;
-	Bezier2			mBezier;
+	Bezier2			mBezier1;
+	Bezier2			mBezier2;
 	DragHandleSet	mHandles;	
 
 };

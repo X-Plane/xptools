@@ -40,15 +40,23 @@
 	#include <gl.h>
 #endif
 
-static const DragHandleInfo_t kHandleInfos[4] = {
+static const DragHandleInfo_t kHandleInfos[8] = {
+	0,0,1,1,
+	0,0,1,1,
+	0,0,1,1,
+	0,0,1,1,
 	0,0,1,1,
 	0,0,1,1,
 	0,0,1,1,
 	0,0,1,1 };
 
+//static int self_intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
+//static int	intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
+
+
 WED_BezierTestTool::WED_BezierTestTool(WED_MapZoomer * inZoomer) :
 	WED_MapTool(inZoomer),
-	mHandles(4,kHandleInfos,4,this),
+	mHandles(8,kHandleInfos,4,this),
 	mSegs(200),
 	mSplit(0.5)
 {	
@@ -71,24 +79,21 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		XPLMSetGraphicsState(0, 0, 0,    0, 0,  0, 0);
 		glColor3f(0.0, 1.0, 0.3);
 		glBegin(GL_QUADS);
-		for (int n = 0; n < 4; ++n)
+		for (int n = 0; n < 8; ++n)
 			mHandles.DrawHandle(n);
 		glEnd();
 		glBegin(GL_LINES);
-		mHandles.ConnectHandle(0, 1);	// bottom
-		mHandles.ConnectHandle(2, 3);	// top
-		glEnd();
-		glBegin(GL_LINE_STRIP);
-		for (int n = 0; n <= mSegs; ++n)
-		{
-			Point2 p = mBezier.midpoint((float) n / (float) mSegs);
-			glVertex2f(GetZoomer()->LonToXPixel(p.x),GetZoomer()->LatToYPixel(p.y));
-		}
+		mHandles.ConnectHandle(0, 1);
+		mHandles.ConnectHandle(2, 3);
+		mHandles.ConnectHandle(4, 5);
+		mHandles.ConnectHandle(6, 7);
 		glEnd();
 		
-		Bezier2 a,b;
-		mBezier.partition(a,b,mSplit);
-		glColor3f(1.0,0.3,0.3);
+		Bezier2 a(mBezier1),b(mBezier2);
+		
+		int i = a.intersect(b,10);
+		
+		glColor3f(i || a.self_intersect(5) ? 1 : 0, i ? 0 : 1, 0);
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
@@ -97,7 +102,7 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		}
 		glEnd();
 		
-		glColor3f(0.3,0.3,1.0);
+		glColor3f(i || b.self_intersect(5) ? 1 : 0, i ? 0 : 1, 0);
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
@@ -106,6 +111,23 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		}
 		glEnd();
 		
+		Bbox2	f1,f2;
+		a.bounds(f1);
+		b.bounds(f2);
+		glColor3f(0.3,0.3,0.3);
+		glBegin(GL_LINE_LOOP);
+			glVertex2f(GetZoomer()->LonToXPixel(f1.p1.x),GetZoomer()->LatToYPixel(f1.p1.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f1.p1.x),GetZoomer()->LatToYPixel(f1.p2.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f1.p2.x),GetZoomer()->LatToYPixel(f1.p2.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f1.p2.x),GetZoomer()->LatToYPixel(f1.p1.y));		
+		glEnd();
+
+		glBegin(GL_LINE_LOOP);
+			glVertex2f(GetZoomer()->LonToXPixel(f2.p1.x),GetZoomer()->LatToYPixel(f2.p1.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f2.p1.x),GetZoomer()->LatToYPixel(f2.p2.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p2.y));
+			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p1.y));		
+		glEnd();
 	}
 }
 							
@@ -181,10 +203,14 @@ void	WED_BezierTestTool::NthButtonPressed(int n)
 	switch(n) {
 	case 0:
 		GetZoomer()->GetMapVisibleBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
-		mBezier.p1=Point2(bounds[0],bounds[1]);
-		mBezier.c1=Point2(bounds[0],bounds[3]);
-		mBezier.c2=Point2(bounds[2],bounds[3]);
-		mBezier.p2=Point2(bounds[2],bounds[1]);	
+		mBezier1.p1=Point2(bounds[0],bounds[1]);
+		mBezier1.c1=Point2(bounds[0],bounds[3]);
+		mBezier1.c2=Point2(bounds[2],bounds[3]);
+		mBezier1.p2=Point2(bounds[2],bounds[1]);	
+		mBezier2.c1=Point2(bounds[0],bounds[1]);
+		mBezier2.p1=Point2(bounds[0],bounds[3]);
+		mBezier2.p2=Point2(bounds[2],bounds[3]);
+		mBezier2.c2=Point2(bounds[2],bounds[1]);	
 		break;
 	}
 }
@@ -192,9 +218,10 @@ void	WED_BezierTestTool::NthButtonPressed(int n)
 char *	WED_BezierTestTool::GetStatusText(void)
 {
 	static char buf[512];
-	sprintf(buf,"X Monotone: %s.  Y Monotone: %s", 
-			mBezier.x_monotone() ? "yes" : "no",
-			mBezier.y_monotone() ? "yes" : "no");
+	double d[4];
+	int n = mBezier1.monotone_regions(d);
+	sprintf(buf,"(%d: %lf,%lf,%lf,%lf)", 
+			n,d[0],d[1],d[2],d[3]);
 	return buf;
 }
 
@@ -223,10 +250,14 @@ double		WED_BezierTestTool::LogToUIY(double v) const
 double		WED_BezierTestTool::GetHandleX(int inHandle) const
 {
 	switch(inHandle) {
-	case 0:	return mBezier.p1.x;
-	case 1:	return mBezier.c1.x;
-	case 2:	return mBezier.c2.x;
-	case 3:	return mBezier.p2.x;
+	case 0:	return mBezier1.p1.x;
+	case 1:	return mBezier1.c1.x;
+	case 2:	return mBezier1.c2.x;
+	case 3:	return mBezier1.p2.x;
+	case 4:	return mBezier2.p1.x;
+	case 5:	return mBezier2.c1.x;
+	case 6:	return mBezier2.c2.x;
+	case 7:	return mBezier2.p2.x;
 	default: return 0.0;
 	}
 }
@@ -234,10 +265,14 @@ double		WED_BezierTestTool::GetHandleX(int inHandle) const
 double		WED_BezierTestTool::GetHandleY(int inHandle) const
 {
 	switch(inHandle) {
-	case 0:	return mBezier.p1.y;
-	case 1:	return mBezier.c1.y;
-	case 2:	return mBezier.c2.y;
-	case 3:	return mBezier.p2.y;
+	case 0:	return mBezier1.p1.y;
+	case 1:	return mBezier1.c1.y;
+	case 2:	return mBezier1.c2.y;
+	case 3:	return mBezier1.p2.y;
+	case 4:	return mBezier2.p1.y;
+	case 5:	return mBezier2.c1.y;
+	case 6:	return mBezier2.c2.y;
+	case 7:	return mBezier2.p2.y;
 	default: return 0.0;
 	}
 }
@@ -245,19 +280,28 @@ double		WED_BezierTestTool::GetHandleY(int inHandle) const
 void		WED_BezierTestTool::MoveHandleX(int handle, double deltaX)
 {
 	switch(handle) {
-	case 0:	mBezier.p1.x += deltaX; break;
-	case 1:	mBezier.c1.x += deltaX; break;
-	case 2:	mBezier.c2.x += deltaX; break;
-	case 3:	mBezier.p2.x += deltaX; break;
+	case 0:	mBezier1.p1.x += deltaX; break;
+	case 1:	mBezier1.c1.x += deltaX; break;
+	case 2:	mBezier1.c2.x += deltaX; break;
+	case 3:	mBezier1.p2.x += deltaX; break;
+	case 4:	mBezier2.p1.x += deltaX; break;
+	case 5:	mBezier2.c1.x += deltaX; break;
+	case 6:	mBezier2.c2.x += deltaX; break;
+	case 7:	mBezier2.p2.x += deltaX; break;
 	}
 }
 
 void		WED_BezierTestTool::MoveHandleY(int handle, double deltaY)
 {
 	switch(handle) {
-	case 0:	mBezier.p1.y += deltaY; break;
-	case 1:	mBezier.c1.y += deltaY; break;
-	case 2:	mBezier.c2.y += deltaY; break;
-	case 3:	mBezier.p2.y += deltaY; break;
+	case 0:	mBezier1.p1.y += deltaY; break;
+	case 1:	mBezier1.c1.y += deltaY; break;
+	case 2:	mBezier1.c2.y += deltaY; break;
+	case 3:	mBezier1.p2.y += deltaY; break;
+	case 4:	mBezier2.p1.y += deltaY; break;
+	case 5:	mBezier2.c1.y += deltaY; break;
+	case 6:	mBezier2.c2.y += deltaY; break;
+	case 7:	mBezier2.p2.y += deltaY; break;
 	}
 }
+
