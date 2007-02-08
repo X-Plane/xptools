@@ -26,6 +26,7 @@
 
 /* Begin PBXBuildFile section */
 		8D0C4E920486CD37000505A6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D62433910AE3CB4B004F00E3 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338E0AE3CB4B004F00E3 /* libpng.a */; };
 		D624339E0AE3CDFF004F00E3 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
@@ -571,6 +572,8 @@
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D60A99AC0B7A57E0002680BD /* GUI_Packer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Packer.h; sourceTree = "<group>"; };
+		D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Packer.cpp; sourceTree = "<group>"; };
 		D624338E0AE3CB4B004F00E3 /* libpng.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng.a; path = /usr/local/lib/libpng.a; sourceTree = "<absolute>"; };
 		D624338F0AE3CB4B004F00E3 /* libtiff.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtiff.a; path = /usr/local/lib/libtiff.a; sourceTree = "<absolute>"; };
 		D624350C0AE3DFCE004F00E3 /* lib3ds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib3ds.a; path = /usr/local/lib/lib3ds.a; sourceTree = "<absolute>"; };
@@ -1610,6 +1613,8 @@
 				D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */,
 				D6FF2CAA0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.h */,
 				D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */,
+				D60A99AC0B7A57E0002680BD /* GUI_Packer.h */,
+				D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -3066,6 +3071,7 @@
 				D6FF2AFA0B6E908600960D5E /* WED_Thing.cpp in Sources */,
 				D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */,
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
+				D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
