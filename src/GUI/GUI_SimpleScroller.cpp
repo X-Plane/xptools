@@ -116,7 +116,9 @@ void	GUI_SimpleScroller::AlignContents()
 	if (change)
 		this->GetNthChild(0)->SetBounds(child);
 		
-	
+	#if !DEV
+	broadcast here?
+	#endif
 }
 
 void	GUI_SimpleScroller::ReceiveMessage(

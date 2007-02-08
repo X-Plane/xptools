@@ -1,5 +1,5 @@
 #include "GUI_SimpleTableGeometry.h"
-
+#include "GUI_Messages.h"
 
 GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 			int		num_cols,
@@ -80,8 +80,9 @@ int			GUI_SimpleTableGeometry::RowForY(int n)
 void		GUI_SimpleTableGeometry::SetCellWidth (int n, int w)
 {
 	int delta = w - GetCellWidth(n);
-	for (int i = n; i < mCols.size(); ++i)
+	for (int i = n; i < mCols.size(); ++i)	
 		mCols[i] += delta;
+	BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
 }
 
 void		GUI_SimpleTableGeometry::SetCellHeight(int n, int h)

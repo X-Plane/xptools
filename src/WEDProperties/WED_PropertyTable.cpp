@@ -1,6 +1,7 @@
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
 #include "WED_Thing.h"
+#include "GUI_Messages.h"main_splitter
 
 inline int count_strs(const char ** p) { int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -61,7 +62,9 @@ void	WED_PropertyTable::GetCellContent(
 	
 	the_content.can_edit = inf.can_edit;
 	the_content.can_disclose = (cell_x == 0) && t->CountChildren() > 0;
-	the_content.is_disclosed = 1;
+	the_content.is_disclosed = 	mOpen[t->GetID()] != 0 && the_content.can_disclose;
+	the_content.is_selected = 0;
+	the_content.indent_level = GetThingDepth(t);
 	#if !DEV
 		enforce entity locking here?
 	#endif
@@ -81,13 +84,42 @@ void	WED_PropertyTable::AcceptEdit(
 {
 }
 
+void	WED_PropertyTable::ToggleDisclose(
+						int							cell_x,
+						int							cell_y)
+{
+	WED_Thing * t = FetchNth(cell_y);
+	if (t)
+		mOpen[t->GetID()] = 1 - mOpen[t->GetID()];
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+}
+
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
 	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
 	if (!root) return NULL;
+	// Ben says: tables are indexed bottom=0 to match OGL coords.
+	// INvert our numbers here because we really need to count up when we traverse the tree!
+	row = CountRows() - row - 1;
 	return FetchNthRecursive(root, row);
 }
+
+int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
+{
+	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
+	if (!root) return 0;
+
+	int ret = 0;
+	while (d)
+	{
+		if (d == root) break;
+		d = d->GetParent();
+		++ret;
+	}
+	return ret;	
+}
+
 
 WED_Thing *	WED_PropertyTable::FetchNthRecursive(WED_Thing * e, int& row)
 {
@@ -95,6 +127,8 @@ WED_Thing *	WED_PropertyTable::FetchNthRecursive(WED_Thing * e, int& row)
 	
 	if (row == 0) return e;
 	--row;
+	
+	if (mOpen[e->GetID()] != 0)	
 	for (int n = 0; n < e->CountChildren(); ++n)
 	{
 		WED_Thing * c = FetchNthRecursive(e->GetNthChild(n), row);
@@ -114,10 +148,36 @@ int			WED_PropertyTable::CountRowsRecursive(WED_Thing * e)
 	if (e == NULL) return 0;
 	int total = 1;
 	int cc = e->CountChildren();
+	if (mOpen[e->GetID()] == 0)	cc = 0;	
 	for (int c = 0; c < cc; ++c)
 	{
 		total += CountRowsRecursive(e->GetNthChild(c));
 	}
 	return total;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+ WED_PropertyTableHeader::WED_PropertyTableHeader(
+				const char **			col_names,
+				int *					def_col_widths)
+{
+	while(*col_names)
+	mColNames.push_back(*col_names++);
+}
+
+WED_PropertyTableHeader::~WED_PropertyTableHeader()
+{
+}
+
+void	WED_PropertyTableHeader::GetHeaderContent(
+				int							cell_x, 
+				GUI_HeaderContent&			the_content)
+{
+	the_content.title = mColNames[cell_x];
+	the_content.can_resize = true;
 }
 

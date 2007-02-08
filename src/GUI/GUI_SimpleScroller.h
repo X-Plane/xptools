@@ -10,8 +10,6 @@ public:
 					 GUI_SimpleScroller();
 	virtual			~GUI_SimpleScroller();
 
-			void	AlignContents(void);
-
 	// From GUI_ScrollerPaneContent
 	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);	
 	virtual	void	ScrollH(float xOffset);
@@ -25,6 +23,8 @@ public:
 							GUI_Broadcaster *		inSrc,
 							int						inMsg,
 							int						inParam);
+private:
+			void	AlignContents(void);
 	
 };
 

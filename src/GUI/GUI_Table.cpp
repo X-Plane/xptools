@@ -58,7 +58,7 @@ int			GUI_Table::MouseDown(int x, int y, int button)
 	if (mGeometry == NULL) return 0;
 	if (mContent == NULL) return 0;
 	mClickCellX = MouseToCellX(x);
-	mClickCellY = MouseToCellX(y);
+	mClickCellY = MouseToCellY(y);
 	if (mClickCellX >= 0 &&
 		mClickCellX < mGeometry->GetColCount() &&
 		mClickCellY >= 0 &&
@@ -90,6 +90,48 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 		mContent->CellMouseUp(cellbounds, mClickCellX, mClickCellY, x, y, button);	
 }
 
+void		GUI_Table::SetBounds(int x1, int y1, int x2, int y2)
+{
+	int b[4];
+	GetBounds(b);
+	int new_height = y2 - y1;
+	int old_height = b[3] - b[1];
+	int delta_y = new_height - old_height;
+	mScrollV -= delta_y;
+	GUI_Pane::SetBounds(x1,y1,x2,y2);
+	AlignContents();
+}
+
+void		GUI_Table::SetBounds(int inBounds[4])
+{
+	int b[4];
+	GetBounds(b);
+	int new_height = inBounds[3] - inBounds[1];
+	int old_height = b[3] - b[1];
+	int delta_y = new_height - old_height;
+	mScrollV -= delta_y;
+	GUI_Pane::SetBounds(inBounds);
+	AlignContents();
+}
+
+void		GUI_Table::AlignContents(void)
+{
+	float	vis[4],total[4];
+
+	GetScrollBounds(total,vis);	
+	if (total[1] > vis[1])		mScrollV -= (vis[1] - total[1]);
+
+	GetScrollBounds(total,vis);	
+	if (total[3] < vis[3])		mScrollV -= (vis[3] - total[3]);
+
+	GetScrollBounds(total,vis);	
+	if (total[2] < vis[2])		mScrollH -= (vis[2] - total[2]);
+
+	GetScrollBounds(total,vis);	
+	if (total[0] > vis[0])		mScrollH -= (vis[0] - total[0]);
+}
+
+
 void		GUI_Table::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
 				int						inMsg,
@@ -98,9 +140,17 @@ void		GUI_Table::ReceiveMessage(
 	switch(inMsg) {
 	case GUI_TABLE_SHAPE_RESIZED:
 	case GUI_TABLE_CONTENT_RESIZED:
+	// would be nice to do this:
+//	int b[4];
+//	GetBounds(b);
+//	int new_height = inBounds[3] - inBounds[1];
+//	int old_height = b[3] - b[1];
+//	int delta_y = new_height - old_height;
+//	mScrollV -= delta_y;
+		AlignContents();
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED, 0);
-		break;
 		Refresh();
+		break;
 	case GUI_TABLE_CONTENT_CHANGED:
 		Refresh();
 		break;
@@ -213,7 +263,8 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 /************************************************************************************************************
  * HEADER 
  ************************************************************************************************************/
- 
+#pragma mark -
+
  GUI_Header::GUI_Header() :
 	mGeometry(NULL),
 	mHeader(NULL),
@@ -323,7 +374,10 @@ int		GUI_Header::CalcVisibleCells(int bounds[2])
 {
 	if (mGeometry == NULL) return 0;
 	if (mTable == NULL) return 0;
-	
+
+	int xc = mGeometry->GetColCount();
+	if (xc == 0) return 0;
+		
 		int	b[4];
 		int l[2];
 	GetBounds(b);
@@ -331,10 +385,14 @@ int		GUI_Header::CalcVisibleCells(int bounds[2])
 	l[1] = mTable->GetScrollH() + b[2] - b[0];
 	
 	bounds[0] = mGeometry->ColForX(l[0]);
-	bounds[1] = mGeometry->ColForX(l[1]);
+	bounds[1] = mGeometry->ColForX(l[1]-1)+1;
 	
-	if (mGeometry->GetCellLeft  (bounds[1]) != l[1])		++bounds[1];
+	if (bounds[0] < 0) 								bounds[0] = 0;
+	if (bounds[1] < 0) 								bounds[1] = 0;
+	if (bounds[0] >= xc)							bounds[0] = xc-1;
+	if (bounds[1] > xc)								bounds[1] = xc;
 
+	if (bounds[0] >= bounds[1])				return 0;
 	return 1;	
 }
 
@@ -356,6 +414,7 @@ int		GUI_Header::CalcCellBounds(int x, int bounds[4])
 /************************************************************************************************************
 * SIDE
 ************************************************************************************************************/
+#pragma mark -
 
  GUI_Side::GUI_Side() :
 	mGeometry(NULL),
@@ -466,17 +525,26 @@ int		GUI_Side::CalcVisibleCells(int bounds[2])
 {
 	if (mGeometry == NULL) return 0;
 	if (mTable == NULL) return 0;
+
+	int yc = mGeometry->GetRowCount();
+	if (yc == 0) return 0;
 	
 		int	b[4];
-		int l[2];
+		int t[2];
 	GetBounds(b);
-	l[0] = mTable->GetScrollH();
-	l[1] = mTable->GetScrollH() + b[2] - b[0];
+	t[0] = mTable->GetScrollV();
+	t[1] = mTable->GetScrollV() + b[3] - b[1];
 	
-	bounds[0] = mGeometry->ColForX(l[0]);
-	bounds[1] = mGeometry->ColForX(l[1]);
+	bounds[0] = mGeometry->RowForY(t[0]);
+	bounds[1] = mGeometry->RowForY(t[1]-1)+1;
 	
-	if (mGeometry->GetCellLeft  (bounds[1]) != l[1])		++bounds[1];
+	
+	if (bounds[0] < 0) 								bounds[0] = 0;
+	if (bounds[1] < 0) 								bounds[1] = 0;
+	if (bounds[0] >= yc)							bounds[0] = yc-1;
+	if (bounds[1] > yc)								bounds[1] = yc;
+
+	if (bounds[0] >= bounds[1])				return 0;
 
 	return 1;	
 }

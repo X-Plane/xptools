@@ -12,6 +12,7 @@
 #include "GUI_ScrollerPane.h"
 #include "GUI_Splitter.h"
 #include "GUI_Table.h"
+#include "GUI_Packer.h"
 
 #include "WED_LayerGroup.h"
 //#include "WED_ObjectLayers.h"
@@ -44,6 +45,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static int widths[] = { 100, 50, 50 };
 	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(0));
 	mTestTable = new WED_PropertyTable(root,titles, widths);
+	mTestTableHeader = new WED_PropertyTableHeader(titles, widths);
 
 //	mLayerTable = new WED_LayerTable;
 //	mLayerTable->SetLayers(mObjectGroup);
@@ -51,30 +53,45 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	mLayerTableGeometry->SetLayers(mObjectGroup);
 	
 	int		splitter_b[4];	
-	GUI_Splitter * splitter = new GUI_Splitter(gui_Split_Horizontal);;
-	splitter->SetParent(this);
-	splitter->Show();
+	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
+	main_splitter->SetParent(this);
+	main_splitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
-	splitter->SetBounds(splitter_b);
-	splitter->SetSticky(1,1,1,1);
-	
+	main_splitter->SetBounds(splitter_b);
+	main_splitter->SetSticky(1,1,1,1);
+		
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
-	map_scroller->SetParent(splitter);
+	map_scroller->SetParent(main_splitter);
 	map_scroller->Show();
 	map_scroller->SetBounds(splitter_b);
 	map_scroller->SetSticky(1,1,1,1);
-	
-	GUI_ScrollerPane * layer_scroller = new GUI_ScrollerPane(1,1);
-	layer_scroller->SetParent(splitter);
-	layer_scroller->Show();
-	layer_scroller->SetBounds(splitter_b);
-	layer_scroller->SetSticky(0,1,1,1);
 	
 	WED_MapPane * map = new WED_MapPane();
 	map->SetParent(map_scroller);
 	map->Show();
 	map_scroller->PositionInContentArea(map);
 	map_scroller->SetContent(map);
+	
+	double	lb[4];
+	mDocument->GetBounds(lb);
+	map->SetMapVisibleBounds(lb[0], lb[1], lb[2], lb[3]);
+	map->SetMapLogicalBounds(lb[0], lb[1], lb[2], lb[3]);
+
+
+	GUI_Packer * table_packer = new GUI_Packer;
+	table_packer->SetParent(main_splitter);
+	table_packer->Show();
+	table_packer->SetBounds(splitter_b);
+	table_packer->SetSticky(0,1,1,1);
+
+
+
+		
+	GUI_ScrollerPane * layer_scroller = new GUI_ScrollerPane(1,1);
+	layer_scroller->SetParent(table_packer);
+	layer_scroller->Show();
+	layer_scroller->SetBounds(splitter_b);
+	layer_scroller->SetSticky(1,1,1,1);
 	
 	GUI_TextTable * text_table = new GUI_TextTable;
 	text_table->SetProvider(mTestTable);
@@ -87,12 +104,29 @@ WED_DocumentWindow::WED_DocumentWindow(
 	layer_scroller->PositionInContentArea(layer_table);
 	layer_scroller->SetContent(layer_table);
 	
-	double	lb[4];
-	mDocument->GetBounds(lb);
-	map->SetMapVisibleBounds(lb[0], lb[1], lb[2], lb[3]);
-	map->SetMapLogicalBounds(lb[0], lb[1], lb[2], lb[3]);
+
+
+	GUI_TextTableHeader * text_header = new GUI_TextTableHeader;
+	text_header->SetProvider(mTestTableHeader);
+	text_header->SetGeometry(mTestTable->GetGeometry());
 	
-	splitter->AlignContents();
+	GUI_Header * layer_table_header = new GUI_Header;
+	splitter_b[1] = 0;
+	splitter_b[3] = 20;
+	layer_table_header->SetBounds(splitter_b);	
+	layer_table_header->SetGeometry(mTestTable->GetGeometry());
+	layer_table_header->SetHeader(text_header);
+	layer_table_header->SetParent(table_packer);
+	layer_table_header->Show();
+	layer_table_header->SetSticky(1,0,1,1);
+
+	layer_table_header->SetTable(layer_table);
+	
+	
+	main_splitter->AlignContents();
+	
+	table_packer->PackPane(layer_table_header, gui_Pack_Top);
+	table_packer->PackPane(layer_scroller, gui_Pack_Center);
 	map->ZoomShowAll();
 }
 
@@ -103,6 +137,7 @@ WED_DocumentWindow::~WED_DocumentWindow()
 //	delete mLayerTable;
 //	delete mLayerTableGeometry;
 	delete mTestTable;
+	delete mTestTableHeader;
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)

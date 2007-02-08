@@ -13,6 +13,7 @@
 
 class	WED_Document;
 class	WED_PropertyTable;
+class	WED_PropertyTableHeader;
 
 class	WED_DocumentWindow : public GUI_Window, public GUI_Listener {
 public:
@@ -37,9 +38,10 @@ public:
 
 private:
 
-	WED_Document *		mDocument;
+	WED_Document *				mDocument;
 
-	WED_PropertyTable *	mTestTable;	
+	WED_PropertyTable *			mTestTable;	
+	WED_PropertyTableHeader *	mTestTableHeader;
 
 //	WED_ObjectLayers *		mObjects;
 //	WED_LayerGroup *		mObjectGroup;	

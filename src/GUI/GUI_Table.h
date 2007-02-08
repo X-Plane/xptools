@@ -106,6 +106,9 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
 
+	virtual void		SetBounds(int x1, int y1, int x2, int y2);
+	virtual void		SetBounds(int inBounds[4]);
+
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							int						inMsg,
@@ -120,6 +123,8 @@ private:
 			int		MouseToCellY(int y);
 			int		CalcVisibleCells(int bounds[4]);
 			int		CalcCellBounds(int x, int y, int bounds[4]);
+
+			void	AlignContents(void);
 
 			GUI_TableGeometry *		mGeometry;
 			GUI_TableContent *		mContent;
