@@ -1,6 +1,16 @@
 #ifndef GUI_TEXTTABLE_H
 #define GUI_TEXTTABLE_H
 
+/*
+
+	GUI_TextTable - THEORY OF OPERATION
+	
+	The text table classes provide a basic set of behavior for tables and their headers for dealing
+	with text data.  They have a further set of plugin behaviors that provide the text content,
+	and a series of structs that are used to transfer that content.
+
+*/
+
 #include "GUI_Listener.h"
 #include "GUI_Table.h"
 

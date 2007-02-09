@@ -15,6 +15,17 @@
 	
 	Drawing and content classes receive cell bounds in drawing coordinates so that they
 	can be passed directly to drawing routines.
+	
+	PARTS OF THE TABLE SYSTEM:
+	
+	The GUI_Table, GUI_Header, and GUI_Sider make the 3 panes that make a table.
+	Tables are scrollercontents and can be embedded in scroller panes.  Headers and
+	siders take a table as a link and will internally scroll to stay in lock-step with
+	the main table.
+	
+	Four interfaces give the tables their "brains".  Content plugins do drawing and 
+	mouse interaction for the table and its header/sider.  The geometry interface 
+	defines the total number of rows and the variable grid layout.
 
 */
 

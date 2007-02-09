@@ -1,6 +1,35 @@
 #ifndef GUI_PANE_H
 #define GUI_PANE_H
 
+/*
+
+	GUI_Pane - THEORY OF OPERATION
+	
+	MEMORY MANAGEMENT
+	
+		Each pane must be dynamically allocated - if a pane is deleted, it deletes its children, so
+		whole view hierarchies can be deleted at once by deleting the root.
+		
+		"Behavior" code - that is, derivatives of abstract classes that are "plugged in" to views
+		are NOT released.  This allows you to derive from several behaviors and not worry about
+		multiple deletes.
+	
+	LAYOUT MANAGEMENT
+	
+		Layout management for GUI panes is done in two phase: initial setup and incremental modification.
+		
+		Initial setup is done manually by client code, whether that means clients calling SetBounds
+		explicitly or specific convenience methods, such as the routine that automatically puts a
+		scrollable pane into a scroller.
+		
+		A pane has four 'sticky' flags, indicating that they should move relative to their parents
+		corresponding walls.
+		
+		The ideas is that the initial layout is set once and the stickiness preserves this relationship.
+
+
+*/
+
 #include "GUI_Defs.h"
 
 class GUI_GraphState;

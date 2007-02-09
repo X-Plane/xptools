@@ -1,6 +1,12 @@
 #ifndef GUI_SIMPLESCROLLER_H
 #define GUI_SIMPLESCROLLER_H
 
+/*
+	The simple scroller provides a scroller interface and simply moves its children to accomplish
+	scrolling.  This provides a very simple way to implement scrolled views.
+
+*/
+
 #include "GUI_Pane.h"
 #include "GUI_ScrollerPane.h"
 #include "GUI_Listener.h"
