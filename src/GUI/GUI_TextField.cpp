@@ -41,6 +41,26 @@ void		GUI_TextField::SetWidth(float width)
 
 void		GUI_TextField::Draw(GUI_GraphState * state)
 {
+	state->SetState(0,0,0,  0,0, 0,0);
+	glColor3f(1,1,1);
+	int b[4];
+	GetBounds(b);
+	glBegin(GL_QUADS);
+	glVertex2i(b[0],b[1]);
+	glVertex2i(b[0],b[3]);
+	glVertex2i(b[2],b[3]);
+	glVertex2i(b[2],b[1]);
+	glEnd();
+	glLineWidth(2);
+	glColor3f(0.3,0.5,1.0);
+	glBegin(GL_LINE_LOOP);
+	glVertex2i(b[0],b[1]);
+	glVertex2i(b[0],b[3]);
+	glVertex2i(b[2],b[3]);
+	glVertex2i(b[2],b[1]);
+	glEnd();
+	glLineWidth(1);
+	
 	mState = state;
 	OGLE::Draw(mCaret && IsActiveNow() && IsFocused());
 	mState = NULL;
@@ -272,6 +292,7 @@ void			GUI_TextField::GetText(
 						const char **	start_p,
 						const char **	end_p)
 {
+	GetDescriptor(mText);
 	*start_p = &*mText.begin();
 	*end_p = &*mText.end();
 }
@@ -282,7 +303,9 @@ void			GUI_TextField::ReplaceText(
 						const char *	t1,
 						const char *	t2)
 {
+	GetDescriptor(mText);
 	mText.replace(mText.begin()+offset1,mText.begin()+offset2,t1,t2);
+	SetDescriptor(mText);
 }
 
 float			GUI_TextField::GetLineHeight(void)

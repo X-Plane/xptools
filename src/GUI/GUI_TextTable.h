@@ -1,6 +1,11 @@
 #ifndef GUI_TEXTTABLE_H
 #define GUI_TEXTTABLE_H
 
+#include "GUI_Commander.h"
+
+class	GUI_Pane;
+class	GUI_TextField;
+
 /*
 
 	GUI_TextTable - THEORY OF OPERATION
@@ -74,6 +79,17 @@ public:
 						int							cell_x,
 						int							cell_y)=0;
 
+	virtual	void	SelectCell(
+						int							cell_x,
+						int							cell_y)=0;
+	virtual	void	SelectCellToggle(
+						int							cell_x,
+						int							cell_y)=0;
+	virtual	void	SelectCellExtend(
+						int							cell_x,
+						int							cell_y)=0;
+						
+
 };
 
 class	GUI_TextTableHeaderProvider : public GUI_Broadcaster { 
@@ -89,13 +105,14 @@ public:
 // It in turn queries the "provider" for the actual content.  It allows you to specify a table as strings (easy)
 // instead of drawing calls (PITA).
 
-class	GUI_TextTable : public GUI_TableContent, public GUI_Listener {
+class	GUI_TextTable : public GUI_TableContent, public GUI_Commander, public GUI_Listener {
 public:
 
-						 GUI_TextTable();
+						 GUI_TextTable(GUI_Commander * parent);
 	virtual				~GUI_TextTable();
 	
 			void		SetProvider(GUI_TextTableProvider * content);
+			void		SetParentPanes(GUI_Pane * parent);
 
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  );
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button);
@@ -110,14 +127,17 @@ public:
 
 private:
 
+			int			TerminateEdit(void);
+		
 	GUI_TextTableProvider * mContent;
-	int		mClickCellX;
-	int		mClickCellY;
-	int		mEditType;
-	int		mInBounds;
-	int		mTrackLeft;
-	int		mTrackRight;
-	
+	int						mClickCellX;
+	int						mClickCellY;
+	GUI_CellContent			mEditInfo;
+	int						mInBounds;
+	int						mTrackLeft;
+	int						mTrackRight;
+	GUI_Pane *				mParent;
+	GUI_TextField *			mTextField;
 };	
 
 

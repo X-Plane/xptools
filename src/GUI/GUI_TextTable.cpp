@@ -3,6 +3,7 @@
 #include "GUI_Fonts.h"
 #include "GUI_Messages.h"
 #include <math.h>
+#include "GUI_TextField.h"
 
 #define RESIZE_MARGIN 4
 
@@ -20,17 +21,23 @@
 	provider to provide content IN BULK?
 #endif
 
-GUI_TextTable::GUI_TextTable() :
+GUI_TextTable::GUI_TextTable(GUI_Commander * parent) : GUI_Commander(parent),
 	mContent(NULL),
 	mClickCellX(-1),
 	mClickCellY(-1),
-	mEditType(gui_Cell_None)
-	
+	mParent(NULL),
+	mTextField(NULL)
 {
+	mEditInfo.content_type = gui_Cell_None;
 }
 
 GUI_TextTable::~GUI_TextTable()
 {
+}
+
+void		GUI_TextTable::SetParentPanes(GUI_Pane * parent)
+{
+	mParent = parent;
 }
 	
 void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
@@ -62,6 +69,18 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	if (!mContent) return;
 	GUI_CellContent	c;
 	mContent->GetCellContent(cell_x,cell_y,c);
+
+	if (c.is_selected)
+	{
+		glColor3f(1,1,0);
+		glBegin(GL_QUADS);
+		glVertex2i(cell_bounds[0]+1,cell_bounds[1]+1);
+		glVertex2i(cell_bounds[0]+1,cell_bounds[3]-1);
+		glVertex2i(cell_bounds[2]-1,cell_bounds[3]-1);
+		glVertex2i(cell_bounds[2]-1,cell_bounds[1]+1);
+		glEnd();			
+		glColor3f(0.5,0.5,0.5);
+	}
 	
 	cell_bounds[0] += (c.indent_level * 10);
 	
@@ -88,7 +107,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
 		
-		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditType == gui_Cell_Disclose && mInBounds)
+		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds)
 		glColor3f(1,0,0);
 		glBegin(GL_LINE_LOOP);
 		if (c.is_disclosed)
@@ -114,20 +133,26 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
 	if (!mContent) return 0;
-	GUI_CellContent	c;
-	mContent->GetCellContent(cell_x,cell_y,c);
+	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
+	if (mTextField) TerminateEdit();	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
 	
-	cell_bounds[0] += (c.indent_level * 10);
-	if(c.is_disclosed || c.can_disclose)
+	mClickCellX = -1;
+	mClickCellY = -1;	
+	
+	cell_bounds[0] += (mEditInfo.indent_level * 10);
+	
+	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type == gui_Cell_None; return 1; }
+	
+	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
-		if (c.can_disclose)
+		if (mEditInfo.can_disclose)
 		{
 			mTrackLeft = cell_bounds[0];
 			mTrackRight = cell_bounds[0] + 10;
 
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
-				mEditType = gui_Cell_Disclose;
+				mEditInfo.content_type = gui_Cell_Disclose;
 				mClickCellX = cell_x;
 				mClickCellY = cell_y;
 				mInBounds = 0;
@@ -137,13 +162,52 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 		cell_bounds[0] += 10;		
 	}
+	
+	if (!mEditInfo.is_selected && mEditInfo.can_select)
+	{
+		#if !DEV
+			drag and drop here?
+		#endif
+		mContent->SelectCell(cell_x, cell_y);
+		mEditInfo.content_type = gui_Cell_None;
+		return 1;
+	}	
+	
+	char  buf[256];
+	switch(mEditInfo.content_type) {
+	case gui_Cell_EditText:
+	case gui_Cell_Integer:
+	case gui_Cell_Double:
+		if (mParent)
+		{
+			switch(mEditInfo.content_type) {
+			case gui_Cell_Integer:
+				sprintf(buf,"%d",mEditInfo.int_val);
+				mEditInfo.text_val = buf;
+				break;
+			case gui_Cell_Double:
+				sprintf(buf,"%lf",mEditInfo.double_val);
+				mEditInfo.text_val = buf;
+				break;
+			}
+			if (!mTextField) { mTextField = new GUI_TextField(1,this); mTextField->SetParent(mParent); }
+			mTextField->SetBounds(cell_bounds);
+			mTextField->Show();
+			mTextField->TakeFocus();
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			mTextField->SetDescriptor(mEditInfo.text_val);
+			return 1;
+		}
+		break;
+	}
 	return 0;
 }
 
 void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
 	int new_in;
-	switch(mEditType) {
+	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
 		new_in = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
@@ -159,7 +223,7 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
 	int new_in;
-	switch(mEditType) {
+	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
@@ -167,14 +231,43 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 //		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 		break;
 	}
-	mEditType == gui_Cell_None;
-	mClickCellX = -1;
-	mClickCellY = -1;	
+	if (!mTextField)
+	{
+		mEditInfo.content_type == gui_Cell_None;
+		mClickCellX = -1;
+		mClickCellY = -1;	
+	}
 }
 
 void		GUI_TextTable::Deactivate(void)
 {
 }
+
+int			GUI_TextTable::TerminateEdit(void)
+{
+	if (mTextField && mTextField->IsFocused() && 
+		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
+	{
+		mTextField->GetDescriptor(mEditInfo.text_val);
+		switch(mEditInfo.content_type) {
+		case gui_Cell_Integer:
+			mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
+			break;
+		case gui_Cell_Double:
+			mEditInfo.int_val = atof(mEditInfo.text_val.c_str());
+			break;
+		}
+		mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo);	
+		this->TakeFocus();
+		mTextField->Hide();
+		delete mTextField;
+		mTextField = NULL;
+		mEditInfo.content_type = gui_Cell_None;
+		return 1;				
+	}
+	return 0;
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
