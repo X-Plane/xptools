@@ -34,8 +34,8 @@
 #endif
 #include <string.h>
 
-static	OSErr		FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname);
-static	OSErr		FSRefToPathName(const FSRef * inFileSpec, char * outPathname);
+static	OSErr		FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname, int in_buf_size);
+static	OSErr		FSRefToPathName(const FSRef * inFileSpec, char * outPathname, int in_buf_size);
 
 /* Endian routines for the Mac use Apple's Endian macros. */
 
@@ -67,7 +67,7 @@ const char * GetApplicationPath(void)
 	pir.processAppSpec 		= &spec;
 	pir.processName			= pStr;
 	GetProcessInformation(&psn, &pir);
-	OSErr err = FSSpecToPathName(&spec, pathBuf);
+	OSErr err = FSSpecToPathName(&spec, pathBuf, sizeof(pathBuf));
 	if (err != noErr)
 		return NULL;
 	return pathBuf;
@@ -78,7 +78,8 @@ int		GetFilePathFromUser(
 					const char * 		inPrompt, 
 					const char *		inAction,
 					int					inID,
-					char * 				outFileName)
+					char * 				outFileName,
+					int					inBufSize)
 {
 		OSErr						err;
 		NavDialogCreationOptions	options;
@@ -132,7 +133,7 @@ int		GetFilePathFromUser(
 		if (err != noErr)
 			goto bail;
 
-		err = FSRefToPathName(&fileSpec, outFileName);
+		err = FSRefToPathName(&fileSpec, outFileName, inBufSize);
 		if (err != noErr)
 			goto bail;
 		
@@ -256,15 +257,15 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
  *
  */
 
-OSErr	FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname)
+OSErr	FSSpecToPathName(const FSSpec * inFileSpec, char * outPathname, int buf_size)
 {
 	FSRef ref;
 	OSErr err = FSpMakeFSRef(inFileSpec, &ref);
 	if (err != noErr) return err;
-	return FSRefToPathName(&ref, outPathname);
+	return FSRefToPathName(&ref, outPathname, buf_size);
 }
 
-OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname)
+OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname, int in_buf_size)
 {
 	CFURLRef url = CFURLCreateFromFSRef(kCFAllocatorDefault, inFileRef);
 	if (url == NULL)	return -1;
@@ -278,11 +279,8 @@ OSErr	FSRefToPathName(const FSRef * inFileRef, char * outPathname)
 	if (str == NULL)	return -1;
 	
 	CFIndex		len = CFStringGetLength(str);
-	CFIndex		got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outPathname, len, NULL);
-	outPathname[len] = 0;
-	#if !DEV
-	scribble risk
-	#endif
+	CFIndex		got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outPathname, in_buf_size-1, NULL);
+	outPathname[got] = 0;
 	CFRelease(str);
 	return noErr;
 }

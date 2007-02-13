@@ -80,7 +80,8 @@ int		GetFilePathFromUser(
 					const char * 		inPrompt, 
 					const char *		inAction,
 					int					inID,
-					char * 				outFileName);
+					char * 				outFileName,
+					int					inBufSize);
 
 /*
  * DoUserAlert puts up an alert dialog box with the message and an OK button.
