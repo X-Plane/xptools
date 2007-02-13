@@ -55,7 +55,7 @@ void	XGrindInit(string& t)
 	InstallDebugAssertHandler(HandleAssert);
 	InstallAssertHandler(HandleAssert);
 
-	t = "DSF2Text";
+	t = "DSF2Text 1.2";
 	XGrinder_ShowMessage("Drag a DSF or text file here to convert it.");
 }	
 

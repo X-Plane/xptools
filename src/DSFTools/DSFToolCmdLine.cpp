@@ -45,7 +45,8 @@ int main(int argc, char * argv[])
 	
 	for (int n = 1; n < argc; ++n)
 	{
-		if (!strcmp(argv[n], "-env2overlay"))
+		if (!strcmp(argv[n], "-env2overlay") ||
+			!strcmp(argv[n], "--env2overlay"))
 		{
 			++n;
 			if (n >= argc) goto help;
@@ -62,7 +63,8 @@ int main(int argc, char * argv[])
 		}
 
 
-		if (!strcmp(argv[n], "-dsf2text"))
+		if (!strcmp(argv[n], "-dsf2text") ||
+			!strcmp(argv[n], "--dsf2text"))
 		{
 			++n;
 			if (n >= argc) goto help;
@@ -81,7 +83,8 @@ int main(int argc, char * argv[])
 				{ fprintf(err_fi,"ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}
 		
-		if (!strcmp(argv[n], "-text2dsf"))
+		if (!strcmp(argv[n], "-text2dsf") ||
+			!strcmp(argv[n], "--text2dsf"))
 		{
 			++n;
 			if (n >= argc) goto help;
@@ -96,12 +99,18 @@ int main(int argc, char * argv[])
 			else
 				{ fprintf(err_fi, "ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}		
+		if (!strcmp(argv[n], "--version"))
+		{
+			fprintf(err_fi, "dsftool 1.2, Copyright 2007 Laminar Research.\n");
+		}
 	}
 	
 	return 0;
 help:
-	fprintf(err_fi, "Usage: dsftool -dsf2text [dsffile] [textfile]\n");
-	fprintf(err_fi, "		dsftool -text2dsf [textfile] [dsffile]\n");
-	fprintf(err_fi, "       dsftool -env2overlay [envfile] [dsffile]\n");
+	fprintf(err_fi, "Usage: dsftool --dsf2text [dsffile] [textfile]\n");
+	fprintf(err_fi, "		dsftool --text2dsf [textfile] [dsffile]\n");
+	fprintf(err_fi, "       dsftool --env2overlay [envfile] [dsffile]\n");
+	fprintf(err_fi, "       dsftool --version\n");
+	fprintf(err_fi, "Please note: dsftool still supports single-hyphen (-dsf2text) syntax for backward compatibility.\n");
 	return 1;
 }

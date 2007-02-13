@@ -15,6 +15,10 @@ Version History
 							Fixed return codes for command-line tool
 							Changed output for clean piping
 	 7/24/06 - 1.1.1		Fixed support for bezier polygon parsing
+	 2/13/07 - 1.2			Support for bezier curves with ST coordinates.
+	 						Command line options can take one or two dashes.
+	 						Tool can show version.
+	 						Total capacity for polygons increased a lot.
 	 
 -------------------------------------------------------------------------------
 OVERVIEW
@@ -71,15 +75,15 @@ it is working, but you should see elevated CPU usage.
 
 The syntax for the command line version is:
 
-DSFTool -dsf2text <dsf file> <text file> 
+DSFTool --dsf2text <dsf file> <text file> 
 
 to convert from DSF to text and
 
-DSFTool -text2dsf <text file> <dsf file>
+DSFTool --text2dsf <text file> <dsf file>
 
 to convert the other way.  To convert an ENV to an overlay use:
 
-DSFTool -env2overlay <env file> <dsf file>
+DSFTool --env2overlay <env file> <dsf file>
 
 For <text file> you can specify a single dash (-)
 to read from stdin/stdout instead of a text file.  This allows for piped usage
