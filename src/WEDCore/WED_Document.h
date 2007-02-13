@@ -8,8 +8,10 @@
 #include "DEMDefs.h"
 #include "WED_Properties.h"
 #include "WED_Archive.h"
+#include "WED_UndoMgr.h"
 
 class	WED_Package;
+class	WED_Thing;
 
 typedef struct sqlite3 sqlite3;
 
@@ -30,6 +32,8 @@ public:
 	void				GetBounds(double bounds[4]);
 
 	WED_Archive *		GetArchive(void);
+	WED_Thing *			GetRoot(void);
+	WED_UndoMgr *		GetUndoMgr(void);
 
 	// LEGACY STUFF
 	
@@ -48,6 +52,7 @@ private:
 	
 	sql_db				mDB;
 	WED_Archive			mArchive;
+	WED_UndoMgr			mUndo;
 
 	WED_Properties	mProperties;
 

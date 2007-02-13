@@ -4,6 +4,7 @@
 #include "XESIO.h"
 #include "AptIO.h"
 #include "MapAlgs.h"
+#include "WED_Thing.h"
 #include "WED_Messages.h"
 #include <sqlite3.h>
 #include "WED_Errors.h"
@@ -20,8 +21,11 @@ WED_Document::WED_Document(
 	mDB(path.c_str()),
 	mProperties(mDB.get()),
 	mFilePath(path),
-	mPackage(inPackage)
+	mPackage(inPackage),
+	mUndo(&mArchive)
 {
+	mArchive.SetUndoManager(&mUndo);
+	
 	string buf;
 	if (!GUI_GetResourcePath("WED_DataModel.sql",buf))
 		WED_ThrowPrintf("Unable to open SQL code: %s.", buf.c_str());
@@ -37,7 +41,11 @@ WED_Document::WED_Document(
 	mBounds[2] = inBounds[2];
 	mBounds[3] = inBounds[3];	
 	
+	mUndo.StartCommand("Load from disk.");
 	mArchive.LoadFromDB(mDB.get());
+	mUndo.CommitCommand();
+//	mUndo.PurgeUndo();
+//	mUndo.PurgeRedo();
 }
 
 WED_Document::~WED_Document()
@@ -69,3 +77,14 @@ WED_Archive *		WED_Document::GetArchive(void)
 {
 	return &mArchive;
 }
+
+WED_Thing *		WED_Document::GetRoot(void)
+{
+	return SAFE_CAST(WED_Thing,mArchive.Fetch(1));
+}
+
+WED_UndoMgr *	WED_Document::GetUndoMgr(void)
+{
+	return &mUndo;
+}
+

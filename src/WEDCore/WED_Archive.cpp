@@ -1,12 +1,13 @@
 #include "WED_Archive.h"
 #include "WED_Persistent.h"
 #include "WED_UndoLayer.h"
+#include "WED_UndoMgr.h"
 #include "AssertUtils.h"
 #include "WED_Errors.h"
 #include "sqlite3.h"
 #include "SQLUtils.h"
 
-WED_Archive::WED_Archive() : mDying(false), mUndo(NULL)
+WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL)
 {
 }
 
@@ -36,7 +37,8 @@ WED_Persistent *	WED_Archive::Fetch(int id) const
 void		WED_Archive::ChangedObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
-	if (mUndo) mUndo->ObjectChanged(inObject);
+	if (mUndo)	mUndo->ObjectChanged(inObject);
+	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
 void		WED_Archive::AddObject(WED_Persistent * inObject)
@@ -49,6 +51,7 @@ void		WED_Archive::AddObject(WED_Persistent * inObject)
 	else								iter->second = inObject;
 	
 	if (mUndo) mUndo->ObjectCreated(inObject);
+	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
 void		WED_Archive::RemoveObject(WED_Persistent * inObject)
@@ -59,6 +62,7 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 	Assert(iter != mObjects.end());
 	iter->second = NULL;
 	if (mUndo) mUndo->ObjectDestroyed(inObject);
+	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
 void	WED_Archive::LoadFromDB(sqlite3 * db)
@@ -115,3 +119,27 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 		we need something like DELETE FROM runways where id not in (select id from entities);
 	#endif
 }
+
+void			WED_Archive::SetUndoManager(WED_UndoMgr * mgr)
+{
+	mUndoMgr = mgr;
+}
+
+void			WED_Archive::StartCommand(const string& inName)
+{
+	DebugAssert(mUndoMgr != NULL);
+	mUndoMgr->StartCommand(inName);
+}
+
+void			WED_Archive::CommitCommand(void)
+{
+	DebugAssert(mUndoMgr != NULL);
+	mUndoMgr->CommitCommand();
+}
+
+void			WED_Archive::AbortCommand(void)
+{
+	DebugAssert(mUndoMgr != NULL);
+	mUndoMgr->AbortCommand();
+}
+

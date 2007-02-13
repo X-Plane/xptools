@@ -19,6 +19,19 @@ class	IOWriter;
 	2. Streaming methods via IODef reader/writers for the undo system.
 	3. Persistence methods via sqlite for the file format.
 	
+	CONSTRUCTORS AND DESTRUCTORS
+ 	
+	All persistent objs are made via new/delete, but these are wrapped, as is the ctor.  We have only access via:
+	
+	(non-virtual ctors)
+	CLASS::CreateTyped - creates a new object of type CLASS, returns a CLASS *.
+	CLASS::Create - creates a new object of type CLASS, returns a WED_Persitent *.
+	(virtual ctors)
+	WED_Persistent::CreateByClass(class) - creates an object of type "class", returns a WED_Persistent *
+
+	To delete an object, use o->Delete();
+	
+	
 */
 
 /*
@@ -81,7 +94,9 @@ __Class * __Class::CreateTyped(									\
 								WED_Archive * parent,			\
 								int inID)						\
 {																\
-	return new __Class(parent, inID);							\
+	__Class * r = new __Class(parent, inID);					\
+	r->PostCtor();												\
+	return r;													\
 }																\
 																\
 void __Class::Register(void) 									\
@@ -136,6 +151,11 @@ public:
 			 
 	// Convenience routine for finding your peers:
 	WED_Persistent *		FetchPeer(int inID) const;
+	
+	// Convenience routines for undo...
+	void					StartCommand(const string& inName);		// pass-throughs
+	void					CommitCommand(void);
+	void					AbortCommand(void);	
 
 	// This method is called by the derived-class whenever its internals are changed
 	// by an editing operation.  It is the convenient way to signal "we better start
@@ -167,6 +187,8 @@ protected:
 
 	// Dtor protected to prevent instantiation.
 	virtual 				~WED_Persistent();
+
+			void			PostCtor(void);
 
 private:
 

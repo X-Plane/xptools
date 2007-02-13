@@ -10,7 +10,9 @@ enum {
 	msg_DocumentDestroyed,
 	
 	msg_LayerStatusChanged,					// Sent when layer flags are toggled, renamed, whatever
-	msg_LayerCountChanged					// Sent when number of layers changes
+	msg_LayerCountChanged,					// Sent when number of layers changes
+
+	msg_SelectionChanged
 
 };
 

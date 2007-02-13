@@ -25,6 +25,7 @@ struct sqlite3;
 
 class	WED_Persistent;
 class	WED_UndoLayer;
+class	WED_UndoMgr;
 
 
 class	WED_Archive {
@@ -41,7 +42,13 @@ public:
 
 	void			LoadFromDB(sqlite3 * db);
 	void			SaveToDB(sqlite3 * db);
-
+	
+	// Undo convenience API.  
+	void			SetUndoManager(WED_UndoMgr * mgr);
+	void			StartCommand(const string& inName);		// pass-throughs
+	void			CommitCommand(void);
+	void			AbortCommand(void);
+	
 private:
 
 	void			ChangedObject	(WED_Persistent * inObject);	
@@ -55,7 +62,7 @@ private:
 	ObjectMap		mObjects;		// Our objects!
 	bool			mDying;			// Flag to self - WE are killing ourselves - ignore objects.
 	WED_UndoLayer *	mUndo;
-	
+	WED_UndoMgr *	mUndoMgr;
 // Not allowed yet
 
 	WED_Archive(const WED_Archive& rhs);
