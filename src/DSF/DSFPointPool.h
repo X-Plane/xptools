@@ -75,8 +75,8 @@ public:
 	inline void push_back(double v);
 	inline void insert(double * ptr, double v);
 	
-	void dump(void);
-	void dumphex(void);
+	void dump(void) const;
+	void dumphex(void) const;
 
 	inline size_t hash(void) const;
 
@@ -475,7 +475,7 @@ inline void DSFTuple::insert(double * ptr, double v)
 }
 
 
-inline void DSFTuple::dump(void)
+inline void DSFTuple::dump(void) const
 {
 	if (mLen < 0 || mLen > MAX_TUPLE_LEN)
 		printf("Tuple bad length: %d", mLen);
@@ -484,7 +484,7 @@ inline void DSFTuple::dump(void)
 		printf("%c%lf",(n==0) ? ' ' : ',', mData[n]);
 }
 
-inline void DSFTuple::dumphex(void)
+inline void DSFTuple::dumphex(void) const
 {
 	if (mLen < 0 || mLen > MAX_TUPLE_LEN)
 		printf("Tuple bad length: %d", mLen);

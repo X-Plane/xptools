@@ -36,6 +36,8 @@
 #include <set>
 #include <algorithm>
 
+#define	POLY_POINT_POOL_COUNT	12
+
 // Define this to 1 to see statistics about the encoded DSF file.
 #define ENCODING_STATS 1
 
@@ -1375,12 +1377,9 @@ void 	DSFFileWriterImp::BeginPolygon(
 				fracMin.push_back(0.0);
 				fracMax.push_back(1.0);
 			}
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
+
+			for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
+				polygonPool.AddPool(fracMin, fracMax);
 		}
 		for (int i = 1; i < REF(inRef)->mDivisions; ++i)
 		for (int j = 1; j < REF(inRef)->mDivisions; ++j)
@@ -1401,12 +1400,8 @@ void 	DSFFileWriterImp::BeginPolygon(
 				fracMax.push_back(1.0);
 			}
 
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
-			polygonPool.AddPool(fracMin, fracMax);
+			for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
+				polygonPool.AddPool(fracMin, fracMax);
 		}
 		DSFTuple	fracMin, fracMax;
 		fracMin.push_back(0.0);		fracMax.push_back(1.0);
@@ -1415,12 +1410,8 @@ void 	DSFFileWriterImp::BeginPolygon(
 			fracMin.push_back(0.0);
 			fracMax.push_back(1.0);
 		}
-		polygonPool.AddPool(fracMin, fracMax);
-		polygonPool.AddPool(fracMin, fracMax);
-		polygonPool.AddPool(fracMin, fracMax);
-		polygonPool.AddPool(fracMin, fracMax);
-		polygonPool.AddPool(fracMin, fracMax);
-		polygonPool.AddPool(fracMin, fracMax);
+		for (int k = 0; k < POLY_POINT_POOL_COUNT; ++k)
+			polygonPool.AddPool(fracMin, fracMax);
 	}	
 }
 					
@@ -1462,11 +1453,11 @@ void	DSFFileWriterImp::EndPolygon(
 	{
 		for (int n = 0; n < pts.size(); ++n)
 		{
-			for (int m = 0; m < pts[n].size(); ++m)
-				printf("%lf ", pts[n][m]);
-			printf("\n");
-		Assert(!"ERROR: Could not sink polygon point.\n");
+//			for (int m = 0; m < pts[n].size(); ++m)
+//				printf("%lf ", pts[n][m]);
+//			printf("\n");
 		}
+		Assert(!"ERROR: Could not sink polygon point.\n");
 	}
 	REF(inRef)->accum_poly->pool = loc.first;		
 	REF(inRef)->accum_poly->intervals.push_back(loc.second);

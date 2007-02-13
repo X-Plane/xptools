@@ -280,11 +280,14 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoint(const DSFTuple& inPoint)
 pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& inPoints)
 {
 	int p = 0;
+	int tris = 0;
+	int n;
 	for (list<ContiguousSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
 	if ((pool->mPoints.size() + inPoints.size()) <= 65535)
 	{
+		++tris;
 		bool	ok = true;
-		for (int n = 0; n < inPoints.size(); ++n)
+		for (n = 0; n < inPoints.size(); ++n)
 		{
 			if (!inPoints[n].in_range(pool->mOffset, pool->mScale)) {
 				ok = false; break; 
@@ -300,6 +303,9 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 			return pair<int, int>(p, pos);
 		}
 	}		
+	printf("point pool failure...%d out of %d tried.  Points = %d.\n", tris, p, inPoints.size());
+		inPoints[n].dump();
+	printf("\n");
 	return pair<int, int>(-1, -1);
 }
 
