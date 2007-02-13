@@ -120,6 +120,7 @@
 		D62436280AE403FB004F00E3 /* WED_TerraTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38260AB22C85003949C5 /* WED_TerraTool.cpp */; };
 		D62436290AE403FB004F00E3 /* WED_TopoTester.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38280AB22C85003949C5 /* WED_TopoTester.cpp */; };
 		D624362A0AE403FB004F00E3 /* WED_TriTestTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC382A0AB22C85003949C5 /* WED_TriTestTool.cpp */; };
+		D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6367D180B82123400091AFC /* WED_Select.cpp */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -579,6 +580,8 @@
 		D624350C0AE3DFCE004F00E3 /* lib3ds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib3ds.a; path = /usr/local/lib/lib3ds.a; sourceTree = "<absolute>"; };
 		D624350D0AE3DFCE004F00E3 /* libdime.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdime.a; path = /usr/local/lib/libdime.a; sourceTree = "<absolute>"; };
 		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6367D180B82123400091AFC /* WED_Select.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Select.cpp; sourceTree = "<group>"; };
+		D6367D190B82123400091AFC /* WED_Select.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Select.h; sourceTree = "<group>"; };
 		D656B11A0B51778F003FF84F /* ErrMsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ErrMsg.cpp; sourceTree = "<group>"; };
 		D656B11B0B51778F003FF84F /* ErrMsg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ErrMsg.h; sourceTree = "<group>"; };
 		D656B1260B51778F003FF84F /* MacSpec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MacSpec.cpp; sourceTree = "<group>"; };
@@ -2336,6 +2339,8 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D6367D180B82123400091AFC /* WED_Select.cpp */,
+				D6367D190B82123400091AFC /* WED_Select.h */,
 				D6ED413E0B6ADE6300D5484E /* WED_Entity.h */,
 				D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */,
 				D6FF2B880B6E985200960D5E /* WED_Group.h */,
@@ -3072,6 +3077,7 @@
 				D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */,
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
 				D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */,
+				D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
