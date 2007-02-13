@@ -9,5 +9,5 @@ cd AC3D\ Plugins/
 zip -r ../../XPWebSite/scenery/tools/ac3d_xplane_$1.zip XPlaneSupportWin.p
 cd ..
 cd src/AC3DPlugins
-zip ../../../XPWebSite/scenery/tools/ac3d_xplane_$1.zip README
+zip ../../../XPWebSite/scenery/tools/ac3d_xplane_$1.zip README XPlaneSupport.tcl
 cd ../..
