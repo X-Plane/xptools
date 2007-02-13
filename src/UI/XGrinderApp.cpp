@@ -149,6 +149,7 @@ int		main(int argc, char ** argv)
 
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
+	gWin->SetTitle(gTitle.c_str());
 	
 	gWin->ForceRefresh();	
 	RunApplicationEventLoop();		
@@ -175,6 +176,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
+	gWin->SetTitle(gTitle.c_str());
 	gWin->DrawMenuBar();
 	gWin->ForceRefresh();
 
