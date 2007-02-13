@@ -3,6 +3,26 @@
 
 #include "GUI_Defs.h"
 
+/*
+
+	GUI_Commander - THEORY OF OPERATION
+	
+	GUI_Commander represents the chain of keyboard and command focus.  (Commands are expected to be issued to the same
+	location as keystrokes - that is, their destination  must be inferred because the device creating the commands doesn't
+	have natural spatial info to find a pane the way a mouse click does.)
+	
+	While commanders sit in a tree, this is a SEPARATE tree from the GUI pane structure.  You can mix a pane tree and
+	commander tree, but please note that there doesn't have to be a direct correspondence.
+	
+	One exception is that windows are ALWAYS the root of both pane and commander trees!
+	
+	MEMORY MANAGEMENT
+	
+	Because commanders are meant to be mix-ins for other classes, and very often at least some of those classes WILL be
+	panes, commanders do not attempt any memory management!
+	
+*/
+
 class	GUI_Commander {
 public:
 
