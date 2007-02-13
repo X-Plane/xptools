@@ -2,17 +2,20 @@
 #define WED_PROPERTYTABLE_H
 
 #include "GUI_TextTable.h"
+#include "GUI_Listener.h"
 #include "GUI_SimpleTableGeometry.h"
 
 class	WED_Thing;
 class	WED_Archive;
+class	WED_Select;
 
 
-class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometryRowProvider {
+class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometryRowProvider, public GUI_Listener {
 public:
 
 					 WED_PropertyTable(
 									WED_Thing *				root,
+									WED_Select *			selection,
 									const char **			col_names,
 									int *					def_col_widths);
 	virtual			~WED_PropertyTable();
@@ -34,9 +37,23 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y);
+	virtual	void	SelectCell(
+						int							cell_x,
+						int							cell_y);
+	virtual	void	SelectCellToggle(
+						int							cell_x,
+						int							cell_y);
+	virtual	void	SelectCellExtend(
+						int							cell_x,
+						int							cell_y);
 
 	virtual	int		CountRows(void);
 
+
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							int						inMsg,
+							int						inParam);
 
 private:
 
@@ -50,6 +67,7 @@ private:
 	GUI_SimpleTableGeometry		mGeometry;
 	WED_Archive *				mArchive;
 	int							mEntity;	
+	int							mSelect;
 	
 	hash_map<int,int>			mOpen;
 	

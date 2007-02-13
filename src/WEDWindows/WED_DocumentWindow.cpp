@@ -4,6 +4,8 @@
 #include "AptIO.h"
 #include "MapAlgs.h"
 #include "WED_Messages.h"
+#include "GUI_Menus.h"
+#include "WED_UndoMgr.h"
 #include "WED_DocumentWindow.h"
 #include "WED_Thing.h"
 #include "WED_PropertyTable.h"
@@ -43,8 +45,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 				
 	static const char * titles[] = { "name", "locked", "hidden", 0 };
 	static int widths[] = { 100, 50, 50 };
-	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(0));
-	mTestTable = new WED_PropertyTable(root,titles, widths);
+	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
+	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("Selection"));
+	mTestTable = new WED_PropertyTable(root,s,titles, widths);
 	mTestTableHeader = new WED_PropertyTableHeader(titles, widths);
 
 //	mLayerTable = new WED_LayerTable;
@@ -93,7 +96,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	layer_scroller->SetBounds(splitter_b);
 	layer_scroller->SetSticky(1,1,1,1);
 	
-	GUI_TextTable * text_table = new GUI_TextTable;
+	GUI_TextTable * text_table = new GUI_TextTable(this);
 	text_table->SetProvider(mTestTable);
 	
 	GUI_Table *	layer_table = new GUI_Table;
@@ -103,6 +106,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 	layer_table->Show();
 	layer_scroller->PositionInContentArea(layer_table);
 	layer_scroller->SetContent(layer_table);
+	
+	text_table->SetParentPanes(layer_table);
 	
 
 
@@ -147,12 +152,24 @@ int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 
 int	WED_DocumentWindow::HandleCommand(int command)
 {
+	WED_UndoMgr * um = mDocument->GetUndoMgr();
+	switch(command) {
+	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
+	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
+	}
 	return 0;
 }
 
 int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
-	return 0;
+	WED_UndoMgr * um = mDocument->GetUndoMgr();
+	switch(command) {
+	case gui_Undo:		if (um->HasUndo())	{ ioName = um->GetUndoName();	return 1; }
+						else				{								return 0; }
+	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
+						else				{								return 0; }
+	default:																return 0;
+	}
 }
 
 void	WED_DocumentWindow::ReceiveMessage(

@@ -106,17 +106,46 @@ void			WED_Thing::ToDB(sqlite3 * db)
 	}
 }
 
-int					WED_Thing::CountChildren(void)
+int					WED_Thing::CountChildren(void) const
 {
 	return child_id.size();
 }
 
-WED_Thing *		WED_Thing::GetNthChild(int n)
+WED_Thing *		WED_Thing::GetNthChild(int n) const
 {
 	return SAFE_CAST(WED_Thing,FetchPeer(child_id[n]));
 }
 
-WED_Thing *		WED_Thing::GetParent(void)
+WED_Thing *		WED_Thing::GetNamedChild(const string& s) const
+{
+	int c = CountChildren();
+	for (int n = 0; n < c; ++n)
+	{
+		WED_Thing * t = GetNthChild(n);
+		if (t)
+		{
+			string n;
+			t->GetName(n);
+			if (s==n)
+				return t;
+		}
+	}
+	return NULL;
+}
+
+
+void	WED_Thing::GetName(string& n) const
+{
+	n = name.value;
+}
+
+void	WED_Thing::SetName(const string& n)
+{
+	StateChanged();
+	name.value = n;
+}
+
+WED_Thing *		WED_Thing::GetParent(void) const
 {
 	return SAFE_CAST(WED_Thing,FetchPeer(parent_id));
 }

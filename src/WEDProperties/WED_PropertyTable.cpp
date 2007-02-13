@@ -1,19 +1,23 @@
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
 #include "WED_Thing.h"
-#include "GUI_Messages.h"main_splitter
+#include "WED_Select.h"
+#include "WED_Messages.h"
+#include "GUI_Messages.h"
 
 inline int count_strs(const char ** p) { int n = 0; while(*p) ++p, ++n; return n; }
 
 WED_PropertyTable::WED_PropertyTable(
 									WED_Thing *				root,
+									WED_Select *			selection,
 									const char **			col_names,
 									int *					def_col_widths)
-	:	mArchive(root->GetArchive()), mEntity(root->GetID()),
+	:	mArchive(root->GetArchive()), mEntity(root->GetID()), mSelect(selection->GetID()),
 		mGeometry(count_strs(col_names),this,def_col_widths,20)
 {
 	while(*col_names)
 		mColNames.push_back(*col_names++);
+	selection->AddListener(this);
 }
 
 WED_PropertyTable::~WED_PropertyTable()
@@ -29,6 +33,8 @@ void	WED_PropertyTable::GetCellContent(
 	
 	WED_Thing * t = FetchNth(cell_y);
 	
+	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
+	
 	int idx = t->FindProperty(mColNames[cell_x].c_str());
 	if (idx == -1) return;
 	
@@ -36,6 +42,8 @@ void	WED_PropertyTable::GetCellContent(
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
 	t->GetNthProperty(idx, val);
+	
+	the_content.is_selected = s->IsSelected(t);
 	
 	switch(inf.prop_kind) {
 	case prop_Int:
@@ -63,7 +71,6 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_edit = inf.can_edit;
 	the_content.can_disclose = (cell_x == 0) && t->CountChildren() > 0;
 	the_content.is_disclosed = 	mOpen[t->GetID()] != 0 && the_content.can_disclose;
-	the_content.is_selected = 0;
 	the_content.indent_level = GetThingDepth(t);
 	#if !DEV
 		enforce entity locking here?
@@ -82,6 +89,35 @@ void	WED_PropertyTable::AcceptEdit(
 						int							cell_y,
 						const GUI_CellContent&		the_content)
 {
+	WED_Thing * t = FetchNth(cell_y);	
+	int idx = t->FindProperty(mColNames[cell_x].c_str());
+	if (idx == -1) return;
+	PropertyInfo_t	inf;
+	PropertyVal_t	val;
+	t->GetNthPropertyInfo(idx,inf);	
+	switch(inf.prop_kind) {
+	case prop_Int:
+		val.prop_kind = prop_Int;
+		val.int_val = the_content.int_val;
+		break;
+	case prop_Double:
+		val.prop_kind = prop_Double;
+		val.double_val = the_content.double_val;
+		break;
+	case prop_String:
+		val.prop_kind = prop_String;
+		val.string_val = the_content.text_val;
+		break;
+	case prop_Bool:
+		val.prop_kind = prop_Bool;
+		val.int_val = the_content.int_val;
+		break;
+	case prop_Enum:
+		val.prop_kind = prop_Enum;
+//		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
+		break;
+	}
+	t->SetNthProperty(idx, val);
 }
 
 void	WED_PropertyTable::ToggleDisclose(
@@ -93,6 +129,45 @@ void	WED_PropertyTable::ToggleDisclose(
 		mOpen[t->GetID()] = 1 - mOpen[t->GetID()];
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
+
+void	WED_PropertyTable::SelectCell(
+						int							cell_x,
+						int							cell_y)
+{
+	WED_Thing * t = FetchNth(cell_y);
+	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
+	if (t && s)
+	{
+		s->StartCommand("Change Selection.");
+		s->Select(t);
+		s->CommitCommand();
+	}
+}
+
+void	WED_PropertyTable::SelectCellToggle(
+						int							cell_x,
+						int							cell_y)
+{
+	WED_Thing * t = FetchNth(cell_y);
+	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
+	if (t && s)
+	{
+		s->StartCommand("Change Selection.");
+		s->Toggle(t);
+		s->CommitCommand();
+	}
+}
+
+void	WED_PropertyTable::SelectCellExtend(
+						int							cell_x,
+						int							cell_y)
+{
+	#if !DEV
+		hello
+	#endif
+}
+
+
 
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
@@ -155,6 +230,15 @@ int			WED_PropertyTable::CountRowsRecursive(WED_Thing * e)
 	}
 	return total;
 }
+
+void	WED_PropertyTable::ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							int						inMsg,
+							int						inParam)
+{
+	if (inMsg == msg_SelectionChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
+}
+
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -

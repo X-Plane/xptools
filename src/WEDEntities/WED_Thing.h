@@ -10,10 +10,14 @@ DECLARE_PERSISTENT(WED_Thing)
 
 public:
 
-			int					CountChildren(void);
-			WED_Thing *			GetNthChild(int n);
-			WED_Thing *			GetParent(void);			
+			int					CountChildren(void) const;
+			WED_Thing *			GetNthChild(int n) const;
+			WED_Thing *			GetNamedChild(const string& s) const;
+			WED_Thing *			GetParent(void) const;
 			void				SetParent(WED_Thing * parent, int nth);
+
+			void				GetName(string& name) const;
+			void				SetName(const string& name);
 
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
