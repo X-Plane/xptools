@@ -57,8 +57,17 @@ GUI_Pane::GUI_Pane() :
 
 GUI_Pane::~GUI_Pane()
 {
+	if (mParent)
+	{
+		vector<GUI_Pane *>::iterator self = find(mParent->mChildren.begin(),mParent->mChildren.end(), this);
+		if (self != mParent->mChildren.end())
+			mParent->mChildren.erase(self);
+	}
 	for (vector<GUI_Pane *>::iterator p = mChildren.begin(); p != mChildren.end(); ++p)
+	{
+		(*p)->mParent = NULL;	// prevent them from dialing us back!
 		delete *p;
+	}
 }
 
 int			GUI_Pane::CountChildren(void) const
