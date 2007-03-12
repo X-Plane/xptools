@@ -120,7 +120,22 @@
 		D62436280AE403FB004F00E3 /* WED_TerraTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38260AB22C85003949C5 /* WED_TerraTool.cpp */; };
 		D62436290AE403FB004F00E3 /* WED_TopoTester.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38280AB22C85003949C5 /* WED_TopoTester.cpp */; };
 		D624362A0AE403FB004F00E3 /* WED_TriTestTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC382A0AB22C85003949C5 /* WED_TriTestTool.cpp */; };
+		D629FA830B95CB5600A2FB57 /* WED_MapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FA820B95CB5600A2FB57 /* WED_MapLayer.cpp */; };
+		D629FA9B0B95CDF000A2FB57 /* WED_MapToolNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FA9A0B95CDF000A2FB57 /* WED_MapToolNew.cpp */; };
+		D629FADF0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FADE0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp */; };
+		D629FB020B95E38900A2FB57 /* WED_HandleToolBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */; };
+		D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */; };
 		D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6367D180B82123400091AFC /* WED_Select.cpp */; };
+		D63680BA0B8A0F4B00091AFC /* GUI_Destroyable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */; };
+		D636817C0B8AC62600091AFC /* WED_GISPoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */; };
+		D63681810B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */; };
+		D63681860B8AC69200091AFC /* WED_GISPoint_Heading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */; };
+		D636818B0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636818A0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp */; };
+		D636818E0B8AC92300091AFC /* WED_GISLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636818D0B8AC92300091AFC /* WED_GISLine.cpp */; };
+		D63681930B8AC94200091AFC /* WED_GISLine_Width.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681920B8AC94200091AFC /* WED_GISLine_Width.cpp */; };
+		D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681990B8AC9C200091AFC /* WED_GISChain.cpp */; };
+		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
+		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -343,6 +358,12 @@
 		D69FD7540B6CF883008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD75A0B6CF8B5008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */; };
+		D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */; };
+		D6A17FFA0BA5E61C00BBCD0C /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */; };
+		D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */; };
+		D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */; };
+		D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A182020BA6196B00BBCD0C /* WED_Root.cpp */; };
 		D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */; };
 		D6BC3A6E0AB22E5C003949C5 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
@@ -580,8 +601,45 @@
 		D624350C0AE3DFCE004F00E3 /* lib3ds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib3ds.a; path = /usr/local/lib/lib3ds.a; sourceTree = "<absolute>"; };
 		D624350D0AE3DFCE004F00E3 /* libdime.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdime.a; path = /usr/local/lib/libdime.a; sourceTree = "<absolute>"; };
 		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D629FA810B95CB5600A2FB57 /* WED_MapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapLayer.h; sourceTree = "<group>"; };
+		D629FA820B95CB5600A2FB57 /* WED_MapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapLayer.cpp; sourceTree = "<group>"; };
+		D629FA990B95CDF000A2FB57 /* WED_MapToolNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapToolNew.h; sourceTree = "<group>"; };
+		D629FA9A0B95CDF000A2FB57 /* WED_MapToolNew.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapToolNew.cpp; sourceTree = "<group>"; };
+		D629FADD0B95DE3E00A2FB57 /* WED_MapBkgnd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapBkgnd.h; sourceTree = "<group>"; };
+		D629FADE0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapBkgnd.cpp; sourceTree = "<group>"; };
+		D629FB000B95E38900A2FB57 /* WED_HandleToolBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_HandleToolBase.h; sourceTree = "<group>"; };
+		D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_HandleToolBase.cpp; sourceTree = "<group>"; };
+		D629FB3B0B960A7200A2FB57 /* WED_MarqueeTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MarqueeTool.h; sourceTree = "<group>"; };
+		D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MarqueeTool.cpp; sourceTree = "<group>"; };
+		D629FBA00B962D6B00A2FB57 /* IArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IArray.h; sourceTree = "<group>"; };
+		D629FBA80B962DC400A2FB57 /* IDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IDirectory.h; sourceTree = "<group>"; };
+		D629FBAB0B962E1100A2FB57 /* IResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IResolver.h; sourceTree = "<group>"; };
+		D629FBC00B962F5F00A2FB57 /* ISelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISelection.h; sourceTree = "<group>"; };
 		D6367D180B82123400091AFC /* WED_Select.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Select.cpp; sourceTree = "<group>"; };
 		D6367D190B82123400091AFC /* WED_Select.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Select.h; sourceTree = "<group>"; };
+		D63680B80B8A0F4B00091AFC /* GUI_Destroyable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Destroyable.h; sourceTree = "<group>"; };
+		D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Destroyable.cpp; sourceTree = "<group>"; };
+		D63681260B8A8D5000091AFC /* IGIS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IGIS.h; sourceTree = "<group>"; };
+		D63681320B8AA1FE00091AFC /* IControlHandles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IControlHandles.h; sourceTree = "<group>"; };
+		D636814D0B8AB87600091AFC /* IUnknown.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnknown.h; sourceTree = "<group>"; };
+		D636817A0B8AC62600091AFC /* WED_GISPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint.h; sourceTree = "<group>"; };
+		D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPoint.cpp; sourceTree = "<group>"; };
+		D636817F0B8AC67B00091AFC /* WED_GISPoint_Bezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint_Bezier.h; sourceTree = "<group>"; };
+		D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPoint_Bezier.cpp; sourceTree = "<group>"; };
+		D63681840B8AC69200091AFC /* WED_GISPoint_Heading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint_Heading.h; sourceTree = "<group>"; };
+		D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPoint_Heading.cpp; sourceTree = "<group>"; };
+		D63681890B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint_HeadingWidthLength.h; sourceTree = "<group>"; };
+		D636818A0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPoint_HeadingWidthLength.cpp; sourceTree = "<group>"; };
+		D636818C0B8AC92300091AFC /* WED_GISLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISLine.h; sourceTree = "<group>"; };
+		D636818D0B8AC92300091AFC /* WED_GISLine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISLine.cpp; sourceTree = "<group>"; };
+		D63681910B8AC94200091AFC /* WED_GISLine_Width.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISLine_Width.h; sourceTree = "<group>"; };
+		D63681920B8AC94200091AFC /* WED_GISLine_Width.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISLine_Width.cpp; sourceTree = "<group>"; };
+		D63681980B8AC9C200091AFC /* WED_GISChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISChain.h; sourceTree = "<group>"; };
+		D63681990B8AC9C200091AFC /* WED_GISChain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISChain.cpp; sourceTree = "<group>"; };
+		D636819D0B8ACA1500091AFC /* WED_GISPolygon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPolygon.h; sourceTree = "<group>"; };
+		D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPolygon.cpp; sourceTree = "<group>"; };
+		D63681A00B8ACA2600091AFC /* WED_GISComposite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISComposite.h; sourceTree = "<group>"; };
+		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
 		D656B11A0B51778F003FF84F /* ErrMsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ErrMsg.cpp; sourceTree = "<group>"; };
 		D656B11B0B51778F003FF84F /* ErrMsg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ErrMsg.h; sourceTree = "<group>"; };
 		D656B1260B51778F003FF84F /* MacSpec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MacSpec.cpp; sourceTree = "<group>"; };
@@ -630,6 +688,19 @@
 		D69FD7440B6CF765008E3AEC /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
 		D69FD7450B6CF765008E3AEC /* zip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
 		D69FD7460B6CF765008E3AEC /* zip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_EnumSystem.h; sourceTree = "<group>"; };
+		D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_EnumSystem.cpp; sourceTree = "<group>"; };
+		D6A17E240BA59EF900BBCD0C /* WED_Enums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Enums.h; sourceTree = "<group>"; };
+		D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportBeacon.h; sourceTree = "<group>"; };
+		D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBeacon.cpp; sourceTree = "<group>"; };
+		D6A17FF80BA5E61C00BBCD0C /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
+		D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
+		D6A1801E0BA5F73700BBCD0C /* WED_ToolUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolUtils.h; sourceTree = "<group>"; };
+		D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolUtils.cpp; sourceTree = "<group>"; };
+		D6A180790BA6017D00BBCD0C /* WED_KeyObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_KeyObjects.h; sourceTree = "<group>"; };
+		D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_KeyObjects.cpp; sourceTree = "<group>"; };
+		D6A182010BA6196B00BBCD0C /* WED_Root.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Root.h; sourceTree = "<group>"; };
+		D6A182020BA6196B00BBCD0C /* WED_Root.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Root.cpp; sourceTree = "<group>"; };
 		D6BC36450AB22C84003949C5 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
 		D6BC36460AB22C84003949C5 /* DSFLib.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLib.cpp; sourceTree = "<group>"; };
 		D6BC36470AB22C84003949C5 /* DSFLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFLib.h; sourceTree = "<group>"; };
@@ -1618,6 +1689,8 @@
 				D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */,
 				D60A99AC0B7A57E0002680BD /* GUI_Packer.h */,
 				D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */,
+				D63680B80B8A0F4B00091AFC /* GUI_Destroyable.h */,
+				D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -1972,6 +2045,9 @@
 				D6ED3D100B6A369900D5484E /* WED_DataModel.sql */,
 				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
 				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
+				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
+				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
+				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -1998,18 +2074,24 @@
 			children = (
 				D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */,
 				D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */,
-				D6BC37E20AB22C85003949C5 /* CVS.sandboxinfo */,
 				D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */,
 				D6BC37E40AB22C85003949C5 /* WED_MapPane.h */,
+				D629FA810B95CB5600A2FB57 /* WED_MapLayer.h */,
+				D629FA820B95CB5600A2FB57 /* WED_MapLayer.cpp */,
+				D629FA990B95CDF000A2FB57 /* WED_MapToolNew.h */,
+				D629FA9A0B95CDF000A2FB57 /* WED_MapToolNew.cpp */,
+				D629FADD0B95DE3E00A2FB57 /* WED_MapBkgnd.h */,
+				D629FADE0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp */,
+				D629FB000B95E38900A2FB57 /* WED_HandleToolBase.h */,
+				D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */,
+				D629FB3B0B960A7200A2FB57 /* WED_MarqueeTool.h */,
+				D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */,
+				D6A17FF80BA5E61C00BBCD0C /* WED_CreatePointTool.h */,
+				D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */,
+				D6A1801E0BA5F73700BBCD0C /* WED_ToolUtils.h */,
+				D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */,
 			);
 			path = WEDMap;
-			sourceTree = "<group>";
-		};
-		D6BC37E20AB22C85003949C5 /* CVS.sandboxinfo */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CVS.sandboxinfo;
 			sourceTree = "<group>";
 		};
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
@@ -2339,16 +2421,40 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
-				D6367D180B82123400091AFC /* WED_Select.cpp */,
-				D6367D190B82123400091AFC /* WED_Select.h */,
-				D6ED413E0B6ADE6300D5484E /* WED_Entity.h */,
-				D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */,
-				D6FF2B880B6E985200960D5E /* WED_Group.h */,
-				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
-				D6FF274C0B6E38D100960D5E /* WED_ObjPlacement.h */,
-				D6FF274D0B6E38D100960D5E /* WED_ObjPlacement.cpp */,
 				D6FF2AF80B6E908600960D5E /* WED_Thing.h */,
 				D6FF2AF90B6E908600960D5E /* WED_Thing.cpp */,
+				D6A182010BA6196B00BBCD0C /* WED_Root.h */,
+				D6A182020BA6196B00BBCD0C /* WED_Root.cpp */,
+				D6367D190B82123400091AFC /* WED_Select.h */,
+				D6367D180B82123400091AFC /* WED_Select.cpp */,
+				D6A180790BA6017D00BBCD0C /* WED_KeyObjects.h */,
+				D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */,
+				D6ED413E0B6ADE6300D5484E /* WED_Entity.h */,
+				D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */,
+				D636817A0B8AC62600091AFC /* WED_GISPoint.h */,
+				D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */,
+				D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */,
+				D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */,
+				D636817F0B8AC67B00091AFC /* WED_GISPoint_Bezier.h */,
+				D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */,
+				D63681840B8AC69200091AFC /* WED_GISPoint_Heading.h */,
+				D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */,
+				D6FF274C0B6E38D100960D5E /* WED_ObjPlacement.h */,
+				D6FF274D0B6E38D100960D5E /* WED_ObjPlacement.cpp */,
+				D63681890B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.h */,
+				D636818A0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp */,
+				D636818C0B8AC92300091AFC /* WED_GISLine.h */,
+				D636818D0B8AC92300091AFC /* WED_GISLine.cpp */,
+				D63681910B8AC94200091AFC /* WED_GISLine_Width.h */,
+				D63681920B8AC94200091AFC /* WED_GISLine_Width.cpp */,
+				D63681980B8AC9C200091AFC /* WED_GISChain.h */,
+				D63681990B8AC9C200091AFC /* WED_GISChain.cpp */,
+				D636819D0B8ACA1500091AFC /* WED_GISPolygon.h */,
+				D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */,
+				D63681A00B8ACA2600091AFC /* WED_GISComposite.h */,
+				D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */,
+				D6FF2B880B6E985200960D5E /* WED_Group.h */,
+				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -2356,7 +2462,14 @@
 		D6FF28500B6E42B000960D5E /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				D636814D0B8AB87600091AFC /* IUnknown.h */,
 				D6FF28570B6E434C00960D5E /* IPropertyObject.h */,
+				D63681260B8A8D5000091AFC /* IGIS.h */,
+				D63681320B8AA1FE00091AFC /* IControlHandles.h */,
+				D629FBA00B962D6B00A2FB57 /* IArray.h */,
+				D629FBA80B962DC400A2FB57 /* IDirectory.h */,
+				D629FBAB0B962E1100A2FB57 /* IResolver.h */,
+				D629FBC00B962F5F00A2FB57 /* ISelection.h */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -3078,6 +3191,27 @@
 				D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */,
 				D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */,
 				D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */,
+				D63680BA0B8A0F4B00091AFC /* GUI_Destroyable.cpp in Sources */,
+				D636817C0B8AC62600091AFC /* WED_GISPoint.cpp in Sources */,
+				D63681810B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp in Sources */,
+				D63681860B8AC69200091AFC /* WED_GISPoint_Heading.cpp in Sources */,
+				D636818B0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp in Sources */,
+				D636818E0B8AC92300091AFC /* WED_GISLine.cpp in Sources */,
+				D63681930B8AC94200091AFC /* WED_GISLine_Width.cpp in Sources */,
+				D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */,
+				D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */,
+				D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */,
+				D629FA830B95CB5600A2FB57 /* WED_MapLayer.cpp in Sources */,
+				D629FA9B0B95CDF000A2FB57 /* WED_MapToolNew.cpp in Sources */,
+				D629FADF0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp in Sources */,
+				D629FB020B95E38900A2FB57 /* WED_HandleToolBase.cpp in Sources */,
+				D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */,
+				D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */,
+				D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */,
+				D6A17FFA0BA5E61C00BBCD0C /* WED_CreatePointTool.cpp in Sources */,
+				D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */,
+				D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */,
+				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
