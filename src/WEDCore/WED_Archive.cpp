@@ -7,7 +7,7 @@
 #include "sqlite3.h"
 #include "SQLUtils.h"
 
-WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL)
+WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1)
 {
 }
 
@@ -44,6 +44,7 @@ void		WED_Archive::ChangedObject(WED_Persistent * inObject)
 void		WED_Archive::AddObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
+	mID = max(mID,inObject->GetID()+1);
 	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
 	DebugAssert(iter == mObjects.end() || iter->second == NULL);
 	
@@ -75,6 +76,8 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 		int err;
 		while((err = fetch_objects.get_row(an_obj)) == SQLITE_ROW)
 		{
+			mID = max(mID,an_obj.a+1);
+		
 			WED_Persistent * new_obj = WED_Persistent::CreateByClass(an_obj.b.c_str(), this, an_obj.a);
 			if(new_obj==NULL)
 				WED_ThrowPrintf("Unable to instantiate object of class: %s, id=%d.",an_obj.b.c_str(), an_obj.a);
@@ -143,3 +146,7 @@ void			WED_Archive::AbortCommand(void)
 	mUndoMgr->AbortCommand();
 }
 
+int	WED_Archive::NewID(void)
+{
+	return mID++;
+}

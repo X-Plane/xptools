@@ -18,6 +18,8 @@ public:
 		void	Execute(void);
 		
 		string	GetName(void) { return mName; }
+		
+		bool	Empty(void) const { return mObjects.empty(); }
 
 private:
 

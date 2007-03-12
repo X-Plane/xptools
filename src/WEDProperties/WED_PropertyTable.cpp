@@ -43,6 +43,7 @@ void	WED_PropertyTable::GetCellContent(
 	t->GetNthPropertyInfo(idx,inf);
 	t->GetNthProperty(idx, val);
 	
+	the_content.can_select = 1;
 	the_content.is_selected = s->IsSelected(t);
 	
 	switch(inf.prop_kind) {
@@ -117,7 +118,10 @@ void	WED_PropertyTable::AcceptEdit(
 //		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
 		break;
 	}
+	string foo = string("Change ") + inf.prop_name;
+	t->StartCommand(foo);
 	t->SetNthProperty(idx, val);
+	t->CommitCommand();
 }
 
 void	WED_PropertyTable::ToggleDisclose(

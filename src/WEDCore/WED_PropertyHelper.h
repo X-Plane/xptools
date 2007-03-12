@@ -10,6 +10,9 @@
 	
 	WED_PropertyHelper is an implementation that uses objects wrapped around member vars to simplify building up objects quickly.
 	
+	As a side note besides providing prop interfaces, it provides a way to stream properties to IODef reader/writers.  This is used to 
+	save undo work in WED_thing.
+	
 */
 
 #include <vector>
@@ -18,18 +21,27 @@
 using std::vector;
 
 class	WED_PropertyHelper;
+class	IOWriter;
+class	IOReader;
+struct	sqlite3;
 
 class	WED_PropertyItem {
 public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * title);
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, const char * table, const char * column);
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;	
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
 	virtual	void		GetPropertyDictItem(int e, string& item)=0;
 	virtual void		GetProperty(PropertyVal_t& val)=0;
-	virtual void		SetProperty(const PropertyVal_t& val)=0;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
+	virtual	void 		ReadFrom(IOReader * reader)=0;
+	virtual	void 		WriteTo(IOWriter * writer)=0;
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause)=0;
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
 
 	const char *	mTitle;
+	const char *	mTable;
+	const char *	mColumn;
 	
 private:
 	WED_PropertyItem();
@@ -46,8 +58,14 @@ public:
 	virtual void		GetNthProperty(int n, PropertyVal_t& val);
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
 	
-	
-	virtual	void		PropEditCallback(void)=0;
+	virtual	void		PropEditCallback(int before)=0;
+
+
+	// Utility to help manage streaming
+			void 		ReadPropsFrom(IOReader * reader);
+			void 		WritePropsTo(IOWriter * writer);	
+			void		PropsFromDB(sqlite3 * db, const char * where_clause);
+			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	
 private:
 
@@ -66,13 +84,17 @@ public:
 	operator int&() { return value; }
 	WED_PropIntText& operator=(int v) { value = v; return *this; }
 
-	WED_PropIntText(WED_PropertyHelper * parent, const char * title, int initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropIntText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
 	virtual void		GetProperty(PropertyVal_t& val);
-	virtual void		SetProperty(const PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	
 };	
 
@@ -84,13 +106,17 @@ public:
 	operator int&() { return value; }
 	WED_PropBoolText& operator=(int v) { value = v; return *this; }
 
-	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, int initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
 	virtual void		GetProperty(PropertyVal_t& val);
-	virtual void		SetProperty(const PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	
 };	
 
@@ -103,13 +129,17 @@ public:
 						operator double&() { return value; }
 	WED_PropDoubleText& operator=(double v) { value = v; return *this; }
 	
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, double initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
 	virtual void		GetProperty(PropertyVal_t& val);
-	virtual void		SetProperty(const PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	
 };	
 
@@ -121,13 +151,63 @@ public:
 						operator string&() { return value; }
 	WED_PropStringText& operator=(const string& v) { value = v; return *this; }
 	
-	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const string& initial)  : WED_PropertyItem(parent, title), value(initial) { }
+	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const string& initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
 	virtual void		GetProperty(PropertyVal_t& val);
-	virtual void		SetProperty(const PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	
+};	
+
+class	WED_PropIntEnum : public WED_PropertyItem {
+public:
+
+	int			value;
+	int			domain;
+
+						operator int&() { return value; }
+	WED_PropIntEnum& operator=(int v) { value = v; return *this; }
+	
+	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial), domain(idomain) { }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	
+};	
+
+class	WED_PropIntEnumSet : public WED_PropertyItem {
+public:
+
+	set<int>	value;
+	int			domain;
+
+						operator set<int>&() { return value; }
+	WED_PropIntEnumSet& operator=(const set<int>& v) { value = v; return *this; }
+	
+	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain)  : WED_PropertyItem(parent, title, table, column), domain(idomain) { }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	
 };	
 

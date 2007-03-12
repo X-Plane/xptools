@@ -1,6 +1,7 @@
 #ifndef WED_PERSISTENT
 #define WED_PERSISTENT
 
+#include "IUnknown.h"
 #include "WED_Archive.h"
 #include "AssertUtils.h"
 
@@ -73,12 +74,19 @@ public: 															\
 								int				inID);				\
 	static void				Register(void);							\
 	virtual const char * 	GetClass(void) const;					\
-	virtual void * 			SafeCast(const char * class_id);		\
+	virtual void * 			QueryInterface(const char * class_id);	\
 protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
 	virtual ~__Class();
 
+#define DECLARE_INTERMEDIATE(__Class)		 						\
+public: 															\
+	virtual void * 			QueryInterface(const char * class_id);	\
+protected:															\
+	__Class(WED_Archive * parent);									\
+	__Class(WED_Archive * parent, int inID);						\
+	virtual ~__Class();
 
 
 #define DEFINE_PERSISTENT(__Class)								\
@@ -107,9 +115,10 @@ void __Class::Register(void) 									\
 const char * __Class::GetClass(void) const						\
 {																\
 	return #__Class;											\
-}																\
-																\
-void * __Class::SafeCast(const char * class_id)					\
+}
+
+#define START_CASTING(__Class)									\
+void * __Class::QueryInterface(const char * class_id)			\
 {																\
 	if (!strcmp(class_id, #__Class))							\
 		return this;
@@ -119,7 +128,7 @@ void * __Class::SafeCast(const char * class_id)					\
 		return (CLASS*)this;
 
 #define INHERITS_FROM(CLASS)									\
-	return CLASS::SafeCast(class_id);
+	return CLASS::QueryInterface(class_id);
 
 #define BASE_CASE												\
 										return NULL; 
@@ -128,12 +137,10 @@ void * __Class::SafeCast(const char * class_id)					\
 }
 
 
-// Safe cast macro based on safe-cast mechanism
-#define SAFE_CAST(__Class, __Var) reinterpret_cast<__Class *>((__Var)->SafeCast(#__Class));
 
 
 
-class	WED_Persistent {
+class	WED_Persistent : public virtual IUnknown {
 public:
 
 	typedef WED_Persistent * (* CTOR_f)(WED_Archive *, int);
@@ -177,8 +184,6 @@ public:
 	
 	virtual const char *	GetClass(void) const=0;
 	
-	virtual void *			SafeCast(const char * class_id)=0;
-
 	// These are for the archive's use..
 			void			SetDirty(int dirty);
 			int				GetDirty(void) const;

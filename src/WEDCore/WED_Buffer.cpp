@@ -131,7 +131,8 @@ void	WED_Buffer::WriteInternal(const char * p, unsigned long l)
 		if (a > 0)
 		{
 			unsigned long w = l > a ? a : l;
-			memcpy(&*mStorage.back().end(), p, w);
+			mStorage.back().insert(mStorage.back().end(), p, p + w);
+//			memcpy(&*mStorage.back().end(), p, w);
 			p += w;
 			l -= w;
 			

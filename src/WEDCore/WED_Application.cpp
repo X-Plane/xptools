@@ -38,7 +38,7 @@ int		WED_Application::HandleCommand(int command)
 	
 	switch(command) { 
 	case wed_NewPackage:
-		if (GetFilePathFromUser(getFile_Save, "Please name your new scenery package", "Create", FILE_DIALOG_NEW_PROJECT, buf))
+		if (GetFilePathFromUser(getFile_Save, "Please name your new scenery package", "Create", FILE_DIALOG_NEW_PROJECT, buf, sizeof(buf)))
 		{
 			try {
 				WED_Package * pack = new WED_Package(buf, true);
@@ -52,7 +52,7 @@ int		WED_Application::HandleCommand(int command)
 		}
 		return 1;
 	case wed_OpenPackage:
-		if (GetFilePathFromUser(getFile_PickFolder, "Please pick your scenery package", "Open", FILE_DIALOG_OPEN_PROJECT, buf))
+		if (GetFilePathFromUser(getFile_PickFolder, "Please pick your scenery package", "Open", FILE_DIALOG_OPEN_PROJECT, buf, sizeof(buf) ))
 		{
 			try {
 				WED_Package * pack = new WED_Package(buf, false);

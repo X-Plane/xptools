@@ -5,14 +5,7 @@
 
 class	WED_Entity : public WED_Thing { 
 
-DECLARE_PERSISTENT(WED_Entity)
-
-public:
-
-	virtual	void 			ReadFrom(IOReader * reader);
-	virtual	void 			WriteTo(IOWriter * writer);
-	virtual void			FromDB(sqlite3 * db);
-	virtual void			ToDB(sqlite3 * db);
+DECLARE_INTERMEDIATE(WED_Entity)
 	
 private:
 

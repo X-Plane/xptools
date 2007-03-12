@@ -34,6 +34,12 @@ void	WED_UndoMgr::CommitCommand(void)
 {
 	Assert(mCommand != NULL);
 	mArchive->SetUndo(NULL);
+	if (mCommand->Empty())
+	{
+		delete mCommand;
+		mCommand = NULL;
+		return;
+	}
 	PurgeRedo();
 	mUndo.push_back(mCommand);
 	mCommand = NULL;	

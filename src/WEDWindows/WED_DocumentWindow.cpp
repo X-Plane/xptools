@@ -156,6 +156,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	switch(command) {
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
+	case gui_Close:	return 1;
 	}
 	return 0;
 }
@@ -168,6 +169,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
 						else				{								return 0; }
+	case gui_Close:		mDocument->AsyncDestroy();							return 1;
 	default:																return 0;
 	}
 }
@@ -177,11 +179,13 @@ void	WED_DocumentWindow::ReceiveMessage(
 				int						inMsg,
 				int						inParam)
 {
+	if(inMsg == msg_DocumentDestroyed)
+		delete this;
 }
 
 bool	WED_DocumentWindow::Closed(void)
 {
-	delete mDocument;
+	mDocument->AsyncDestroy();
 	return false;
 }
 

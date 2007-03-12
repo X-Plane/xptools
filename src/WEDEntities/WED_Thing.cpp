@@ -3,15 +3,17 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
-DEFINE_PERSISTENT(WED_Thing)
+START_CASTING(WED_Thing)
 IMPLEMENTS_INTERFACE(IPropertyObject)
+IMPLEMENTS_INTERFACE(IArray)
+IMPLEMENTS_INTERFACE(IDirectory)
 BASE_CASE
 END_CASTING
 
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
-	name(this,"name","unnamed entity")	
+	name(this,"name","WED_things", "name","unnamed entity")	
 {
 	parent_id = 0;
 }
@@ -29,16 +31,7 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 	for (int n = 0; n < ct; ++n)
 		reader->ReadInt(child_id[n]);
 	
-	reader->ReadInt(ct);
-	
-	if (ct > 0)
-	{
-		vector<char>	buf(ct);
-		reader->ReadBulk(&*buf.begin(),ct, 0);
-		name=string(buf.begin(),buf.end());
-	} else 
-		name.value.clear();
-	
+	ReadPropsFrom(reader);
 }
 
 void 			WED_Thing::WriteTo(IOWriter * writer)
@@ -50,28 +43,21 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 	for (int n = 0; n < child_id.size(); ++n)
 		writer->WriteInt(child_id[n]);
 	
-	writer->WriteInt(name.value.size());
-	if (!name.value.empty())
-		writer->WriteBulk(name.value.c_str(), name.value.length(), 0);
-	
-	#if !DEV
-	make nice overloading to make this FASTER
-	#endif
+	WritePropsTo(writer);
 }
 
 void			WED_Thing::FromDB(sqlite3 * db)
 {
 	child_id.clear();
-	sql_command	cmd(db,"SELECT parent,name FROM WED_things WHERE id=@i;","@i");
+	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
 	
 	sql_row1<int>						key(GetID());
-	sql_row2<int,string>				me;
+	sql_row1<int>						me;
 	
 	int err = cmd.simple_exec(key, me);
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete thing query: %d (%s)",err, sqlite3_errmsg(db));
 	
 	parent_id = me.a;
-	name = me.b;
 	
 	sql_command kids(db, "SELECT id FROM WED_things WHERE parent=@id ORDER BY seq;","@id");
 	sql_row1<int>	kid;
@@ -83,14 +69,18 @@ void			WED_Thing::FromDB(sqlite3 * db)
 		child_id.push_back(kid.a);
 	}
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));	
+	
+	char where_crud[100];
+	sprintf(where_crud,"id=%d",GetID());	
+	PropsFromDB(db,where_crud);
 }
 
 void			WED_Thing::ToDB(sqlite3 * db)
 {
 	int err;
-	sql_command	write_me(db,"UPDATE WED_things set parent=@p, name=@n WHERE id=@id;",
-								"@p,@n,@id");
-	sql_row3 <int,string,int>bindings(parent_id,name,GetID());
+	sql_command	write_me(db,"UPDATE WED_things set parent=@p WHERE id=@id;",
+								"@p,@id");
+	sql_row2 <int,int>bindings(parent_id,GetID());
 	err = write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
 
@@ -104,6 +94,10 @@ void			WED_Thing::ToDB(sqlite3 * db)
 			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update child info for %d child: %d (%s)",n,err, sqlite3_errmsg(db));	
 		}
 	}
+	
+	char id_str[20];
+	sprintf(id_str,"i%d",GetID());	
+	PropsToDB(db,"id",id_str);
 }
 
 int					WED_Thing::CountChildren(void) const
@@ -173,7 +167,23 @@ void				WED_Thing::RemoveChild(int id)
 	child_id.erase(i);
 }
 
-void		WED_Thing::PropEditCallback(void)
+void		WED_Thing::PropEditCallback(int before)
 {
-	StateChanged();
+	if (before)
+		StateChanged();
+}
+
+int				WED_Thing::Array_Count (void )
+{
+	return CountChildren();
+}
+
+IUnknown *		WED_Thing::Array_GetNth(int n)
+{
+	return GetNthChild(n);
+}
+	
+IUnknown *		WED_Thing::Directory_Find(const char * name)
+{
+	return GetNamedChild(name);
 }

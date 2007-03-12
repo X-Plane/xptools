@@ -44,8 +44,8 @@ WED_Document::WED_Document(
 	mUndo.StartCommand("Load from disk.");
 	mArchive.LoadFromDB(mDB.get());
 	mUndo.CommitCommand();
-//	mUndo.PurgeUndo();
-//	mUndo.PurgeRedo();
+	mUndo.PurgeUndo();
+	mUndo.PurgeRedo();
 }
 
 WED_Document::~WED_Document()
@@ -86,5 +86,54 @@ WED_Thing *		WED_Document::GetRoot(void)
 WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 {
 	return &mUndo;
+}
+
+IUnknown *	WED_Document::Resolver_Find(const char * in_path)
+{
+	const char * sp = in_path;
+	const char * ep;
+	
+	IUnknown * who = mArchive.Fetch(1);
+	
+	while(*sp != 0)
+	{
+		if(*sp == '[')
+		{
+			++sp;
+			int idx = atoi(sp);
+			while(*sp != 0 && *sp != ']') ++sp;
+			if (*sp == 0) return NULL;
+			++sp;
+			
+			IArray * arr = SAFE_CAST(IArray, who);
+			if(arr == NULL) return NULL;
+			who = arr->Array_GetNth(idx);
+			if (who == NULL) return NULL;
+			
+			if (*sp == '.') ++sp;			
+		}
+		else
+		{
+			ep = sp;
+			while (*ep != 0 && *ep != '[' && *ep != '.') ++ep;			
+			string comp(sp,ep);
+			
+			IDirectory * dir = SAFE_CAST(IDirectory,who);
+			if (dir == NULL) return NULL;
+			who = dir->Directory_Find(comp.c_str());
+			if (who == NULL) return NULL;
+			sp = ep;
+			
+			if (*sp == '.') ++sp;
+		}		
+	}
+	return who;
+}
+
+void *		WED_Document::QueryInterface(const char * class_id)
+{
+	if (strcmp(class_id,"IResolver")==0)
+		return (IResolver *) this;
+	return NULL;
 }
 

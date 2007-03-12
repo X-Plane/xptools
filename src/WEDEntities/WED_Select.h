@@ -3,22 +3,27 @@
 
 #include "WED_Thing.h"
 #include "GUI_Broadcaster.h"
+#include "ISelection.h"
 
-class	WED_Select : public WED_Thing, public GUI_Broadcaster { 
+class	WED_Select : public WED_Thing, public virtual ISelection, public GUI_Broadcaster { 
 
 DECLARE_PERSISTENT(WED_Select)
 
 public:
 
-			bool			IsSelected(WED_Thing * who) const;
+	// ISelection
+	virtual		bool			IsSelected(IUnknown * who) const;
 
-			void			Select(WED_Thing * who);
-			void			Clear(void);
-			void			Toggle(WED_Thing * who);
-			void			Insert(WED_Thing * who);
-			void			Erase(WED_Thing * who);
+	virtual		void			Select(IUnknown * who);
+	virtual		void			Clear (void			 );
+	virtual		void			Toggle(IUnknown * who);
+	virtual		void			Insert(IUnknown * who);
+	virtual		void			Erase (IUnknown * who);
 
+	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const;
+	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const;
 
+	// WED_Persistent
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
 	virtual void			FromDB(sqlite3 * db);

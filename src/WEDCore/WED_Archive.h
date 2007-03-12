@@ -49,6 +49,8 @@ public:
 	void			CommitCommand(void);
 	void			AbortCommand(void);
 	
+	int				NewID(void);
+	
 private:
 
 	void			ChangedObject	(WED_Persistent * inObject);	
@@ -67,6 +69,8 @@ private:
 
 	WED_Archive(const WED_Archive& rhs);
 	WED_Archive& operator=(const WED_Archive& rhs);
+	
+	int				mID;
 
 };
 

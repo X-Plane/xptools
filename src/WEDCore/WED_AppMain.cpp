@@ -43,10 +43,11 @@
 
 #include "WED_Menus.h"
 
-#include "WED_Entity.h"
+#include "WED_Root.h"
 #include "WED_Group.h"
 #include "WED_ObjPlacement.h"
 #include "WED_Select.h"
+#include "WED_AirportBeacon.h"
 
 #include "GUI_ScrollerPane.h"
 #include "GUI_Textfield.h"
@@ -170,11 +171,12 @@ int main(int argc, const char * argv[])
 //	RegisterSpecialCommands();
 	
 	WED_AssertInit();
-	
-	WED_Entity::Register();
+
+	WED_Root::Register();	
 	WED_ObjPlacement::Register();
 	WED_Group::Register();
 	WED_Select::Register();
+	WED_AirportBeacon::Register();
 	
 //	XPInitDefaultMargins();
 /*

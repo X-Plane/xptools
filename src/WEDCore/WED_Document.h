@@ -2,6 +2,7 @@
 #define WED_DOCUMENT_H
 
 #include "WED_Globals.h"
+#include "GUI_Destroyable.h"
 #include "MeshDefs.h"
 #include "AptDefs.h"
 #include "MapDefs.h"
@@ -16,8 +17,25 @@ class	WED_Thing;
 typedef struct sqlite3 sqlite3;
 
 #include "GUI_Broadcaster.h"
+#include "IResolver.h"
 
-class	WED_Document : public GUI_Broadcaster{
+/*
+	WED_Document - THEORY OF OPERATION
+
+	UI-DATAMODEL
+	
+	Because the data model is made of persistent objects (whose pointer memory addresses may vary), we can't just pass pointers to the UI.  Instead the UI
+	finds abstract interfaces into the data model using the IResolver interface.  
+	
+	In the case of the document, each component uses the IDirectory, and each array index uses the IArray interface.  In turn, WED_Thing actually implements
+	both of these, so we can index into the hierarchial datamodel by index or "thing name".
+	
+	Object with ID 1 is by definition "the document root" - that is, it is used as a starting point for all resolutions.
+
+*/
+
+
+class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver {
 public:
 
 						WED_Document(
@@ -34,6 +52,9 @@ public:
 	WED_Archive *		GetArchive(void);
 	WED_Thing *			GetRoot(void);
 	WED_UndoMgr *		GetUndoMgr(void);
+
+	virtual void *		QueryInterface(const char * class_id);
+	virtual	IUnknown *	Resolver_Find(const char * path);
 
 	// LEGACY STUFF
 	

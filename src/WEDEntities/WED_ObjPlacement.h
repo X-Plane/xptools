@@ -1,10 +1,10 @@
 #ifndef WED_OBJPLACEMENT_H
 #define WED_OBJPLACEMENT_H
 
-#include "WED_Entity.h"
+#include "WED_GISPoint_Heading.h"
 #include "WED_PropertyHelper.h"
 
-class	WED_ObjPlacement : public WED_Entity {
+class	WED_ObjPlacement : public WED_GISPoint_Heading {
 
 DECLARE_PERSISTENT(WED_ObjPlacement)
 
@@ -17,10 +17,6 @@ public:
 
 private:
 
-	WED_PropDoubleText		latitude;
-	WED_PropDoubleText		longitude;
-	WED_PropDoubleText		heading;
-	
 	int			model_id;
 
 };
