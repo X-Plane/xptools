@@ -174,6 +174,11 @@ bool		GUI_Window::IsActiveNow(void) const
 	return XWin::GetActive();
 }
 
+bool		GUI_Window::IsVisibleNow(void) const
+{
+	return XWin::GetVisible();
+}
+
 
 /*
 int			GUI_Window::InternalSetFocus(GUI_Pane * who)

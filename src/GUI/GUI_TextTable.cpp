@@ -132,10 +132,26 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
-	if (!mContent) return 0;
-	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
-	if (mTextField) TerminateEdit();	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
+	if (!mContent) 
+	{
+		mClickCellX = -1;
+		mClickCellY = -1;	
+		mEditInfo.content_type = gui_Cell_None;
+		return 1;
+	}
 	
+	if (!IsFocusedChain())	TakeFocus();
+	
+	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
+	if (mTextField)
+	{
+		TerminateEdit(true);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.		
+		mClickCellX = -1;
+		mClickCellY = -1;	
+		mEditInfo.content_type = gui_Cell_None;
+		return 1;
+	}
+
 	mClickCellX = -1;
 	mClickCellY = -1;	
 	
@@ -190,7 +206,13 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				mEditInfo.text_val = buf;
 				break;
 			}
-			if (!mTextField) { mTextField = new GUI_TextField(1,this); mTextField->SetParent(mParent); }
+			if (!mTextField) 
+			{
+				mTextField = new GUI_TextField(1,this); 
+				mTextField->SetParent(mParent); 
+				mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
+				mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
+			}
 			mTextField->SetBounds(cell_bounds);
 			mTextField->Show();
 			mTextField->TakeFocus();
@@ -243,21 +265,24 @@ void		GUI_TextTable::Deactivate(void)
 {
 }
 
-int			GUI_TextTable::TerminateEdit(void)
+int			GUI_TextTable::TerminateEdit(bool inSave)
 {
 	if (mTextField && mTextField->IsFocused() && 
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
-		mTextField->GetDescriptor(mEditInfo.text_val);
-		switch(mEditInfo.content_type) {
-		case gui_Cell_Integer:
-			mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
-			break;
-		case gui_Cell_Double:
-			mEditInfo.int_val = atof(mEditInfo.text_val.c_str());
-			break;
+		if (inSave)
+		{
+			mTextField->GetDescriptor(mEditInfo.text_val);
+			switch(mEditInfo.content_type) {
+			case gui_Cell_Integer:
+				mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
+				break;
+			case gui_Cell_Double:
+				mEditInfo.int_val = atof(mEditInfo.text_val.c_str());
+				break;
+			}
+			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo);	
 		}
-		mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo);	
 		this->TakeFocus();
 		mTextField->Hide();
 		delete mTextField;
@@ -267,6 +292,22 @@ int			GUI_TextTable::TerminateEdit(void)
 	}
 	return 0;
 }
+
+int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+{
+	if(inKey == GUI_KEY_RETURN && mTextField)
+	{
+		TerminateEdit(true);
+		return 1;
+	}
+
+	if(inKey == GUI_KEY_ESCAPE && mTextField)
+	{
+		TerminateEdit(false);
+		return 1;
+	}
+}
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -125,9 +125,11 @@ public:
 							int						inMsg,
 							int						inParam);
 
+	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+
 private:
 
-			int			TerminateEdit(void);
+			int			TerminateEdit(bool inSave);
 		
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;

@@ -26,6 +26,7 @@ public:
 	virtual				~GUI_TextField();
 
 			void		SetWidth(float width);
+			void		SetKeyAllowed(char key, bool allowed);
 
 	// GUI_Pane
 	virtual	void		Draw(GUI_GraphState * state);
@@ -102,7 +103,8 @@ private:
 		int					mScrollH;
 		float				mLogicalBounds[4];
 		GUI_GraphState * 	mState;
-		string				mText;
+		string				mText;		
+		bool				mAllowed[256];
 };
 
 #endif /* GUI_TEXTFIELD_H */

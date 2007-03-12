@@ -23,10 +23,18 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	mLogicalBounds[1] = 0;
 	mLogicalBounds[2] = 100;
 	mLogicalBounds[3] = 100;
+	
+	for (int n = 0; n < 256; ++n)
+		mAllowed[n] = true;
 }
 
 GUI_TextField::~GUI_TextField()
 {
+}
+
+void		GUI_TextField::SetKeyAllowed(char key, bool allowed)
+{
+	mAllowed[(unsigned char) key] = allowed;
 }
 
 void		GUI_TextField::SetWidth(float width)
@@ -121,6 +129,7 @@ void		GUI_TextField::SetBounds(int inBounds[4])
 
 int			GUI_TextField::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
+	if (!mAllowed[(unsigned char) inKey]) return 0;
 	Key(inKey, inFlags & gui_ShiftFlag);
 	Refresh();
 	return 1;

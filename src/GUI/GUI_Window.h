@@ -22,6 +22,7 @@ public:
 	virtual void			SetBounds(int inBounds[4]);
 	virtual	void			SetDescriptor(const string& inDesc);
 	virtual bool			IsActiveNow(void) const;
+	virtual bool			IsVisibleNow(void) const;
 	
 	// From XWinGL
 	virtual	void			Timer(void);
