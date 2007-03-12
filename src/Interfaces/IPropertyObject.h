@@ -1,6 +1,8 @@
 #ifndef IPROPERTYOBJECT_H
 #define IPROPERTYOBJECT_H
 
+#include "IUnknown.h"
+
 /*
 	IPropertyObject - THEORY OF OPERATION
 	
@@ -15,7 +17,8 @@ enum {
 	prop_Double,
 	prop_String,	
 	prop_Bool,			// Returns as int
-	prop_Enum			// Returns as int
+	prop_Enum,			// Returns as int
+	prop_EnumSet
 };
 
 typedef	map<int,string>	PropertyDict_t;
@@ -31,9 +34,10 @@ struct	PropertyVal_t {
 	int			int_val;
 	string		string_val;
 	double		double_val;
+	set<int>	set_val;
 };
 
-class IPropertyObject {
+class IPropertyObject : public virtual IUnknown {
 public:
 
 	virtual	int			FindProperty(const char * in_prop)=0;
