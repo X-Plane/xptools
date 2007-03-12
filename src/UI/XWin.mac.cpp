@@ -156,6 +156,7 @@ XWin::~XWin()
 	RemoveEventLoopTimer(mTimer);
 	if (mWindow)
 		DisposeWindow(mWindow);
+	sIniting = false;
 }
 
 #pragma mark -
