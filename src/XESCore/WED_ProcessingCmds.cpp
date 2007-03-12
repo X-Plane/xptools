@@ -202,7 +202,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			{
 				char	f1[1024];
 				f1[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1)) break;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
 						
 				HydroReconstruct(gMap,  gDem,f1,WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
@@ -337,7 +337,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				strcpy(buf, "New Scenery Package");
 				if (GetFilePathFromUser((cmd == procCmd_ExportDSFExisting) ? getFile_PickFolder : getFile_Save, 
 										(cmd == procCmd_ExportDSFExisting) ? "Please pick your scenery package" : "Please name your scenery package", 
-										(cmd == procCmd_ExportDSFExisting) ? "Update" : "Create", 5, buf))
+										(cmd == procCmd_ExportDSFExisting) ? "Update" : "Create", 5, buf, sizeof(buf)))
 				{
 //					if (cmd != procCmd_ExportDSFExisting) 
 					strcat(buf, DIR_STR);
