@@ -37,6 +37,7 @@ struct	Vector2;
 	
 
 
+
 enum {
 	LEFT_TURN = 1,
 	COLLINEAR = 0,
@@ -50,6 +51,18 @@ enum {
 	ON_BOUNDED_SIDE = 1
 
 };
+
+int linear_formula(double a, double b, double roots[1]);
+int quadratic_formula(double a, double b, double c, double roots[2]);
+int cubic_formula(double a, double b, double c, double d, double roots[3]);
+
+template <class __Iterator>
+bool inside_polygon_pt(__Iterator begin, __Iterator end, const Point2& inPoint);
+template <class __Iterator>
+bool inside_polygon_seg(__Iterator begin, __Iterator end, const Point2& inPoint);
+template <class __Iterator>
+bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint);
+
 
 
 /****************************************************************************************************
@@ -157,6 +170,8 @@ struct	Segment2 {
 	
 	bool	could_intersect(const Segment2& rhs) const;
 	bool	intersect(const Segment2& rhs, Point2& p) const;
+
+	bool	near(const Point2& p, double distance) const;
 	
 	double	y_at_x(double x) const { 	if (p1.x == p2.x) 	return p1.y; 
 										if (x == p1.x) 		return p1.y; 
@@ -243,6 +258,7 @@ struct	Bbox2 {
 				Bbox2(double x1, double y1, double x2, double y2) : p1(x1, y1), p2(x2, y2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
 				Bbox2(const Point2& in_p1, const Point2& in_p2) : p1(in_p1), p2(in_p2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
 				Bbox2(const Point2& inp) : p1(inp), p2(inp) { }
+				Bbox2(const Segment2& s) : p1(s.p1), p2(s.p2) { if (p1.x > p2.x) swap(p1.x, p2.x); if (p1.y > p2.y) swap(p1.y, p2.y); }
 				Bbox2(const Bbox2& rhs) : p1(rhs.p1), p2(rhs.p2) { }
 	Bbox2&		operator=(const Bbox2& rhs) { p1 = rhs.p1; p2 = rhs.p2; return *this; }
 	Bbox2&		operator=(const Point2& rhs) { p1 = rhs; p2 = rhs; return *this; }
@@ -256,18 +272,27 @@ struct	Bbox2 {
 	double		ymin() const { return p1.y; }
 	double		xmax() const { return p2.x; }
 	double		ymax() const { return p2.y; }
+	double		xspan() const { return p2.x - p1.x; }
+	double		yspan() const { return p2.y - p1.y; }
 
 	bool		is_empty() const { return p1.x == p2.x || p1.y == p2.y; }
 	bool		is_point() const { return p1 == p2; }
 	bool		is_null() const { return p1.x > p2.x || p1.y > p2.y; }
 	
 	bool		overlap(const Bbox2& rhs) const;
-	bool		contains(const Bbox2& rhs) const;
-	bool		contains(const Point2& p) const;
 	bool		interior_overlap(const Bbox2& rhs) const;
+	bool		contains(const Bbox2& rhs) const;
+
+	bool		contains(const Point2& p) const;
+	bool		contains(const Segment2& p) const;
 
 	void		expand(double v) { p1.x -= v; p1.y -= v; p2.x += v; p2.y += v; }	
 	Point2		centroid(void) const { return Point2((p1.x + p2.x) * 0.5,(p1.y+p2.y) * 0.5); }
+
+	double		rescale_to_x (const Bbox2& new_box, double x) const;
+	double		rescale_to_y (const Bbox2& new_box, double y) const;
+	double		rescale_to_xv(const Bbox2& new_box, double x) const;
+	double		rescale_to_yv(const Bbox2& new_box, double y) const;
 
 	Point2	p1;
 	Point2	p2;
@@ -331,11 +356,17 @@ struct	Bezier2 {
 	void	bounds_fast(Bbox2& bounds) const;										// Returns reasonable bounding box
 	int		x_monotone(void) const;									
 	int		y_monotone(void) const;
+	int		x_monotone_regions(double t[2]) const;									// Returns up to 2 "t's" where the curve changes dirs.
+	int		y_monotone_regions(double t[2]) const;									// Returns up to 2 "t's" where the curve changes dirs.
 	int		monotone_regions(double t[4]) const;									// Returns up to 4 "t's" where the curve changes dirs.  NOT sorted!
 	void	bounds(Bbox2& bounds) const;											// Returns true bounding box
 	
 	bool	self_intersect(int depth) const;										// True if curve intersects itself except at end-points
 	bool	intersect(const Bezier2& rhs, int depth) const;							// True if curves intersect except at end-points
+	bool	near(const Point2& p, double distance) const;
+
+	double	y_at_x(double x) const;
+	double	x_at_y(double y) const;
 	
 	Point2	p1;
 	Point2	p2;
@@ -538,6 +569,19 @@ inline bool	Segment2::intersect(const Segment2& rhs, Point2& p) const
 	return collinear_has_on(p) && rhs.collinear_has_on(p);
 }
 
+inline bool	Segment2::near(const Point2& p, double distance) const
+{
+	distance *= distance;
+	if (p.squared_distance(p1) < distance) return true;
+	if (p.squared_distance(p2) < distance) return true;
+	
+	if (!collinear_has_on(p)) return false;
+	
+	Point2 proj = projection(p);
+	return (p.squared_distance(proj) < distance);
+}
+
+
 inline bool Line2::intersect(const Line2& l, Point2& p) const
 {
 	// Once we have lines in ax + by + c = 0 form, the parallel-equation solution
@@ -643,6 +687,35 @@ inline	bool		Bbox2::contains(const Point2& p) const
 			ymin() <= p.y && p.y <= ymax()); 
 }
 
+inline	bool		Bbox2::contains(const Segment2& s) const 
+{
+	return contains(s.p1) && contains(s.p2);
+}
+
+inline double		Bbox2::rescale_to_x(const Bbox2& new_box, double x) const
+{
+	if (p2.x == p1.x) return (new_box.p1.x + new_box.p2.x) * 0.5;
+	return new_box.p1.x + (x - p1.x) * (new_box.p2.x - new_box.p1.x) / (p2.x - p1.x);
+}
+
+inline double		Bbox2::rescale_to_y(const Bbox2& new_box, double y) const
+{
+	if (p2.y == p1.y) return (new_box.p1.y + new_box.p2.y) * 0.5;
+	return new_box.p1.y + (y - p1.y) * (new_box.p2.y - new_box.p1.y) / (p2.y - p1.y);
+}
+
+inline double		Bbox2::rescale_to_xv(const Bbox2& new_box, double x) const
+{
+	if (p2.x == p1.x) return x;
+	return x * (new_box.p2.x - new_box.p1.x) / (p2.x - p1.x);
+}
+
+inline double		Bbox2::rescale_to_yv(const Bbox2& new_box, double y) const
+{
+	if (p2.y == p1.y) return y;
+	return y * (new_box.p2.y - new_box.p1.y) / (p2.y - p1.y);
+}
+
 
 
 inline	Point2	Midpoint2(const Point2& p1, const Point2& p2)	{ return Point2((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5); }
@@ -739,26 +812,18 @@ inline bool		Polygon2::inside_convex(const Point2& inPoint) const
 // an odd bunch o' sides, we're inside.
 inline bool		Polygon2::inside(const Point2& inPoint) const 
 {
-	int cross_counter = 0;
+	return inside_polygon_pt(begin(),end(),inPoint);	
+/*	int cross_counter = 0;
 	for (int n = 0; n < size(); ++n)
 	{
-		// How do we solve the problem of edges?  It turns out the easiest solution is to
-		// treat all "on-the-line" ray hits (e.g. the end of the segment is at the horizontal
-		// of what we are shooting) as forced to one side.
-		// In our case, we are shooting a vertical ray, so points on the line are treated as
-		// being to the right.  That means that a line ending on the line is only counted if
-		// its other point is the left of the line.
-		
 		Segment2 s(side(n));
-		if ((s.p1.x < inPoint.x && inPoint.x < s.p2.x) ||
-			(s.p2.x < inPoint.x && inPoint.x < s.p1.x) ||
-			(s.p1.x == inPoint.x && s.p2.x < inPoint.x) ||
-			(s.p2.x == inPoint.x && s.p1.x < inPoint.x))
+		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
+			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
 		if (inPoint.y > s.y_at_x(inPoint.x))
 			++cross_counter;
 	}
 
-	return (cross_counter % 2) == 1;
+	return (cross_counter % 2) == 1;	*/
 }
 
 inline	Point2	Bezier2::midpoint(double t) const
@@ -851,33 +916,11 @@ inline int		Bezier2::x_monotone(void) const
 	double b = 2.0 * B;
 	double c = C;
 
-	if (a == 0) 
-	{
-		// we have a linear equation for the derivative:
-		// x = bt + c
-		
-		if (b == 0) return 1; // actually we have a CONSTANT equation - in other words, the bezier itself is a line!  So of COURSE it's monotone.
-		
-		double t = -c / b;
-		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
-	}
-	
-	// r is the determinant in quad equation - how many roots do we have?
-	double r = b * b - 4.0 * a * c;
-	if (r < 0) return 1;		// No roots - never changes dir - is monotone!
-	
-	if (r == 0)
-	{
-		double t = -b / (2.0 * a);
-		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
-	}
-	else
-	{
-		r = sqrt(r);
-		double t1 = (-b + r) / (2.0 * a);
-		double t2 = (-b - r) / (2.0 * a);
-		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 1.0);	// If either dir change is out of 0..1 we're monotone
-	}
+	double roots[2];
+	int num_roots = quadratic_formula(a,b,c,roots);
+	if (num_roots > 1 && roots[1] > 0.0 && roots[1] < 1.0)	return 0;
+	if (num_roots > 0 && roots[0] > 0.0 && roots[0] < 1.0)	return 0;
+															return 1;
 }
 
 inline int		Bezier2::y_monotone(void) const
@@ -894,33 +937,11 @@ inline int		Bezier2::y_monotone(void) const
 	double b = 2 * B;
 	double c = C;
 
-	if (a == 0) 
-	{
-		// we have a linear equation for the derivative:
-		// x = bt + c
-		
-		if (b == 0) return 1; // actually we have a CONSTANT equation - in other words, the bezier itself is a line!  So of COURSE it's monotone.
-		
-		double t = -c / b;
-		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
-	}
-	
-	// r is the determinant in quad equation - how many roots do we have?
-	double r = b * b - 4 * a * c;
-	if (r < 0) return 1;		// No roots - never changes dir - is monotone!
-	
-	if (r == 0)
-	{
-		double t = -b / (2 * a);
-		return (t <= 0.0 || t >= 1.0);		// If dir change is outside the parametric range, this curve is monotone.
-	}
-	else
-	{
-		r = sqrt(r);
-		double t1 = (-b + r) / (2 * a)	;
-		double t2 = (-b -r ) / (2 * a);
-		return  (t1 <= 0.0 || t1 >= 1.0) && (t2 <= 0.0 || t2 >= 1.0);	// If either dir change is out of 0..1 we're monotone
-	}
+	double roots[2];
+	int num_roots = quadratic_formula(a,b,c,roots);
+	if (num_roots > 1 && roots[1] > 0.0 && roots[1] < 1.0)	return 0;
+	if (num_roots > 0 && roots[0] > 0.0 && roots[0] < 1.0)	return 0;
+															return 1;
 }
 
 inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
@@ -972,6 +993,20 @@ inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 		l2.intersect(r2,d-1);
 }
 
+inline bool	Bezier2::near(const Point2& p, double d) const
+{
+	Bbox2	me, pt_box;
+	this->bounds(me);
+	pt_box = Bbox2(p-Vector2(d,d),p+Vector2(d,d));
+	
+	if (!me.overlap(pt_box)) return false;
+	
+	if (me.xspan() < d && me.yspan() < d) return true;
+	
+	Bezier2	ls, rs;
+	this->partition(ls,rs);
+	return ls.near(p,d) || rs.near(p,d);
+}
 
 inline bool Bezier2::self_intersect_recursive(const Bezier2& rhs, int d) const
 {
@@ -992,14 +1027,6 @@ inline bool	Bezier2::self_intersect(int d) const
 	Bezier2	b1, b2;
 	this->partition(b1,b2,0.5f);
 	return b1.self_intersect_recursive(b2,d);
-}
-
-inline void insert_into(double v, int& num, double * values, double low, double high)
-{
-	if (v <= low || v >= high) return;		// Ignore anything outside bounds
-	for (int n = 0; n < num; ++n)			// Ignore repeated roots!
-		if (v == values[n]) return;
-	values[num++] = v;
 }
 
 inline int		Bezier2::monotone_regions(double times[4]) const
@@ -1025,28 +1052,60 @@ inline int		Bezier2::monotone_regions(double times[4]) const
 	double by = 2.0 * By;
 	double cy =		  Cy;
 
-	double r;
+	int res = 0;
+	double r1[2], r2[2];
+	int o1 = quadratic_formula(ax,bx,cx,r1);
+	int o2 = quadratic_formula(ay,by,cy,r2);
 
-	if (ax == 0) {
-		if (bx != 0)						insert_into( -cx      /        bx,  ret, times, 0.0, 1.0);		// Linear case - slope of curve is linear and crosses X axis.
-	} else {
-		r = bx *  bx - 4.0 * ax * cx;
-		if (r == 0)							insert_into( -bx      / (2.0 * ax), ret, times, 0.0, 1.0);		// One root quadratic - apex of parabola touches X axis.
-		else if (r > 0.0) { r = sqrt(r);	insert_into((-bx - r) / (2.0 * ax), ret, times, 0.0, 1.0);		// Two root cases - quadratic crosses X axis twice.
-											insert_into((-bx + r) / (2.0 * ax), ret, times, 0.0, 1.0); }
-	}
+	if (o1 > 0 && r1[0] > 0.0 && r1[0] < 1.0)	times[res++] = r1[0];
+	if (o1 > 1 && r1[1] > 0.0 && r1[1] < 1.0)	times[res++] = r1[1];
 
-	if (ay == 0) {
-		if (by != 0)						insert_into( -cy      /        by,  ret, times, 0.0, 1.0);		// Linear case - slope of curve is linear and crosses X axis.
-	} else {
-		r = by *  by - 4.0 * ay * cy;
-		if (r == 0)							insert_into( -by      / (2.0 * ay), ret, times, 0.0, 1.0);		// One root quadratic - apex of parabola touches X axis.
-		else if (r > 0.0) { r = sqrt(r);	insert_into((-by - r) / (2.0 * ay), ret, times, 0.0, 1.0);		// Two root cases - quadratic crosses X axis twice.
-											insert_into((-by + r) / (2.0 * ay), ret, times, 0.0, 1.0); }	
-	}
+	if (o2 > 0 && r2[0] > 0.0 && r2[0] < 1.0)	times[res++] = r2[0];
+	if (o2 > 1 && r2[1] > 0.0 && r2[1] < 1.0)	times[res++] = r2[1];
 
-	return ret;
+	return res;
 }
+
+inline int		Bezier2::x_monotone_regions(double times[2]) const
+{
+	int ret = 0;
+	
+	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
+	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
+	double Cx = -3.0 * p1.x + 3.0 * c1.x;
+	double Dx =		   p1.x;
+	double ax = 3.0 * Ax;
+	double bx = 2.0 * Bx;
+	double cx =		  Cx;
+
+	int res = 0;
+	double r1[2];
+	int o1 = quadratic_formula(ax,bx,cx,r1);
+	if (o1 > 0 && r1[0] > 0.0 && r1[0] < 1.0)	times[res++] = r1[0];
+	if (o1 > 1 && r1[1] > 0.0 && r1[1] < 1.0)	times[res++] = r1[1];
+	return res;
+}
+
+inline int Bezier2::y_monotone_regions(double times[2]) const
+{
+	int ret = 0;
+	
+	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
+	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
+	double Cy = -3.0 * p1.y + 3.0 * c1.y;
+	double Dy =		   p1.y;
+	double ay = 3.0 * Ay;
+	double by = 2.0 * By;
+	double cy =		  Cy;
+
+	int res = 0;
+	double r1[2];
+	int o1 = quadratic_formula(ay,by,cy,r1);
+	if (o1 > 0 && r1[0] > 0.0 && r1[0] < 1.0)	times[res++] = r1[0];
+	if (o1 > 1 && r1[1] > 0.0 && r1[1] < 1.0)	times[res++] = r1[1];
+	return res;
+}
+
 
 inline void	Bezier2::bounds(Bbox2& bounds) const
 {
@@ -1058,7 +1117,238 @@ inline void	Bezier2::bounds(Bbox2& bounds) const
 }
 
 
+inline double	Bezier2::y_at_x(double x) const
+{
+	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
+	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
+	double Cx = -3.0 * p1.x + 3.0 * c1.x;
+	double Dx =		   p1.x;
+
+	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
+	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
+	double Cy = -3.0 * p1.y + 3.0 * c1.y;
+	double Dy =		   p1.y;
+	
+	Dx -= x;
+	
+	double roots[3];
+	int num_roots = cubic_formula(Ax,Bx,Cx,Dx, roots);
+	
+	if (num_roots < 1) return p1.y;
+	
+	for (int n = 0; n < num_roots; ++n)
+	if (roots[n] >= 0.0 && roots[n] <= 1.0)
+		return Ay * roots[n] * roots[n] * roots[n] + By * roots[n] * roots[n] + Cy * roots[n] + Dy;
+	return p1.y;
+}
+
+inline double	Bezier2::x_at_y(double y) const
+{
+	// These are the cubic equation coefficients for X and Y in terms of T, as in
+	// x = At^3 + Bt^2 + C^t + D.
+	// In other words, we've taken the control points and merged them into coefficients so we can use
+	// "standard" analysis formula.
+	double Ax =       -p1.x + 3.0 * c1.x - 3.0 * c2.x + p2.x;
+	double Bx =  3.0 * p1.x - 6.0 * c1.x + 3.0 * c2.x;
+	double Cx = -3.0 * p1.x + 3.0 * c1.x;
+	double Dx =		   p1.x;
+
+	double Ay =       -p1.y + 3.0 * c1.y - 3.0 * c2.y + p2.y;
+	double By =  3.0 * p1.y - 6.0 * c1.y + 3.0 * c2.y;
+	double Cy = -3.0 * p1.y + 3.0 * c1.y;
+	double Dy =		   p1.y;
+	
+	Dy -= y;
+	
+	double roots[3];
+	int num_roots = cubic_formula(Ay,By,Cy,Dy, roots);
+	
+	if (num_roots < 1) return p1.x;
+	
+	for (int n = 0; n < num_roots; ++n)
+	if (roots[n] >= 0.0 && roots[n] <= 1.0)
+		return Ax * roots[n] * roots[n] * roots[n] + Bx * roots[n] * roots[n] + Cx * roots[n] + Dx;
+	return p1.x;
+}
+
 
 void	TEST_CompGeomDefs2(void);
+
+inline int linear_formula(double a, double b, double roots[1])
+{
+	if (a == 0.0) return (b == 0.0 ? -1 : 0);
+	roots[0] = -b / a;
+	return 1;
+}
+
+inline int quadratic_formula(double a, double b, double c, double roots[2])
+{
+	if (a == 0.0) return linear_formula(b,c, roots);
+	
+	double radical = b * b - 4.0 * a * c;
+	if (radical < 0) return 0;
+	
+	if (radical == 0.0)
+	{
+		roots[0] = -b / (2.0 * a);
+		return 1;
+	}
+	
+	double srad = sqrt(radical);
+	roots[0] = (-b - srad) / (2.0 * a);
+	roots[1] = (-b + srad) / (2.0 * a);
+	if (a < 0.0) swap(roots[0],roots[1]);
+	return 2;
+}
+
+inline int cubic_formula(double a, double b, double c, double d, double roots[3])
+{
+	// I got this code from formulas at: http://www.1728.com/cubic2.htm
+	if (a == 0.0) return quadratic_formula(b,c,d,roots);
+
+	double f = ((3.0 * c / a) - ((b * b) / (a * a))) / 3.0;
+	double g = ((2.0 * b * b * b) / (a * a * a) - (9.0 * b * c) / (a * a) + (27.0 * d) / (a)) / 27.0;	
+	double h = g * g / 4.0 + f * f * f / 27.0;
+	
+	double root;
+	
+	if (f == 0.0 && g == 0.0 && h == 0.0)
+	{
+		roots[0] = -cbrt(d / a);
+		return 1;
+	}
+	else if (h > 0.0)
+	{
+		// 1 root
+		double R = -(g / 2.0) + sqrt(h);
+		double S = cbrt(R);
+		double T = -(g / 2.0) - sqrt(h);
+		double U = cbrt(T);
+		
+		roots[0] = (S + U) - (b / (3.0 * a));
+		return 1;
+	}
+	else
+	{
+		// 3 roots		
+		double i = sqrt((g * g / 4.0) - h);
+		double j = cbrt(i);
+		double k = acos(-(g / (2.0 * i)));
+		double l = -j;
+		double m = cos(k / 3.0);
+		double n = sqrt(3.0) * sin(k / 3.0);
+		double p = -b / (3.0 * a);
+		roots[0] = 2.0 * j * cos(k / 3.0) - (b / (3.0 * a));
+		roots[1] = l * (m + n) + p;
+		roots[2] = l * (m - n) + p;
+		return 3;
+	}
+}
+
+
+template <class __Iterator>
+bool inside_polygon_pt(__Iterator begin, __Iterator end, const Point2& inPoint)
+{
+	int cross_counter = 0;
+	Point2		first_p(*begin);
+	Segment2	s;
+	s.p1 = *begin;
+	++begin;
+	
+	while (begin != end)
+	{
+		s.p2 = *begin;
+		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
+			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
+		if (inPoint.y > s.y_at_x(inPoint.x))
+			++cross_counter;
+		
+		s.p1 = s.p2;
+		++begin;
+	}
+	s.p2 = first_p;
+	if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
+		(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
+	if (inPoint.y > s.y_at_x(inPoint.x))
+		++cross_counter;
+	return (cross_counter % 2) == 1;
+}
+
+template <class __Iterator>
+bool inside_polygon_seg(__Iterator begin, __Iterator end, const Point2& inPoint)
+{
+	int cross_counter = 0;
+
+	while (begin != end)
+	{
+		// How do we solve the problem of edges?  It turns out the easiest solution is to
+		// treat all "on-the-line" ray hits (e.g. the end of the segment is at the horizontal
+		// of what we are shooting) as forced to one side.
+		// In our case, we are shooting a vertical ray, so points on the line are treated as
+		// being to the right.  That means that a line ending on the line is only counted if
+		// its other point is the left of the line.
+		
+		// Also see p701 of "Computational Geometry Topics" -- if one end is strictly above and the other is on or below...
+		// we have done "if one is strictly to the left and the other is on or to the right.
+		// The code only has the equal case because the BASIC case ("span") is the "or to the right)
+			
+		Segment2 s(*begin);
+		if ((s.p1.x < inPoint.x && inPoint.x <= s.p2.x) ||
+			(s.p2.x < inPoint.x && inPoint.x <= s.p1.x))
+		if (inPoint.y > s.y_at_x(inPoint.x))
+			++cross_counter;
+		++begin;
+	}
+	return (cross_counter % 2) == 1;
+}
+
+template <class __Iterator>
+bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint)
+{
+	int cross_counter = 0;
+
+	while (begin != end)
+	{
+		Bezier2 b(*begin);
+		Bezier2 b1,b2,b3,bp;
+		
+		double t[2];
+		int r = b.y_monotone_regions(t);
+		if (r == 0)
+		{
+			b1 = b;
+		}
+		else if (r == 1 || t[1] == 1.0)
+		{
+			b.partition(b1,b2,t[0]);
+		}
+		else
+		{
+			b.partition(b1,bp,t[0]);
+			bp.partition(b2,b3,(t[1]-t[0]) / (1.0-t[0]));
+		}
+
+		if ((b1.p1.x < inPoint.x && inPoint.x <= b1.p2.x) ||
+			(b1.p2.x < inPoint.x && inPoint.x <= b1.p1.x))
+		if (inPoint.y > b1.y_at_x(inPoint.x))
+			++cross_counter;
+
+		if (r > 0)
+		if ((b2.p1.x < inPoint.x && inPoint.x <= b2.p2.x) ||
+			(b2.p2.x < inPoint.x && inPoint.x <= b2.p1.x))
+		if (inPoint.y > b2.y_at_x(inPoint.x))
+			++cross_counter;
+
+		if (r > 1)
+		if ((b3.p1.x < inPoint.x && inPoint.x <= b3.p2.x) ||
+			(b3.p2.x < inPoint.x && inPoint.x <= b3.p1.x))
+		if (inPoint.y > b3.y_at_x(inPoint.x))
+			++cross_counter;
+
+		++begin;
+	}
+	return (cross_counter % 2) == 1;
+}
+
 
 #endif
