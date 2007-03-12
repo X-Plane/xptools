@@ -53,6 +53,8 @@ static const DragHandleInfo_t kHandleInfos[8] = {
 //static int self_intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
 //static int	intersect_recursive(const Bezier2& lhs, const Bezier2& rhs, int d, Bbox2& b1, Bbox2& b2);
 
+	
+
 
 WED_BezierTestTool::WED_BezierTestTool(WED_MapZoomer * inZoomer) :
 	WED_MapTool(inZoomer),
@@ -94,6 +96,12 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		int i = a.intersect(b,10);
 		
 		glColor3f(i || a.self_intersect(5) ? 1 : 0, i ? 0 : 1, 0);
+		
+		int mx,my;
+		XPLMGetMouseLocation(&mx,&my);
+		if (a.near(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)),0.001))
+			glColor3f(1,1,1);
+		
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
@@ -101,12 +109,19 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 			glVertex2f(GetZoomer()->LonToXPixel(p.x),GetZoomer()->LatToYPixel(p.y));
 		}
 		glEnd();
+
+		double ts[2] = { 3.0, 3.0 };
+		int y_change = b.y_monotone_regions(ts);
 		
-		glColor3f(i || b.self_intersect(5) ? 1 : 0, i ? 0 : 1, 0);
 		glBegin(GL_LINE_STRIP);
 		for (int n = 0; n <= mSegs; ++n)
 		{
-			Point2 p = b.midpoint((float) n / (float) mSegs);
+			double t = (double) n / (double) mSegs;
+							glColor3f(0,1,0);
+			if (t < ts[1])	glColor3f(1,0,0);
+			if (t < ts[0])	glColor3f(0,0,1);
+			
+			Point2 p = b.midpoint(t);
 			glVertex2f(GetZoomer()->LonToXPixel(p.x),GetZoomer()->LatToYPixel(p.y));
 		}
 		glEnd();
@@ -128,7 +143,89 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p2.y));
 			glVertex2f(GetZoomer()->LonToXPixel(f2.p2.x),GetZoomer()->LatToYPixel(f2.p1.y));		
 		glEnd();
+		
+		glColor4f(1,1,1,0.3);
+		double bs[4];
+		GetZoomer()->GetPixelBounds(bs[0],bs[1],bs[2],bs[3]);
+		double x = GetZoomer()->XPixelToLon(mx);
+		double y = GetZoomer()->YPixelToLat(my);
+
+		list<Bezier2> l;
+		l.push_back(b);
+		l.push_back(Bezier2(b.p2,b.p2,b.p1,b.p1));
+		if (inside_polygon_bez(l.begin(),l.end(),Point2(x,y)))
+			glColor3f(1,0,0);
+		
+		glBegin(GL_LINES);
+		glVertex2f(bs[0], my);
+		glVertex2f(bs[2], my);
+		glVertex2f(mx,bs[1]);
+		glVertex2f(mx,bs[3]);
+		glEnd();
+		
+		glPointSize(5);
+		glColor3f(1,1,1);
+		glBegin(GL_POINTS);
+		
+		
+		if (y_change == 0)
+		{
+			Bezier2 b1(b);
+			
+			b1.c1 = b1.p1;
+			b1.c2 = b1.p2;
+			
+			glColor3f(0,0,1);
+//			if ((x >= b1.p1.x && x <= b1.p2.x) || (x >= b1.p2.x && x <= b1.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b1.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b1.p1.y && y <= b1.p2.y) || (y >= b1.p2.y && y <= b1.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b1.x_at_y(GetZoomer()->YPixelToLat(my))), my);
+		}
+		else if (y_change == 1)
+		{	
+			Bezier2	b1,b2;
+			b.partition(b1,b2,ts[0]);
+
+			glColor3f(0,0,1);
+//			if ((x >= b1.p1.x && x <= b1.p2.x) || (x >= b1.p2.x && x <= b1.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b1.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b1.p1.y && y <= b1.p2.y) || (y >= b1.p2.y && y <= b1.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b1.x_at_y(GetZoomer()->YPixelToLat(my))), my);
+
+			glColor3f(1,0,0);
+//			if ((x >= b2.p1.x && x <= b2.p2.x) || (x >= b2.p2.x && x <= b2.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b2.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b2.p1.y && y <= b2.p2.y) || (y >= b2.p2.y && y <= b2.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b2.x_at_y(GetZoomer()->YPixelToLat(my))), my);
 	}
+		else if (y_change == 2)
+		{
+
+			Bezier2	b1,b2, b3, bp;
+			b.partition(b1,bp,ts[0]);
+			bp.partition(b2, b3, (ts[1]-ts[0]) / (1 - ts[0]));
+
+			glColor3f(0,0,1);
+//			if ((x >= b1.p1.x && x <= b1.p2.x) || (x >= b1.p2.x && x <= b1.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b1.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b1.p1.y && y <= b1.p2.y) || (y >= b1.p2.y && y <= b1.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b1.x_at_y(GetZoomer()->YPixelToLat(my))), my);
+
+			glColor3f(1,0,0);
+//			if ((x >= b2.p1.x && x <= b2.p2.x) || (x >= b2.p2.x && x <= b2.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b2.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b2.p1.y && y <= b2.p2.y) || (y >= b2.p2.y && y <= b2.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b2.x_at_y(GetZoomer()->YPixelToLat(my))), my);
+
+			glColor3f(0,1,0);
+//			if ((x >= b3.p1.x && x <= b3.p2.x) || (x >= b3.p2.x && x <= b3.p2.y))
+//			glVertex2f(mx,GetZoomer()->LatToYPixel(b3.y_at_x(GetZoomer()->XPixelToLon(mx))));
+			if ((y >= b3.p1.y && y <= b3.p2.y) || (y >= b3.p2.y && y <= b3.p1.y))
+			glVertex2f(GetZoomer()->LonToXPixel(b3.x_at_y(GetZoomer()->YPixelToLat(my))), my);
+
+		}
+		glEnd();
+	}	
 }
 							
 bool	WED_BezierTestTool::HandleClick(

@@ -130,7 +130,7 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 	char	fileBuf[2048];
 	strcpy(fileBuf, FetchTokenString(layer->first));
 	strcat(fileBuf, kExtensions[sExportState.format]);
-	if (GetFilePathFromUser(getFile_Save, "Please name your DEM", "Export", 2, fileBuf))
+	if (GetFilePathFromUser(getFile_Save, "Please name your DEM", "Export", 2, fileBuf, sizeof(fileBuf)))
 	{
 		if (sExportState.format == export_PNG || sExportState.format == export_BMP)
 		{
@@ -297,7 +297,7 @@ static	void	LoadCLUT(XPWidgetID inID)
 	{
 		char fileBuf[2048];
 		fileBuf[0] = 0;
-		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf))
+		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf,sizeof(fileBuf)))
 		{			
 		
 			if (LoadTranslationFile(fileBuf, sExportForwardMap, &sExportReverseMap, &sExportCLUT))

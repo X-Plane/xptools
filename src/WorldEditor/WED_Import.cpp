@@ -193,7 +193,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 
 	char	fileBuf[2048];
 	fileBuf[0] = 0;
-	if (GetFilePathFromUser(getFile_Open, "Please name your DEM", "Import", 5, fileBuf))
+	if (GetFilePathFromUser(getFile_Open, "Please name your DEM", "Import", 5, fileBuf, sizeof(fileBuf)))
 	{
 		DEMGeo *	theDem;
 		if (sImportState.format == import_PNG || sImportState.format == import_BMP || sImportState.format == import_TIFF)
@@ -403,7 +403,7 @@ static	void	LoadCLUT(XPWidgetID inID)
 	{
 		char fileBuf[2048];
 		fileBuf[0] = 0;
-		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf))
+		if (GetFilePathFromUser(getFile_Open, "Please pick a mapping file", "Open", 3, fileBuf, sizeof(fileBuf)))
 		{			
 		
 			if (LoadTranslationFile(fileBuf, sImportForwardMap, &sImportReverseMap, &sImportCLUT))

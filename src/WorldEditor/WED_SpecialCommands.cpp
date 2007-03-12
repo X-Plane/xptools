@@ -177,7 +177,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				strcpy(buf, "New Scenery Package");
 				if (!GetFilePathFromUser((cmd == specCmd_UpdateTerrainPackage) ? getFile_PickFolder : getFile_Save, 
 										(cmd == specCmd_UpdateTerrainPackage) ? "Please pick your scenery package" : "Please name your scenery package", 
-										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf)) return;
+										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf, sizeof(buf))) return;
 				if (cmd != specCmd_UpdateTerrainPackage) strcat(buf, DIR_STR);
 				CreateTerrainPackage(buf, true);
 			}
@@ -322,7 +322,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 16, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a shape file", "Preview", 16, buf, sizeof(buf))) return;
 				SHPHandle file = SHPOpen(buf, "rb");
 				if (file == NULL)
 					return;

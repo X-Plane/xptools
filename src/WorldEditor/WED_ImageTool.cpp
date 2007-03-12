@@ -195,7 +195,7 @@ void	WED_ImageTool::NthButtonPressed(int n)
 	char	buf[1024];
 	switch (n) {
 	case 0:	/* OPEN */	
-		if (GetFilePathFromUser(getFile_Open, "Pick a bitmap", "Open", 1, buf))
+		if (GetFilePathFromUser(getFile_Open, "Pick a bitmap", "Open", 1, buf, sizeof(buf)))
 		{
 			XPLMBindTexture2d(mTexID, 0);
 			if (LoadTextureFromFile(buf, mTexID, tex_Rescale + tex_Linear + tex_Mipmap, NULL, NULL, NULL, NULL))

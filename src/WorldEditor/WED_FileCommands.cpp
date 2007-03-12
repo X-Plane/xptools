@@ -154,7 +154,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open", "Open", 1, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open", "Open", 1, buf,sizeof(buf))) return;
 				WED_FileOpen(buf);
 			}
 			break;
@@ -162,7 +162,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick an apt.dat file to open", "Open", 10, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick an apt.dat file to open", "Open", 10, buf,sizeof(buf))) return;
 				gApts.clear();
 				if (!ReadAptFile(buf, gApts))
 					DoUserAlert("Could not open file.\n");
@@ -175,7 +175,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a spreadsheet", "Open", 6, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a spreadsheet", "Open", 6, buf,sizeof(buf))) return;
 				gNaturalTerrainFile = buf;
 				LoadDEMTables();
 			}
@@ -185,7 +185,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a landuse translaion file", "Open", 7, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a landuse translaion file", "Open", 7, buf,sizeof(buf))) return;
 				gLanduseTransFile = buf;
 				LoadDEMTables();
 			}
@@ -195,7 +195,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a climate file", "Open", 8, buf)) { gReplacementClimate.clear(); return; }
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a climate file", "Open", 8, buf,sizeof(buf))) { gReplacementClimate.clear(); return; }
 				gReplacementClimate = buf;
 			}
 			break;
@@ -204,7 +204,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick a road file", "Open", 8, buf)) { gReplacementRoads.clear(); return; }
+				if (!GetFilePathFromUser(getFile_Open, "Please pick a road file", "Open", 8, buf,sizeof(buf))) { gReplacementRoads.clear(); return; }
 				gReplacementRoads = buf;
 			}
 			break;
@@ -213,7 +213,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char	buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Open, "Please pick an object spreadsheet", "Open", 26, buf)) return;
+				if (!GetFilePathFromUser(getFile_Open, "Please pick an object spreadsheet", "Open", 26, buf,sizeof(buf))) return;
 				gObjPlacementFile = buf;
 				LoadObjTables();
 			}
@@ -226,7 +226,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				{
 					char buf[1024];
 					buf[0] = 0;
-					if (!GetFilePathFromUser(getFile_Save, "Please name your .XES file", "Save", 1, buf)) return;
+					if (!GetFilePathFromUser(getFile_Save, "Please name your .XES file", "Save", 1, buf,sizeof(buf))) return;
 					gFilePath = buf;
 				}
 				WED_FileSave();
@@ -236,7 +236,7 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 			{
 				char buf[1024];
 				buf[0] = 0;
-				if (!GetFilePathFromUser(getFile_Save, "Please rename your .XES file", "Save As", 1, buf)) return;
+				if (!GetFilePathFromUser(getFile_Save, "Please rename your .XES file", "Save As", 1, buf,sizeof(buf))) return;
 				gFilePath = buf;
 				gDirty = true;
 				WED_FileSave();

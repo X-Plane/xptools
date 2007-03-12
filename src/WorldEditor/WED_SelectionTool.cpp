@@ -573,7 +573,7 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			char	path[1024];
 			path[0] = 0;
 			if (gFaceSelection.size() == 1)
-			if (GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open for roads", "Open", 8, path))
+			if (GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open for roads", "Open", 8, path, sizeof(path)))
 			{
 				MFMemFile * fi = MemFile_Open(path);
 				if (fi)
