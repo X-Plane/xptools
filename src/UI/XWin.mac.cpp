@@ -538,3 +538,15 @@ void	XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 	else
 		::DisableMenuItem(menu, item+1);
 }
+
+int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+{
+	SetPortWindowPort(mWindow);
+	Point p;
+	p.h = mouse_x;
+	p.v = mouse_y;
+	LocalToGlobal(&p);
+	long result = PopUpMenuSelect(in_menu,p.v,p.h, current+1);
+	return LoWord(result)-1;
+}
+

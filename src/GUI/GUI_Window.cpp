@@ -1,5 +1,7 @@
 #include "GUI_Window.h"
 #include "PlatformUtils.h"
+#include "GUI_Application.h"
+#include "AssertUtils.h"
 
 static set<GUI_Window *>	sWindows;
 
@@ -445,4 +447,24 @@ void		GUI_Window::Timer(void)
 		XWinGL::GetMouseLoc(&x, &y);
 		mMouseFocusPane->MouseDrag(x, h-y, mMouseFocusButton);
 	}
+}
+
+void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
+{
+	int w,h;
+	XWinGL::GetBounds(&w, &h);
+	TrackPopupCommands(menu,x,h-y,-1);
+}
+
+int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
+{
+	static GUI_Menu	popup_temp = NULL;
+	
+	DebugAssert(gApplication);
+	if (popup_temp)				gApplication->RebuildMenu(popup_temp, items);
+	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
+	
+	int w,h;
+	XWinGL::GetBounds(&w, &h);
+	return TrackPopupCommands(popup_temp,x,h-y, current);	
 }

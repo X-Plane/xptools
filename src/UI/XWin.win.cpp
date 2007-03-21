@@ -436,3 +436,10 @@ void			XWin::DrawMenuBar(void)
 {
 	::DrawMenuBar(mWindow);
 }
+
+int				XWin::TrackPopup(vector<string>& choices, int mouse_x, int mouse_y)
+{
+	#error DO THIS
+	TrackPopupMenuEx
+}
+

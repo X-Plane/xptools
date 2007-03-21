@@ -16,6 +16,8 @@ public:
 
 	// From GUI_Pane
 	virtual void			Refresh(void);	
+	virtual	void			PopupMenu(GUI_Menu menu, int x, int y);
+	virtual	int				PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);
 	virtual void			Show(void);
 	virtual void			Hide(void);
 	virtual void			SetBounds(int x1, int y1, int x2, int y2);

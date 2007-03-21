@@ -310,6 +310,17 @@ void		GUI_Pane::Refresh(void)
 	if (mParent != NULL) mParent->Refresh();
 }
 
+void		GUI_Pane::PopupMenu(GUI_Menu menu, int x, int y)
+{
+	if (mParent) mParent->PopupMenu(menu, x, y);
+}
+
+int		GUI_Pane::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
+{
+	return (mParent) ? mParent->PopupMenuDynamic(items, x, y, current) : -1;
+}
+
+
 
 /*
 // Ben sez: big gotcha - it's really dangerous to let TakeFocus and LoseFocus call each

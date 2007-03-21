@@ -1,4 +1,9 @@
 #include "GUI_Application.h"
+#include "AssertUtils.h"
+#define __DEBUGGING__
+
+GUI_Application *	gApplication = NULL;
+
 
 #if IBM
 HACCEL			gAccel = NULL;
@@ -155,6 +160,8 @@ static	void		BuildAccels(void)
 
 GUI_Application::GUI_Application() : GUI_Commander(NULL)
 {
+	DebugAssert(gApplication == NULL);
+	gApplication = this;
 	mDone = false;
 #if APL
 	SetMenuBar(GetNewMBar(128));
@@ -184,6 +191,9 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 
 GUI_Application::~GUI_Application()
 {
+	DebugAssert(gApplication == this);
+	gApplication = NULL;
+
 }
 
 void			GUI_Application::Run(void)
@@ -224,6 +234,15 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 	#endif
 }
 
+GUI_Menu		GUI_Application::GetPopupContainer(void)
+{
+	#if APL
+		return (GUI_Menu) -1;
+	#else
+		#error not iml
+	#endif
+}
+
 GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
 {
 
@@ -237,7 +256,8 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #if APL
 	GUI_Menu	new_menu;
 	::CreateNewMenu(gIDs++, kMenuAttrAutoDisable, &new_menu);
-	::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
+	if (parent != GetPopupContainer())
+		::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
 	
 	string	title(inTitle);
 	NukeAmpersand(title);
@@ -245,38 +265,12 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	::SetMenuTitleWithCFString(new_menu, cfstr);
 	CFRelease(cfstr);
 	
-	if (new_menu)
+	if (new_menu && parent != GetPopupContainer())
 	{
-		::SetMenuItemHierarchicalID(new_menu, parentItem + 1, ::GetMenuID(new_menu));
+		::SetMenuItemHierarchicalID(parent, parentItem + 1, ::GetMenuID(new_menu));
 	}
 
-	int n = 0;
-	while (items[n].name)
-	{
-		string	itemname(items[n].name);
-		NukeAmpersand(itemname);
-		CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
-		::AppendMenuItemTextWithCFString(new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
-		CFRelease(cfstr);
-		
-		switch(items[n].key) {
-		case GUI_KEY_UP:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuUpArrowGlyph);		break;
-		case GUI_KEY_DOWN:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuDownArrowGlyph);		break;
-		case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuRightArrowGlyph);	break;
-		case GUI_KEY_LEFT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuLeftArrowGlyph);		break;
-		case GUI_KEY_DELETE:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuDeleteLeftGlyph);	break;
-		case GUI_KEY_RETURN:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuReturnGlyph);		break;
-		default:				::SetItemCmd(new_menu, n+1, items[n].key);					break;
-		}
-
-		::SetMenuItemModifiers(new_menu, n+1,
-				((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
-				((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
-				((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
-				
-		++n;
-	}	
-	
+	RebuildMenu(new_menu, items);
 #endif
 
 #if IBM
@@ -307,3 +301,41 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	mMenus.insert(new_menu);
 	return new_menu;	
 }                                    	
+
+void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[])
+{
+	#if APL
+		if (CountMenuItems(new_menu) > 0)
+			DeleteMenuItems(new_menu,1,CountMenuItems(new_menu));
+
+		int n = 0;
+		while (items[n].name)
+		{
+			string	itemname(items[n].name);
+			NukeAmpersand(itemname);
+			CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
+			::AppendMenuItemTextWithCFString(new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
+			CFRelease(cfstr);
+			
+			switch(items[n].key) {
+			case GUI_KEY_UP:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuUpArrowGlyph);		break;
+			case GUI_KEY_DOWN:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuDownArrowGlyph);		break;
+			case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuRightArrowGlyph);	break;
+			case GUI_KEY_LEFT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuLeftArrowGlyph);		break;
+			case GUI_KEY_DELETE:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuDeleteLeftGlyph);	break;
+			case GUI_KEY_RETURN:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuReturnGlyph);		break;
+			default:				::SetItemCmd(new_menu, n+1, items[n].key);					break;
+			}
+
+			::SetMenuItemModifiers(new_menu, n+1,
+					((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
+					((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
+					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
+					
+			++n;
+		}	
+	#else
+		#error not impl
+	#endif
+}
+

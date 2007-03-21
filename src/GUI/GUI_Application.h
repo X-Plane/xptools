@@ -2,28 +2,12 @@
 #define GUI_APPLICATION_H
 
 #if APL
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
+#define __DEBUGGING__
+#include <Carbon/Carbon.h>
 #endif
-
-#if APL
-#define GUI_Menu MenuRef
-#elif IBM
-#define GUI_Menu HMENU
-#endif
-
 
 #include "GUI_Commander.h"
 
-struct	GUI_MenuItem_t {
-	const char *	name;
-	char			key;
-	GUI_KeyFlags	flags;
-	int				cmd;
-};
 
 class	GUI_Application : public GUI_Commander {
 public:
@@ -36,7 +20,10 @@ public:
 
 	// MENU API
 	GUI_Menu		GetMenuBar(void);
+	GUI_Menu		GetPopupContainer(void);
+	
 	GUI_Menu		CreateMenu(const char * inTitle, const GUI_MenuItem_t	items[], GUI_Menu parent, int parent_item);
+	void			RebuildMenu(GUI_Menu menu, const GUI_MenuItem_t	items[]);
 	
 	virtual	void	OpenFiles(const vector<string>& inFiles)=0;
 
@@ -65,6 +52,8 @@ private:
 	bool				mDone;
 
 };
+
+extern	GUI_Application *	gApplication;
 
 #endif
 

@@ -1,6 +1,23 @@
 #ifndef GUI_DEFS_H
 #define GUI_DEFS_H
 
+#if !DEV
+get this the hell out of here
+#endif
+
+#if APL
+typedef struct OpaqueMenuRef*           MenuRef;
+typedef MenuRef                         MenuHandle;
+#endif
+
+
+#if APL
+#define GUI_Menu MenuRef
+#elif IBM
+#define GUI_Menu HMENU
+#endif
+
+
 /***************************************************************************
  * KEY FLAGS
  ***************************************************************************/
@@ -156,6 +173,13 @@ typedef int GUI_KeyFlags;
 #define GUI_VK_ENTER        0xBB
 #define GUI_VK_NUMPAD_ENT   0xBC
 #define GUI_VK_NUMPAD_EQ    0xBD
+
+struct	GUI_MenuItem_t {
+	const char *	name;
+	char			key;
+	GUI_KeyFlags	flags;
+	int				cmd;
+};
 
 
 #endif

@@ -91,6 +91,9 @@ void		GUI_GraphState::EnableDepth(bool read, bool write)
 
 void		GUI_GraphState::BindTex(int id, int unit)
 {
+	#if !DEV
+		eliminate dupe bindings?
+	#endif
 	glActiveTextureARB(GL_TEXTURE0_ARB + unit);
 	glBindTexture(GL_TEXTURE_2D, id);
 	glActiveTextureARB(GL_TEXTURE0_ARB);	

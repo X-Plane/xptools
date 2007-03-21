@@ -79,6 +79,8 @@ public:
 			bool			GetVisible(void) const;
 			bool			GetActive(void) const;
 
+			int				TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current);
+
 	// Callbacks
 	virtual	void			Timer(void)=0;
 	virtual	bool			Closed(void)=0;		// return false to stop
