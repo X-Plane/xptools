@@ -364,6 +364,14 @@
 		D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */; };
 		D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */; };
 		D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A182020BA6196B00BBCD0C /* WED_Root.cpp */; };
+		D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */; };
+		D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */; };
+		D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AC0BA878B100BBCD0C /* checkbutton.png */; };
+		D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AD0BA878B100BBCD0C /* pushbutton.png */; };
+		D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AE0BA878B100BBCD0C /* radiobutton.png */; };
+		D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */; };
+		D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A1860D0BA9A59C00BBCD0C /* tabs.png */; };
+		D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */; };
 		D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */; };
 		D6BC3A6E0AB22E5C003949C5 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
@@ -701,6 +709,18 @@
 		D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_KeyObjects.cpp; sourceTree = "<group>"; };
 		D6A182010BA6196B00BBCD0C /* WED_Root.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Root.h; sourceTree = "<group>"; };
 		D6A182020BA6196B00BBCD0C /* WED_Root.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Root.cpp; sourceTree = "<group>"; };
+		D6A184B10BA8311000BBCD0C /* GUI_Button.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Button.h; sourceTree = "<group>"; };
+		D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Button.cpp; sourceTree = "<group>"; };
+		D6A184FB0BA833E700BBCD0C /* GUI_DrawUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_DrawUtils.h; sourceTree = "<group>"; };
+		D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_DrawUtils.cpp; sourceTree = "<group>"; };
+		D6A185AC0BA878B100BBCD0C /* checkbutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = checkbutton.png; sourceTree = "<group>"; };
+		D6A185AD0BA878B100BBCD0C /* pushbutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pushbutton.png; sourceTree = "<group>"; };
+		D6A185AE0BA878B100BBCD0C /* radiobutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = radiobutton.png; sourceTree = "<group>"; };
+		D6A185B40BA99DAA00BBCD0C /* GUI_PopupButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_PopupButton.h; sourceTree = "<group>"; };
+		D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_PopupButton.cpp; sourceTree = "<group>"; };
+		D6A1860D0BA9A59C00BBCD0C /* tabs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tabs.png; sourceTree = "<group>"; };
+		D6A186360BA9B28900BBCD0C /* GUI_TabControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabControl.h; sourceTree = "<group>"; };
+		D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TabControl.cpp; sourceTree = "<group>"; };
 		D6BC36450AB22C84003949C5 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
 		D6BC36460AB22C84003949C5 /* DSFLib.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLib.cpp; sourceTree = "<group>"; };
 		D6BC36470AB22C84003949C5 /* DSFLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFLib.h; sourceTree = "<group>"; };
@@ -1691,6 +1711,14 @@
 				D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */,
 				D63680B80B8A0F4B00091AFC /* GUI_Destroyable.h */,
 				D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */,
+				D6A184B10BA8311000BBCD0C /* GUI_Button.h */,
+				D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */,
+				D6A184FB0BA833E700BBCD0C /* GUI_DrawUtils.h */,
+				D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */,
+				D6A185B40BA99DAA00BBCD0C /* GUI_PopupButton.h */,
+				D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */,
+				D6A186360BA9B28900BBCD0C /* GUI_TabControl.h */,
+				D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -2404,6 +2432,10 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D6A1860D0BA9A59C00BBCD0C /* tabs.png */,
+				D6A185AC0BA878B100BBCD0C /* checkbutton.png */,
+				D6A185AD0BA878B100BBCD0C /* pushbutton.png */,
+				D6A185AE0BA878B100BBCD0C /* radiobutton.png */,
 				D6ED3E1F0B6A636C00D5484E /* Courier.ttf */,
 			);
 			path = WEDResources;
@@ -2674,6 +2706,10 @@
 			files = (
 				D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */,
 				D6ED3E200B6A636C00D5484E /* Courier.ttf in Resources */,
+				D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */,
+				D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */,
+				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
+				D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3212,6 +3248,10 @@
 				D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */,
 				D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */,
 				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
+				D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */,
+				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
+				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
+				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
