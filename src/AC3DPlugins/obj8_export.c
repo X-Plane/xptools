@@ -468,15 +468,18 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 		obj8.lods[0].lod_far = get_default_LOD();
 	}
 
-	string obj_path(fname);
-	string::size_type p;
-	p = obj_path.find_last_of("\\/");
-	gTexName.erase(0,p+1);
-    obj8.texture = gTexName;
-    if (obj8.texture.size() > 4)
-	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);
+	// Texture path.  Ben says: users want the texture path to be relative to the ac3d file.  Doable I suppose.
+	
+	string export_path(fname);
+	string::size_type export_filename_idx;
+	export_filename_idx = export_path.find_last_of("\\/");
 
-	obj_path.insert(p+1,string(get_export_prefix()));
+	gTexName.erase(0,export_filename_idx+1);
+    obj8.texture = gTexName;
+//  if (obj8.texture.size() > 4)
+//	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);
+
+	obj_path.insert(obj_filename_idx+1,string(get_export_prefix()));
 
 	builder.Finish();
 
