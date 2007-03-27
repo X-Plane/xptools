@@ -194,8 +194,8 @@ proc xplane_prefs_dialog {} {
 proc recurse_menu { base path } {
 	set path_parent [lrange $path 0 end-1]
 	
-	set widget_parent $base.[join $path_parent "."]
-	set widget_itself $base.[join $path "."]
+	set widget_parent $base.[join $path_parent ".m"]
+	set widget_itself $base.[join $path ".m"]
 	
 	if ![llength $path_parent] {
 		set widget_parent $base
@@ -211,7 +211,7 @@ proc recurse_menu { base path } {
 	$widget_parent add cascade -label [lindex $path end] -menu $widget_itself		
 }
 
-proc build_popup { popup textvar } {
+proc build_popup { popup textvar use_arrays } {
 	menu $popup.test_menu
 	$popup.test_menu add command -label "none" -command "set $textvar none"
 
@@ -221,22 +221,44 @@ proc build_popup { popup textvar } {
 		while { [gets $fi line] >= 0 } {
 			if [llength $line] {
 			   set dref_fullname [lindex $line 0]
-			   set dref_path [split $dref_fullname "/"]
-			   set dref_name [lindex $dref_path end]
-			   
-			   set dref_parents [lrange $dref_path 0 end-1]   
-			   set widget [join $dref_path "."]
-			   set widget_parent [join $dref_parents "."]
-			   
-			   if ![winfo exists $popup.test_menu.$widget_parent] {
-				  recurse_menu $popup.test_menu $dref_parents
+			   set dref_dtype [lindex $line 1]
+			   set dref_dtype_l [split $dref_dtype "\[\]"]
+			   set array_count -1
+			   if { [llength $dref_dtype_l] > 1 } {
+					set array_count [lindex $dref_dtype_l 1]
 			   }
+				
+				if {$use_arrays == 0} {
+					set array_count -1
+				}
 			   
-			   $popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname"
+			   if { $array_count > 0 && $array_count <= 10 } {
+					for {set x 0} {$x<$array_count} {incr x} {
+						set dref_path [split $dref_fullname "/"]
+						lappend dref_path $x
+						set dref_name [lindex $dref_path end]
+
+						set dref_parents [lrange $dref_path 0 end-1]   
+						set widget_parent [join $dref_parents ".m"]
+						if ![winfo exists $popup.test_menu.$widget_parent] {
+							recurse_menu $popup.test_menu $dref_parents
+						}				   
+						$popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname\\\[$x\\\]"
+					}
+			   } else {
+					set dref_path [split $dref_fullname "/"]
+					set dref_name [lindex $dref_path end]			   
+					set dref_parents [lrange $dref_path 0 end-1]   
+					set widget_parent [join $dref_parents ".m"]			   
+					if ![winfo exists $popup.test_menu.$widget_parent] {
+						recurse_menu $popup.test_menu $dref_parents
+					}
+					$popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname"
+			   }
 			}
 		}
 		close $fi   
-	} msg
+	} msg		
 }
 
 
@@ -265,6 +287,7 @@ proc xplane_inspector_sync {} {
 		pack forget $container.obj
 		pack forget $container.grp
 		pack forget $container.multi
+		
 
 		if {$sel_type == 0} { pack $container.none }
 		if {$sel_type == 1} { 
@@ -322,6 +345,7 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.static
 	pack forget $container.obj.show
 	pack forget $container.obj.hide
+	pack forget $container.obj.dref_btn
 	
 	if { [set xplane_anim_type$idx] == "no animation"} { pack $container.obj.none }
 	if { [set xplane_anim_type$idx] == "rotate"} { 
@@ -332,6 +356,7 @@ proc xplane_obj_sync { idx container } {
 		for {set x 0} {$x< [set xplane_anim_keyframe_count$idx] } {incr x} {
 			pack $container.obj.rotate.xplane_anim_value$x$idx
 		}
+		pack $container.obj.dref_btn
 	}
 	if { [set xplane_anim_type$idx] == "translate"} { 
 		pack $container.obj.trans
@@ -341,11 +366,19 @@ proc xplane_obj_sync { idx container } {
 		for {set x 0} {$x< [set xplane_anim_keyframe_count$idx]} {incr x} {
 			pack $container.obj.trans.xplane_anim_value$x$idx
 		}
-		
+		pack $container.obj.dref_btn		
 	}
-	if { [set xplane_anim_type$idx] == "static"} { pack $container.obj.static }
-	if { [set xplane_anim_type$idx] == "show"  } { pack $container.obj.show }
-	if { [set xplane_anim_type$idx] == "hide"  } { pack $container.obj.hide }
+	if { [set xplane_anim_type$idx] == "static"} { 
+		pack $container.obj.static 
+	}
+	if { [set xplane_anim_type$idx] == "show"  } { 
+		pack $container.obj.show 
+		pack $container.obj.dref_btn
+	}
+	if { [set xplane_anim_type$idx] == "hide"  } { 
+		pack $container.obj.hide 
+		pack $container.obj.dref_btn
+	}
 	
 	pack forget $container.obj.none.blend_level	
 	if { [set xplane_blend_enable$idx] == 0} { pack $container.obj.none.blend_level }
@@ -445,7 +478,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.light.dataref "S2:" xplane_light_s2$idx
 				make_labeled_entry $container.light.dataref "T2:" xplane_light_t2$idx
 				menubutton $container.light.dataref.dref_btn -menu $container.light.dataref.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_light_dataref$idx
-				build_popup $container.light.dataref.dref_btn xplane_light_dataref$idx
+				build_popup $container.light.dataref.dref_btn xplane_light_dataref$idx 0
 				pack $container.light.dataref.dref_btn
 				
 			pack $container.light.dataref
@@ -511,9 +544,9 @@ proc xplane_inspector {} {
 				}
 				# This would make a dataref text field instead of popup menu
 #				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx
-				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
-				build_popup $container.obj.rotate.dref_btn xplane_anim_dataref$idx
-				pack $container.obj.rotate.dref_btn
+#				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				build_popup $container.obj.rotate.dref_btn xplane_anim_dataref$idx
+#				pack $container.obj.rotate.dref_btn
 			pack $container.obj.rotate
 
 			labelframe $container.obj.trans -text "Translation:"
@@ -532,35 +565,38 @@ proc xplane_inspector {} {
 				}
 				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
-				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
-				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
-				pack $container.obj.trans.dref_btn
+#				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
+#				pack $container.obj.trans.dref_btn
 			pack $container.obj.trans
 
 			labelframe $container.obj.static -text "Static Translation:"
-				make_labeled_entry $container.obj.static "low value" xplane_anim_low_value$idx
-				make_labeled_entry $container.obj.static "high value" xplane_anim_high_value$idx
+				make_labeled_entry $container.obj.static "low value" xplane_anim_value0$idx
+				make_labeled_entry $container.obj.static "high value" xplane_anim_value1$idx
 #				make_labeled_entry $container.obj.static "dataref" xplane_anim_dataref$idx
 			pack $container.obj.static
 
 			labelframe $container.obj.show -text "Show:"
-				make_labeled_entry $container.obj.show "low value" xplane_anim_low_value$idx
-				make_labeled_entry $container.obj.show "high value" xplane_anim_high_value$idx
+				make_labeled_entry $container.obj.show "low value" xplane_anim_value0$idx
+				make_labeled_entry $container.obj.show "high value" xplane_anim_value1$idx
 #				make_labeled_entry $container.obj.show "dataref" xplane_anim_dataref$idx
-				menubutton $container.obj.show.dref_btn -menu $container.obj.show.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
-				build_popup $container.obj.show.dref_btn xplane_anim_dataref$idx
-				pack $container.obj.show.dref_btn
+#				menubutton $container.obj.show.dref_btn -menu $container.obj.show.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				build_popup $container.obj.show.dref_btn xplane_anim_dataref$idx
+#				pack $container.obj.show.dref_btn
 			pack $container.obj.show
 
 			labelframe $container.obj.hide -text "Hide:"
-				make_labeled_entry $container.obj.hide "low value" xplane_anim_low_value$idx
-				make_labeled_entry $container.obj.hide "high value" xplane_anim_high_value$idx
+				make_labeled_entry $container.obj.hide "low value" xplane_anim_value0$idx
+				make_labeled_entry $container.obj.hide "high value" xplane_anim_value1$idx
 #				make_labeled_entry $container.obj.hide "dataref" xplane_anim_dataref$idx
-				menubutton $container.obj.hide.dref_btn -menu $container.obj.hide.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
-				build_popup $container.obj.hide.dref_btn xplane_anim_dataref$idx
-				pack $container.obj.hide.dref_btn
+#				menubutton $container.obj.hide.dref_btn -menu $container.obj.hide.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				build_popup $container.obj.hide.dref_btn xplane_anim_dataref$idx
+#				pack $container.obj.hide.dref_btn
 			pack $container.obj.hide
 			
+			menubutton $container.obj.dref_btn -menu $container.obj.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+			build_popup $container.obj.dref_btn xplane_anim_dataref$idx 1
+			pack $container.obj.dref_btn
 
 			#-------------------------------------- GROUP --------------------------------------
 
