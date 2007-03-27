@@ -207,7 +207,7 @@ FLT_PROP(light_t1,light_t1)
 FLT_PROP(light_s2,light_s2)
 FLT_PROP(light_t2,light_t2)
 FLT_PROP(light_smoke_size,smoke_size);
-STR_PROP(light_dataref,light_dataref)
+STR_PROP(light_dataref,dataref)
 
 FLT_PROP(LOD_near,lod_near)
 FLT_PROP(LOD_far,lod_far)
