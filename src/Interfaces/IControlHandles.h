@@ -1,6 +1,25 @@
 #ifndef ICONTROLHANDLES_H
 #define ICONTROLHANDLES_H
 
+/*
+
+	IControlHandles - THEORY OF OPERATION
+	
+	The control handles interface provids an abstraction for a set of structured UI elements.
+	
+	- Each control handle provider can specify 0 or more "entities" by arbitrary IDs.  This is
+	  really a convenience interface to allow providers to map control handles to specific bits
+	  of data model.
+	  
+	- Each control handle can be moved.
+	
+	- Control handle quadruples make "links" which are bezier curves.  Note that moving the link is
+	  NOT the same as moving the handles, so the client can decide the rules for dragging links.
+	  
+	- Entire entities may also be moved, and the interface provides hit testing.
+
+*/
+
 #include "CompGeomDefs2.h"
 #include "IUnknown.h"
 

@@ -1,6 +1,17 @@
 #ifndef WED_SELECT_H
 #define WED_SELECT_H
 
+/*
+	WED_Select - THEORY OF OPERATION
+	
+	WED_Select implmements ISelection for WED, using a set of object persistent IDs.
+	
+	WED_Select is itself persistent, that is, changes in the selection are undoable.  This is done
+	to maintain sanity -- if we back up the object model without backing up the selection, we could
+	have dead objects selected, which would require a bunch of special cases to handle in our editing
+	code.
+	
+*/
 #include "WED_Thing.h"
 #include "GUI_Broadcaster.h"
 #include "ISelection.h"

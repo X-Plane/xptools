@@ -1,6 +1,14 @@
 #ifndef WED_KEYOBJECTS_H
 #define WED_KEYOBJECTS_H
 
+/*
+	WED_KeyObjects	- THEORY OF OPERATION
+	
+	This persistent object essentially implements a hash table, mapping arbitrary objects to names
+	returned via the directory interface.  Unlike a WED_thing, we can map non-children.  This is used
+	to store "important" objects like the current edited airport.
+*/
+
 #include "WED_Thing.h"
 #include "IDirectory.h"
 

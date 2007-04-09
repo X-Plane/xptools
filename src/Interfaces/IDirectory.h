@@ -1,6 +1,12 @@
 #ifndef IDIRECTORY_H
 #define IDIRECTORY_H
 
+/*
+
+	These interfaces map subcomponents by string keys - sort of a hash-table of containment.
+
+*/
+
 #include "IUnknown.h"
 
 class	IDirectory : public virtual IUnknown {

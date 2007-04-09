@@ -1,6 +1,17 @@
 #ifndef ISELECTION_H
 #define ISELECTION_H
 
+/*
+
+	ISelection - THEORY OF OPERATION
+	
+	This is an abstract object-based selection set.  The selection can be teted per object
+	or copied out to either a vector or set.  (These are provided to give clients whichever
+	format is more useful.  We expect vector to be more memory efficient, particularly since
+	the selection knows the size of the block up-front.)
+
+*/
+
 #include "IUnknown.h"
 #include <set>
 #include <vector>

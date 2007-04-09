@@ -1,6 +1,12 @@
 #ifndef IARRAY_H
 #define IARRAY_H
 
+/*
+
+	This abstract interface lets us find ordered sub-elements of any interface.
+
+*/
+
 #include "IUnknown.h"
 
 class IArray : public virtual IUnknown {

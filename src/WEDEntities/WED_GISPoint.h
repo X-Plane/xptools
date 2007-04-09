@@ -1,6 +1,19 @@
 #ifndef WED_GISPOINT_H
 #define WED_GISPOINT_H
 
+/*
+	WED_GISPoint - THEORY OF OPERATION
+	
+	WED_GISPoint (and the other WED_GISxxxx classes) are intermediate implementations that provide
+	the "spatial brains" for various WED classes.  
+	
+	WED_GISPoint implements the IGISPoint, forming a single point specified in latitude and longitude.
+
+	Specific WED entities are formed from these intermediates, picking up their "GIS brains" for free
+	and adding some special properties or behavior.
+
+*/
+
 #include "WED_Entity.h"
 #include "IGIS.h"
 
