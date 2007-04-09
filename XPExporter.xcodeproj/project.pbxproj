@@ -39,6 +39,24 @@
 		D6ED20B60B0254850010DDDC /* obj_anim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED20B40B0254840010DDDC /* obj_anim.cpp */; };
 		D6ED24720B03675D0010DDDC /* obj_update.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6ED24700B03675D0010DDDC /* obj_update.h */; };
 		D6ED24730B03675D0010DDDC /* obj_update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED24710B03675D0010DDDC /* obj_update.cpp */; };
+		D6F2F0460BC1A7E40051E526 /* uv_mapper.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F0440BC1A7E40051E526 /* uv_mapper.h */; };
+		D6F2F0470BC1A7E40051E526 /* uv_mapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F0450BC1A7E40051E526 /* uv_mapper.cpp */; };
+		D6F2F28C0BC1AA8B0051E526 /* CompGeomDefs2.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F28A0BC1AA8B0051E526 /* CompGeomDefs2.h */; };
+		D6F2F28D0BC1AA8B0051E526 /* CompGeomDefs3.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F28B0BC1AA8B0051E526 /* CompGeomDefs3.h */; };
+		D6F2F75A0BC57FEA0051E526 /* dsf_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F7580BC57FEA0051E526 /* dsf_export.cpp */; };
+		D6F2F75B0BC57FEA0051E526 /* dsf_export.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F7590BC57FEA0051E526 /* dsf_export.h */; };
+		D6F2F78E0BC580280051E526 /* DSFDefs.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F7780BC580280051E526 /* DSFDefs.h */; };
+		D6F2F78F0BC580280051E526 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F7790BC580280051E526 /* DSFLib.cpp */; };
+		D6F2F7900BC580280051E526 /* DSFLib.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F77A0BC580280051E526 /* DSFLib.h */; };
+		D6F2F79E0BC580280051E526 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F78A0BC580280051E526 /* DSFLibWrite.cpp */; };
+		D6F2F79F0BC580280051E526 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F78B0BC580280051E526 /* DSFPointPool.cpp */; };
+		D6F2F7A00BC580280051E526 /* DSFPointPool.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F78C0BC580280051E526 /* DSFPointPool.h */; };
+		D6F2F7C60BC5818E0051E526 /* ac3d_prefix.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */; };
+		D6F2F8060BC585F20051E526 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F8050BC585F20051E526 /* XChunkyFileUtils.cpp */; };
+		D6F2F8100BC586080051E526 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F80C0BC586080051E526 /* AssertUtils.cpp */; };
+		D6F2F8110BC586080051E526 /* AssertUtils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F80D0BC586080051E526 /* AssertUtils.h */; };
+		D6F2F8120BC586080051E526 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F80E0BC586080051E526 /* md5.c */; };
+		D6F2F8130BC586080051E526 /* md5.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F80F0BC586080051E526 /* md5.h */; };
 		D6FB81300AFF76DD004C1796 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +80,16 @@
 				D6ED24720B03675D0010DDDC /* obj_update.h in CopyFiles */,
 				D6D287100B3881A100AC9899 /* obj_model.h in CopyFiles */,
 				D6D287110B3881A300AC9899 /* prefs.h in CopyFiles */,
+				D6F2F0460BC1A7E40051E526 /* uv_mapper.h in CopyFiles */,
+				D6F2F28C0BC1AA8B0051E526 /* CompGeomDefs2.h in CopyFiles */,
+				D6F2F28D0BC1AA8B0051E526 /* CompGeomDefs3.h in CopyFiles */,
+				D6F2F75B0BC57FEA0051E526 /* dsf_export.h in CopyFiles */,
+				D6F2F78E0BC580280051E526 /* DSFDefs.h in CopyFiles */,
+				D6F2F7900BC580280051E526 /* DSFLib.h in CopyFiles */,
+				D6F2F7A00BC580280051E526 /* DSFPointPool.h in CopyFiles */,
+				D6F2F7C60BC5818E0051E526 /* ac3d_prefix.h in CopyFiles */,
+				D6F2F8110BC586080051E526 /* AssertUtils.h in CopyFiles */,
+				D6F2F8130BC586080051E526 /* md5.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +130,24 @@
 		D6ED24710B03675D0010DDDC /* obj_update.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_update.cpp; sourceTree = "<group>"; };
 		D6F0AEA60A4AD19C00E9C6D4 /* prefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = prefs.h; sourceTree = "<group>"; };
 		D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = prefs.cpp; sourceTree = "<group>"; };
+		D6F2F0440BC1A7E40051E526 /* uv_mapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uv_mapper.h; sourceTree = "<group>"; };
+		D6F2F0450BC1A7E40051E526 /* uv_mapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uv_mapper.cpp; sourceTree = "<group>"; };
+		D6F2F28A0BC1AA8B0051E526 /* CompGeomDefs2.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CompGeomDefs2.h; sourceTree = "<group>"; };
+		D6F2F28B0BC1AA8B0051E526 /* CompGeomDefs3.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CompGeomDefs3.h; sourceTree = "<group>"; };
+		D6F2F7580BC57FEA0051E526 /* dsf_export.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = dsf_export.cpp; sourceTree = "<group>"; };
+		D6F2F7590BC57FEA0051E526 /* dsf_export.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = dsf_export.h; sourceTree = "<group>"; };
+		D6F2F7780BC580280051E526 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
+		D6F2F7790BC580280051E526 /* DSFLib.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLib.cpp; sourceTree = "<group>"; };
+		D6F2F77A0BC580280051E526 /* DSFLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFLib.h; sourceTree = "<group>"; };
+		D6F2F78A0BC580280051E526 /* DSFLibWrite.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLibWrite.cpp; sourceTree = "<group>"; };
+		D6F2F78B0BC580280051E526 /* DSFPointPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFPointPool.cpp; sourceTree = "<group>"; };
+		D6F2F78C0BC580280051E526 /* DSFPointPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFPointPool.h; sourceTree = "<group>"; };
+		D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ac3d_prefix.h; sourceTree = "<group>"; };
+		D6F2F8050BC585F20051E526 /* XChunkyFileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XChunkyFileUtils.cpp; sourceTree = "<group>"; };
+		D6F2F80C0BC586080051E526 /* AssertUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = AssertUtils.cpp; sourceTree = "<group>"; };
+		D6F2F80D0BC586080051E526 /* AssertUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AssertUtils.h; sourceTree = "<group>"; };
+		D6F2F80E0BC586080051E526 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = md5.c; sourceTree = "<group>"; };
+		D6F2F80F0BC586080051E526 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
 		D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,22 +167,23 @@
 		08FB7794FE84155DC02AAC07 /* XPExporter */ = {
 			isa = PBXGroup;
 			children = (
-				08FB7795FE84155DC02AAC07 /* Source */,
+				D6F2F1800BC1AA570051E526 /* Frameworks */,
+				08FB7795FE84155DC02AAC07 /* src */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 				D6CD2460098EB16400B525DA /* XPExporter-Info.plist */,
 			);
 			name = XPExporter;
 			sourceTree = "<group>";
 		};
-		08FB7795FE84155DC02AAC07 /* Source */ = {
+		08FB7795FE84155DC02AAC07 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				D6B334C10B00E203001D7CCD /* Tcl.framework */,
-				D6726E770AEE811400E2668E /* OpenGL.framework */,
-				D6DEA84A098E96AE0061BE4C /* OBJ */,
+				D6F2F7760BC580280051E526 /* DSF */,
+				D6F2F0720BC1A9EF0051E526 /* Utils */,
+				D6DEA84A098E96AE0061BE4C /* Obj */,
 				D6DEA849098E96A20061BE4C /* AC3DPlugins */,
 			);
-			name = Source;
+			path = src;
 			sourceTree = "<group>";
 		};
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
@@ -150,6 +197,11 @@
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
 			isa = PBXGroup;
 			children = (
+				D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */,
+				D6F2F7580BC57FEA0051E526 /* dsf_export.cpp */,
+				D6F2F7590BC57FEA0051E526 /* dsf_export.h */,
+				D6F2F0440BC1A7E40051E526 /* uv_mapper.h */,
+				D6F2F0450BC1A7E40051E526 /* uv_mapper.cpp */,
 				D6B331F70B00CBFC001D7CCD /* ac_utils.h */,
 				D6DEA775098E92980061BE4C /* ac_utils.c */,
 				D6B331F80B00CBFC001D7CCD /* bitmap_match.h */,
@@ -177,11 +229,10 @@
 				D6ED24700B03675D0010DDDC /* obj_update.h */,
 				D6ED24710B03675D0010DDDC /* obj_update.cpp */,
 			);
-			name = AC3DPlugins;
-			path = src/AC3DPlugins;
+			path = AC3DPlugins;
 			sourceTree = "<group>";
 		};
-		D6DEA84A098E96AE0061BE4C /* OBJ */ = {
+		D6DEA84A098E96AE0061BE4C /* Obj */ = {
 			isa = PBXGroup;
 			children = (
 				D6DEA84B098E96D30061BE4C /* ObjConvert.cpp */,
@@ -190,7 +241,43 @@
 				D6DEA84E098E96D30061BE4C /* XObjDefs.cpp */,
 				D6DEA84F098E96D30061BE4C /* XObjReadWrite.cpp */,
 			);
-			name = OBJ;
+			path = Obj;
+			sourceTree = "<group>";
+		};
+		D6F2F0720BC1A9EF0051E526 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				D6F2F80C0BC586080051E526 /* AssertUtils.cpp */,
+				D6F2F80D0BC586080051E526 /* AssertUtils.h */,
+				D6F2F80E0BC586080051E526 /* md5.c */,
+				D6F2F80F0BC586080051E526 /* md5.h */,
+				D6F2F8050BC585F20051E526 /* XChunkyFileUtils.cpp */,
+				D6F2F28A0BC1AA8B0051E526 /* CompGeomDefs2.h */,
+				D6F2F28B0BC1AA8B0051E526 /* CompGeomDefs3.h */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		D6F2F1800BC1AA570051E526 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D6B334C10B00E203001D7CCD /* Tcl.framework */,
+				D6726E770AEE811400E2668E /* OpenGL.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D6F2F7760BC580280051E526 /* DSF */ = {
+			isa = PBXGroup;
+			children = (
+				D6F2F7780BC580280051E526 /* DSFDefs.h */,
+				D6F2F7790BC580280051E526 /* DSFLib.cpp */,
+				D6F2F77A0BC580280051E526 /* DSFLib.h */,
+				D6F2F78A0BC580280051E526 /* DSFLibWrite.cpp */,
+				D6F2F78B0BC580280051E526 /* DSFPointPool.cpp */,
+				D6F2F78C0BC580280051E526 /* DSFPointPool.h */,
+			);
+			path = DSF;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -268,6 +355,14 @@
 				D6B3328A0B00D45C001D7CCD /* obj_editor.cpp in Sources */,
 				D6ED20B60B0254850010DDDC /* obj_anim.cpp in Sources */,
 				D6ED24730B03675D0010DDDC /* obj_update.cpp in Sources */,
+				D6F2F0470BC1A7E40051E526 /* uv_mapper.cpp in Sources */,
+				D6F2F75A0BC57FEA0051E526 /* dsf_export.cpp in Sources */,
+				D6F2F78F0BC580280051E526 /* DSFLib.cpp in Sources */,
+				D6F2F79E0BC580280051E526 /* DSFLibWrite.cpp in Sources */,
+				D6F2F79F0BC580280051E526 /* DSFPointPool.cpp in Sources */,
+				D6F2F8060BC585F20051E526 /* XChunkyFileUtils.cpp in Sources */,
+				D6F2F8100BC586080051E526 /* AssertUtils.cpp in Sources */,
+				D6F2F8120BC586080051E526 /* md5.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +376,7 @@
 				EXECUTABLE_EXTENSION = p;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREFIX_HEADER = src/AC3DPlugins/ac3d_prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"APL=1",
 					"DEV=1",
@@ -307,6 +403,7 @@
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				EXECUTABLE_EXTENSION = p;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_PREFIX_HEADER = src/AC3DPlugins/ac3d_prefix.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"APL=1",
 					"DEV=0",
