@@ -816,7 +816,6 @@ void		ReloadTexture(const string& inName)
 
 struct	ObjViewInfo_t {
 	bool	lit;
-	bool	lighting;
 	bool	solid;
 	bool	backside;
 	bool	animate;
@@ -835,12 +834,10 @@ static void	ObjView_SetupPoly(void * ref)
 	{
 		glBindTexture(GL_TEXTURE_2D, i->tex_lit);
 		glEnable(GL_TEXTURE_2D);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD);
 	} else
 		glDisable(GL_TEXTURE_2D);
-	if (i->lighting)
-		glEnable(GL_LIGHTING);
-	else
-		glDisable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 		
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 	if (i->tex != 0)
@@ -855,7 +852,7 @@ static void	ObjView_SetupPoly(void * ref)
 	else		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	
-//	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
+	if (i->backside) glColor3f(1.0, 0.0, 0.0); else glColor3f(1.0, 1.0, 1.0);
 }
 
 static void	ObjView_SetupPanel(void * ref)
@@ -868,10 +865,7 @@ static void	ObjView_SetupPanel(void * ref)
 		glEnable(GL_TEXTURE_2D);
 	} else
 		glDisable(GL_TEXTURE_2D);
-	if (i->lighting)
-		glEnable(GL_LIGHTING);
-	else
-		glDisable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 		
 	glActiveTextureARB(GL_TEXTURE0_ARB);
 	if (i->pan != 0)
@@ -938,69 +932,41 @@ static	ObjDrawFuncs_t sCallbacks = {
 	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
 };
 
-
-
-void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
+static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 {
-	inLighting = false;	// NEVER light these - it don't work yet!
-	ObjViewInfo_t info = { inLit, inLighting, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
-
-	string	tex = inObj.texture;
-	StripPathCP(tex);	
-	info.tex = FindTexture(tex, false);	
-	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
-		
-	if (inLit)
-	{
-		info.tex_lit = FindTexture(tex, true);
-		if (info.tex_lit)
-		{
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D, info.tex_lit);
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-		}
-	}
+	GLfloat lgt_amb[4]={ 1.0, 1.0, 1.0, 1.0 };																				
+	GLfloat lgt_dif[4]={ 0.0, 0.0, 0.0, 1.0 };																				
+	GLfloat lgt_dir[4]={ 1.0, 0.0, 0.0, 0.0 };																				
 	
-	info.pan = FindTexture("panel", false);
-	if (inLit)
-		info.pan_lit = FindTexture("panel", true);
-	
-	if (inSolid)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	else 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	if (inLighting)
 	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-	} else 
-		glDisable(GL_LIGHTING);
-
-	if (inShowCulled)
-	{
-		glShadeModel(GL_SMOOTH);
-		GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
-		GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
-		GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
-		GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
-											glMaterialf (GL_FRONT,GL_SHININESS,   0);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_ALPHA_TEST);
-		glDepthMask(GL_TRUE);
-		glEnable(GL_CULL_FACE);
-		glPointSize(4);		
-		glCullFace(GL_FRONT);
-		
-		info.backside = true;
-		ObjDraw(inObj, 0.0, &sCallbacks, &info);
-
+		lgt_amb[0] = lgt_amb[1] = lgt_amb[2] = 0.2;
+		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.8;		
 	}
+	if (inLit) {
+		lgt_dif[0] *= 0.1;
+		lgt_dif[1] *= 0.1;
+		lgt_dif[2] *= 0.1;
+		lgt_amb[0] *= 0.1;
+		lgt_amb[1] *= 0.1;
+		lgt_amb[2] *= 0.1;
+	}
+	
+	if (inShowCulled) { lgt_amb[1] = lgt_amb[2] = lgt_dif[1] = lgt_dif[2] = 0.0; }
 
-	info.backside = false;
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	glLightfv(GL_LIGHT0,GL_AMBIENT ,lgt_amb);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE ,lgt_dif);
+	glLightfv(GL_LIGHT0,GL_POSITION,lgt_dir);
 
+	glPopMatrix();
+}
+
+static void setup_baseline_ogl(int hidden_geo)
+{
 	glShadeModel(GL_SMOOTH);
 	GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
 	GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
@@ -1012,11 +978,74 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glPointSize(4);		
-	glCullFace(GL_BACK);
-	
-	ObjDraw(inObj, 0.0, &sCallbacks, &info);
-	glPointSize(1);
+	glCullFace(hidden_geo ? GL_FRONT : GL_BACK);
+}
 
+static void setup_textures(const string& in_tex, const string& in_lit, bool inLit, bool inSolid, ObjViewInfo_t& info)
+{
+	string	tex = in_tex;
+//	if (tex.size() > 4)	tex.erase(tex.size()-4);
+	StripPathCP(tex);	
+	info.tex = FindTexture(tex, false);	
+	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
+		
+	if (inLit)
+	{
+		string tex_night = in_lit;
+//		if (tex_night.size() > 4)	tex_night.erase(tex_night.size() - 4);
+		StripPathCP(tex_night);	
+									info.tex_lit = FindTexture(tex_night, false);
+		if (info.tex_lit)
+		{
+			glActiveTextureARB(GL_TEXTURE1_ARB);
+			glBindTexture(GL_TEXTURE_2D, info.tex_lit);
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+		}
+	}
+	
+				info.pan	 = FindTexture("panel", false);
+	if (inLit)	info.pan_lit = FindTexture("panel", true);
+
+	if (inSolid)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	else			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
+	
+	glEnable(GL_NORMALIZE);
+}
+
+void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
+{
+	inLighting = false;	// NEVER light these - it don't work yet!
+	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
+
+	string lit_tex = inObj.texture;
+	if (!lit_tex.empty()) lit_tex += "_LIT";
+
+	setup_textures(inObj.texture, lit_tex, inLit, inSolid, info);
+
+	if (inShowCulled)
+	{
+		setup_lights(inLighting, inLit, inShowCulled);
+		setup_baseline_ogl(true);		
+		info.backside = true;
+		CHECK_ERR();
+		ObjDraw(inObj, 0.0, &sCallbacks, &info);
+		CHECK_ERR();
+	}	
+
+
+	setup_lights(inLighting, inLit, false);	
+	setup_baseline_ogl(false);	
+	info.backside = false;
+	CHECK_ERR();
+	ObjDraw(inObj, 0.0, &sCallbacks, &info);
+	CHECK_ERR();
+
+	glPointSize(1);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
 }
 
@@ -1025,100 +1054,29 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 {
 	CHECK_ERR();
 
-	ObjViewInfo_t info = { inLit, inLighting, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
+	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
-	string	tex = inObj.texture;
-	if (tex.size() > 4)	tex.erase(tex.size()-4);
-	StripPathCP(tex);	
-	info.tex = FindTexture(tex, false);	
-	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
-		
-	if (inLit)
-	{
-		string tex_night = inObj.texture_lit;
-		if (tex_night.size() > 4)	tex_night.erase(tex_night.size() - 4);
-		StripPathCP(tex_night);	
-								info.tex_lit = FindTexture(tex_night, false);
-		if (info.tex_lit)
-		{
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D, info.tex_lit);
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-		}
-	}
-	
-	info.pan = FindTexture("panel", false);
-	if (inLit)
-		info.pan_lit = FindTexture("panel", true);
-
-	if (inSolid)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	else 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	if (inLighting)
-	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
-		glEnable(GL_COLOR_MATERIAL);
-		glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-	} else {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_COLOR_MATERIAL);
-	}		
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	GLfloat lgt_amb[4]={ 0.20, 0.20, 0.20,1.0};		glLightfv(GL_LIGHT0,GL_AMBIENT ,lgt_amb);
-	GLfloat lgt_dif[4]={ 0.80, 0.80, 0.80,1.0};		glLightfv(GL_LIGHT0,GL_DIFFUSE ,lgt_dif);
-	GLfloat lgt_dir[4]={ 1.0, 0.0, 0.0, 0.0 };		glLightfv(GL_LIGHT0,GL_POSITION,lgt_dir);
-	glPopMatrix();
-	
-	glEnable(GL_NORMALIZE);
+	setup_textures(inObj.texture.substr(0,(inObj.texture.length() > 4) ? (inObj.texture.length() - 4) : (inObj.texture.length())), 
+					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())), inLit, inSolid, info);
 
 	if (inShowCulled)
 	{
-		glShadeModel(GL_SMOOTH);
-		GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
-		GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
-		GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
-		GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
-											glMaterialf (GL_FRONT,GL_SHININESS,   0);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_ALPHA_TEST);
-		glDepthMask(GL_TRUE);
-		glEnable(GL_CULL_FACE);
-		glPointSize(4);		
-		glCullFace(GL_FRONT);
-		
+		setup_lights(inLighting, inLit, inShowCulled);	
+		setup_baseline_ogl(true);		
 		info.backside = true;
 		CHECK_ERR();
 		ObjDraw8(inObj, 0.0, &sCallbacks, &info);
 		CHECK_ERR();
-
 	}
 
+	setup_lights(inLighting, inLit, false);	
+	setup_baseline_ogl(false);			
 	info.backside = false;
-
-	glShadeModel(GL_SMOOTH);
-	GLfloat col1[4]={0.2,0.2,0.2,1.0};	glMaterialfv(GL_FRONT,GL_AMBIENT  ,col1);
-	GLfloat col2[4]={0.8,0.8,0.8,1.0};	glMaterialfv(GL_FRONT,GL_DIFFUSE  ,col2);
-	GLfloat col3[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_SPECULAR ,col3);
-	GLfloat col4[4]={0.0,0.0,0.0,1.0};	glMaterialfv(GL_FRONT,GL_EMISSION ,col4);
-										glMaterialf (GL_FRONT,GL_SHININESS,   0);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_ALPHA_TEST);
-	glDepthMask(GL_TRUE);
-	glEnable(GL_CULL_FACE);
-	glPointSize(4);		
-	glCullFace(GL_BACK);
-	
 	CHECK_ERR();
 	ObjDraw8(inObj, 0.0, &sCallbacks, &info);
 	CHECK_ERR();
-	glPointSize(1);
 
+	glPointSize(1);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
-	CHECK_ERR();
 }
 
