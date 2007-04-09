@@ -82,8 +82,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	case btn_Push:
 		{
 			int tile_p[4] = { 0, mHilite ? 0 : 1, 1, 2 };
-			float cuts_h[2] = { 0.25, 0.75 };
-			GUI_DrawStretched(state,"pushbutton.png",bounds,resize_Stretch,resize_Center,tile_p,cuts_h, NULL);
+			GUI_DrawStretched(state,"pushbutton.png",bounds,tile_p);
 			
 			if (!desc.empty())
 			{
