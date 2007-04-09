@@ -29,7 +29,7 @@ void	find_all_selected_objects(vector<ACObject *>& output)
 {
 	output.clear();
 	
-	List *	objs = ac_selection_get_objects();
+	List *	objs = ac_selection_get_part_selected_objects();//ac_selection_get_objects();
 	if (objs)
 	{	
 		for (List * i = objs; i; i=i->next)
@@ -44,7 +44,7 @@ void	find_all_selected_objects_flat(vector<ACObject *>& output)
 {
 	output.clear();
 	
-	List *	objs = ac_selection_get_objects();
+	List *	objs = ac_selection_get_part_selected_objects();//ac_selection_get_objects();
 	if (objs)
 	{	
 		for (List * i = objs; i; i=i->next)
@@ -61,7 +61,7 @@ void	find_all_selected_objects_parents(vector<ACObject *>& output)
 {
 	vector<ACObject *>	parents;
 	output.clear();
-	List *	objs = ac_selection_get_objects();
+	List *	objs = ac_selection_get_part_selected_objects();//ac_selection_get_objects();
 	if (objs)
 	{	
 		for (List * i = objs; i; i=i->next)
@@ -270,4 +270,15 @@ Surface * obj_get_first_surf(ACObject * obj)
 		return (Surface *) sl->data;
 	}
 	return NULL;
+}
+
+void	get_all_used_texes(ACObject * obj, set<int>& out_texes)
+{
+	if (ac_object_has_texture(obj))
+		out_texes.insert(ac_object_get_texture_index(obj));
+
+	List *kids = ac_object_get_childrenlist(obj);
+    for (List * p = kids; p != NULL; p = p->next)
+        get_all_used_texes((ACObject *)p->data, out_texes);
+
 }

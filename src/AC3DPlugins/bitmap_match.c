@@ -1,6 +1,7 @@
 #include "bitmap_match.h"
 #include <ac_plugin.h>
 #include <stdio.h>
+#include <string.h>
 
 static unsigned char * get_image_data(ACImage * im);
 static unsigned char * get_image_data(ACImage * im)
@@ -220,4 +221,34 @@ int make_transparent(ACImage * im)
 		message_dialog("No magenta pixels were found.");
 	printf("Rendered %d pixels transparent.\n", transparent);
 	return 1;
+}
+
+void	tex_reload(int tex_id)
+{
+	char * fname = texture_id_to_name(tex_id);
+	int im_width, im_height, im_depth;
+	
+	add_new_texture_reload(fname,fname);
+	return;
+	
+	ACImage * old_image = texture_id_to_image(tex_id);
+	ACImage * new_image = new_acimage(fname);
+	if (new_image == NULL)
+	{
+		message_dialog("Error: could not load %s.\n", fname);
+		return;
+	}
+	
+	
+	ac_image_get_dim(new_image, &im_width, &im_height, &im_depth);	
+	ac_image_set_dim(old_image, im_width, im_height, im_depth);
+	
+	void * new_mem = myalloc(im_width * im_height * im_depth);
+	memcpy(new_mem, get_image_data(new_image), im_width * im_height * im_depth);
+
+	ac_image_set_data(old_image, (unsigned char *) new_mem);
+
+	free_acimage(new_image);
+	texture_build_for_all_windows(old_image);
+	redraw_all();
 }

@@ -106,7 +106,11 @@ void	TCL_linked_vard::set(double value)
 //	printf("Setting %s to %lf\n", var_name, value);
 	var = value;
 	setting = 1;
-	Tcl_Obj * obj = Tcl_NewDoubleObj(var);	
+//	Tcl_Obj * obj = Tcl_NewDoubleObj(var);	
+char buf[200];
+	sprintf(buf,"%.03lf", value);
+	Tcl_Obj * obj = Tcl_NewStringObj(buf,-1);
+
 	Tcl_IncrRefCount(obj);
 	if (Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
 		message_dialog("Internal tcl error - could not create variable %s", var_name);

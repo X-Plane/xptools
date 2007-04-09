@@ -3,6 +3,7 @@
 #include "obj8_import.h"
 #include "obj_tools.h"
 #include "obj_anim.h"
+#include "uv_mapper.h"
 #include "obj_update.h"
 #include "obj_editor.h"
 #include <ac_plugin.h>
@@ -28,6 +29,17 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
  * MAIN PLUGIN
  ***************************************************************************************************/
 
+#if !DEV
+to doc
+	export prefix for textuers and tex handling
+	select in vertex mode
+	precision fixed
+	export by tex
+	lit tex handling
+	export paths
+	uv remapper
+	reload texes
+#endif	
 
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 {
@@ -51,7 +63,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_register_file_importer("OBJ8Load", ".obj", "X-Plane 8 Object File", do_obj8_load, "X-Plane 7/8 Object File Import Plugin"); 
 
 //	ac_register_file_exporter("DSFSave", ".dsf", "X-Plane DSF (scenery) File", do_dsf_save, "X-Plane 8 DSF Export Plugin"); 
-//	ac_register_file_importer("DSFLoad", ".dsf", "X-Plane DSF (scenery) File", do_dsf_load, "X-Plane 8 DSF Import Plugin"); 
+	ac_register_file_importer("DSFLoad", ".dsf", "X-Plane DSF (scenery) File", do_dsf_load, "X-Plane 8 DSF Import Plugin"); 
 
 //	ac_register_file_exporter("XAutoCarSave", ".car", "X-Auto Car File", do_car_save, "X-Auto Car File Export Plugin"); 
 //	ac_register_file_importer("XAutoCarLoad", ".car", "X-Auto Car File", do_car_load, "X-Auto Car File Import Plugin"); 
@@ -64,11 +76,15 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_add_command_full("xplane_make_night", CAST_CMD(do_show_night), 0, NULL, "ac3d xplane_make_night", "Show an object's night lighting.");
 	ac_add_command_full("xplane_make_named_group", CAST_CMD(do_named_group), 1, "s", "ac3d xplane_make_named_group <name>", "Make a named group.");
 	ac_add_command_full("xplane_make_tree", CAST_CMD(do_tree_extrude), 0, NULL, "ac3d xplane_make_tree", "Make a tree from a quad.");
-	ac_add_command_full("xplane_bulk_export", CAST_CMD(do_bulk_export), 0, NULL, "ac3d xplane_bulk_export", "Export many objects.");
+	ac_add_command_full("xplane_bulk_export", CAST_CMD(do_bulk_export), 0, NULL, "ac3d xplane_bulk_export", "Export many objects by object name.");
+	ac_add_command_full("xplane_tex_export", CAST_CMD(do_tex_export), 0, NULL, "ac3d xplane_tex_export", "Export many objects by texture.");	
 	ac_add_command_full("xplane_make_onesided", CAST_CMD(do_make_onesided), 0, NULL, "ac3d xplane_make_onesided", "Make all surfaces one-sided.");
 	ac_add_command_full("xplane_make_upnormal", CAST_CMD(do_make_upnormal), 0, NULL, "ac3d xplane_make_upnormal", "Make all normals go up.");
 //	ac_add_command_full("xplane_select_down_surfaces", CAST_CMD(do_select_downfacing), 0, NULL, "ac3d xplane_select_down_surfaces", "Select down-facing surfaces.");
 
+	ac_add_command_full("xplane_do_uvmap", CAST_CMD(do_uv_map), 0, NULL, "ac3d xplane_do_uvmap", "Make a UV map.");
+	ac_add_command_full("xplane_reload_texes", CAST_CMD(do_reload_all_texes), 0, NULL, "ac3d xplane_reload_texes", "Reload all texes.");
+	ac_add_command_full("xplane_do_map_from_obj", CAST_CMD(do_map_obj_to_obj), 0, NULL, "ac3d xplane_do_map_from_obj", "Map tex from one obj to another.");
 
 	setup_obj_anim();
 	register_updater();

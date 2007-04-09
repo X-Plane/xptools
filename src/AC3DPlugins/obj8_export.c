@@ -78,9 +78,9 @@ static void obj8_output_triangle(XObjBuilder * builder, Surface *s, bool is_smoo
 static void obj8_output_polyline(XObjBuilder * builder, Surface *s);
 static void obj8_output_polygon(XObjBuilder * builder, Surface *s);
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj);
-static void obj8_output_object(XObjBuilder * builder, ACObject *obj, ACObject * root);
+static void obj8_output_object(XObjBuilder * builder, ACObject *obj, ACObject * root, int tex_id, int do_misc);
 
-static int do_obj8_save_common(char * fname, ACObject * obj, bool convert);
+static int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefix, int tex_id, int do_misc);
 
 
 /***************************************************************************************************
@@ -260,7 +260,7 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 }
 
 
-void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
+void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, int tex_id, int do_misc)
 {
 	char  buf[1024];
 	if (!ac_object_is_visible(obj)) return;
@@ -366,18 +366,23 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 				builder->SetAttribute1(attr_No_Blend, now_blend);
 
 			bool bad_obj = false;
+			int has_panel = 0;
+			int has_real_tex = 0;
 			
 			if (ac_object_has_texture(obj))
 			{	
 				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
 				gHasTexNow = true;
-				if (strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel."))
+				has_panel = strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel.") != NULL;
+				if (has_panel)
 				{
 					builder->SetAttribute(attr_Tex_Cockpit);
 				} else {
+					has_real_tex = 1;
 					builder->SetAttribute(attr_Tex_Normal);
 				}
 				if (!builder->IsCockpit())
+				if (tex_id == -1 || tex_id == ac_object_get_texture_index(obj))
 				{
 					if (tex != gTexName && !gTexName.empty())
 					{
@@ -391,6 +396,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 				builder->SetAttribute(attr_Tex_Normal);
 				gHasTexNow = false;
 			}
+			
+			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;
 
 			builder->SetTexRepeatParams(
 				ac_object_get_texture_repeat_x(obj),
@@ -403,9 +410,13 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 			{
 				Surface *s = (Surface *)p->data;
 				if (surface_get_type(s) == SURFACE_POLYGON)
-					obj8_output_polygon(builder, s);
-				else
-					obj8_output_polyline(builder, s);
+				{
+					if (do_surf)
+						obj8_output_polygon(builder, s);
+				} else {
+					if (do_misc)
+						obj8_output_polyline(builder, s);
+				}
 			}
 			
 			if (no_tex_count < gErrMissingTex && !bad_obj)
@@ -415,6 +426,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 	}
 	
 	if (ac_entity_is_class(obj, AC_CLASS_LIGHT))
+	if (do_misc)
 	{
 		obj8_output_light(builder, obj);
 	}
@@ -422,7 +434,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
     for (p = kids; p != NULL; p = p->next)
     {
     	ACObject * child = (ACObject *)p->data;
-	        obj8_output_object(builder, child, root);
+	        obj8_output_object(builder, child, root, tex_id, do_misc);
 	}
 	
 	if (OBJ_get_animation_group(obj))
@@ -432,7 +444,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root)
 }
 
 
-int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
+int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefix, int tex_id, int do_misc)
 {
 	XObj8	obj8;
 	
@@ -459,7 +471,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 	if (get_default_layer_group() && get_default_layer_group()[0] && strcmp(get_default_layer_group(),"none"))
 		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
 
-    obj8_output_object(&builder, obj, obj);
+    obj8_output_object(&builder, obj, obj, tex_id, do_misc);
     
 	if (get_default_LOD() > 0.0f)
 	if (obj8.lods.size() == 1 && obj8.lods.front().lod_far == 0.0)
@@ -470,16 +482,35 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 
 	// Texture path.  Ben says: users want the texture path to be relative to the ac3d file.  Doable I suppose.
 	
+	// tcl_get_string("acfilename")
+		
 	string export_path(fname);
-	string::size_type export_filename_idx;
+	string::size_type export_filename_idx, tex_dir_idx;
 	export_filename_idx = export_path.find_last_of("\\/");
+	tex_dir_idx = gTexName.find_last_of("\\/");
 
-	gTexName.erase(0,export_filename_idx+1);
+	string tex_lit(gTexName);
+	if (tex_lit.size() > 4)
+	{
+	    tex_lit.insert(tex_lit.length()-4,"_LIT");
+		FILE * f = fopen(tex_lit.c_str(), "r");
+		if (f)
+		{
+			fclose(f);
+			if (tex_dir_idx != gTexName.npos)
+			tex_lit.erase(0,tex_dir_idx+1);
+			obj8.texture_lit = tex_lit;
+		}
+	}
+	if (tex_dir_idx != gTexName.npos)
+	gTexName.erase(0,tex_dir_idx+1);
     obj8.texture = gTexName;
-//  if (obj8.texture.size() > 4)
-//	    obj8.texture_lit = obj8.texture.substr(0, obj8.texture.size()-4) + "_lit" + obj8.texture.substr(obj8.texture.size()-4);
+	
+	if (!obj8.texture.empty())		obj8.texture.insert(0,get_texture_prefix());
+	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());			
 
-	obj_path.insert(obj_filename_idx+1,string(get_export_prefix()));
+	if (do_prefix)
+		export_path.insert(export_filename_idx+1,string(get_export_prefix()));
 
 	builder.Finish();
 
@@ -487,16 +518,16 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 	{
 		XObj	obj7;
 		Obj8ToObj7(obj8, obj7);
-		if (!XObjWrite(obj_path.c_str(), obj7))
+		if (!XObjWrite(export_path.c_str(), obj7))
 	    {
-	        message_dialog("can't open file '%s' for writing", obj_path.c_str());
+	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
 		
 	} else {
-		if (!XObj8Write(obj_path.c_str(), obj8))
+		if (!XObj8Write(export_path.c_str(), obj8))
 	    {
-	        message_dialog("can't open file '%s' for writing", obj_path.c_str());
+	        message_dialog("can't open file '%s' for writing", export_path.c_str());
 	        return 0;
 	    }
 	}    
@@ -534,10 +565,15 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert)
 
 int 		do_obj8_save(char * fname, ACObject * obj)
 {
-	return do_obj8_save_common(fname, obj, false);
+	return do_obj8_save_common(fname, obj, false, false, -1, true);
+}
+
+int 		do_obj8_save_ex(char * fname, ACObject * obj, int do_prefix, int tex_id, int do_misc)
+{
+	return do_obj8_save_common(fname, obj, false, do_prefix, tex_id, do_misc);
 }
 
 int 		do_obj7_save_convert(char * fname, ACObject * obj)
 {
-	return do_obj8_save_common(fname, obj, true);
+	return do_obj8_save_common(fname, obj, true, false, -1, true);
 }

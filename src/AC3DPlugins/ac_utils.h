@@ -3,6 +3,9 @@
 
 #include <ac_plugin.h>
 #include <vector>
+#include <set>
+
+using std::set;
 using std::vector;
 
 #define CAST_CMD(x) reinterpret_cast<void*>(x)
@@ -38,5 +41,6 @@ void move_child_to_head(ACObject * parent, ACObject * child);
 
 Surface * obj_get_first_surf(ACObject * obj);
 
+void	get_all_used_texes(ACObject * obj, set<int>& out_texes);
 
 #endif

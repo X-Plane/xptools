@@ -15,5 +15,6 @@ int apply_lighting(
 
 int make_transparent(ACImage * im);
 
+void	tex_reload(int tex_id);
 
 #endif

@@ -7,6 +7,7 @@
 	DEFINE_PREF_INT(export_triangles, 1) \
 	DEFINE_PREF_DOUBLE(default_LOD, 0.0f) \
 	DEFINE_PREF_STRING(export_prefix, "") \
+	DEFINE_PREF_STRING(texture_prefix, "") \
 
 #define DEFINE_PREF_STRING(n,d)		const char *	get_##n(void);
 #define DEFINE_PREF_INT(n,d)		int				get_##n(void);

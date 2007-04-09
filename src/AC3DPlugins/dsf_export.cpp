@@ -1,5 +1,6 @@
 #include "DSFLib.h"
 #include <string>
+#include <math.h>
 
 #ifdef Boolean
 #undef Boolean

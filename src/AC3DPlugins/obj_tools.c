@@ -357,11 +357,40 @@ void do_bulk_export(void)
 			strcat(path, "/");
 //			strcat(path,g_export_prefix);
 			strcat(path, exp_name);
-			do_obj8_save(path, child);
+			do_obj8_save_ex(path, child, 1, -1, 1);	// do prefix, all texes, do misc stuff
 		}
 	}
 	
 	myfree(fn);
+}
+
+void do_tex_export(void)
+{
+	set<int> texes;
+	get_all_used_texes(ac_get_world(), texes);
+	if (texes.empty())
+	{
+		message_dialog("Your model contains no textures - multi-export by texture is not useful here.");
+		return;
+	}
+	
+	char * fn = ac_get_export_folder("Please pick a bulk export folder...");
+	if (fn == NULL) return;
+	if (*fn == 0) return;
+
+	char path[1024];
+	
+	for (set<int>::iterator i = texes.begin(); i != texes.end(); ++i)
+	{
+		string tname = texture_id_to_name(*i);
+		string::size_type p = tname.find_last_of("/\\");
+		
+		strcpy(path, fn);
+		strcat(path, "/");
+		strcat(path, tname.c_str() + p + 1);
+		strcpy(path+strlen(path)-3,"obj");
+		do_obj8_save_ex(path, ac_get_world(), 1, *i, i == texes.begin());		
+	}
 }
 
 void do_make_onesided(void)
@@ -432,3 +461,13 @@ void do_make_upnormal(void)
 		surface_set_normals(*si, &up);
 	}
 }	
+
+void do_reload_all_texes(void)
+{
+	set<int> t;
+	get_all_used_texes(ac_get_world(), t);
+	for (set<int>::iterator i = t.begin(); i != t.end(); ++i)
+	{
+		tex_reload(*i);
+	}
+}

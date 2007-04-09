@@ -334,6 +334,16 @@ void	gather_datarefs(ACObject * obj)
 		gather_datarefs((ACObject *)p->data);	
 }
 
+static void quote_dref(string& s)
+{
+	string::size_type n = 0;
+	while((n = s.find_first_of("[]",n)) != s.npos)
+	{
+		s.insert(n,"\\");
+		n += 2;
+	}
+}
+
 void	sync_datarefs()
 {
 //	printf("Got sync dataref, anim=%d\n",g_anim_inited);
@@ -347,8 +357,10 @@ void	sync_datarefs()
 		sprintf(buf,"%c", 'a' + n);
 		string tcl_name(buf);
 		char debug[120];
-		tcl_command("sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref->first.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
-		sprintf(debug,"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref->first.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+		string dref_q(dref->first);
+		quote_dref(dref_q);
+		tcl_command("sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+		sprintf(debug,"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}

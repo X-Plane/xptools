@@ -3,7 +3,7 @@ catch {namespace import combobox::*}
 set MAX_KEYFRAMES 50
 set MAX_SEL 5
 
-set USE_KEYFRAMES 0
+set USE_KEYFRAMES 1
 
 ##########################################################################################################################################################
 # UTILS
@@ -173,12 +173,17 @@ proc xplane_prefs_dialog {} {
 		label	.xp_prefs.export_prefix_label -text "Bulk Export Prefix:"
 		entry	.xp_prefs.export_prefix -textvariable prefs_x-plane_export_prefix
 
+		label	.xp_prefs.texture_prefix_label -text "Texture Export Prefix:"
+		entry	.xp_prefs.texture_prefix -textvariable prefs_x-plane_texture_prefix
+
+
 		grid	.xp_prefs.layer_btn_label .xp_prefs.layer_btn
 		grid	.xp_prefs.layer_offset_label .xp_prefs.layer_offset
 
 		grid	x .xp_prefs.triangles -sticky news
 		grid	.xp_prefs.default_lod_label	.xp_prefs.default_lod_value -sticky news
 		grid	.xp_prefs.export_prefix_label .xp_prefs.export_prefix
+		grid	.xp_prefs.texture_prefix_label .xp_prefs.texture_prefix
 
 	}
 
@@ -760,6 +765,9 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add command -label "Change Texture..." -command "ac3d xplane_change_texture"
 .mbar.xplane.menu add command -label "Make Transparent" -command "ac3d xplane_make_transparent"
 .mbar.xplane.menu add command -label "Make Night Lighting" -command "ac3d xplane_make_night"
+.mbar.xplane.menu add command -label "Pseudo-Cylindrical UV Remap" -command "ac3d xplane_do_uvmap"
+.mbar.xplane.menu add command -label "Map Texture (Obj 2 Obj)" -command "ac3d xplane_do_map_from_obj"
+.mbar.xplane.menu add command -label "Reload All Textures" -command "ac3d xplane_reload_texes"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Make Animation Group" -command "ac3d xplane_make_anim_group"
 .mbar.xplane.menu add command -label "Make Translation" -command "ac3d xplane_make_anim_typed translate"
@@ -776,6 +784,7 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Convert Directory to OBJ8..." -command "xplane_convert_dir"
 .mbar.xplane.menu add command -label "Bulk Export..." -command "ac3d xplane_bulk_export"
+.mbar.xplane.menu add command -label "By-Texture Export..." -command "ac3d xplane_tex_export"
 .mbar.xplane.menu add command -label "X-Plane Export Settings..." -command "xplane_prefs_dialog"
 .mbar.xplane.menu add command -label "Update from old plugin" -command "ac3d xplane_update_selection"
 
