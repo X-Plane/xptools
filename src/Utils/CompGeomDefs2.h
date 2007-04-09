@@ -29,7 +29,11 @@
 
 #include <math.h>
 #include <vector>
+#include <algorithm>
 using std::vector;
+using std::swap;
+using std::min;
+using std::max;
 
 struct	Point2;
 struct	Vector2;
@@ -131,6 +135,10 @@ struct	Vector2 {
 	// one rotated right 90 degrees.  What we really want is half base height sin theta - the 
 	// rotate right lets us write the thing in terms of cosine - the dot product then gives us
 	// the quanty len v1 * len v2 * cos theta.
+	// (NOTE: this is really a special case - the magnitude of the cross-product of two vectors
+	// is the signed area.  In the 2-d case the normal vector is entirely in the Z component, because
+	// the source vecotrs are in the XY plane, so we can "extract" the magnitude without the usual
+	// pythag theorem (saving a square route).
 	double	signed_area(const Vector2& v) const { return (dx * v.dy - dy * v.dx) * 0.5; }
 
 	// Vector projection of other onto US!

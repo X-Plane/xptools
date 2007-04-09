@@ -211,6 +211,7 @@ struct	Plane3 {
 	double	distance_denormaled(const Point3& p) const;
 	void	normalize();	
 	
+	Point3	projection(const Point3& p) const;
 	
 	Vector3		n;
 	double		ndotp;	
@@ -505,7 +506,17 @@ inline void Plane3::normalize()
 	}
 }
 
-
+inline Point3	Plane3::projection(const Point3& p) const
+{
+	// This is the LENGTH of the distance from the plane to P
+	// in UNITS of the normal vector "this->n".  Note that since this->n has
+	// direction this value is POSITIVE only if we are on the same side as our normal vector.
+	double dist = n.dot(Vector3(p)) - ndotp;
+	
+	// Therefore ouor point is here:
+	
+	return p - n * dist;	
+}
 
 inline	Point3	Bezier3::midpoint(double t) const
 {
