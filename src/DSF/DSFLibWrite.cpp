@@ -886,21 +886,28 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		for (polySpec = polygons.begin(); polySpec != polygons.end(); ++polySpec)
 		{
 			UpdatePoolState(fi, polySpec->type, polySpec->pool + offset_to_poly_pool_of_depth[polySpec->hash_depth], curDef, curPool);
+			if (polySpec->intervals.size() < 2) Assert(!"ERROR: only one range in polygon primitive.\n");
+			if (polySpec->param < 0    )		Assert(!"ERROR: polygon param < 0.\n");
+			if (polySpec->param > 65535)		Assert(!"ERROR: polygon param > 65535.\n");
 			if (polySpec->intervals.size() <= 2)
 			{
 				WriteUInt8(fi, dsf_Cmd_PolygonRange);
 				WriteUInt16(fi, polySpec->param);
 				if (polySpec->intervals[0] > 65535) Assert(!"ERROR: polygon range start too large.\n");
 				if (polySpec->intervals[1] > 65535) Assert(!"ERROR: polygon range end too large.\n");
+				if (polySpec->intervals[0] < 0    ) Assert(!"ERROR: polygon range start too small.\n");
+				if (polySpec->intervals[1] < 0    ) Assert(!"ERROR: polygon range end too small.\n");
 				WriteUInt16(fi, polySpec->intervals[0]);
 				WriteUInt16(fi, polySpec->intervals[1]);
 			} else {
 				WriteUInt8(fi, dsf_Cmd_NestedPolygonRange);
 				WriteUInt16(fi, polySpec->param);
+				if (polySpec->intervals.size() > 256) Assert(!"Error: too many intervals in polygon.\n");
 				WriteUInt8(fi, polySpec->intervals.size() - 1);
 				for (i = 0; i < polySpec->intervals.size(); ++i)
 				{
-					if (polySpec->intervals[i] > 65535) Assert(!"ERROR: polygon index out of range.\n");
+					if (polySpec->intervals[i] > 65535) Assert(!"ERROR: polygon index out of range (>65535).\n");
+					if (polySpec->intervals[i] < 0	  ) Assert(!"ERROR: polygon index out of range (<0    ).\n");
 					WriteUInt16(fi, polySpec->intervals[i]);			
 				}
 			}
