@@ -1,43 +1,47 @@
 #include "WED_MapPane.h"
 
-WED_MapPane::WED_MapPane()
+WED_MapPane::WED_MapPane(double map_bounds[4], IResolver * resolver, GUI_Broadcaster * archive_broadcaster) :
+	mBkgnd(&mMap, resolver),
+	mMarquee(&mMap, &mMap, resolver, "world", "selection"),
+	mCreatePoly(&mMap, &mMap, resolver)
 {
+	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
+	map_scroller->SetParent(this);
+	map_scroller->Show();
+	map_scroller->SetSticky(1,1,1,1);
+	
+	this->PackPane(map_scroller, gui_Pack_Center);
+	
+	mMap.SetParent(map_scroller);
+	mMap.Show();
+	map_scroller->PositionInContentArea(&mMap);
+	map_scroller->SetContent(&mMap);
+	
+//	mMap.SetMapVisibleBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
+	mMap.SetMapLogicalBounds(map_bounds[0], map_bounds[1], map_bounds[2], map_bounds[3]);
+
+	mMap.ZoomShowAll();
+
+	mMap.AddLayer(&mBkgnd);
+	mMap.AddLayer(&mCreatePoly);
+	mMap.SetTool(&mCreatePoly);
+	
+	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
+	// 1. On the commit of any operation.
+	// 2. On the undo or redo of any operation.
+	// So ... for lack of a better idea right now, we simply broker a connection between the source opf these
+	// messages (secretly it's our document's GetArchive() member) and anyone who needs it (our map).
+	
+	archive_broadcaster->AddListener(&mMap);
 }
 
 WED_MapPane::~WED_MapPane()
 {
 }
 
-void		WED_MapPane::SetBounds(int x1, int y1, int x2, int y2)
-{
-	GUI_Pane::SetBounds(x1,y1,x2,y2);
-	SetPixelBounds(x1,y1,x2,y2);
-}
 
-void		WED_MapPane::SetBounds(int inBounds[4])
-{
-	GUI_Pane::SetBounds(inBounds);
-	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
-}
 
-void		WED_MapPane::Draw(GUI_GraphState * state)
+void	WED_MapPane::ZoomShowAll(void)
 {
-}
-
-int			WED_MapPane::MouseDown(int x, int y, int button)
-{
-	return 0;
-}
-
-void		WED_MapPane::MouseDrag(int x, int y, int button)
-{
-}
-
-void		WED_MapPane::MouseUp  (int x, int y, int button)
-{
-}
-
-int			WED_MapPane::ScrollWheel(int x, int y, int dist, int axis)
-{
-	return 0;
+	mMap.ZoomShowAll();
 }

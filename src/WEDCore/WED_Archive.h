@@ -27,8 +27,9 @@ class	WED_Persistent;
 class	WED_UndoLayer;
 class	WED_UndoMgr;
 
+#include "GUI_Broadcaster.h"
 
-class	WED_Archive {
+class	WED_Archive : public GUI_Broadcaster {
 public:
 
 					WED_Archive();

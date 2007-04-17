@@ -1,3 +1,4 @@
+#if 0
 #include "WED_ObjectLayers.h"
 #include "WED_ObjectPlacements.h"
 #include "GUI_GraphState.h"
@@ -123,3 +124,4 @@ void				WED_ObjectLayers::HandleMouseUp(
 						int						button)
 {
 }
+#endif

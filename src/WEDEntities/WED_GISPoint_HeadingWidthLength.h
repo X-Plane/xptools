@@ -15,6 +15,8 @@ public:
 	virtual	double	GetLength(void		 ) const;
 	virtual	void	SetLength(double width)      ;
 
+	virtual	void	GetCorners(Point2 corners[4]) const;
+
 private:
 
 		WED_PropDoubleText		width;

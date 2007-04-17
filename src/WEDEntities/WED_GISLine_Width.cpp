@@ -1,4 +1,5 @@
 #include "WED_GISLine_Width.h"
+#include "GISUtils.h"
 
 START_CASTING(WED_GISLine_Width)
 IMPLEMENTS_INTERFACE(IGISEntity)
@@ -35,4 +36,23 @@ void	WED_GISLine_Width::SetWidth (double w)
 		StateChanged();
 		width.value = w;
 	}
+}
+
+void	WED_GISLine_Width::GetCorners(Point2 corners[4]) const
+{
+	Point2		p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+	Vector2	dir(p1,p2);
+	dir.normalize();
+	Vector2 right(dir.perpendicular_cw());
+	
+	corners[0] = p1 - right * GetWidth() * 0.5;
+	corners[1] = p2 - right * GetWidth() * 0.5;
+	corners[2] = p2 + right * GetWidth() * 0.5;
+	corners[3] = p1 + right * GetWidth() * 0.5;
+	
+	MetersToLLE(p1, 1, corners  );
+	MetersToLLE(p2, 2, corners+1);
+	MetersToLLE(p1, 1, corners+3);
 }

@@ -17,6 +17,7 @@ public:
 	virtual	double	GetWidth (void		 ) const;
 	virtual	void	SetWidth (double width)      ;
 		
+	virtual	void	GetCorners(Point2 corners[4]) const;
 
 private:
 

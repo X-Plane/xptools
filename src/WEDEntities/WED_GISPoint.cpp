@@ -52,8 +52,12 @@ bool				WED_GISPoint::PtOnFrame		(const Point2& p, double dist) const
 
 void			WED_GISPoint::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
-	longitude.value = old_bounds.rescale_to_x(new_bounds,longitude.value);
-	latitude.value  = old_bounds.rescale_to_x(new_bounds,latitude.value );
+	if (old_bounds != new_bounds)
+	{
+		StateChanged();
+		longitude.value = old_bounds.rescale_to_x(new_bounds,longitude.value);
+		latitude.value  = old_bounds.rescale_to_y(new_bounds,latitude.value );
+	}
 }
 
 void	WED_GISPoint::GetLocation(      Point2& p) const

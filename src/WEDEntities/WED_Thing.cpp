@@ -7,6 +7,8 @@ START_CASTING(WED_Thing)
 IMPLEMENTS_INTERFACE(IPropertyObject)
 IMPLEMENTS_INTERFACE(IArray)
 IMPLEMENTS_INTERFACE(IDirectory)
+IMPLEMENTS_INTERFACE(IOperation)
+IMPLEMENTS_INTERFACE(WED_Persistent)
 BASE_CASE
 END_CASTING
 
@@ -186,4 +188,19 @@ IUnknown *		WED_Thing::Array_GetNth(int n)
 IUnknown *		WED_Thing::Directory_Find(const char * name)
 {
 	return GetNamedChild(name);
+}
+
+void	WED_Thing::StartOperation(const char * op_name)
+{
+	StartCommand(op_name);
+}
+
+void	WED_Thing::CommitOperation(void)
+{
+	CommitCommand();
+}
+
+void	WED_Thing::AbortOperation(void)
+{
+	AbortCommand();
 }

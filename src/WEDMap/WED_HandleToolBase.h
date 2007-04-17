@@ -14,6 +14,7 @@ class	WED_HandleToolBase : public WED_MapToolNew {
 public:
 
 						 WED_HandleToolBase(
+										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
 										const char *			root_path,
@@ -68,6 +69,8 @@ private:
 		DragType_t				mDragType;
 		int						mDragX;
 		int						mDragY;
+		int						mSelX;
+		int						mSelY;
 
 		int						mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;

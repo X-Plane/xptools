@@ -347,7 +347,7 @@ void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause)
 void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
 	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%s WHERE %s=%s;",mTable, mColumn, value.c_str(), id_col,id_val);
+	sprintf(cmd_buf,"UPDATE %s SET %s=\"%s\" WHERE %s=%s;",mTable, mColumn, value.c_str(), id_col,id_val);
 	sql_command cmd(db,cmd_buf,NULL);
 	int err = cmd.simple_exec();
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
@@ -406,17 +406,19 @@ void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause)
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0		k;
-	sql_row1<int>	v;	
-	int err = cmd.simple_exec(k,v);
+	sql_row0			k;
+	sql_row1<string>	v;	
+	int err = cmd.simple_exec(k,v);	
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
-	value = v.a;	
+	
+	value = ENUM_Lookup(v.a.c_str());
+	DebugAssert(ENUM_Domain(value)==domain);
 }
 
 void		WED_PropIntEnum::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
 	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%d WHERE %s=%s;",mTable, mColumn, value, id_col,id_val);
+	sprintf(cmd_buf,"UPDATE %s SET %s=%s WHERE %s=%s;",mTable, mColumn, ENUM_Fetch(value), id_col,id_val);
 	sql_command cmd(db,cmd_buf,NULL);
 	int err = cmd.simple_exec();
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
@@ -487,15 +489,17 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause)
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0		k;
-	sql_row1<int>	v;	
+	sql_row0			k;
+	sql_row1<string>	v;	
 	
 	value.clear();
 	cmd.begin();
 	int rc;
 	do {
 		rc = cmd.get_row(v);
-		value.insert(v.a);
+		value.insert(ENUM_Lookup(v.a.c_str()));		
+		DebugAssert(ENUM_Domain(ENUM_Lookup(v.a.c_str()))==domain);
+		
 	} while (rc == SQLITE_ROW); 
 	
 	if (rc != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, rc, sqlite3_errmsg(db));
@@ -517,11 +521,11 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 		sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
 		sql_command cmd2(db,cmd_buf,"@e");
 		
-		sql_row1<int>	p;
+		sql_row1<string>	p;
 		
 		for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
 		{
-			p.a = *i;
+			p.a = ENUM_Fetch(*i);
 			int err = cmd2.simple_exec(p);
 			if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 		}

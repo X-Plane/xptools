@@ -2,6 +2,7 @@
 
 #include "IODefs.h"
 #include "SQLUtils.h"
+#include "GISUtils.h"
 #include "WED_Errors.h"
 
 START_CASTING(WED_GISPoint_HeadingWidthLength)
@@ -52,3 +53,21 @@ void	WED_GISPoint_HeadingWidthLength::SetLength(double l)
 	}
 }
 
+void	WED_GISPoint_HeadingWidthLength::GetCorners(Point2 corners[4]) const
+{
+	Vector2		dir;
+	Point2		center;
+	GetLocation(center);
+	
+	NorthHeading2Vector(center, center, GetHeading(),dir);	
+	Vector2 right(dir.perpendicular_cw());
+	
+	Point2	zero(0,0);
+	
+	corners[0] = zero - dir * GetLength() * 0.5 - right * GetWidth() * 0.5;
+	corners[1] = zero + dir * GetLength() * 0.5 - right * GetWidth() * 0.5;
+	corners[2] = zero + dir * GetLength() * 0.5 + right * GetWidth() * 0.5;
+	corners[3] = zero - dir * GetLength() * 0.5 + right * GetWidth() * 0.5;
+	
+	MetersToLLE(center, 4, corners);
+}

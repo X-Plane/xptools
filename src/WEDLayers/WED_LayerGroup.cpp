@@ -1,3 +1,4 @@
+#if 0
 #include "WED_LayerGroup.h"
 #include "WED_Messages.h"
 
@@ -180,3 +181,5 @@ void				WED_LayerGroup::ReceiveMessage(
 	}
 }
 
+
+#endif

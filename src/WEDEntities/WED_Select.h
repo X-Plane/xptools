@@ -31,14 +31,15 @@ public:
 	virtual		void			Insert(IUnknown * who);
 	virtual		void			Erase (IUnknown * who);
 
+	virtual		int				GetSelectionCount(void) const;
 	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const;
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const;
 
 	// WED_Persistent
-	virtual	void 			ReadFrom(IOReader * reader);
-	virtual	void 			WriteTo(IOWriter * writer);
-	virtual void			FromDB(sqlite3 * db);
-	virtual void			ToDB(sqlite3 * db);
+	virtual		void 			ReadFrom(IOReader * reader);
+	virtual		void 			WriteTo(IOWriter * writer);
+	virtual		void			FromDB(sqlite3 * db);
+	virtual		void			ToDB(sqlite3 * db);
 	
 private:
 

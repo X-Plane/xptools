@@ -117,6 +117,24 @@ IGISPointSequence *		WED_GISPolygon::GetNthHole  (int n)	const
 	return sq;
 }
 
+void				WED_GISPolygon::DeleteHole  (int n)
+{
+	WED_Thing * h = GetNthChild(n);
+	h->SetParent(NULL, 0);
+	h->Delete();
+}
+
+void				WED_GISPolygon::AddHole		(IGISPointSequence * r)
+{
+#if !DEV
+examine this -- does this make sense?
+#endif
+
+	WED_Thing * t = SAFE_CAST(WED_Thing, r);
+	DebugAssert(t != NULL);	
+	DebugAssert(r->GetGISClass() == gis_Ring);
+	t->SetParent(this,CountChildren());
+}
 
 Bezier_Seq_Iterator::Bezier_Seq_Iterator(IGISPointSequence * seq, int n) :
 	mSeq(seq), mIndex(n)

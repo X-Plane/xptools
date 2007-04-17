@@ -17,7 +17,7 @@ WED_PropertyTable::WED_PropertyTable(
 {
 	while(*col_names)
 		mColNames.push_back(*col_names++);
-	selection->AddListener(this);
+//	selection->AddListener(this);
 }
 
 WED_PropertyTable::~WED_PropertyTable()
@@ -66,13 +66,14 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Enum:
 		the_content.content_type = gui_Cell_Enum;
 		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
+		the_content.int_val = val.int_val;
 		break;
 	}
 	
 	the_content.can_edit = inf.can_edit;
 	the_content.can_disclose = (cell_x == 0) && t->CountChildren() > 0;
 	the_content.is_disclosed = 	mOpen[t->GetID()] != 0 && the_content.can_disclose;
-	the_content.indent_level = GetThingDepth(t);
+	the_content.indent_level = (cell_x == 0) ? GetThingDepth(t) : 0;	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 	#if !DEV
 		enforce entity locking here?
 	#endif
@@ -83,6 +84,13 @@ void	WED_PropertyTable::GetEnumDictionary(
 						int							cell_y, 
 						map<int, string>&			out_dictionary)
 {
+	out_dictionary.clear();
+	WED_Thing * t = FetchNth(cell_y);
+	
+	int idx = t->FindProperty(mColNames[cell_x].c_str());
+	if (idx == -1) return;	
+	
+	t->GetNthPropertyDict(idx, out_dictionary);
 }
 
 void	WED_PropertyTable::AcceptEdit(
@@ -115,7 +123,7 @@ void	WED_PropertyTable::AcceptEdit(
 		break;
 	case prop_Enum:
 		val.prop_kind = prop_Enum;
-//		t->GetNthPropertyDictItem(idx, val.int_val,the_content.text_val);
+		val.int_val = the_content.int_val;
 		break;
 	}
 	string foo = string("Change ") + inf.prop_name;
@@ -240,7 +248,8 @@ void	WED_PropertyTable::ReceiveMessage(
 							int						inMsg,
 							int						inParam)
 {
-	if (inMsg == msg_SelectionChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
+//	if (inMsg == msg_SelectionChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
+	if (inMsg == msg_ArchiveChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
 
 

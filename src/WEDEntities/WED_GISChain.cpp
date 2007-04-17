@@ -106,6 +106,13 @@ int					WED_GISChain::GetNumPoints(void ) const
 	return CountChildren();
 }
 
+void	WED_GISChain::DeletePoint(int n)
+{
+	WED_Thing * k = GetNthChild(n);
+	k->SetParent(NULL, 0);
+	k->Delete();
+}
+
 
 IGISPoint *	WED_GISChain::GetNthPoint (int n) const
 {
@@ -128,8 +135,8 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	
 	IGISPoint * p1 = this->GetNthPoint(n1);
 	IGISPoint * p2 = this->GetNthPoint(n2);
-	IGISPoint_Bezier * c1 = SAFE_CAST(IGISPoint_Bezier,p1);
-	IGISPoint_Bezier * c2 = SAFE_CAST(IGISPoint_Bezier,p2);
+	IGISPoint_Bezier * c1 = (p1->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p1) : NULL;
+	IGISPoint_Bezier * c2 = (p2->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p2) : NULL;
 
 	if (c1 == NULL && c2 == NULL)
 	{

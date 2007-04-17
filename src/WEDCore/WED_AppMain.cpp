@@ -43,17 +43,19 @@
 
 #include "WED_Menus.h"
 
-#include "WED_Root.h"
-#include "WED_Group.h"
-#include "WED_ObjPlacement.h"
-#include "WED_Select.h"
-#include "WED_AirportBeacon.h"
 
 #include "GUI_ScrollerPane.h"
 #include "GUI_Textfield.h"
 #include "GUI_Splitter.h"
 
+extern void		WED_Root_Register();	
+extern void		WED_ObjPlacement_Register();
+extern void		WED_Group_Register();
+extern void		WED_Select_Register();
+extern void		WED_AirportBeacon_Register();
+extern void		WED_KeyObjects_Register();
 
+#include "WED_EnumSystem.h"
 
 
 
@@ -171,12 +173,14 @@ int main(int argc, const char * argv[])
 //	RegisterSpecialCommands();
 	
 	WED_AssertInit();
-
-	WED_Root::Register();	
-	WED_ObjPlacement::Register();
-	WED_Group::Register();
-	WED_Select::Register();
-	WED_AirportBeacon::Register();
+	ENUM_Init();
+	
+	WED_Root_Register();	
+	WED_ObjPlacement_Register();
+	WED_Group_Register();
+	WED_Select_Register();
+	WED_AirportBeacon_Register();
+	WED_KeyObjects_Register();
 	
 //	XPInitDefaultMargins();
 /*

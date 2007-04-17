@@ -21,8 +21,9 @@
 #include "WED_PropertyHelper.h"
 #include "IArray.h"
 #include "IDirectory.h"
+#include "IOperation.h"
 
-class	WED_Thing : public WED_Persistent, public WED_PropertyHelper, public virtual IArray, public virtual IDirectory {
+class	WED_Thing : public WED_Persistent, public WED_PropertyHelper, public virtual IArray, public virtual IDirectory, public virtual IOperation {
 
 DECLARE_INTERMEDIATE(WED_Thing)
 
@@ -52,7 +53,11 @@ public:
 	
 	// IDirectory
 	virtual	IUnknown *	Directory_Find(const char * name);
-	
+
+	// IOperation
+	virtual		void			StartOperation(const char * op_name);
+	virtual		void			CommitOperation(void);
+	virtual		void			AbortOperation(void);		
 	
 private:
 			void				AddChild(int id, int n);

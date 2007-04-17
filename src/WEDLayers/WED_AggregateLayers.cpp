@@ -1,3 +1,4 @@
+#if 0
 #include "WED_AggregateLayers.h"
 #include "WED_Messages.h"
 
@@ -160,3 +161,4 @@ void	WED_AggregateLayers::ReceiveMessage(
 		break;
 	}
 }
+#endif

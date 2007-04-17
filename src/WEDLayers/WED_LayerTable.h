@@ -1,3 +1,4 @@
+NOT SED
 #ifndef WED_LAYERTABLE_H
 #define WED_LAYERTABLE_H
 

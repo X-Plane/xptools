@@ -25,6 +25,25 @@
 
 #include "GUI_ScrollerPane.h"
 
+/*
+
+	The map zoomer maintains a relationship between logical and screen coordinates
+	AND maintains a "windowing" system.  Thus it does scrolling and viewing at the same time.
+
+	It does this with two rectangles:
+	
+	- Visible bounds - what we can see.
+	- Total bounds - the entire image.
+	
+	It does this with two coordinate systems:
+	
+	- Pixels - screen drawing units.
+	- Logical - whatever units our map is in (degrees lat/lon for WED).
+	
+	Thus we have the pixel visible bounds, logical visible bounds, and logical total bounds.
+
+*/
+
 class	WED_MapZoomerNew : public GUI_ScrollerPaneContent {
 public:
 

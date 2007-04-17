@@ -3,26 +3,35 @@
 #include "IResolver.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
+#if !DEV
+casting macros in wed persistent ? hrm
+#endif
+#include "WED_Persistent.h"
+
+START_CASTING(WED_MarqueeTool)
+IMPLEMENTS_INTERFACE(IControlHandles)
+BASE_CASE
+END_CASTING												\
 
 //	HANDLES			LINKS
 // 2-3-4			+2-3+
 // |   |			1	4
-// 1   5			|   |
+// 1 8 5			|   |
 // |   |			0	5
 // 0-7-6			+7-6+
 
 // This maps the relative contribution of a box corner to a handle.  So the 0th handle
 // is made entirely of the first point (for both X and Y).
-static const double kControlsX1[8] = {	1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.0, 0.5 };
-static const double kControlsX2[8] = {	0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 0.5 };
-static const double kControlsY1[8] = {	1.0, 0.5, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0 };
-static const double kControlsY2[8] = {	0.0, 0.5, 1.0, 1.0, 1.0, 0.5, 0.0, 0.0 };
+static const double kControlsX1[9] = {	1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.0, 0.5, 0.5 };
+static const double kControlsX2[9] = {	0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 0.5, 0.5 };
+static const double kControlsY1[9] = {	1.0, 0.5, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 0.5 };
+static const double kControlsY2[9] = {	0.0, 0.5, 1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5 };
 
 // How much to transform each point given a handle move!
-static const double kApplyCtrlX1[8] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-static const double kApplyCtrlX2[8] = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0 };
-static const double kApplyCtrlY1[8] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 };
-static const double kApplyCtrlY2[8] = { 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+static const double kApplyCtrlX1[9] = { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
+static const double kApplyCtrlX2[9] = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0 };
+static const double kApplyCtrlY1[9] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 };
+static const double kApplyCtrlY2[9] = { 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
 
 // How much to transform each point when we drag a LINK!
 static const double kApplyLinkX1[8] = { 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -31,11 +40,12 @@ static const double kApplyLinkY1[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 }
 static const double kApplyLinkY2[8] = { 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 
 WED_MarqueeTool::WED_MarqueeTool(
+										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
 										const char *			root_path,
 										const char *			selection_path) :
-				WED_HandleToolBase(zoomer, resolver, root_path, selection_path),				
+				WED_HandleToolBase(host, zoomer, resolver, root_path, selection_path),				
 				mResolver(resolver),
 				mSelection(selection_path)				
 {
@@ -46,9 +56,27 @@ WED_MarqueeTool::~WED_MarqueeTool()
 {
 }
 
+void	WED_MarqueeTool::BeginEdit(void)
+{
+	IOperation * sel = SAFE_CAST(IOperation,mResolver->Resolver_Find(mSelection.c_str()));
+	DebugAssert(sel != NULL);
+	sel->StartOperation("Marquee Drag");
+}
+
+void	WED_MarqueeTool::EndEdit(void)
+{
+	IOperation * sel = SAFE_CAST(IOperation,mResolver->Resolver_Find(mSelection.c_str()));
+	DebugAssert(sel != NULL);
+	sel->CommitOperation();
+}
+
 int		WED_MarqueeTool::CountEntities(void) const
 {
-	return 1;
+	ISelection * sel = SAFE_CAST(ISelection,mResolver->Resolver_Find(mSelection.c_str()));
+	DebugAssert(sel != NULL);
+
+	if (sel->GetSelectionCount() == 0)	return 0;
+										return 1;
 }
 
 int		WED_MarqueeTool::GetNthEntityID(int n) const
@@ -58,7 +86,10 @@ int		WED_MarqueeTool::GetNthEntityID(int n) const
 
 int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 {
-	return 8;
+	Bbox2	bounds;
+	if (!GetTotalBounds(bounds))	return 0;
+	if (bounds.is_point())			return 1;
+									return 9;
 }
 
 void	WED_MarqueeTool::GetNthControlHandle(int id, int n,		 Point2& p) const
@@ -69,6 +100,8 @@ void	WED_MarqueeTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 		p = Point2(); return;
 	}
 	
+	if (bounds.is_point()) n = 8;
+
 	p.x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
 	p.y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
 }
@@ -77,6 +110,9 @@ void	WED_MarqueeTool::SetNthControlHandle(int id, int n, const Point2& p)
 {
 	Bbox2	bounds;
 	if (!GetTotalBounds(bounds)) return;
+	
+	if (bounds.is_point()) n = 8;
+	
 	Point2 old;
 	
 	old.x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
@@ -87,7 +123,10 @@ void	WED_MarqueeTool::SetNthControlHandle(int id, int n, const Point2& p)
 
 int		WED_MarqueeTool::GetLinks		    (int id) const
 {
-	return 8;
+	Bbox2	bounds;
+	if (!GetTotalBounds(bounds))	return 0;
+	if (bounds.is_point())			return 0;
+									return 8;
 }
 
 int		WED_MarqueeTool::GetNthLinkSource   (int id, int n) const
@@ -130,6 +169,8 @@ void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta)
 	Bbox2	old_b, new_b;
 	if (!GetTotalBounds(old_b)) return;
 	new_b = old_b;
+	
+	if (old_b.is_point()) c = 8;
 	
 	new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
 	new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
@@ -218,8 +259,9 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 	{
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		if (ent)
+		{
 			ent->Rescale(old_bounds,new_bounds);
+		}
 	}	
 
 }
-

@@ -40,8 +40,8 @@ private:
 
 	WED_Document *				mDocument;
 
-	WED_PropertyTable *			mTestTable;	
-	WED_PropertyTableHeader *	mTestTableHeader;
+//	WED_PropertyTable *			mTestTable;	
+//	WED_PropertyTableHeader *	mTestTableHeader;
 
 //	WED_ObjectLayers *		mObjects;
 //	WED_LayerGroup *		mObjectGroup;	

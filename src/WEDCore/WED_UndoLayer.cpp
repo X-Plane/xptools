@@ -28,9 +28,9 @@ void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 		// destroy + recreate = change
 		Assert(iter->second.op == op_Destroyed);		
 		iter->second.op = op_Changed;
-		delete iter->second.buffer;
-		iter->second.buffer = new WED_Buffer;		
-		inObject->WriteTo(iter->second.buffer);	
+//		delete iter->second.buffer;
+//		iter->second.buffer = new WED_Buffer;		
+//		inObject->WriteTo(iter->second.buffer);	
 		
 	} else {	
 		// Brand new object
@@ -58,9 +58,12 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 			// Creation - nothing to do - we don't save state for newly
 			// created objects.
 		} else {
-			delete iter->second.buffer;
-			iter->second.buffer = new WED_Buffer;		
-			inObject->WriteTo(iter->second.buffer);	
+		#if !DEV
+			doc why this logic is wrong - hint -- we only need to save the FIRST change not the most RECENT one!
+		#endif
+//			delete iter->second.buffer;
+//			iter->second.buffer = new WED_Buffer;		
+//			inObject->WriteTo(iter->second.buffer);	
 		}
 	} else {
 		// First time changed
@@ -90,9 +93,9 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 			mObjects.erase(iter);			
 		} else {
 			iter->second.op = op_Destroyed;
-			delete iter->second.buffer;
-			iter->second.buffer = new WED_Buffer;		
-			inObject->WriteTo(iter->second.buffer);	
+//			delete iter->second.buffer;
+//			iter->second.buffer = new WED_Buffer;		
+//			inObject->WriteTo(iter->second.buffer);	
 		}
 	} else {
 		// First time changed

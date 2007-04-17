@@ -72,7 +72,6 @@ public: 															\
 	static __Class * CreateTyped(									\
 								WED_Archive *	parent,				\
 								int				inID);				\
-	static void				Register(void);							\
 	virtual const char * 	GetClass(void) const;					\
 	virtual void * 			QueryInterface(const char * class_id);	\
 protected:															\
@@ -107,9 +106,10 @@ __Class * __Class::CreateTyped(									\
 	return r;													\
 }																\
 																\
-void __Class::Register(void) 									\
+void __Class##_Register(void); 									\
+void __Class##_Register(void) 									\
 {																\
-	WED_Persistent::Register(#__Class, Create);					\
+	WED_Persistent::Register(#__Class, __Class::Create);		\
 }																\
 																\
 const char * __Class::GetClass(void) const						\
@@ -135,8 +135,6 @@ void * __Class::QueryInterface(const char * class_id)			\
 	
 #define END_CASTING												\
 }
-
-
 
 
 

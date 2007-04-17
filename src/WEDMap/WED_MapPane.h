@@ -1,26 +1,28 @@
 #ifndef WED_MAPPANE_H
 #define WED_MAPPANE_H
 
+#include "WED_Map.h"
 #include "GUI_Pane.h"
-#include "WED_MapZoomerNew.h"
+#include "GUI_Packer.h"
+#include "WED_MapBkgnd.h"
+#include "WED_MarqueeTool.h"
+#include "WED_CreatePolygonTool.h"
 
-class	WED_MapPane : public GUI_Pane, public WED_MapZoomerNew {
+class	IResolver;
+
+class	WED_MapPane : public GUI_Packer {
 public:
 		
-						 WED_MapPane();
-						~WED_MapPane();
+						 WED_MapPane(double log_bounds[4], IResolver * resolver, GUI_Broadcaster * archive_broadcaster);
+	virtual				~WED_MapPane();
 
-	virtual void		SetBounds(int x1, int y1, int x2, int y2);
-	virtual void		SetBounds(int inBounds[4]);
-
-	virtual	void		Draw(GUI_GraphState * state);
+			void		ZoomShowAll(void);
+private:
 	
-	virtual	int			MouseDown(int x, int y, int button);
-	virtual	void		MouseDrag(int x, int y, int button);
-	virtual	void		MouseUp  (int x, int y, int button);
-	virtual	int			ScrollWheel(int x, int y, int dist, int axis);
-
-
+	WED_Map					mMap;
+	WED_MapBkgnd			mBkgnd;
+	WED_MarqueeTool			mMarquee;
+	WED_CreatePolygonTool	mCreatePoly;
 };
 
 

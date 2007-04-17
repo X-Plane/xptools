@@ -6,6 +6,7 @@
 #include "WED_Errors.h"
 #include "sqlite3.h"
 #include "SQLUtils.h"
+#include "WED_Messages.h"
 
 WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1)
 {
@@ -138,6 +139,7 @@ void			WED_Archive::CommitCommand(void)
 {
 	DebugAssert(mUndoMgr != NULL);
 	mUndoMgr->CommitCommand();
+	BroadcastMessage(msg_ArchiveChanged,0);
 }
 
 void			WED_Archive::AbortCommand(void)

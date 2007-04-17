@@ -44,6 +44,7 @@ void WED_KeyObjects::Directory_Edit(const char * name, IUnknown * who)
 
 void 			WED_KeyObjects::ReadFrom(IOReader * reader)
 {
+	WED_Thing::ReadFrom(reader);
 	choices.clear();
 	int n;
 	reader->ReadInt(n);
@@ -62,6 +63,7 @@ void 			WED_KeyObjects::ReadFrom(IOReader * reader)
 
 void 			WED_KeyObjects::WriteTo(IOWriter * writer)
 {
+	WED_Thing::WriteTo(writer);
 	writer->WriteInt(choices.size());
 	for (map<string,int>::iterator it = choices.begin(); it != choices.end(); ++it)
 	{
@@ -73,6 +75,7 @@ void 			WED_KeyObjects::WriteTo(IOWriter * writer)
 
 void			WED_KeyObjects::FromDB(sqlite3 * db)
 {
+	WED_Thing::FromDB(db);
 	choices.clear();
 	
 	int err;
@@ -92,6 +95,7 @@ void			WED_KeyObjects::FromDB(sqlite3 * db)
 
 void			WED_KeyObjects::ToDB(sqlite3 * db)
 {
+	WED_Thing::ToDB(db);
 	int err;
 	
 	{

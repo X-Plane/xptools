@@ -6,7 +6,7 @@
 #include "IResolver.h"
 #include "IGIS.h"
 #include "ISelection.h"
-
+#include "IOperation.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -39,10 +39,13 @@ static bool	ControlLinkToCurve(
 		h->GetNthControlHandle(ei,sp,s.p1);
 		h->GetNthControlHandle(ei,tp,s.p2);
 		
+		if (z)
+		{
 		s.p1.x = z->LonToXPixel(s.p1.x);
 		s.p2.x = z->LonToXPixel(s.p2.x);
 		s.p1.y = z->LatToYPixel(s.p1.y);
 		s.p2.y = z->LatToYPixel(s.p2.y);
+		}
 		return false;
 	} 
 	else
@@ -54,6 +57,7 @@ static bool	ControlLinkToCurve(
 		h->GetNthControlHandle(ei,tp,b.p2);
 		h->GetNthControlHandle(ei,tc,b.c2);
 		
+		if (z) {
 		b.p1.x = z->LonToXPixel(b.p1.x);
 		b.c1.x = z->LonToXPixel(b.c1.x);
 		b.p2.x = z->LonToXPixel(b.p2.x);
@@ -62,6 +66,7 @@ static bool	ControlLinkToCurve(
 		b.c1.y = z->LatToYPixel(b.c1.y);
 		b.p2.y = z->LatToYPixel(b.p2.y);
 		b.c2.y = z->LatToYPixel(b.c2.y);
+		}
 		return false;
 	}
 }
@@ -72,21 +77,25 @@ inline bool within_seg(const Segment2& s, const Point2& p, double r)
 	if (s.p1.squared_distance(p) < rs) return true;
 	if (s.p2.squared_distance(p) < rs) return true;
 
+	if (s.p1 == s.p2) return false;
+
 	if (Vector2(s.p1, s.p2).dot(Vector2(s.p1, p)) < 0.0) return false;
 	if (Vector2(s.p2, s.p1).dot(Vector2(s.p2, p)) < 0.0) return false;
 
 	Line2 l(s);
 	l.normalize();
-	return l.distance_denormaled(p) < r;
+	return fabs(l.distance_denormaled(p)) < r;
 }
 
 WED_HandleToolBase::WED_HandleToolBase(
+				GUI_Pane *				host,
 				WED_MapZoomerNew *		zoomer,
-				IResolver *				resolver,
+				IResolver *				resolver,				
 				const char *			root_path,
 				const char *			selection_path) :
-	WED_MapToolNew(zoomer,resolver),
+	WED_MapToolNew(host, zoomer,resolver),
 	mRoot(root_path),
+	mHandles(NULL),
 	mDragType(drag_None)
 {
 }
@@ -94,18 +103,21 @@ WED_HandleToolBase::WED_HandleToolBase(
 WED_HandleToolBase::~WED_HandleToolBase()
 {
 }
-	
-void		WED_HandleToolBase::SetControlProvider(IControlHandles * provider)
+
+void		WED_HandleToolBase::SetControlProvider(IControlHandles	* provider)
 {
 	mHandles = provider;
 }
 		
 int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 {
+	if (inButton > 0) return 0;
 	mDragX = inX;
 	mDragY = inY;
-	
-	Point2	click_pt(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
+	mSelX = inX;
+	mSelY = inY;
+
+	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
 	
 	int ei_count = mHandles ? mHandles->CountEntities() : 0;
 	int  c_count;
@@ -117,8 +129,8 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 	
 	//------------------------------ CONTROL HANDLE TAG-UP -------------------------------------------------------
 	
-	int mHandleEntity = -1;
-	int mHandleIndex = -1;
+	mHandleEntity = -1;
+	mHandleIndex = -1;
 	double best_dist = 9.9e9;
 	double this_dist;
 	
@@ -130,13 +142,17 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		{
 			Point2	cloc;
 			mHandles->GetNthControlHandle(eid,n,cloc);
-			if (mHandleEntity == -1 || ((this_dist=click_pt.squared_distance(cloc)) < best_dist))
+			cloc.x = GetZoomer()->LonToXPixel(cloc.x);
+			cloc.y = GetZoomer()->LatToYPixel(cloc.y);
+			if ((this_dist=click_pt.squared_distance(cloc)) < best_dist)
 			if (this_dist < HANDLE_RAD_SQR)
 			{
 				mHandleEntity = eid;
 				mHandleIndex = n;
 				best_dist = this_dist;
-				mDragType = drag_Handles;				
+				if (mDragType == drag_None)
+					mHandles->BeginEdit();			
+				mDragType = drag_Handles;	
 			}
 		}
 	}
@@ -161,6 +177,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 					mHandleIndex = n;
 					mDragType = drag_Links;
 					mHandleEntity = eid;
+					mHandles->BeginEdit();								
 					break;
 				}
 			}
@@ -171,6 +188,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 					mHandleIndex = n;
 					mDragType = drag_Links;
 					mHandleEntity = eid;
+					mHandles->BeginEdit();								
 					break;
 				}
 			}			
@@ -185,6 +203,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 	{
 		mDragType = drag_Move;
 		mHandleEntity = ei;
+		mHandles->BeginEdit();								
 		break;
 	}
 	
@@ -198,6 +217,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		mDragY = inY;
 		IGISEntity * ent_base = SAFE_CAST(IGISEntity, GetResolver()->Resolver_Find(mRoot.c_str()));
 		ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if (sel && ent_base)
 		{
 			set<IUnknown *>	sel_set;
@@ -208,9 +228,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 							GetZoomer()->YPixelToLat(inY));
 		
 			ProcessSelectionRecursive(ent_base, bounds, sel_set);
+			if(op) op->StartOperation("Change Selection");
 			sel->Clear();
 			for (set<IUnknown *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 				sel->Insert(*i);
+				
 			#if !DEV
 				set-based insertion??
 				start with click then breakout
@@ -259,13 +281,15 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 
 void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 {
+	if (inButton > 0) return;
+
 	switch(mDragType) {
 	case drag_Handles:
 	case drag_Links:
 	case drag_Move:
 		{
-			Point2	op(GetZoomer()->LonToXPixel(mDragX),GetZoomer()->LatToYPixel(mDragY));
-			Point2	np(GetZoomer()->LonToXPixel(   inX),GetZoomer()->LatToYPixel(   inY));
+			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
+			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
 			switch(mDragType) {
@@ -276,7 +300,9 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 		}
 		break;
 	case drag_Sel:
-		{			
+		{	
+			mSelX = inX;
+			mSelY = inY;
 			IGISEntity * ent_base = SAFE_CAST(IGISEntity, GetResolver()->Resolver_Find(mRoot.c_str()));
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
@@ -303,7 +329,19 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 
 void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton)
 {
+	if (inButton > 0) return;
+
 	this->HandleClickDrag(inX, inY, inButton);
+	if (mDragType == drag_Sel)
+	{
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		if(op) op->CommitOperation();
+	} else if ( mDragType == drag_Links || 
+				mDragType == drag_Handles ||
+				mDragType == drag_Move)
+	{
+		mHandles->EndEdit();
+	}
 	mDragType = drag_None;
 }
 
@@ -361,7 +399,19 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				glVertex2d(cpt.x + HANDLE_RAD, cpt.y + HANDLE_RAD);
 				glVertex2d(cpt.x + HANDLE_RAD, cpt.y - HANDLE_RAD);				
 			}
+			glEnd();
 		}
+	}
+	if (mDragType == drag_Sel)
+	{
+		g->SetState(false,false,false, false,false, false,false);
+		glColor3f(0.0f,1.0f,0.0f);
+		glBegin(GL_LINE_LOOP);
+		glVertex2i(min(mDragX, mSelX),min(mDragY,mSelY));
+		glVertex2i(min(mDragX, mSelX),max(mDragY,mSelY));
+		glVertex2i(max(mDragX, mSelX),max(mDragY,mSelY));
+		glVertex2i(max(mDragX, mSelX),min(mDragY,mSelY));
+		glEnd();		
 	}
 }
 

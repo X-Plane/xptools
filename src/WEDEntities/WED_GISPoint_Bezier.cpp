@@ -26,14 +26,18 @@ WED_GISPoint_Bezier::~WED_GISPoint_Bezier()
 
 GISClass_t		WED_GISPoint_Bezier::GetGISClass		(void				 ) const
 {
-	return gis_Point_Bezier;
+	Point2	c,me;
+	GetControlHandleHi(c);
+	GetLocation(me);
+	if (c == me) 	return gis_Point;
+					return gis_Point_Bezier;
 }
 
 void			WED_GISPoint_Bezier::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
 	WED_GISPoint::Rescale(old_bounds, new_bounds);
 	control_longitude.value = old_bounds.rescale_to_xv(new_bounds,control_longitude.value);
-	control_latitude.value  = old_bounds.rescale_to_xv(new_bounds,control_latitude.value );
+	control_latitude.value  = old_bounds.rescale_to_yv(new_bounds,control_latitude.value );
 }
 
 void	WED_GISPoint_Bezier::GetControlHandleLo (      Point2& p) const

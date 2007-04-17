@@ -1,3 +1,4 @@
+#if 0
 #include "WED_LayerTable.h"
 #include "WED_AbstractLayers.h"
 #include "WED_Messages.h"
@@ -184,3 +185,4 @@ void		WED_LayerTableGeometry::SetCellHeight(int n, int h)
 {
 }
 
+#endif

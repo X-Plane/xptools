@@ -2,6 +2,7 @@
 #include "WED_Archive.h"
 #include "WED_UndoLayer.h"
 #include "AssertUtils.h"
+#include "WED_Messages.h"
 
 // UNDO STACK ORDER IS:
 
@@ -67,13 +68,13 @@ bool	WED_UndoMgr::HasRedo(void) const
 string	WED_UndoMgr::GetUndoName(void) const
 {
 	DebugAssert(!mUndo.empty());
-	return mUndo.back()->GetName();
+	return "Undo " + mUndo.back()->GetName();
 }
 
 string	WED_UndoMgr::GetRedoName(void) const
 {
 	DebugAssert(!mRedo.empty());
-	return mRedo.front()->GetName();
+	return "Redo " + mRedo.front()->GetName();
 }
 
 void	WED_UndoMgr::Undo(void)
@@ -87,6 +88,7 @@ void	WED_UndoMgr::Undo(void)
 	mRedo.push_front(redo);
 	delete undo;
 	mUndo.pop_back();
+	mArchive->BroadcastMessage(msg_ArchiveChanged,0);	
 }
 
 void	WED_UndoMgr::Redo(void)
@@ -100,6 +102,7 @@ void	WED_UndoMgr::Redo(void)
 	mUndo.push_back(undo);
 	delete redo;
 	mRedo.pop_front();
+	mArchive->BroadcastMessage(msg_ArchiveChanged,0);
 }
 
 void	WED_UndoMgr::PurgeUndo(void)

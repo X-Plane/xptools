@@ -30,13 +30,10 @@ inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 
 WED_MapZoomerNew::WED_MapZoomerNew()
 {
-	printf("Size of zoomer is: %d\n", sizeof(WED_MapZoomerNew));
-	printf("Size of this is: %d\n", sizeof(*this));
-
 	mPixels[0] = 0.0;
 	mPixels[1] = 0.0;
-	mPixels[2] = 512.0;
-	mPixels[3] = 512.0;
+	mPixels[2] = 1.0;
+	mPixels[3] = 1.0;
 	mVisibleBounds[0] = mLogicalBounds[0] = 0.0;
 	mVisibleBounds[1] = mLogicalBounds[1] = 0.0;
 	mVisibleBounds[2] = mLogicalBounds[2] = 1.0;
@@ -78,6 +75,7 @@ void	WED_MapZoomerNew::SetPixelBounds(
 	mPixels[1] = inBottom;
 	mPixels[2] = inRight;
 	mPixels[3] = inTop;
+	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 					
 void	WED_MapZoomerNew::SetMapVisibleBounds(
@@ -301,13 +299,13 @@ void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisible
 void	WED_MapZoomerNew::ScrollH(float xOffset)
 {
 	mVisibleBounds[2] -= mVisibleBounds[0];
-	mVisibleBounds[0] = xOffset;
+	mVisibleBounds[0] = xOffset + mLogicalBounds[0];
 	mVisibleBounds[2] += mVisibleBounds[0];
 }
 
 void	WED_MapZoomerNew::ScrollV(float yOffset)
 {
 	mVisibleBounds[3] -= mVisibleBounds[1];
-	mVisibleBounds[1] = yOffset;
+	mVisibleBounds[1] = yOffset + mLogicalBounds[1];
 	mVisibleBounds[3] += mVisibleBounds[1];
 }

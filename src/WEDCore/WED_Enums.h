@@ -1,3 +1,7 @@
+ENUM_DOMAIN(Airport_Type, "Airport Type")
+	ENUM(type_Airport,	"Airport", 1)
+	ENUM(type_Seaport,	"Seaport", 16)
+	ENUM(type_Heliport,	"Heliport",17)
 
 ENUM_DOMAIN(Edge_Lights, "Runway Edge Light Types")
 	
@@ -6,8 +10,7 @@ ENUM_DOMAIN(Edge_Lights, "Runway Edge Light Types")
 	ENUM(edge_MIRL,	"MIRL",	2)
 //	ENUM(edge_HIRL,	"HIRL", 3)
 
-
-ENUM_DOMAIN(REIL_Lights,"Runway Edge Identifier Lights")
+ENUM_DOMAIN(REIL_Lights,"Runway End Identifier Lights")
 	ENUM(reil_None,"None",0)
 	ENUM(reil_Omni,"Omnidirectional REIL", 1)
 	ENUM(reil_Uni,"Unidirectional REIL",2)
@@ -24,6 +27,9 @@ ENUM_DOMAIN(Sign_Size,"Sign Size")
 	ENUM(size_LargeTaxi,"Large Taxiway", 3)
 	ENUM(size_LargeRemaining,"Large Distance Remaining",4)
 	ENUM(size_SmallRemaining,"Small Distance Remaining", 5)
+
+ENUM_DOMAIN(Sign_Style,"Sign Style")
+	ENUM(style_Default,"Default",0)
 
 ENUM_DOMAIN(Surface_Type,"Surface Type")
 	ENUM(surf_Asphalt,"Asphalt",1)
@@ -74,6 +80,9 @@ ENUM_DOMAIN(Runway_Markings,"Runway Markings")
 	ENUM(mark_Precis,			"Precision (US)",			3)
 	ENUM(mark_NonPrecisUK,		"Non-Precision (UK)",		4)
 	ENUM(mark_PrecisUK,			"Precision (UK)",			5)
+
+ENUM_DOMAIN(Helipad_Markings,"Helipad Markings")
+	ENUM(heli_Mark_Default,		"Default",					0)
 	
 ENUM_DOMAIN(Airport_Beacon,"Airport Beacon Type")
 	ENUM(beacon_Airport,		"Airport",					1)

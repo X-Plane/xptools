@@ -2,11 +2,12 @@
 #define WED_MAPTOOLNEW_H
 
 #include "WED_MapLayer.h"
+class	GUI_Pane;
 
 class	WED_MapToolNew : public WED_MapLayer {
 public:
 
-						 WED_MapToolNew(WED_MapZoomerNew * zoomer, IResolver * resolver);
+						 WED_MapToolNew(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_MapToolNew();
 
 	virtual	int			HandleClickDown(int inX, int inY, int inButton)=0;
@@ -23,6 +24,14 @@ public:
 	virtual	void		NthButtonPressed(int)=0;
 	
 	virtual	char *		GetStatusText(void)=0;
+
+protected:
+
+	inline	GUI_Pane *	GetHost(void) const { return mHost; }
+	
+private:
+		
+	GUI_Pane *		mHost;
 
 };
 

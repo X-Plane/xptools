@@ -23,8 +23,8 @@ public:
 	virtual			int						GetNumHoles (void ) const;
 	virtual			IGISPointSequence *		GetNthHole  (int n)	const;
 
-//	virtual			void					DeleteHole  (int n)					=0;
-//	virtual			void					AddHole		(IGISPointSequence * r) =0;
+	virtual			void					DeleteHole  (int n)					;
+	virtual			void					AddHole		(IGISPointSequence * r) ;
 
 };
 

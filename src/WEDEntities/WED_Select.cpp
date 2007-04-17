@@ -171,6 +171,11 @@ void		WED_Select::Erase(IUnknown * iwho)
 	}
 }
 
+int				WED_Select::GetSelectionCount(void) const
+{
+	return mSelected.size();
+}
+
 void			WED_Select::GetSelectionSet(set<IUnknown *>& sel) const
 {
 	sel.clear();
@@ -186,3 +191,4 @@ void			WED_Select::GetSelectionVector(vector<IUnknown *>& sel) const
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		sel.push_back(FetchPeer(*i));
 }
+
