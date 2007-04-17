@@ -125,6 +125,23 @@
 		D629FADF0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FADE0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp */; };
 		D629FB020B95E38900A2FB57 /* WED_HandleToolBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */; };
 		D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */; };
+		D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */; };
+		D62FC99E0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FC99C0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp */; };
+		D62FCC960BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCC950BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp */; };
+		D62FCDAB0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCDAA0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp */; };
+		D62FCE640BD513C600ED6CF8 /* WED_Windsock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCE630BD513C600ED6CF8 /* WED_Windsock.cpp */; };
+		D62FCE900BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCE8F0BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp */; };
+		D62FCEB60BD5191F00ED6CF8 /* WED_AirportSign.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCEB50BD5191F00ED6CF8 /* WED_AirportSign.cpp */; };
+		D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCEE10BD51B2900ED6CF8 /* WED_RampPosition.cpp */; };
+		D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCEEB0BD51BBE00ED6CF8 /* WED_LightFixture.cpp */; };
+		D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCEFD0BD51D9200ED6CF8 /* WED_Helipad.cpp */; };
+		D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCF300BD535AA00ED6CF8 /* WED_Runway.cpp */; };
+		D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCF6A0BD539EE00ED6CF8 /* WED_Sealane.cpp */; };
+		D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */; };
+		D62FCFBC0BD541BF00ED6CF8 /* WED_AirportNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */; };
+		D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */; };
+		D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */; };
+		D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */; };
 		D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6367D180B82123400091AFC /* WED_Select.cpp */; };
 		D63680BA0B8A0F4B00091AFC /* GUI_Destroyable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */; };
 		D636817C0B8AC62600091AFC /* WED_GISPoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */; };
@@ -360,7 +377,6 @@
 		D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */; };
 		D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */; };
-		D6A17FFA0BA5E61C00BBCD0C /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */; };
 		D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */; };
 		D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1807A0BA6017D00BBCD0C /* WED_KeyObjects.cpp */; };
 		D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A182020BA6196B00BBCD0C /* WED_Root.cpp */; };
@@ -478,7 +494,6 @@
 		D6ED36FD0B67964D00D5484E /* WED_DocumentWindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */; };
 		D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37C50AB22C85003949C5 /* WED_Errors.cpp */; };
 		D6ED36FF0B67964D00D5484E /* WED_LayerGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37D90AB22C85003949C5 /* WED_LayerGroup.cpp */; };
-		D6ED37000B67964D00D5484E /* WED_LayerPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37EB0AB22C85003949C5 /* WED_LayerPane.cpp */; };
 		D6ED37010B67964D00D5484E /* WED_LayerTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37DD0AB22C85003949C5 /* WED_LayerTable.cpp */; };
 		D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */; };
 		D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */; };
@@ -623,6 +638,41 @@
 		D629FBA80B962DC400A2FB57 /* IDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IDirectory.h; sourceTree = "<group>"; };
 		D629FBAB0B962E1100A2FB57 /* IResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IResolver.h; sourceTree = "<group>"; };
 		D629FBC00B962F5F00A2FB57 /* ISelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISelection.h; sourceTree = "<group>"; };
+		D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Map.cpp; sourceTree = "<group>"; };
+		D62FC99A0BCEF3D600ED6CF8 /* WED_Map.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Map.h; sourceTree = "<group>"; };
+		D62FC99C0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PropertyPane.cpp; sourceTree = "<group>"; };
+		D62FC99D0BCEF3E400ED6CF8 /* WED_PropertyPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PropertyPane.h; sourceTree = "<group>"; };
+		D62FC99F0BCEF3F300ED6CF8 /* IOperation.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = IOperation.h; sourceTree = "<group>"; };
+		D62FCC940BD3C6C600ED6CF8 /* WED_CreateToolBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateToolBase.h; sourceTree = "<group>"; };
+		D62FCC950BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreateToolBase.cpp; sourceTree = "<group>"; };
+		D62FCDA90BD40E5400ED6CF8 /* WED_CreatePolygonTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePolygonTool.h; sourceTree = "<group>"; };
+		D62FCDAA0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePolygonTool.cpp; sourceTree = "<group>"; };
+		D62FCE620BD513C600ED6CF8 /* WED_Windsock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Windsock.h; sourceTree = "<group>"; };
+		D62FCE630BD513C600ED6CF8 /* WED_Windsock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Windsock.cpp; sourceTree = "<group>"; };
+		D62FCE8E0BD5177D00ED6CF8 /* WED_TowerViewpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TowerViewpoint.h; sourceTree = "<group>"; };
+		D62FCE8F0BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TowerViewpoint.cpp; sourceTree = "<group>"; };
+		D62FCEB40BD5191F00ED6CF8 /* WED_AirportSign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportSign.h; sourceTree = "<group>"; };
+		D62FCEB50BD5191F00ED6CF8 /* WED_AirportSign.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportSign.cpp; sourceTree = "<group>"; };
+		D62FCEE00BD51B2900ED6CF8 /* WED_RampPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RampPosition.h; sourceTree = "<group>"; };
+		D62FCEE10BD51B2900ED6CF8 /* WED_RampPosition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RampPosition.cpp; sourceTree = "<group>"; };
+		D62FCEEA0BD51BBE00ED6CF8 /* WED_LightFixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LightFixture.h; sourceTree = "<group>"; };
+		D62FCEEB0BD51BBE00ED6CF8 /* WED_LightFixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LightFixture.cpp; sourceTree = "<group>"; };
+		D62FCEFC0BD51D9200ED6CF8 /* WED_Helipad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Helipad.h; sourceTree = "<group>"; };
+		D62FCEFD0BD51D9200ED6CF8 /* WED_Helipad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Helipad.cpp; sourceTree = "<group>"; };
+		D62FCF2F0BD535AA00ED6CF8 /* WED_Runway.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Runway.h; sourceTree = "<group>"; };
+		D62FCF300BD535AA00ED6CF8 /* WED_Runway.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Runway.cpp; sourceTree = "<group>"; };
+		D62FCF690BD539EE00ED6CF8 /* WED_Sealane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sealane.h; sourceTree = "<group>"; };
+		D62FCF6A0BD539EE00ED6CF8 /* WED_Sealane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sealane.cpp; sourceTree = "<group>"; };
+		D62FCF8B0BD53C7F00ED6CF8 /* WED_Airport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Airport.h; sourceTree = "<group>"; };
+		D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Airport.cpp; sourceTree = "<group>"; };
+		D62FCFBA0BD541BF00ED6CF8 /* WED_AirportNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportNode.h; sourceTree = "<group>"; };
+		D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportNode.cpp; sourceTree = "<group>"; };
+		D62FD0070BD54B9F00ED6CF8 /* WED_AirportChain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportChain.h; sourceTree = "<group>"; };
+		D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportChain.cpp; sourceTree = "<group>"; };
+		D62FD0B50BD555B800ED6CF8 /* WED_Taxiway.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Taxiway.h; sourceTree = "<group>"; };
+		D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Taxiway.cpp; sourceTree = "<group>"; };
+		D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportBoundary.h; sourceTree = "<group>"; };
+		D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBoundary.cpp; sourceTree = "<group>"; };
 		D6367D180B82123400091AFC /* WED_Select.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Select.cpp; sourceTree = "<group>"; };
 		D6367D190B82123400091AFC /* WED_Select.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Select.h; sourceTree = "<group>"; };
 		D63680B80B8A0F4B00091AFC /* GUI_Destroyable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Destroyable.h; sourceTree = "<group>"; };
@@ -701,8 +751,6 @@
 		D6A17E240BA59EF900BBCD0C /* WED_Enums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Enums.h; sourceTree = "<group>"; };
 		D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportBeacon.h; sourceTree = "<group>"; };
 		D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBeacon.cpp; sourceTree = "<group>"; };
-		D6A17FF80BA5E61C00BBCD0C /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
-		D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
 		D6A1801E0BA5F73700BBCD0C /* WED_ToolUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolUtils.h; sourceTree = "<group>"; };
 		D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolUtils.cpp; sourceTree = "<group>"; };
 		D6A180790BA6017D00BBCD0C /* WED_KeyObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_KeyObjects.h; sourceTree = "<group>"; };
@@ -998,8 +1046,6 @@
 		D6BC37E40AB22C85003949C5 /* WED_MapPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapPane.h; sourceTree = "<group>"; };
 		D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DocumentWindow.cpp; sourceTree = "<group>"; };
 		D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_DocumentWindow.h; sourceTree = "<group>"; };
-		D6BC37EB0AB22C85003949C5 /* WED_LayerPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LayerPane.cpp; sourceTree = "<group>"; };
-		D6BC37EC0AB22C85003949C5 /* WED_LayerPane.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_LayerPane.h; sourceTree = "<group>"; };
 		D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Menus.cpp; sourceTree = "<group>"; };
 		D6BC37EE0AB22C85003949C5 /* WED_Menus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Menus.h; sourceTree = "<group>"; };
 		D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageStatusPane.cpp; sourceTree = "<group>"; };
@@ -2100,6 +2146,8 @@
 		D6BC37E10AB22C85003949C5 /* WEDMap */ = {
 			isa = PBXGroup;
 			children = (
+				D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */,
+				D62FC99A0BCEF3D600ED6CF8 /* WED_Map.h */,
 				D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */,
 				D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */,
 				D6BC37E30AB22C85003949C5 /* WED_MapPane.cpp */,
@@ -2114,8 +2162,10 @@
 				D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */,
 				D629FB3B0B960A7200A2FB57 /* WED_MarqueeTool.h */,
 				D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */,
-				D6A17FF80BA5E61C00BBCD0C /* WED_CreatePointTool.h */,
-				D6A17FF90BA5E61C00BBCD0C /* WED_CreatePointTool.cpp */,
+				D62FCC940BD3C6C600ED6CF8 /* WED_CreateToolBase.h */,
+				D62FCC950BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp */,
+				D62FCDA90BD40E5400ED6CF8 /* WED_CreatePolygonTool.h */,
+				D62FCDAA0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp */,
 				D6A1801E0BA5F73700BBCD0C /* WED_ToolUtils.h */,
 				D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */,
 			);
@@ -2128,8 +2178,6 @@
 				D6BC37E80AB22C85003949C5 /* CVS.sandboxinfo */,
 				D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */,
 				D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */,
-				D6BC37EB0AB22C85003949C5 /* WED_LayerPane.cpp */,
-				D6BC37EC0AB22C85003949C5 /* WED_LayerPane.h */,
 				D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */,
 				D6BC37EE0AB22C85003949C5 /* WED_Menus.h */,
 				D6BC37EF0AB22C85003949C5 /* WED_PackageStatusPane.cpp */,
@@ -2444,6 +2492,8 @@
 		D6ED3EC70B6A750600D5484E /* WEDProperties */ = {
 			isa = PBXGroup;
 			children = (
+				D62FC99C0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp */,
+				D62FC99D0BCEF3E400ED6CF8 /* WED_PropertyPane.h */,
 				D6ED3EC80B6A753300D5484E /* WED_PropertyTable.h */,
 				D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */,
 			);
@@ -2467,24 +2517,50 @@
 				D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */,
 				D6A17F9A0BA5E2A200BBCD0C /* WED_AirportBeacon.h */,
 				D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */,
+				D62FCE620BD513C600ED6CF8 /* WED_Windsock.h */,
+				D62FCE630BD513C600ED6CF8 /* WED_Windsock.cpp */,
+				D62FCE8E0BD5177D00ED6CF8 /* WED_TowerViewpoint.h */,
+				D62FCE8F0BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp */,
 				D636817F0B8AC67B00091AFC /* WED_GISPoint_Bezier.h */,
 				D63681800B8AC67B00091AFC /* WED_GISPoint_Bezier.cpp */,
+				D62FCFBA0BD541BF00ED6CF8 /* WED_AirportNode.h */,
+				D62FCFBB0BD541BF00ED6CF8 /* WED_AirportNode.cpp */,
 				D63681840B8AC69200091AFC /* WED_GISPoint_Heading.h */,
 				D63681850B8AC69200091AFC /* WED_GISPoint_Heading.cpp */,
+				D62FCEB40BD5191F00ED6CF8 /* WED_AirportSign.h */,
+				D62FCEB50BD5191F00ED6CF8 /* WED_AirportSign.cpp */,
+				D62FCEE00BD51B2900ED6CF8 /* WED_RampPosition.h */,
+				D62FCEE10BD51B2900ED6CF8 /* WED_RampPosition.cpp */,
+				D62FCEEA0BD51BBE00ED6CF8 /* WED_LightFixture.h */,
+				D62FCEEB0BD51BBE00ED6CF8 /* WED_LightFixture.cpp */,
 				D6FF274C0B6E38D100960D5E /* WED_ObjPlacement.h */,
 				D6FF274D0B6E38D100960D5E /* WED_ObjPlacement.cpp */,
 				D63681890B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.h */,
 				D636818A0B8AC70600091AFC /* WED_GISPoint_HeadingWidthLength.cpp */,
+				D62FCEFC0BD51D9200ED6CF8 /* WED_Helipad.h */,
+				D62FCEFD0BD51D9200ED6CF8 /* WED_Helipad.cpp */,
 				D636818C0B8AC92300091AFC /* WED_GISLine.h */,
 				D636818D0B8AC92300091AFC /* WED_GISLine.cpp */,
 				D63681910B8AC94200091AFC /* WED_GISLine_Width.h */,
 				D63681920B8AC94200091AFC /* WED_GISLine_Width.cpp */,
+				D62FCF2F0BD535AA00ED6CF8 /* WED_Runway.h */,
+				D62FCF300BD535AA00ED6CF8 /* WED_Runway.cpp */,
+				D62FCF690BD539EE00ED6CF8 /* WED_Sealane.h */,
+				D62FCF6A0BD539EE00ED6CF8 /* WED_Sealane.cpp */,
 				D63681980B8AC9C200091AFC /* WED_GISChain.h */,
 				D63681990B8AC9C200091AFC /* WED_GISChain.cpp */,
+				D62FD0070BD54B9F00ED6CF8 /* WED_AirportChain.h */,
+				D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */,
 				D636819D0B8ACA1500091AFC /* WED_GISPolygon.h */,
 				D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */,
+				D62FD0B50BD555B800ED6CF8 /* WED_Taxiway.h */,
+				D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */,
+				D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */,
+				D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */,
 				D63681A00B8ACA2600091AFC /* WED_GISComposite.h */,
 				D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */,
+				D62FCF8B0BD53C7F00ED6CF8 /* WED_Airport.h */,
+				D62FCF8C0BD53C7F00ED6CF8 /* WED_Airport.cpp */,
 				D6FF2B880B6E985200960D5E /* WED_Group.h */,
 				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
 			);
@@ -2494,6 +2570,7 @@
 		D6FF28500B6E42B000960D5E /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				D62FC99F0BCEF3F300ED6CF8 /* IOperation.h */,
 				D636814D0B8AB87600091AFC /* IUnknown.h */,
 				D6FF28570B6E434C00960D5E /* IPropertyObject.h */,
 				D63681260B8A8D5000091AFC /* IGIS.h */,
@@ -3163,7 +3240,6 @@
 				D6ED36FD0B67964D00D5484E /* WED_DocumentWindow.cpp in Sources */,
 				D6ED36FE0B67964D00D5484E /* WED_Errors.cpp in Sources */,
 				D6ED36FF0B67964D00D5484E /* WED_LayerGroup.cpp in Sources */,
-				D6ED37000B67964D00D5484E /* WED_LayerPane.cpp in Sources */,
 				D6ED37010B67964D00D5484E /* WED_LayerTable.cpp in Sources */,
 				D6ED37020B67964D00D5484E /* WED_MapPane.cpp in Sources */,
 				D6ED37030B67964D00D5484E /* WED_Menus.cpp in Sources */,
@@ -3244,7 +3320,6 @@
 				D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */,
 				D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */,
 				D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */,
-				D6A17FFA0BA5E61C00BBCD0C /* WED_CreatePointTool.cpp in Sources */,
 				D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */,
 				D6A1807B0BA6017D00BBCD0C /* WED_KeyObjects.cpp in Sources */,
 				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
@@ -3252,6 +3327,23 @@
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
+				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,
+				D62FC99E0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp in Sources */,
+				D62FCC960BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp in Sources */,
+				D62FCDAB0BD40E5400ED6CF8 /* WED_CreatePolygonTool.cpp in Sources */,
+				D62FCE640BD513C600ED6CF8 /* WED_Windsock.cpp in Sources */,
+				D62FCE900BD5177D00ED6CF8 /* WED_TowerViewpoint.cpp in Sources */,
+				D62FCEB60BD5191F00ED6CF8 /* WED_AirportSign.cpp in Sources */,
+				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
+				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
+				D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */,
+				D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */,
+				D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */,
+				D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */,
+				D62FCFBC0BD541BF00ED6CF8 /* WED_AirportNode.cpp in Sources */,
+				D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */,
+				D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */,
+				D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
