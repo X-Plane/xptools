@@ -29,6 +29,7 @@ public:
 	virtual		void			Insert(IUnknown * who)=0;
 	virtual		void			Erase (IUnknown * who)=0;
 
+	virtual		int				GetSelectionCount(void) const=0;
 	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const=0;
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const=0;
 

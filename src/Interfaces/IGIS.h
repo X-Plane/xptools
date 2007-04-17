@@ -97,6 +97,8 @@ public:
 	virtual	double	GetLength(void		  ) const=0;
 	virtual	void	SetLength(double width)      =0;
 	
+	virtual	void	GetCorners(Point2 corners[4]) const=0;
+	
 };
 
 //------------------------------------------------------------------------------------------------------------
@@ -137,6 +139,7 @@ public:
 	virtual	double	GetWidth (void		  ) const=0;
 	virtual	void	SetWidth (double width)      =0;
 
+	virtual	void	GetCorners(Point2 corners[4]) const=0;
 };
 
 //------------------------------------------------------------------------------------------------------------

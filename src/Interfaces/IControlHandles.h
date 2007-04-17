@@ -26,6 +26,13 @@
 class	IControlHandles : public virtual IUnknown {
 public:
 
+	// Operations...all SETS of operations on control handles will
+	// be part of an "edit".  This way if we get our control handle set
+	// about 1000 times while the mouse is dragged, we know this is part
+	// of one gesture.
+	virtual		void	BeginEdit(void)=0;
+	virtual		void	EndEdit(void)=0;
+
 	// Entities - many entities perhaps?
 	virtual		int		CountEntities(void) const=0;
 	virtual		int		GetNthEntityID(int n) const=0;
