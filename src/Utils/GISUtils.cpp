@@ -179,3 +179,24 @@ void	CreateTranslatorForPolygon(
 	trans.mDstMax.x = (trans.mSrcMax.x - trans.mSrcMin.x) * DEG_TO_MTR_LAT * cos((trans.mSrcMin.y + trans.mSrcMax.y) * 0.5 * DEG_TO_RAD);
 	trans.mDstMax.y = (trans.mSrcMax.y - trans.mSrcMin.y) * DEG_TO_MTR_LAT;
 }					
+
+void NorthHeading2Vector(const Point2& ref, const Point2& p, double heading, Vector2& dir)
+{
+	double lon_delta = p.x - ref.x;
+	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
+	
+	dir.dx = sin(real_heading * DEG_TO_RAD);
+	dir.dy = cos(real_heading * DEG_TO_RAD);
+}
+
+void MetersToLLE(const Point2& ref, int count, Point2 * pts)
+{
+	while(count--)
+	{
+		pts->y = ref.y + pts->y * DEG_TO_MTR_LAT;
+		pts->x = ref.x + pts->x * DEG_TO_MTR_LAT * cos(pts->y * DEG_TO_RAD);
+		
+		++pts;
+	}
+}
+

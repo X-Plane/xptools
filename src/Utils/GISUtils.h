@@ -23,7 +23,9 @@
 #ifndef GISUTILS_H
 #define GISUTILS_H
 
-class	Polygon2;
+struct	Polygon2;
+struct	Vector2;
+struct	Point2;
 struct	CoordTranslator;
 typedef	struct tiff TIFF;
 
@@ -52,5 +54,9 @@ inline int	latlon_bucket(int p)
 	if (p > 0) return (p / 10) * 10;
 	else return ((-p + 9) / 10) * -10;
 }
+
+void NorthHeading2Vector(const Point2& ref, const Point2& p, double heading, Vector2& dir);
+void MetersToLLE(const Point2& ref, int count, Point2 * pts);
+
 
 #endif
