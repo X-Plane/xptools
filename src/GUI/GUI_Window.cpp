@@ -449,6 +449,16 @@ void		GUI_Window::Timer(void)
 	}
 }
 
+void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
+{
+	int w,  h, x, y;
+	XWinGL::GetBounds(&w, &h);
+	XWinGL::GetMouseLoc(&x, &y);
+	if (out_x) *out_x = x;
+	if (out_y) *out_y = h-y;
+}
+
+
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	int w,h;

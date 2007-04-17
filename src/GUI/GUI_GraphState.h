@@ -20,7 +20,7 @@ public:
 		EnableLighting(lit);
 		SetTexUnits(tex);
 		EnableFog(fog);
-		EnableAlpha(blend,test);
+		EnableAlpha(test,blend);
 		EnableDepth(read,write);
 	}
 	

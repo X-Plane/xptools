@@ -80,7 +80,9 @@ public:
 	virtual	int			PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);		// Pop up dynamic content.  No nesting, built on fly.  For enums, etc.
 	
 
-	static	GUI_KeyFlags	GetModifiers(void);
+			GUI_KeyFlags	GetModifiersNow(void);
+	virtual	void		GetMouseLocNow(int * out_x, int * out_y);
+			float		GetTimeNow(void);
 
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 	virtual	void		Draw(GUI_GraphState * state) { }

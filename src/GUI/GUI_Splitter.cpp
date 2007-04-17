@@ -113,8 +113,40 @@ void		GUI_Splitter::AlignContents()
 		GetNthChild(1)->GetBounds(b2);
 		
 		int split = mDirection == gui_Split_Horizontal ?
-			(b1[3] + b2[1] + gui_SplitSize) / 2 :
-			(b1[2] + b2[0] + gui_SplitSize) / 2;
+			(b1[2] + b2[0] + gui_SplitSize) / 2 :
+			(b1[3] + b2[1] + gui_SplitSize) / 2;
+		
+		if (mDirection == gui_Split_Horizontal)
+		{
+			b1[0] = b[0];
+			b1[2] = split;
+			b2[0] = split + gui_SplitSize;
+			b2[2] = b[2];
+			b1[1] = b2[1] = b[1];
+			b1[3] = b2[3] = b[3];
+		} else {
+			b1[1] = b[1];
+			b1[3] = split;
+			b2[1] = split + gui_SplitSize;
+			b2[3] = b[3];
+			b1[0] = b2[0] = b[0];
+			b1[2] = b2[2] = b[2];
+		}
+		GetNthChild(0)->SetBounds(b1);
+		GetNthChild(1)->SetBounds(b2);		
+	}
+
+}
+
+
+void		GUI_Splitter::AlignContentsAt(int split)
+{
+	if (CountChildren() > 1)
+	{
+		int b[4], b1[4], b2[4];
+		GetBounds(b);
+		GetNthChild(0)->GetBounds(b1);
+		GetNthChild(1)->GetBounds(b2);
 		
 		if (mDirection == gui_Split_Horizontal)
 		{

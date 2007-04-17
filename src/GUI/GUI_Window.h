@@ -25,6 +25,7 @@ public:
 	virtual	void			SetDescriptor(const string& inDesc);
 	virtual bool			IsActiveNow(void) const;
 	virtual bool			IsVisibleNow(void) const;
+	virtual	void			GetMouseLocNow(int * out_x, int * out_y);
 	
 	// From XWinGL
 	virtual	void			Timer(void);

@@ -78,7 +78,7 @@ int			GUI_TextField::MouseDown(int x, int y, int button)
 {
 	if (!IsFocused())
 		TakeFocus();
-	Click(x,y,GetModifiers() & gui_ShiftFlag);
+	Click(x,y,GetModifiersNow() & gui_ShiftFlag);
 	Refresh();
 	return 1;
 }

@@ -15,7 +15,7 @@
 
 #if !DEV
 	todo
-	all editing!
+	editing: popups, check boxes
 	graphical display of check boxes
 	numeric precision control?
 	provider to provide content IN BULK?
@@ -90,7 +90,10 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		c.text_val.clear();
 		break;
 	case gui_Cell_CheckBox:
-		sprintf(buf,"%c",c.int_val ? 'X' : '.');
+		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_CheckBox && mInBounds)
+			sprintf(buf,"%c",c.int_val ? 'O' : 'o');
+		else		
+			sprintf(buf,"%c",c.int_val ? 'X' : '.');
 		c.text_val = buf;
 		break;		
 	case gui_Cell_Integer:
@@ -108,7 +111,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
 		
 		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds)
-		glColor3f(1,0,0);
+		glBegin(GL_TRIANGLES);
+		else
 		glBegin(GL_LINE_LOOP);
 		if (c.is_disclosed)
 		{
@@ -142,7 +146,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	
 	if (!IsFocusedChain())	TakeFocus();
 	
-	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 	if (mTextField)
 	{
 		TerminateEdit(true);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.		
@@ -151,6 +154,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		mEditInfo.content_type = gui_Cell_None;
 		return 1;
 	}
+
+	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 
 	mClickCellX = -1;
 	mClickCellY = -1;	
@@ -171,7 +176,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				mEditInfo.content_type = gui_Cell_Disclose;
 				mClickCellX = cell_x;
 				mClickCellY = cell_y;
-				mInBounds = 0;
+				mInBounds = 1;
 				BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 				return 1;
 			}
@@ -189,8 +194,24 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}	
 	
+	if (!mEditInfo.can_edit)	return 1;
+	
 	char  buf[256];
 	switch(mEditInfo.content_type) {
+	case gui_Cell_CheckBox:
+		{
+			mTrackLeft = cell_bounds[0];
+			mTrackRight = cell_bounds[2];
+			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
+			{
+				mClickCellX = cell_x;
+				mClickCellY = cell_y;				
+				mInBounds = 1;
+				BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);			
+				return 1;
+			}
+		}
+		break;
 	case gui_Cell_EditText:
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
@@ -219,11 +240,41 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
 			mTextField->SetDescriptor(mEditInfo.text_val);
+			mTextField->SetSelection(0,mEditInfo.text_val.size());
 			return 1;
 		}
 		break;
+	case gui_Cell_Enum:
+		{
+			GUI_EnumDictionary	dict;
+			mContent->GetEnumDictionary(cell_x, cell_y,dict);
+			if (!dict.empty())
+			{
+				vector<GUI_MenuItem_t>	items(dict.size()+1);
+				vector<int>				enum_vals(dict.size());
+				int i = 0;
+				int cur = -1;
+				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+				{
+					enum_vals[i] = it->first;
+					items[i].name = it->second.c_str();
+					items[i].key = 0;
+					items[i].flags = 0;
+					items[i].cmd = 0;
+					if (mEditInfo.int_val == it->first) cur = i;
+				}
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				if (choice >= 0 && choice < enum_vals.size())
+				{
+					mEditInfo.int_val = enum_vals[choice];
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo);
+				}
+			}
+			mEditInfo.content_type = gui_Cell_None;
+		}
+		break;
 	}
-	return 0;
+	return 1;
 }
 
 void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
@@ -231,6 +282,15 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 	int new_in;
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
+		new_in = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
+				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+		if (new_in != mInBounds)
+		{
+			mInBounds = new_in;
+			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+		}
+		break;
+	case gui_Cell_CheckBox:
 		new_in = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
 		if (new_in != mInBounds)
@@ -250,7 +310,17 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
 				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
 		if (mInBounds) mContent->ToggleDisclose(cell_x,cell_y);
-//		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+		break;
+	case gui_Cell_CheckBox:
+		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
+				  mouse_y >= cell_bounds[1] && mouse_y <= cell_bounds[3]);
+		if (mInBounds) 
+		{
+			mEditInfo.int_val = 1 - mEditInfo.int_val;
+			mContent->AcceptEdit(cell_x,cell_y, mEditInfo);
+			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
+		}	
 		break;
 	}
 	if (!mTextField)
@@ -278,7 +348,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave)
 				mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
 				break;
 			case gui_Cell_Double:
-				mEditInfo.int_val = atof(mEditInfo.text_val.c_str());
+				mEditInfo.double_val = atof(mEditInfo.text_val.c_str());
 				break;
 			}
 			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo);	

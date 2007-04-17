@@ -15,6 +15,7 @@ public:
 	virtual				~GUI_Splitter();
 	
 			void		AlignContents();
+			void		AlignContentsAt(int split);
 	
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);

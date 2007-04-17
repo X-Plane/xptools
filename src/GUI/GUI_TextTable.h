@@ -23,15 +23,15 @@ class	GUI_TextField;
 // displays...see comments for which fields they use.
 
 enum GUI_CellContentType {
-	
+								// GET				SET
 	gui_Cell_None,
-	gui_Cell_Disclose,			// none
-	gui_Cell_EditText,			// string val
-	gui_Cell_CheckBox,			// int val
-	gui_Cell_Integer,			// int val
-	gui_Cell_Double,			// double val
-	gui_Cell_Enum,				// string val and int val
-	gui_Cell_EnumSet			// string val and int set val
+	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
+	gui_Cell_EditText,			// string			string
+	gui_Cell_CheckBox,			// int val			int val
+	gui_Cell_Integer,			// int val			int val
+	gui_Cell_Double,			// double val		double val
+	gui_Cell_Enum,				// string&int		int
+	gui_Cell_EnumSet			// string val		int set
 };
 
 struct	GUI_CellContent {

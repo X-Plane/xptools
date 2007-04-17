@@ -2,6 +2,7 @@
 
 GUI_Packer::GUI_Packer()
 {
+	GetBounds(mPackArea);
 }
 
 GUI_Packer::~GUI_Packer()

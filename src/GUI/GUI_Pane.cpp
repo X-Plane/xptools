@@ -16,7 +16,7 @@
 #endif
 
 
-GUI_KeyFlags GUI_Pane::GetModifiers(void)
+GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 {
 #if APL
 	UInt32	mods = GetCurrentKeyModifiers();
@@ -44,6 +44,17 @@ GUI_KeyFlags GUI_Pane::GetModifiers(void)
 	#error platform not implemented
 #endif
 }
+
+void		GUI_Pane::GetMouseLocNow(int * out_x, int * out_y)
+{
+	if (mParent) mParent->GetMouseLocNow(out_x,out_y);
+}
+
+float		GUI_Pane::GetTimeNow(void)
+{
+	return (float) clock() / (float) CLOCKS_PER_SEC;
+}
+
 
 GUI_Pane::GUI_Pane() :
 	mParent(NULL),
