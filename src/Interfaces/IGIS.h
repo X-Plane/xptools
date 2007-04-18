@@ -31,14 +31,14 @@ enum GISClass_t {
 		gis_Point_Bezier,
 		gis_Point_Heading,
 			gis_Point_HeadingWidthLength,
-		gis_PointSequence,
-			gis_Line,
-				gis_Line_Width,
-			gis_Ring,
-			gis_Chain,
-		gis_Area,
-			gis_Polygon,
-		gis_Composite
+	gis_PointSequence,
+		gis_Line,
+			gis_Line_Width,
+		gis_Ring,
+		gis_Chain,
+	gis_Area,
+		gis_Polygon,
+	gis_Composite
 };
 
 class	IGISEntity : public virtual IUnknown {
@@ -46,7 +46,7 @@ public:
 
 	virtual	GISClass_t		GetGISClass		(void						 ) const=0;
 	virtual	void			GetBounds		(	   Bbox2&  bounds		 ) const=0;
-//	virtual	int				IntersectsBox	(const Bbox2&  bounds		 ) const=0;
+	virtual	bool			IntersectsBox	(const Bbox2&  bounds		 ) const=0;
 	virtual	bool			WithinBox		(const Bbox2&  bounds		 ) const=0;
 	virtual bool			PtWithin		(const Point2& p			 ) const=0;
 	virtual bool			PtOnFrame		(const Point2& p, double dist) const=0;

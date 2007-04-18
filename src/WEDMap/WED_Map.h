@@ -8,13 +8,14 @@
 
 class	WED_MapLayer;
 class	WED_MapToolNew;
+class	IResolver;
 class	IGISEntity;
 class	ISelection;
 
 class	WED_Map : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener {
 public:
 		
-						 WED_Map();
+						 WED_Map(IResolver * in_resolver, const char * in_sel, const char * in_gis_base);
 	virtual				~WED_Map();
 
 			void		SetTool(WED_MapToolNew * tool);
@@ -39,12 +40,16 @@ private:
 
 			void		DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g);
 			void		DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g);
-			void		DrawSelFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g);
+
+		IGISEntity *	GetGISBase();
+		ISelection *	GetSel();
+	
 
 	vector<WED_MapLayer *>			mLayers;
 	WED_MapToolNew *				mTool;
-	IGISEntity *					mGISBase;
-	ISelection *					mSel;
+	IResolver *						mResolver;
+	string							mGISBase;
+	string							mSel;
 
 	int				mIsToolClick;
 	int				mIsMapDrag;

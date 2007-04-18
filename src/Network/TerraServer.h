@@ -23,8 +23,13 @@
 #ifndef TERRASERVER_H
 #define TERRASERVER_H
 
+#if WED
+class	GUI_GraphState;
+#endif
+
 struct	ImageInfo;
-class	HTTPClient;
+class	HTTPConnection;
+class	HTTPRequest;
 // All routines eturn 0 for success, or an error code.
 
 int	GetThemeInfo(const char * inTheme, string info[9]);
@@ -68,8 +73,11 @@ public:
 	bool			GetCoords(double	coords[4][2]);		// NW, NE, SE, SW x Lat, Lon
 	bool			HasErr(void);
 	bool			IsDone(void);
-	void			Draw(double coords[4][2]);
-	
+	#if WED
+		void		Draw(double coords[4][2], GUI_GraphState * g);
+	#else
+		void		Draw(double coords[4][2]);
+	#endif
 	static int		TotalPending(void) { return sPending; }
 	
 private:
@@ -83,8 +91,9 @@ private:
 	int				mY;
 	int				mDomain;
 
-	HTTPClient *	mFetchImage;
-	HTTPClient *	mFetchCoords;
+	static HTTPConnection *mConnection;
+	HTTPRequest *	mFetchImage;
+	HTTPRequest *	mFetchCoords;
 	
 	bool			mHasCoords;
 	ImageInfo *		mImage;
@@ -93,7 +102,11 @@ private:
 	
 	float 			mS;
 	float			mT;
+	#if WED
+	unsigned long	mTexNum;
+	#else
 	int				mTexNum;
+	#endif
 	
 	static int		sPending;
 
@@ -117,7 +130,8 @@ private:
 	double			mNorth;
 	double			mSouth;
 	
-	HTTPClient *	mFetch;
+	HTTPConnection *mConnection;
+	HTTPRequest *	mFetch;
 	
 	int				mX1;
 	int 			mX2;

@@ -48,12 +48,30 @@
 #include "GUI_Textfield.h"
 #include "GUI_Splitter.h"
 
-extern void		WED_Root_Register();	
-extern void		WED_ObjPlacement_Register();
-extern void		WED_Group_Register();
-extern void		WED_Select_Register();
-extern void		WED_AirportBeacon_Register();
-extern void		WED_KeyObjects_Register();
+#define	REGISTER_LIST	\
+	_R(WED_Airport) \
+	_R(WED_AirportBeacon) \
+	_R(WED_AirportBoundary) \
+	_R(WED_AirportChain) \
+	_R(WED_AirportNode) \
+	_R(WED_AirportSign) \
+	_R(WED_Group) \
+	_R(WED_Helipad) \
+	_R(WED_KeyObjects) \
+	_R(WED_LightFixture) \
+	_R(WED_ObjPlacement) \
+	_R(WED_RampPosition) \
+	_R(WED_Root) \
+	_R(WED_Runway) \
+	_R(WED_Sealane) \
+	_R(WED_Select) \
+	_R(WED_Taxiway) \
+	_R(WED_TowerViewpoint) \
+	_R(WED_Windsock)
+
+#define _R(x)	extern void x##_Register();
+REGISTER_LIST
+#undef _R
 
 #include "WED_EnumSystem.h"
 
@@ -175,12 +193,10 @@ int main(int argc, const char * argv[])
 	WED_AssertInit();
 	ENUM_Init();
 	
-	WED_Root_Register();	
-	WED_ObjPlacement_Register();
-	WED_Group_Register();
-	WED_Select_Register();
-	WED_AirportBeacon_Register();
-	WED_KeyObjects_Register();
+	#define _R(x)	x##_Register();
+	REGISTER_LIST
+	#undef _R
+
 	
 //	XPInitDefaultMargins();
 /*

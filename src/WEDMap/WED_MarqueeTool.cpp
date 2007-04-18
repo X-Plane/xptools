@@ -46,7 +46,6 @@ WED_MarqueeTool::WED_MarqueeTool(
 										const char *			root_path,
 										const char *			selection_path) :
 				WED_HandleToolBase(host, zoomer, resolver, root_path, selection_path),				
-				mResolver(resolver),
 				mSelection(selection_path)				
 {
 	SetControlProvider(this);
@@ -58,21 +57,21 @@ WED_MarqueeTool::~WED_MarqueeTool()
 
 void	WED_MarqueeTool::BeginEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,mResolver->Resolver_Find(mSelection.c_str()));
+	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 	sel->StartOperation("Marquee Drag");
 }
 
 void	WED_MarqueeTool::EndEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,mResolver->Resolver_Find(mSelection.c_str()));
+	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 	sel->CommitOperation();
 }
 
 int		WED_MarqueeTool::CountEntities(void) const
 {
-	ISelection * sel = SAFE_CAST(ISelection,mResolver->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 
 	if (sel->GetSelectionCount() == 0)	return 0;
@@ -197,7 +196,7 @@ void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 
 void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 {
-	ISelection * sel = SAFE_CAST(ISelection,mResolver->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;
@@ -226,7 +225,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 {
 	b = Bbox2();
-	ISelection * sel = SAFE_CAST(ISelection,mResolver->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;
@@ -249,7 +248,7 @@ bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 
 void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
-	ISelection * sel = SAFE_CAST(ISelection,mResolver->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;

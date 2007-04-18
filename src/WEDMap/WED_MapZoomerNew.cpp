@@ -64,6 +64,16 @@ double	WED_MapZoomerNew::LatToYPixel(double lat)
 {
 	return rescale(mVisibleBounds[1], mVisibleBounds[3], mPixels[1], mPixels[3], lat);
 }
+
+Point2	WED_MapZoomerNew::PixelToLL(const Point2& p)
+{
+	return Point2(XPixelToLon(p.x), YPixelToLat(p.y));
+}
+
+Point2	WED_MapZoomerNew::LLToPixel(const Point2& p)
+{
+	return Point2(LonToXPixel(p.x), LatToYPixel(p.y));
+}
 	
 void	WED_MapZoomerNew::SetPixelBounds(		
 					double 	inLeft,			

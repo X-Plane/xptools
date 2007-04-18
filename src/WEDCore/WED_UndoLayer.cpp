@@ -132,6 +132,7 @@ void	WED_UndoLayer::Execute(void)
 			break;
 		case op_Destroyed:
 			obj = WED_Persistent::CreateByClass(i->second.the_class, mArchive, i->first);
+			DebugAssert(obj != NULL);
 			DebugAssert(i->second.buffer != NULL);
 			i->second.buffer->ResetRead();
 			obj->ReadFrom(i->second.buffer);

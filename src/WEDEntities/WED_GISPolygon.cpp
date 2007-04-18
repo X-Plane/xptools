@@ -52,6 +52,11 @@ bool				WED_GISPolygon::WithinBox		(const Bbox2&  bounds) const
 	return GetOuterRing()->WithinBox(bounds);
 }
 
+bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
+{
+	return GetOuterRing()->IntersectsBox(bounds);
+}
+
 bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 {
 	IGISPointSequence * outer_ring = GetOuterRing();

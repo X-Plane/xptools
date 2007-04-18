@@ -22,7 +22,11 @@
  */
 #include "Terraserver.h"
 #include "HTTPClient.h"
-#include "XPLMGraphics.h"
+#if WED
+	#include "GUI_GraphState.h"
+#else
+	#include "XPLMGraphics.h"
+#endif
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -114,9 +118,12 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 
 	sprintf(req_string, SOAP_GETTHEMEINFO, inTheme);
 	
-	HTTPClient		client(
+	HTTPConnection	con(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	
+	HTTPRequest		client(
+						&con,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -126,7 +133,7 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 
 	while (!client.IsDone())
 	{
-		client.DoProcessing();
+		con.DoProcessing();
 	}
 	
 	int responseNum = client.GetResponseNum();
@@ -180,9 +187,11 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 
 	sprintf(req_string, SOAP_GETTILE, theme, scale, domain, x, y);
 	
-	HTTPClient		client(
+	HTTPConnection	con(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	HTTPRequest		client(
+						&con,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -192,7 +201,7 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 
 	while (!client.IsDone())
 	{
-		client.DoProcessing();
+		con.DoProcessing();
 	}
 	
 	int responseNum = client.GetResponseNum();
@@ -255,9 +264,11 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, theme, scale, domain, x, y);
 	
-	HTTPClient		client(
+	HTTPConnection	con(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	HTTPRequest		client(
+						&con,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -267,7 +278,7 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 
 	while (!client.IsDone())
 	{
-		client.DoProcessing();
+		con.DoProcessing();
 	}
 	
 	int responseNum = client.GetResponseNum();
@@ -334,9 +345,11 @@ int	GetTilesForArea(const char * scale,
 
 	sprintf(req_string, SOAP_GETAREAFROMRECT,	inLonWest, inLatNorth, inLonEast, inLatSouth, theme, scale);		
 	
-	HTTPClient		client(
+	HTTPConnection	con(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	HTTPRequest		client(
+						&con,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -346,7 +359,7 @@ int	GetTilesForArea(const char * scale,
 
 	while (!client.IsDone())
 	{
-		client.DoProcessing();
+		con.DoProcessing();
 	}
 
 	int responseNum = client.GetResponseNum();
@@ -410,6 +423,9 @@ int	GetTilesForArea(const char * scale,
 
 int		AsyncImage::sPending = 0;
 
+HTTPConnection *AsyncImage::mConnection = NULL;
+
+
 #define	FETCH_LIMIT	60
 
 
@@ -438,9 +454,13 @@ void AsyncImage::TryCoords(void)
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, mTheme.c_str(), mScale.c_str(), mDomain, mX, mY);
 	
 	++sPending;
-	mFetchCoords = new HTTPClient(
+	
+	if (!mConnection)
+		mConnection = new HTTPConnection(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	mFetchCoords = new HTTPRequest(
+						mConnection,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -459,9 +479,12 @@ void AsyncImage::TryImage()
 	sprintf(req_string, SOAP_GETTILE, mTheme.c_str(), mScale.c_str(), mDomain, mX, mY);
 
 	++sPending;
-	mFetchImage = new HTTPClient(
+	if (!mConnection)
+		mConnection = new HTTPConnection(
 						"www.terraserver-usa.com",
-						80,
+						80);
+	mFetchImage = new HTTPRequest(
+						mConnection,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
@@ -502,7 +525,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 	
 	if (!mFetchImage->IsDone())
 	{
-		mFetchImage->DoProcessing();
+		mConnection->DoProcessing();
 		return NULL;
 	}
 	
@@ -523,7 +546,6 @@ ImageInfo *		AsyncImage::GetImage(void)
 		--sPending;
 		delete mFetchImage;
 		mFetchImage = NULL;
-	
 		mHasErr = true;
 		return NULL;
 	}
@@ -548,7 +570,11 @@ ImageInfo *		AsyncImage::GetImage(void)
 			delete root;
 			delete mFetchImage;
 			mFetchImage = NULL;
-			XPLMGenerateTextureNumbers(&mTexNum, 1);
+			#if WED
+				glGenTextures(1,&mTexNum);
+			#else
+				XPLMGenerateTextureNumbers(&mTexNum, 1);
+			#endif
 			
 			LoadTextureFromImage(*mImage, mTexNum, tex_Linear, NULL, NULL, &mS, &mT);			
 			return mImage;
@@ -587,7 +613,7 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 
 	if (!mFetchCoords->IsDone())
 	{
-		mFetchCoords->DoProcessing();
+		mConnection->DoProcessing();
 		return false;
 	}
 	
@@ -685,6 +711,21 @@ bool			AsyncImage::IsDone(void)
 	return cr && im;
 }
 
+#if WED
+void	AsyncImage::Draw(double coords[4][2],GUI_GraphState * g)
+{
+	g->SetState(0,1,0,  0, 0,   0, 0);
+	glColor3f(1.0, 1.0, 1.0);
+	g->BindTex(mTexNum, 0);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, mT);		glVertex2d(coords[0][1],coords[0][0]);
+	glTexCoord2f(mS, mT);		glVertex2d(coords[1][1],coords[1][0]);
+	glTexCoord2f(mS, 0.0);		glVertex2d(coords[2][1],coords[2][0]);
+	glTexCoord2f(0.0, 0.0);		glVertex2d(coords[3][1],coords[3][0]);
+	glEnd();
+}
+
+#else
 void	AsyncImage::Draw(double coords[4][2])
 {
 	XPLMSetGraphicsState(0,1,0,  0, 0,   0, 0);
@@ -697,16 +738,19 @@ void	AsyncImage::Draw(double coords[4][2])
 	glTexCoord2f(0.0, 0.0);		glVertex2d(coords[3][1],coords[3][0]);
 	glEnd();
 }
+#endif
 
 
 AsyncImageLocator::AsyncImageLocator()
 {
 	mFetch = NULL;
+	mConnection = NULL;
 	mNorth = mSouth = mEast = mWest = -9.9e9;
 }
 AsyncImageLocator::~AsyncImageLocator()
 {
 	if (mFetch) delete mFetch;
+	if (mConnection) delete mConnection;
 }
 
 bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, double w, double s, double e, double n,
@@ -716,7 +760,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 	if (mFetch)
 	{
 		if (!mFetch->IsDone())
-			mFetch->DoProcessing();
+			mConnection->DoProcessing();
 		else {
 
 			int responseNum = mFetch->GetResponseNum();
@@ -789,7 +833,9 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 				}
 			}
 			delete mFetch;
+			delete mConnection;
 			mFetch = NULL;
+			mConnection = NULL;
 		}
 	}
 	
@@ -803,9 +849,12 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 
 		sprintf(req_string, SOAP_GETAREAFROMRECT,	w, n, e, s, theme, scale);		
 		
-		mFetch = new HTTPClient(
+	if (!mConnection)
+		mConnection = new HTTPConnection(
 							"www.terraserver-usa.com",
-							80,
+							80);
+		mFetch = new HTTPRequest(
+							mConnection,
 							"/TerraService2.asmx",
 							true,	// Post!
 							fields,
@@ -831,11 +880,11 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 
 void	AsyncImageLocator::Purge(void)
 {
-	if (mFetch)
-	{
-		delete mFetch;
-		mFetch = NULL;
-	}
+	if (mFetch) delete mFetch;
+	if (mConnection) delete mConnection;
+	mFetch = NULL;
+	mConnection = NULL;
+	
 	mHas = false;
 	mWest = -9.9e9;
 }

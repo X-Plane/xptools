@@ -4,6 +4,9 @@
 #include "WED_MapToolNew.h"
 #include "CompGeomDefs2.h"
 #include <vector>
+
+class	WED_Archive;
+
 using std::vector;
 
 class	WED_CreateToolBase : public WED_MapToolNew {
@@ -13,6 +16,7 @@ public:
 									GUI_Pane *			host,
 									WED_MapZoomerNew *	zoomer, 
 									IResolver *			resolver,
+									WED_Archive *		archive,
 									int					min_num_pts,
 									int					max_num_pts,
 									int					can_curve,
@@ -29,9 +33,9 @@ public:
 	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g); 
 	virtual	void		DrawSelected			(int inCurrent, GUI_GraphState * g) { } 
 	
-	virtual	void		DrawEntityVisualization	(int inCurrent, IUnknown * entity, GUI_GraphState * g) { } 
-	virtual	void		DrawEntityStructure		(int inCurrent, IUnknown * entity, GUI_GraphState * g) { } 
-	virtual	void		DrawEntitySelected		(int inCurrent, IUnknown * entity, GUI_GraphState * g) { } 
+	virtual	void		DrawEntityVisualization	(int inCurrent, IGISEntity * entity, GUI_GraphState * g) { } 
+	virtual	void		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g) { } 
+	virtual	void		DrawEntitySelected		(int inCurrent, IGISEntity * entity, GUI_GraphState * g) { } 
 							
 protected:
 
@@ -41,10 +45,13 @@ protected:
 							const vector<Point2>&	dirs,
 							int						closed)=0;
 
+		inline WED_Archive * GetArchive(void) { return mArchive; }
+
 private:
 
 			void		DoEmit(int close_it);
 
+	WED_Archive *		mArchive;
 
 	vector<Point2>		mPts;
 	vector<Point2>		mDirs;

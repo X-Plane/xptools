@@ -24,10 +24,76 @@
 #include "PCSBSocket.h"
 
 
+HTTPConnection::HTTPConnection(
+		const char *			inServerIP,
+		unsigned short			inPort)
+{
+	mSocket = NULL;
+	unsigned long	ip = PCSBSocket::LookupAddress(inServerIP);
+	if (ip == 0)
+		return;
 
-HTTPClient::HTTPClient(
-	const char *		inServerIP,
-	unsigned short		inPort,		// Usually 80
+	mSocket = new PCSBSocket(0, false);
+	mSocket->Connect(ip, inPort);	
+}
+
+HTTPConnection::~HTTPConnection()
+{
+	delete mSocket;
+}
+	
+void	HTTPConnection::DoProcessing(void)
+{
+	if (mSocket == NULL) return;
+	if (mSocket->GetStatus() == PCSBSocket::status_Disconnected)
+	{
+		#if !DEV 
+			handle this		
+		#endif
+	}	
+
+	if (mSocket->GetStatus() == PCSBSocket::status_Error)
+	{
+		#if !DEV 
+			handle this		
+		#endif
+	}	
+	
+	if (mSocket->GetStatus() == PCSBSocket::status_Connected)
+	{
+		if (!mOutBuf.empty())
+		{
+			int	writeLen = mSocket->WriteData(&*mOutBuf.begin(), mOutBuf.size());
+			if (writeLen > 0)
+				mOutBuf.erase(mOutBuf.begin(), mOutBuf.begin() + writeLen);
+		}
+		
+		char	readChunk[1024];
+		int	readLen = mSocket->ReadData(readChunk, sizeof(readChunk));
+		if (readLen > 0)
+			mInBuf.insert(mInBuf.end(), readChunk, readChunk + readLen);
+
+		if (!mReqs.empty() && !mInBuf.empty())
+		if (mReqs.front()->ParseMore(mInBuf))
+			mReqs.pop_front();
+	}
+
+}
+
+bool	HTTPConnection::IsIdle(HTTPRequest * req)
+{
+	return mReqs.empty();
+}
+
+void			HTTPConnection::SendData(const char * p1, const char * p2)
+{
+	mOutBuf.insert(mOutBuf.end(),p1,p2);
+}
+
+
+
+HTTPRequest::HTTPRequest(
+	HTTPConnection *	inConnection,
 	const char *		inURL,
 	bool				inIsPost,
 	const FieldMap&		inExtraFields,
@@ -40,16 +106,9 @@ HTTPClient::HTTPClient(
 	mIncomingLength = -1;
 	mResponseNum = 0;
 	mReceivedPayload = 0.0;
-	mGotWholeHeader = false;
-	
-	unsigned long	ip = PCSBSocket::LookupAddress(inServerIP);
-	if (ip == 0)
-		return;
-
+	mGotWholeHeader = false;	
 	mResponseNum = -1;
-	
-	mSocket = new PCSBSocket(0, false);
-	mSocket->Connect(ip, inPort);
+	mConnection = inConnection;
 	
 	string	request;
 
@@ -75,125 +134,68 @@ HTTPClient::HTTPClient(
 	}
 	request += "\r\n";
 
-	mOutBuf.insert(mOutBuf.end(), request.begin(), request.end());
-	if (inContentBuffer)
-		mOutBuf.insert(mOutBuf.end(), inContentBuffer, inContentBuffer + inContentBufferLength);	
+	mConnection->mReqs.push_back(this);
+	mConnection->SendData(&*request.begin(), &*request.end());
+	if (inContentBuffer) mConnection->SendData(inContentBuffer,inContentBuffer+inContentBufferLength);
 }	
 	
-HTTPClient::~HTTPClient()
+HTTPRequest::~HTTPRequest()
 {
 	if (mDestFile)	fclose(mDestFile);
-	delete mSocket;
 }
 
-int		HTTPClient::GetData(void * outBuffer, int inSize)
+int		HTTPRequest::GetData(void * outBuffer, int inSize)
 {
-	int	readSize = min(inSize, (int) mInBuf.size());
-	memcpy(outBuffer, &*mInBuf.begin(), readSize);
-	mInBuf.erase(mInBuf.begin(), mInBuf.begin() + readSize);
+	int	readSize = min(inSize, (int) mPayload.size());
+	memcpy(outBuffer, &*mPayload.begin(), readSize);
+	mPayload.erase(mPayload.begin(), mPayload.begin() + readSize);
 	return readSize;
 }
-void	HTTPClient::GetData(vector<char>& foo)
+void	HTTPRequest::GetData(vector<char>& foo)
 {
-	foo = mInBuf;
-	mInBuf.clear();
+	foo.clear();
+	foo.swap(mPayload);
 }
 	
-int		HTTPClient::GetTotalExpected(void)
+int		HTTPRequest::GetTotalExpected(void)
 {
 	return mIncomingLength;
 }
 
-HTTPClient::Status	HTTPClient::GetStatus(void)
-{
-	if (mSocket == NULL) return status_Error;
-	PCSBSocket::Status stat = mSocket->GetStatus();
-	if (stat == PCSBSocket::status_Connecting) return status_Connecting;
-	if (stat == PCSBSocket::status_Error) return status_Error;
-	if (stat == PCSBSocket::status_Disconnected) return status_Done;
-	
-	if (mOutBuf.size() > 0) return status_Requesting; 
-	
-	return mGotWholeHeader ? status_ReceivingPayload : status_ReceivingHeaders;
-}
-
-float	HTTPClient::GetPercentDone(void)
+float	HTTPRequest::GetPercentDone(void)
 {
 	if (mIncomingLength == -1) return -1.0;
 	return ((float) mReceivedPayload) / ((float) mIncomingLength);
 }
 	
-int		HTTPClient::GetResponseNum(void)
+int		HTTPRequest::GetResponseNum(void)
 {
 	return mResponseNum;
 }
 
-string	HTTPClient::GetResponseName(void)
+string	HTTPRequest::GetResponseName(void)
 {
 	return mResponseName;
 }
 
-void	HTTPClient::GetResponseFields(FieldMap& outFields)
+void	HTTPRequest::GetResponseFields(FieldMap& outFields)
 {
 	outFields = mFields;
 }
 
-void	HTTPClient::DoProcessing(void)
+bool	HTTPRequest::IsDone(void)
 {
-	if (mSocket == NULL) return;
-	if (mSocket->GetStatus() == PCSBSocket::status_Disconnected)
-	{
-		if (mDestFile)
-		{
-			fclose(mDestFile);
-			mDestFile = NULL;
-		}	
-	}	
-
-	if (mSocket->GetStatus() == PCSBSocket::status_Error)
-	{
-		if (mDestFile)
-		{
-			fclose(mDestFile);
-			mDestFile = NULL;
-		}	
-	}	
-	
-	if (mSocket->GetStatus() == PCSBSocket::status_Connected)
-	{
-		if (!mOutBuf.empty())
-		{
-			int	writeLen = mSocket->WriteData(&*mOutBuf.begin(), mOutBuf.size());
-			if (writeLen > 0)
-				mOutBuf.erase(mOutBuf.begin(), mOutBuf.begin() + writeLen);
-			if (mOutBuf.empty())
-				mSocket->Release();
-		}
-		
-		char	readChunk[1024];
-		int	readLen = mSocket->ReadData(readChunk, sizeof(readChunk));
-		if (readLen > 0)
-		{
-			mInBuf.insert(mInBuf.end(), readChunk, readChunk + readLen);
-			ParseMore();
-		}
-	}
+	return mGotWholeHeader && mIncomingLength == mReceivedPayload;
 }
 
-bool	HTTPClient::IsDone(void)
-{
-	HTTPClient::Status stat = this->GetStatus();
-	return (stat == status_Done || stat == status_Error);
-}
-
-void		HTTPClient::ParseMore(void)
+int		HTTPRequest::ParseMore(vector<char>& io_buf)
 {
 	if (!mGotWholeHeader)
 	{
-		for (int n = 1; n < mInBuf.size(); ++n)
+		for (int n = 1; n < io_buf.size(); ++n)
 		{
-			if (mInBuf[n-1] == '\r' &&
-				mInBuf[n  ] == '\n')
+			if (io_buf[n-1] == '\r' &&
+				io_buf[n  ] == '\n')
 			{
 				// We have a line!!
 				if (n == 1)
@@ -207,11 +209,11 @@ void		HTTPClient::ParseMore(void)
 						if (i != mFields.end())
 							mIncomingLength = atoi(i->second.c_str());
 					}
-					mInBuf.erase(mInBuf.begin(), mInBuf.begin() + 2);
+					io_buf.erase(io_buf.begin(), io_buf.begin() + 2);
 					break;
 				} else {
-					string	oneLine(mInBuf.begin(), mInBuf.begin() + n - 1);
-					if (oneLine.substr(0, 5) == "HTTP/")
+					string	oneLine(io_buf.begin(), io_buf.begin() + n - 1);
+				if (oneLine.substr(0, 5) == "HTTP/")
 					{
 						string	rev = oneLine.substr(5, 3);
 						string	code = oneLine.substr(9, 3);
@@ -228,23 +230,39 @@ void		HTTPClient::ParseMore(void)
 					}
 				}
 				
-				mInBuf.erase(mInBuf.begin(), mInBuf.begin() + n + 1);
+				io_buf.erase(io_buf.begin(), io_buf.begin() + n + 1);
 				n = 0;				
 			}
 		}
 	}
 	if (mGotWholeHeader)
 	{
-		if (((mReceivedPayload + mInBuf.size()) >= mIncomingLength) && (mIncomingLength != -1))
+		if (((mReceivedPayload + io_buf.size()) >= mIncomingLength) && (mIncomingLength != -1))
 		{
-			if (mSocket) mSocket->Disconnect();
+			#if !DEV
+				handle this
+			#endif
 		}
 		
-		if (mDestFile && !mInBuf.empty())
+		if (!io_buf.empty() && mIncomingLength != mReceivedPayload)
 		{
-			mReceivedPayload += mInBuf.size();
-			fwrite(&*mInBuf.begin(), 1, mInBuf.size(), mDestFile);
-			mInBuf.clear();
+			int write_size = mIncomingLength - mReceivedPayload;
+			if (write_size > io_buf.size()) write_size = io_buf.size();
+			
+			if (mDestFile)
+				fwrite(&*io_buf.begin(), 1, write_size, mDestFile);
+			else
+				mPayload.insert(mPayload.end(),io_buf.begin(),io_buf.begin() + write_size);
+			
+			mReceivedPayload += write_size;
+			io_buf.erase(io_buf.begin(), io_buf.begin()+write_size);
 		}
-	}	
+	}
+	
+	if (IsDone())
+	{
+		if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }
+		return 1;
+	}
+	return 0;
 }

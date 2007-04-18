@@ -11,7 +11,10 @@ enum {
 
 	// File Menu
 	wed_NewPackage = GUI_APP_MENUS,
-	wed_OpenPackage
+	wed_OpenPackage,
+	// View menu
+	wed_PickOverlay,
+	wed_ToggleOverlay
 
 };
 

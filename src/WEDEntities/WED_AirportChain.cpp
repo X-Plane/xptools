@@ -38,7 +38,7 @@ IGISPoint *	WED_AirportChain::SplitSide   (int n)
 	
 	if (GetSide(n, s, b))
 	{
-		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive(), GetArchive()->NewID());
+		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 		
 		Bezier2	b1, b2;
 		b.partition(b1,b2,0.5);
@@ -51,7 +51,7 @@ IGISPoint *	WED_AirportChain::SplitSide   (int n)
 
 	} else {
 
-		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive(), GetArchive()->NewID());
+		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 		
 		node->SetLocation(s.midpoint(0.5));
 		node->SetControlHandleHi(s.midpoint(0.5));

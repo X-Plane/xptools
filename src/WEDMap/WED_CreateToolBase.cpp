@@ -8,8 +8,9 @@
 	#include <gl/gl.h>
 #endif
 
-const float kDoubleClickTime = 0.1;
+const float kDoubleClickTime = 0.2;
 const int kDoubleClickDist = 3;
+const int kCloseLoopDist = 5;
 const int BEZ_STEPS = 50;
 
 
@@ -39,6 +40,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 									GUI_Pane *			host,
 									WED_MapZoomerNew *	zoomer, 
 									IResolver *			resolver,
+									WED_Archive *		archive,									
 									int					min_num_pts,
 									int					max_num_pts,
 									int					can_curve,
@@ -46,6 +48,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 									int					can_close,
 									int					must_close) :
 	WED_MapToolNew(host,zoomer,resolver),
+	mArchive(archive),
 	mLastTime(-9.9e9),
 	mDirOpen(0),
 	mCreating(0),	
@@ -144,6 +147,7 @@ void		WED_CreateToolBase::DrawStructure(int inCurrent, GUI_GraphState * g)
 
 int			WED_CreateToolBase::HandleClickDown(int inX, int inY, int inButton)
 {
+	if (inButton > 0) return 0;
 	int now = GetHost()->GetTimeNow();
 	if (now-mLastTime < kDoubleClickTime &&
 		fabs(inX-mLastX) < kDoubleClickDist &&
@@ -201,15 +205,15 @@ void		WED_CreateToolBase::HandleClickUp  (int inX, int inY, int inButton)
 	if(mPts.size() >= mMaxPts)
 		DoEmit(0);		
 	// We can only check for a closed loop on:
-	// - closed-loop-optional chains with
+	// - closed-loop-possible chains with
 	// - at least 3 points (so one can be redundent) and
 	// - no curve at the end
 	// - we have enough pts that throwing one out is okay
-	else if (!mMustClose && mCanClose && mPts.size() > 2 && !mHasDirs.back() && mPts.size() > mMinPts)
+	else if (mCanClose && mPts.size() > 2 && !mHasDirs.back() && mPts.size() > mMinPts)
 	{
 		int dist_x = GetZoomer()->LonToXPixel(mPts.front().x) - GetZoomer()->LonToXPixel(mPts.back().x);
 		int dist_y = GetZoomer()->LatToYPixel(mPts.front().y) - GetZoomer()->LatToYPixel(mPts.back().y);
-		if (fabs(dist_x) < kDoubleClickDist && fabs(dist_y) < kDoubleClickDist)
+		if (fabs(dist_x) < kCloseLoopDist && fabs(dist_y) < kCloseLoopDist)
 			DoEmit(1);
 	}
 		

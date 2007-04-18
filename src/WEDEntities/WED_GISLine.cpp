@@ -30,12 +30,12 @@ void			WED_GISLine::GetBounds		(	   Bbox2&  bounds) const
 	bounds = Bbox2(p1,p2);
 }
 
-//int			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
-//{
-//	Bbox2	me;
-//	GetBounds(me);
-//	return me.overlap(bounds);
-//}
+bool			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
+{
+	Bbox2	me;
+	GetBounds(me);
+	return me.overlap(bounds);
+}
 
 bool			WED_GISLine::WithinBox		(const Bbox2&  bounds) const
 {

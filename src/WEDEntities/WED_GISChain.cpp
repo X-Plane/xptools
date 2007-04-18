@@ -41,12 +41,12 @@ void			WED_GISChain::GetBounds		(	   Bbox2&  bounds) const
 	}
 }
 
-//bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
-//{
-//	Bbox2	me;
-//	GetBounds(me);
-//	return bounds.overlap(me);
-//}
+bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
+{
+	Bbox2	me;
+	GetBounds(me);
+	return bounds.overlap(me);
+}
 
 bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 {	
@@ -151,7 +151,7 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 		b.c1 = b.p1;
 		b.c2 = b.p2;
 		if (c1) c1->GetControlHandleHi(b.c1);
-		if (c2) c1->GetControlHandleLo(b.c2);
+		if (c2) c2->GetControlHandleLo(b.c2);
 		return true;
 	}
 }

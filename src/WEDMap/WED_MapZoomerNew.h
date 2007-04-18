@@ -24,6 +24,7 @@
 #define WED_MAPZOOMERNEW_H
 
 #include "GUI_ScrollerPane.h"
+#include "CompGeomDefs2.h"
 
 /*
 
@@ -57,6 +58,9 @@ public:
 			double	YPixelToLat(double);
 			double	LonToXPixel(double);
 			double	LatToYPixel(double);
+			
+			Point2	PixelToLL(const Point2& p);
+			Point2	LLToPixel(const Point2& p);
 	
 	// This API is called by the map class to set up and modify the zoomer
 	

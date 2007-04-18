@@ -9,7 +9,8 @@ public:
 						 WED_CreatePolygonTool(
 									GUI_Pane *			host,
 									WED_MapZoomerNew *	zoomer, 
-									IResolver *			resolver);
+									IResolver *			resolver,
+									WED_Archive *		archive);
 	virtual				~WED_CreatePolygonTool();
 
 	virtual int			GetNumProperties(void) { return 0; }

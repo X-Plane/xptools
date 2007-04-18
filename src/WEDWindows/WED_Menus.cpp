@@ -23,6 +23,13 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	NULL,				0,		0,								0				},
 };
 
+static const GUI_MenuItem_t kViewMenu[] = {
+{	"Pick Overlay Image...",	0,	0,							wed_PickOverlay		},
+{	"Toggle Overlay Image",		0,	0,							wed_ToggleOverlay	},
+{	NULL,						0,	0,							0					},
+};
+
+
 static const GUI_MenuItem_t kTestMenu[] = {
 {	"An Item",			0,		0,								gui_Close		},
 {	"Submenu",			0,		0,								0				},
@@ -44,6 +51,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"Edit", kEditMenu, inApp->GetMenuBar(), 0);		
+
+	GUI_Menu  view_menu = inApp->CreateMenu(
+		"View", kViewMenu, inApp->GetMenuBar(), 0);		
 
 	test1 = inApp->CreateMenu(
 		"Test", kTestMenu, inApp->GetMenuBar(), 0);

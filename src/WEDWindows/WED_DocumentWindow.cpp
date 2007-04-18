@@ -44,10 +44,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 		
 	double	lb[4];
 	mDocument->GetBounds(lb);
-	WED_MapPane * map_pane = new WED_MapPane(lb, inDocument,inDocument->GetArchive());
-	map_pane->SetParent(main_splitter);
-	map_pane->Show();
-	map_pane->SetSticky(1,1,1,1);
+	mMapPane = new WED_MapPane(lb, inDocument,inDocument->GetArchive());
+	mMapPane->SetParent(main_splitter);
+	mMapPane->Show();
+	mMapPane->SetSticky(1,1,1,1);
 	
 	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, root, s, titles, widths,inDocument->GetArchive());	
 	prop_pane->SetParent(main_splitter);
@@ -58,7 +58,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	main_splitter->AlignContentsAt((inBounds[2]-inBounds[0]>inBounds[3]-inBounds[1]) ? (inBounds[3]-inBounds[1]) : ((inBounds[2]-inBounds[0])/2));
 	
-	map_pane->ZoomShowAll();
+	mMapPane->ZoomShowAll();
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()
@@ -66,8 +66,8 @@ WED_DocumentWindow::~WED_DocumentWindow()
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
-{
-	return 0;
+{	
+	return mMapPane->Map_KeyPress(inKey, inVK, inFlags);
 }
 
 int	WED_DocumentWindow::HandleCommand(int command)
@@ -77,6 +77,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Close:	return 1;
+	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
 }
@@ -90,7 +91,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
 						else				{								return 0; }
 	case gui_Close:															return 1;
-	default:																return 0;
+	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }
 

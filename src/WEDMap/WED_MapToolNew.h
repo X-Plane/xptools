@@ -25,14 +25,6 @@ public:
 	
 	virtual	char *		GetStatusText(void)=0;
 
-protected:
-
-	inline	GUI_Pane *	GetHost(void) const { return mHost; }
-	
-private:
-		
-	GUI_Pane *		mHost;
-
 };
 
 #endif

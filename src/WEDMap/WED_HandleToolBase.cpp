@@ -96,7 +96,8 @@ WED_HandleToolBase::WED_HandleToolBase(
 	WED_MapToolNew(host, zoomer,resolver),
 	mRoot(root_path),
 	mHandles(NULL),
-	mDragType(drag_None)
+	mDragType(drag_None),
+	mCanSelect(1)
 {
 }
 										
@@ -196,7 +197,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 	}
 	//----------------------------------- ENTITY DRAG ------------------------------------------------------------
 	
-	
+	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
 	for (ei = 0; ei < ei_count; ++ei)
 	if (mHandles->PointOnStructure(ei, click_pt))
@@ -209,7 +210,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 	
 	//------------------------------------- SELECTION ------------------------------------------------------------
 
-	if (mDragType == drag_None)
+	if (mDragType == drag_None && mCanSelect)
 	{
 		mDragType = drag_Sel;
 		

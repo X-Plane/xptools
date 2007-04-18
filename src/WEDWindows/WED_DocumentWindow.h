@@ -10,7 +10,7 @@
 //class WED_LayerTableGeometry;
 
 
-
+class	WED_MapPane;
 class	WED_Document;
 class	WED_PropertyTable;
 class	WED_PropertyTableHeader;
@@ -39,6 +39,7 @@ public:
 private:
 
 	WED_Document *				mDocument;
+	WED_MapPane *				mMapPane;
 
 //	WED_PropertyTable *			mTestTable;	
 //	WED_PropertyTableHeader *	mTestTableHeader;

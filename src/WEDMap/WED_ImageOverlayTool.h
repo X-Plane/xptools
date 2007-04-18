@@ -1,23 +1,24 @@
-#ifndef WED_MARQUEETOOL_H
-#define WED_MARQUEETOOL_H
+#ifndef WED_IMAGEOVERLAYTOOL_H
+#define WED_IMAGEOVERLAYTOOL_H
 
 #include "WED_HandleToolBase.h"
 #include "IControlHandles.h"
-#include "IOperation.h"
 
-class	WED_MarqueeTool : public WED_HandleToolBase, public virtual IControlHandles {
+class	WED_ImageOverlayTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
-						 WED_MarqueeTool(
-										GUI_Pane *				host,
-										WED_MapZoomerNew *		zoomer,
-										IResolver *				resolver,
-										const char *			root_path,
-										const char *			selection_path);						 
-	virtual				~WED_MarqueeTool();
-	
+						 WED_ImageOverlayTool(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path);
+	virtual				~WED_ImageOverlayTool();
 
-	// CONTROL HANDLE INTERFACE:	
+			void		PickFile(void);
+			bool		CanShow(void) { return mBits; }
+			bool		IsVisible(void) { return mVisible; }
+			void		ToggleVisible(void);
+
+	// WED_MapLayer
+	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
+	
+	// IOperation
 	virtual		void	BeginEdit(void);
 	virtual		void	EndEdit(void);
 
@@ -40,8 +41,7 @@ public:
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
-
-
+	// WED_MapToolNew
 	virtual int			GetNumProperties(void) { return 0; }
 	virtual	void		GetNthPropertyName(int, string&) { }
 	virtual	double		GetNthPropertyValue(int) { return 0; }
@@ -53,20 +53,19 @@ public:
 	
 	virtual	char *		GetStatusText(void) { return NULL; }
 
+	// IUnknown
 	virtual void *		QueryInterface(const char * class_id);
 
 private:
 
-	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent) { return ent_AtomicOrContainer; }
+	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent) { return ent_Skip; }
 
-				void	GetEntityInternal(vector<IGISEntity *>& e);
-				bool	GetTotalBounds(Bbox2& b) const;
-				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
+	unsigned long	mTexID;
+	bool			mVisible;
+	bool			mBits;
+	string			mFile;
+	Polygon2		mCoords;
 
-//		IResolver *				mResolver;
-		string					mSelection;
+};	
 
-	
-};
-
-#endif /* WED_MARQUEETOOL_H */
+#endif

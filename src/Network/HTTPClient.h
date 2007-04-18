@@ -165,27 +165,49 @@
  */
 
 #include <string>
+#include <list>
+#include <vector>
+
+using std::list;
+using std::vector;
+using std::string;
 
 class	PCSBSocket;
+class	HTTPRequest;
 
 typedef	map<string, string>	FieldMap;
 
-class	HTTPClient {
+class	HTTPConnection {
 public:
 
-	enum	Status {
-		status_Connecting = 0,		// Trying to connect to the server
-		status_Requesting,			// We are connected, sending request
-		status_ReceivingHeaders,	// Receiving the header for the response
-		status_ReceivingPayload,	// All headers received, receiving payload
-		status_Done,				// Transaction done, not necessary successfully.
-		status_Error				// Some kind of socket error caused us to barf.
-	};
+			 HTTPConnection(
+					const char *			inServerIP,
+					unsigned short			inPort);
+		
+			~HTTPConnection();
+
+	void	DoProcessing(void);
+	bool	IsIdle(HTTPRequest * req);
+
+private:
+
+	friend class	HTTPRequest;
+
+	void			SendData(const char * p1, const char * p2);
+
+	PCSBSocket *		mSocket;
+	vector<char>		mOutBuf;			// Outgoing buffer
+	vector<char>		mInBuf;				// Incoming buffer
+	list<HTTPRequest *>	mReqs;
+	
+};
+
+class	HTTPRequest {
+public:
 
 	/* This routine establishes the HTTP transaction. */
-			HTTPClient(
-				const char *		inServerIP,
-				unsigned short		inPort,					// Usually 80
+			HTTPRequest(
+				HTTPConnection *	inConnection,
 				const char *		inURL,					// Starts with slash, no server name
 				bool				inIsPost,				// True for POST, false for GET
 				const FieldMap&		inExtraFields,			// Extra fields to attach to the request
@@ -193,14 +215,9 @@ public:
 				int					inContentBufferLength,	// Size of payload in bytes if there is one
 				const char *		inDestFile);			// Name of a file to save to or NULL to keep in memory.
 				
-			~HTTPClient();
+			~HTTPRequest();
 
-	/* This routine does a little bit more work to continue processing; call
-	 * repeatedly while IsDone is false. */			
-	void	DoProcessing(void);
-			
 	/* Getting diagnostic informatino about the transaction. */
-	Status	GetStatus(void);
 	bool	IsDone(void);
 
 	/* Getting Header Information from the transaction.  Header info is
@@ -216,18 +233,14 @@ public:
 	int		GetTotalExpected(void);	// Returns -1 if we don't know)
 	float	GetPercentDone(void);
 	
-
 private:
 
-	void				ParseMore(void);
+	friend class	HTTPConnection;
+	
+	int			ParseMore(vector<char>& io_buf);
 
-	PCSBSocket *		mSocket;
+	HTTPConnection *	mConnection;
 
-	// Sending info
-	vector<char>		mOutBuf;			// Outgoing buffer
-
-	// Receiving info
-	vector<char>		mInBuf;				// Incoing buffer
 	bool				mGotWholeHeader;	// Already saw the whole HTTP header
 
 	// Header info
@@ -236,6 +249,7 @@ private:
 	FieldMap			mFields;			// All fields verbatim
 	
 	// Payload info
+	vector<char>		mPayload;
 	FILE *				mDestFile;			// File to save to
 	string				mDestFileName;		// Name of file 	
 	int					mIncomingLength;	// How many bytes payload do we expect?

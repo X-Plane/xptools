@@ -30,10 +30,10 @@ void			WED_GISPoint::GetBounds		(	   Bbox2&  bounds) const
 	bounds = Bbox2(Point2(longitude.value,latitude.value));
 }
 
-//int				WED_GISPoint::IntersectsBox	(const Bbox2&  bounds) const
-//{
-//	return bounds.contains(Point2(longitude.value,latitude.value));
-//}
+bool				WED_GISPoint::IntersectsBox	(const Bbox2&  bounds) const
+{
+	return bounds.contains(Point2(longitude.value,latitude.value));
+}
 
 bool				WED_GISPoint::WithinBox		(const Bbox2&  bounds) const
 {

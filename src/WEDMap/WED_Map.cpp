@@ -5,12 +5,12 @@
 #include "ISelection.h"
 #include "mathutils.h"
 #include "WED_Messages.h"
+#include "IResolver.h"
 
-WED_Map::WED_Map()
+WED_Map::WED_Map(IResolver * in_resolver, const char * in_sel, const char * in_gis_base) :
+	mResolver(in_resolver), mSel(in_sel), mGISBase(in_gis_base)
 {
 	mTool = NULL;
-	mGISBase = NULL;
-	mSel = NULL;
 	mIsToolClick = 0;
 	mIsMapDrag = 0;
 	
@@ -82,32 +82,34 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	WED_MapLayer * cur = mTool;
 
 	Bbox2 bounds;
+	
+	GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
 
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	{
 		(*l)->DrawVisualization(cur == *l, state);
-		if (mGISBase) DrawVisFor(*l, cur == *l, bounds, mGISBase, state);
+		if (GetGISBase()) DrawVisFor(*l, cur == *l, bounds, GetGISBase(), state);
 	}
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	{
 		(*l)->DrawStructure(cur == *l, state);
-		if (mGISBase) DrawStrFor(*l, cur == *l, bounds, mGISBase, state);
+		if (GetGISBase()) DrawStrFor(*l, cur == *l, bounds, GetGISBase(), state);
 	}
 	
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	{
 		(*l)->DrawSelected(cur == *l, state);
-		if (mGISBase) DrawSelFor(*l, cur == *l, bounds, mGISBase, state);
 	}
 }
 
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
 {
-	if (!what->WithinBox(bounds)) return;
+	if (!what->IntersectsBox(bounds)) return;
 	IGISComposite * c;
-	layer->DrawEntityVisualization(current, what, g);
+	
+	layer->DrawEntityVisualization(current, what, g, GetSel() && GetSel()->IsSelected(what));
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
@@ -118,9 +120,9 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
 {
-	if (!what->WithinBox(bounds))	return;
+	if (!what->IntersectsBox(bounds))	return;
 	IGISComposite * c;
-	layer->DrawEntityStructure(current, what, g);
+	layer->DrawEntityStructure(current, what, g, GetSel() && GetSel()->IsSelected(what));
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
@@ -128,22 +130,6 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g);
 	}
 }
-
-void		WED_Map::DrawSelFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
-{
-	if (!mSel)						return;
-	if (!what->WithinBox(bounds))	return;
-	IGISComposite * c;
-	if (mSel->IsSelected(what))
-		layer->DrawEntitySelected(current, what, g);
-	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
-	{
-		int t = c->GetNumEntities();
-		for (int n = 0; n < t; ++n)
-			DrawSelFor(layer, current, bounds, c->GetNthEntity(n), g);
-	}
-}
-
 
 int			WED_Map::MouseDown(int x, int y, int button)
 {
@@ -204,4 +190,14 @@ void		WED_Map::ReceiveMessage(
 							int						inParam)
 {
 	if(inMsg == msg_ArchiveChanged)	Refresh();
+}
+
+IGISEntity *	WED_Map::GetGISBase()
+{
+	return SAFE_CAST(IGISEntity, mResolver->Resolver_Find(mGISBase.c_str()));
+}
+
+ISelection *	WED_Map::GetSel()
+{
+	return SAFE_CAST(ISelection, mResolver->Resolver_Find(mSel.c_str()));
 }

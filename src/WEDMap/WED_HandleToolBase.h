@@ -4,7 +4,10 @@
 #include "WED_MapToolNew.h"
 #include "CompGeomDefs2.h"
 
+class	GUI_Pane;
+class	WED_MapZoomerNew;
 class	IControlHandles;
+class	IUnknown;
 class	IResolver;
 class	IGISEntity;
 
@@ -46,6 +49,7 @@ protected:
 	// Template methods
 	
 	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent)=0;
+			void				SetCanSelect(int can_select) { mCanSelect = can_select; }
 
 private:
 
@@ -64,6 +68,7 @@ private:
 
 		IControlHandles *		mHandles;
 		string					mRoot;
+		int						mCanSelect;
 		
 		// Variables for drag tracking
 		DragType_t				mDragType;

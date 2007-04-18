@@ -67,11 +67,9 @@ class	IOWriter;
 #define DECLARE_PERSISTENT(__Class)		 							\
 public: 															\
 	static WED_Persistent * Create(									\
-								WED_Archive *	parent,				\
-								int				inID);				\
+								WED_Archive *	parent, int id);	\
 	static __Class * CreateTyped(									\
-								WED_Archive *	parent,				\
-								int				inID);				\
+								WED_Archive *	parent);			\
 	virtual const char * 	GetClass(void) const;					\
 	virtual void * 			QueryInterface(const char * class_id);	\
 protected:															\
@@ -91,17 +89,15 @@ protected:															\
 #define DEFINE_PERSISTENT(__Class)								\
 																\
 WED_Persistent * __Class::Create(								\
-								WED_Archive * parent,			\
-								int inID)						\
+								WED_Archive * parent, int id)	\
 {																\
-	return new __Class(parent, inID);							\
+	return new __Class(parent, id);								\
 }																\
 																\
 __Class * __Class::CreateTyped(									\
-								WED_Archive * parent,			\
-								int inID)						\
+								WED_Archive * parent)			\
 {																\
-	__Class * r = new __Class(parent, inID);					\
+	__Class * r = new __Class(parent, parent->NewID());			\
 	r->PostCtor();												\
 	return r;													\
 }																\

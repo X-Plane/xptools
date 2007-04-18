@@ -8,7 +8,7 @@
 	#include <gl/gl.h>
 #endif
 
-WED_MapBkgnd::WED_MapBkgnd(WED_MapZoomerNew * zoomer, IResolver * i) : WED_MapLayer(zoomer, i)
+WED_MapBkgnd::WED_MapBkgnd(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * i) : WED_MapLayer(h, zoomer, i)
 {
 }
 

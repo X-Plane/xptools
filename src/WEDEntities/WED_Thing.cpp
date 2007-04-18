@@ -157,6 +157,7 @@ void				WED_Thing::SetParent(WED_Thing * parent, int nth)
 
 void				WED_Thing::AddChild(int id, int n)
 {
+	StateChanged();
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
 	DebugAssert(i == child_id.end());
 	child_id.insert(child_id.begin()+n,id);
@@ -164,6 +165,7 @@ void				WED_Thing::AddChild(int id, int n)
 
 void				WED_Thing::RemoveChild(int id)
 {
+	StateChanged();
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
 	DebugAssert(i != child_id.end());
 	child_id.erase(i);
