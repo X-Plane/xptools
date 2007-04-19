@@ -424,6 +424,7 @@ int	GetTilesForArea(const char * scale,
 int		AsyncImage::sPending = 0;
 
 HTTPConnection *AsyncImage::mConnection = NULL;
+HTTPConnection *AsyncImageLocator::mConnection = NULL;
 
 
 #define	FETCH_LIMIT	60
@@ -744,13 +745,11 @@ void	AsyncImage::Draw(double coords[4][2])
 AsyncImageLocator::AsyncImageLocator()
 {
 	mFetch = NULL;
-	mConnection = NULL;
 	mNorth = mSouth = mEast = mWest = -9.9e9;
 }
 AsyncImageLocator::~AsyncImageLocator()
 {
 	if (mFetch) delete mFetch;
-	if (mConnection) delete mConnection;
 }
 
 bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, double w, double s, double e, double n,
@@ -833,9 +832,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 				}
 			}
 			delete mFetch;
-			delete mConnection;
 			mFetch = NULL;
-			mConnection = NULL;
 		}
 	}
 	
@@ -881,9 +878,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 void	AsyncImageLocator::Purge(void)
 {
 	if (mFetch) delete mFetch;
-	if (mConnection) delete mConnection;
 	mFetch = NULL;
-	mConnection = NULL;
 	
 	mHas = false;
 	mWest = -9.9e9;

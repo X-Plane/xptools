@@ -130,7 +130,7 @@ private:
 	double			mNorth;
 	double			mSouth;
 	
-	HTTPConnection *mConnection;
+	static HTTPConnection *mConnection;
 	HTTPRequest *	mFetch;
 	
 	int				mX1;

@@ -42,23 +42,24 @@ HTTPConnection::~HTTPConnection()
 	delete mSocket;
 }
 	
-void	HTTPConnection::DoProcessing(void)
+int	HTTPConnection::DoProcessing(void)
 {
-	if (mSocket == NULL) return;
-	if (mSocket->GetStatus() == PCSBSocket::status_Disconnected)
+	// Error handling: if our socket doesn't exist (failed to create??) or an error happened,
+	// remove anyone who is queued - they're not going to work.  
+	
+	if (mSocket == NULL ||
+		mSocket->GetStatus() == PCSBSocket::status_Disconnected ||
+		mSocket->GetStatus() == PCSBSocket::status_Error)
 	{
-		#if !DEV 
-			handle this		
-		#endif
+		while (!mReqs.empty())
+		{
+			mReqs.front()->mResponseNum = status_SocketError;
+			mReqs.front()->mConnection = NULL;
+			mReqs.pop_front();
+		}
+		return 0;
 	}	
 
-	if (mSocket->GetStatus() == PCSBSocket::status_Error)
-	{
-		#if !DEV 
-			handle this		
-		#endif
-	}	
-	
 	if (mSocket->GetStatus() == PCSBSocket::status_Connected)
 	{
 		if (!mOutBuf.empty())
@@ -77,12 +78,27 @@ void	HTTPConnection::DoProcessing(void)
 		if (mReqs.front()->ParseMore(mInBuf))
 			mReqs.pop_front();
 	}
-
+	return 1;
 }
 
-bool	HTTPConnection::IsIdle(HTTPRequest * req)
+void	HTTPConnection::Kill(void)
+{
+	if (mSocket) mSocket->Disconnect();
+}
+
+bool	HTTPConnection::IsIdle(void)
 {
 	return mReqs.empty();
+}
+
+bool	HTTPConnection::IsAlive(void)
+{
+	return mSocket && (mSocket->GetStatus() == PCSBSocket::status_Connected || mSocket->GetStatus() == PCSBSocket::status_Connecting);
+}
+
+int	HTTPConnection::QueueDepth(void)
+{
+	return mReqs.size();
 }
 
 void			HTTPConnection::SendData(const char * p1, const char * p2)
@@ -101,15 +117,14 @@ HTTPRequest::HTTPRequest(
 	int					inContentBufferLength,
 	const char *		inDestFile)
 {
+	mConnection = NULL;
+	mGotWholeHeader = false;
+	mResponseNum = status_Pending;
 	mDestFile = NULL;
 	mDestFileName = inDestFile ? inDestFile : "";
 	mIncomingLength = -1;
-	mResponseNum = 0;
-	mReceivedPayload = 0.0;
-	mGotWholeHeader = false;	
-	mResponseNum = -1;
-	mConnection = inConnection;
-	
+	mReceivedPayload = 0;
+
 	string	request;
 
 	if (inIsPost)
@@ -134,10 +149,27 @@ HTTPRequest::HTTPRequest(
 	}
 	request += "\r\n";
 
-	mConnection->mReqs.push_back(this);
-	mConnection->SendData(&*request.begin(), &*request.end());
-	if (inContentBuffer) mConnection->SendData(inContentBuffer,inContentBuffer+inContentBufferLength);
+	mRequest.insert(mRequest.end(),request.begin(),request.end());
+	if (inContentBuffer) mRequest.insert(mRequest.end(),inContentBuffer,inContentBuffer+inContentBufferLength);
+	
+	Retry(inConnection);
 }	
+
+void HTTPRequest::Retry(HTTPConnection *	inConnection)
+{
+	mGotWholeHeader = false;	
+	mResponseNum = status_Pending;		
+	mResponseName.clear();		
+	mFields.clear();			
+	mPayload.clear();			
+	if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }			
+	mIncomingLength = -1;	
+	mReceivedPayload = 0;	
+	
+	mConnection = inConnection;
+	mConnection->mReqs.push_back(this);
+	mConnection->SendData(&*mRequest.begin(), &*mRequest.end());
+}
 	
 HTTPRequest::~HTTPRequest()
 {
@@ -183,9 +215,26 @@ void	HTTPRequest::GetResponseFields(FieldMap& outFields)
 	outFields = mFields;
 }
 
+bool	HTTPRequest::IsQueued(void)
+{
+	return mConnection != NULL;
+}
+
 bool	HTTPRequest::IsDone(void)
 {
-	return mGotWholeHeader && mIncomingLength == mReceivedPayload;
+	// We are done if:
+	// 1. We have an entire header and
+	// 2. We have SOME kind of response and
+	// 3. We have our entire payload.
+	// Note: the response number will usually go from 0 as we work to a positive number as the server works.
+	// In the event of a "network surprise" it will go negative.
+	// Also: if the connection is null, we err'd out somehow.
+	return (mGotWholeHeader && mIncomingLength == mReceivedPayload && mResponseNum != status_Pending) || (mConnection == NULL);
+}
+
+bool	HTTPRequest::IsError(void)
+{
+	return IsDone() && (mResponseNum < 200 || mResponseNum > 299);
 }
 
 int		HTTPRequest::ParseMore(vector<char>& io_buf)
@@ -237,13 +286,6 @@ int		HTTPRequest::ParseMore(vector<char>& io_buf)
 	}
 	if (mGotWholeHeader)
 	{
-		if (((mReceivedPayload + io_buf.size()) >= mIncomingLength) && (mIncomingLength != -1))
-		{
-			#if !DEV
-				handle this
-			#endif
-		}
-		
 		if (!io_buf.empty() && mIncomingLength != mReceivedPayload)
 		{
 			int write_size = mIncomingLength - mReceivedPayload;
@@ -262,6 +304,7 @@ int		HTTPRequest::ParseMore(vector<char>& io_buf)
 	if (IsDone())
 	{
 		if (mDestFile) { fclose(mDestFile); mDestFile = NULL; }
+		mConnection = NULL;
 		return 1;
 	}
 	return 0;
