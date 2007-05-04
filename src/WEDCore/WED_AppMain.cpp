@@ -63,6 +63,7 @@
 	_R(WED_RampPosition) \
 	_R(WED_Root) \
 	_R(WED_Runway) \
+	_R(WED_RunwayNode) \
 	_R(WED_Sealane) \
 	_R(WED_Select) \
 	_R(WED_Taxiway) \

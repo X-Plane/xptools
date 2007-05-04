@@ -53,7 +53,7 @@ public:
 	WED_Thing *			GetRoot(void);
 	WED_UndoMgr *		GetUndoMgr(void);
 
-	virtual void *		QueryInterface(const char * class_id);
+//	virtual void *		QueryInterface(const char * class_id);
 	virtual	IUnknown *	Resolver_Find(const char * path);
 
 	// LEGACY STUFF

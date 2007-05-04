@@ -71,15 +71,12 @@ public: 															\
 	static __Class * CreateTyped(									\
 								WED_Archive *	parent);			\
 	virtual const char * 	GetClass(void) const;					\
-	virtual void * 			QueryInterface(const char * class_id);	\
 protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
 	virtual ~__Class();
 
 #define DECLARE_INTERMEDIATE(__Class)		 						\
-public: 															\
-	virtual void * 			QueryInterface(const char * class_id);	\
 protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
@@ -113,24 +110,11 @@ const char * __Class::GetClass(void) const						\
 	return #__Class;											\
 }
 
-#define START_CASTING(__Class)									\
-void * __Class::QueryInterface(const char * class_id)			\
-{																\
-	if (!strcmp(class_id, #__Class))							\
-		return this;
-
-#define IMPLEMENTS_INTERFACE(CLASS)								\
-	if (!strcmp(class_id, #CLASS))								\
-		return (CLASS*)this;
-
-#define INHERITS_FROM(CLASS)									\
-	return CLASS::QueryInterface(class_id);
-
-#define BASE_CASE												\
-										return NULL; 
-	
-#define END_CASTING												\
-}
+#define START_CASTING(__Class)
+#define IMPLEMENTS_INTERFACE(CLASS)
+#define INHERITS_FROM(CLASS)
+#define BASE_CASE	
+#define END_CASTING
 
 
 

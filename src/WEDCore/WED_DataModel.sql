@@ -50,8 +50,11 @@ CREATE TABLE GIS_points(
 
 CREATE TABLE GIS_points_bezier(
 	id					integer		PRIMARY KEY,
-	ctrl_latitude		double		NOT NULL,
-	ctrl_longitude		double		NOT NULL
+	ctrl_latitude_lo	double		NOT NULL,
+	ctrl_longitude_lo	double		NOT NULL,
+	ctrl_latitude_hi	double		NOT NULL,
+	ctrl_longitude_hi	double		NOT NULL,
+	split				intege		NOT NULL
 );
 
 CREATE TABLE GIS_points_heading(

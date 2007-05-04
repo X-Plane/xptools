@@ -130,6 +130,7 @@ IUnknown *	WED_Document::Resolver_Find(const char * in_path)
 	return who;
 }
 
+/*
 void *		WED_Document::QueryInterface(const char * class_id)
 {
 	if (strcmp(class_id,"IResolver")==0)
@@ -137,3 +138,4 @@ void *		WED_Document::QueryInterface(const char * class_id)
 	return NULL;
 }
 
+*/

@@ -42,9 +42,10 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 	mItems[n]->SetProperty(val,this);
 }
 
-WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, const char * table, const char * column) : mTitle(title), mTable(table), mColumn(column)
+WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, const char * table, const char * column) : mTitle(title), mTable(table), mColumn(column), mParent(pops)
 {
-	pops->mItems.push_back(this);
+	if (pops)
+		pops->mItems.push_back(this);
 }
 
 void 		WED_PropertyHelper::ReadPropsFrom(IOReader * reader)

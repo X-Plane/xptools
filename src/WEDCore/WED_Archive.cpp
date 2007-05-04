@@ -98,6 +98,10 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 
 void	WED_Archive::SaveToDB(sqlite3 * db)
 {
+	#if !DEV
+	hello - we need to rebuild the class table!
+	#endif
+
 	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{

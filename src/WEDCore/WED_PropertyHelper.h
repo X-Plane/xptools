@@ -39,10 +39,10 @@ public:
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause)=0;
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
 
-	const char *	mTitle;
-	const char *	mTable;
-	const char *	mColumn;
-	
+	const char *			mTitle;
+	const char *			mTable;
+	const char *			mColumn;
+	WED_PropertyHelper *	mParent;
 private:
 	WED_PropertyItem();
 };
@@ -82,7 +82,7 @@ public:
 	int				value;
 
 	operator int&() { return value; }
-	WED_PropIntText& operator=(int v) { value = v; return *this; }
+	WED_PropIntText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
 	WED_PropIntText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
@@ -104,7 +104,7 @@ public:
 	int				value;
 
 	operator int&() { return value; }
-	WED_PropBoolText& operator=(int v) { value = v; return *this; }
+	WED_PropBoolText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
 	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
@@ -127,7 +127,7 @@ public:
 	double			value;
 
 						operator double&() { return value; }
-	WED_PropDoubleText& operator=(double v) { value = v; return *this; }
+	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	
 	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
@@ -149,7 +149,7 @@ public:
 	string			value;
 
 						operator string&() { return value; }
-	WED_PropStringText& operator=(const string& v) { value = v; return *this; }
+	WED_PropStringText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	
 	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const string& initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
 
@@ -172,7 +172,7 @@ public:
 	int			domain;
 
 						operator int&() { return value; }
-	WED_PropIntEnum& operator=(int v) { value = v; return *this; }
+	WED_PropIntEnum& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	
 	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial), domain(idomain) { }
 
@@ -195,7 +195,7 @@ public:
 	int			domain;
 
 						operator set<int>&() { return value; }
-	WED_PropIntEnumSet& operator=(const set<int>& v) { value = v; return *this; }
+	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	
 	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int idomain)  : WED_PropertyItem(parent, title, table, column), domain(idomain) { }
 
