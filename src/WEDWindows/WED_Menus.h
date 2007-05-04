@@ -14,7 +14,8 @@ enum {
 	wed_OpenPackage,
 	// View menu
 	wed_PickOverlay,
-	wed_ToggleOverlay
+	wed_ToggleOverlay,
+	wed_ToggleTerraserver
 
 };
 

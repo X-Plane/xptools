@@ -9,8 +9,9 @@
 #include "WED_DocumentWindow.h"
 #include "WED_MapPane.h"
 #include "WED_PropertyPane.h"
+#include "GUI_TabPane.h"
 #include "WED_Thing.h"
-
+#include "WED_Select.h"
 #include "GUI_Splitter.h"
 
 
@@ -24,15 +25,16 @@ WED_DocumentWindow::WED_DocumentWindow(
 {
 	
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
-
 	mDocument->AddListener(this);
 					
-	static const char * titles[] = { "name", "locked", "hidden", "longitude", "latitude", "Type", 0 };
-	static int widths[] = { 100, 50, 50, 150, 150, 50 };
 	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
 	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("selection"));
 	DebugAssert(root);
 	DebugAssert(s);
+	
+	/****************************************************************************************************************************************************************
+	 * MAP VIEW
+	****************************************************************************************************************************************************************/
 
 	int		splitter_b[4];	
 	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
@@ -44,20 +46,103 @@ WED_DocumentWindow::WED_DocumentWindow(
 		
 	double	lb[4];
 	mDocument->GetBounds(lb);
-	mMapPane = new WED_MapPane(lb, inDocument,inDocument->GetArchive());
+	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive());
 	mMapPane->SetParent(main_splitter);
 	mMapPane->Show();
-	mMapPane->SetSticky(1,1,1,1);
-	
-	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, root, s, titles, widths,inDocument->GetArchive());	
-	prop_pane->SetParent(main_splitter);
-	prop_pane->Show();
-	prop_pane->SetSticky(0,1,1,1);
+	mMapPane->SetSticky(1,1,0,1);
 
-	int map_b[4];
+	/****************************************************************************************************************************************************************
+	 * PROPERTY-SIDE
+	****************************************************************************************************************************************************************/
+
+	// --------------- Splitter and tabs ---------------
+	
+	GUI_Splitter * prop_splitter = new GUI_Splitter(gui_Split_Vertical);
+	prop_splitter->SetParent(main_splitter);
+	prop_splitter->Show();
+	GUI_Pane::GetBounds(splitter_b);
+	prop_splitter->SetBounds(splitter_b);
+	prop_splitter->SetSticky(1,1,1,1);
+
+	GUI_TabPane * prop_tabs = new GUI_TabPane(this);
+	prop_tabs->SetParent(prop_splitter);
+	prop_tabs->Show();
+	prop_tabs->SetSticky(1,1,1,0);
+
+	// --------------- Selection ---------------
+
+
+	static const char * sel_t[] = { "Name", "Type", NULL };
+	static		 int	sel_w[] = { 100, 100 };
+	
+	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);	
+	prop_tabs->AddPane(prop_pane1, "Selection");
+
+	// --------------- AIRPORT
+
+	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", NULL };
+	static		 int	air_w[] = { 100, 100, 100, 50, 100  };
+	static const char * air_f[] = { "WED_Airport", NULL };
+	
+	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
+	prop_tabs->AddPane(prop_pane2, "Airports");
+	
+	// --------------- LIGHTS, SIGNS, BEACONS ---------------
+
+	static const char * sin_t[] = { "Name", "Type", "Size", "Angle", 0 };
+	static		 int	sin_w[] = { 100, 100, 100, 100  };
+	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
+	
+	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);	
+	prop_tabs->AddPane(prop_pane3, "Signs");
+
+	// --------------- RUNWAYS ---------------
+
+	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2", "Identifier 2",
+									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1", "Identifier 1",
+									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
+	static		 int	rwy_w[] = { 100, 100, 100, 100, 100, 100, 100, 
+									100, 100, 100, 100, 100, 100, 100, 
+									100, 100, 100, 100, 100, 100, 100 };
+	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
+	
+	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);	
+	prop_tabs->AddPane(prop_pane4, "Runways");
+
+	// --------------- TAXIWAYS ---------------
+
+	static const char * tax_t[] = { "Name", "Surface", "Roughness", "Texture Heading", 0 };
+	static		 int	tax_w[] = { 100, 150, 100, 100  };
+	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
+	
+	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);	
+	prop_tabs->AddPane(prop_pane5, "Taxiways");
+
+	// --------------- HELIPADS ---------------
+
+	static const char * hel_t[] = { "Name", "Surface", "Markings", "Shoulder", "Roughness", "Lights", 0 };
+	static		 int	hel_w[] = { 100, 150, 150, 150, 100, 150 };
+	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
+	
+	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);	
+	prop_tabs->AddPane(prop_pane6, "Helipads");
+
+	// --------------- Hierarchy  View ---------------
+
+	static const char * titles[] =  { "Name", "Locked", "Hidden", 0 };
+	static int widths[] =			{ 100,		50,		50		};
+
+	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, root, s, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
+	prop_pane->SetParent(prop_splitter);
+	prop_pane->Show();
+	prop_pane->SetSticky(1,1,1,1);
+
+	/****************************************************************************************************************************************************************
+	 * FINAL CLEANUP
+	****************************************************************************************************************************************************************/
 
 	main_splitter->AlignContentsAt((inBounds[2]-inBounds[0]>inBounds[3]-inBounds[1]) ? (inBounds[3]-inBounds[1]) : ((inBounds[2]-inBounds[0])/2));
-	
+	prop_splitter->AlignContentsAt(300);	
 	mMapPane->ZoomShowAll();
 }
 

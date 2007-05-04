@@ -83,10 +83,10 @@ int			WED_PackageStatusPane::MouseDown(int x, int y, int button)
 	{
 		static int last = -1;
 		GUI_MenuItem_t items[4] = { 
-		"Item 1", 0, 0, 0,
-		"Item 2", 0, 0, 0,
-		"Item 3", 0, 0, 0,
-		NULL, 0,0, 0 };
+		"Item 1", 0, 0, 0,0,
+		"Item 2", 0, 0, 0,0,
+		"Item 3", 0, 0, 0,0,
+		NULL, 0,0,0, 0 };
 		last = PopupMenuDynamic(items,x,y,last);
 		char buf[100];
 		sprintf(buf,"Got %d\n",last);

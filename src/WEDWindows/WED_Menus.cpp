@@ -5,41 +5,42 @@ GUI_Menu	test1 = 0;
 GUI_Menu	sub1 = 0;
 
 static const GUI_MenuItem_t	kFileMenu[] = {
-{	"New Package...",	'N',	gui_ControlFlag,	wed_NewPackage		},
-{	"Open Package...",	'O',	gui_ControlFlag,	wed_OpenPackage		},
-{	"Close",			'W',	gui_ControlFlag,	gui_Close			},
-{	NULL,				0,		0,					0					},
+{	"New Package...",	'N',	gui_ControlFlag,	0,	wed_NewPackage		},
+{	"Open Package...",	'O',	gui_ControlFlag,	0,	wed_OpenPackage		},
+{	"Close",			'W',	gui_ControlFlag,	0,	gui_Close			},
+{	NULL,				0,		0,					0,	0					},
 };
 
 static const GUI_MenuItem_t	kEditMenu[] = {
-{	"Undo",				'Z',	gui_ControlFlag,				gui_Undo		},
-{	"Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	gui_Redo		},
-{	"-",				0,  	0,								0				},
-{	"Cut",				'X',	gui_ControlFlag,				gui_Cut			},
-{	"Copy",				'C',	gui_ControlFlag,				gui_Copy		},
-{	"Paste",			'V',	gui_ControlFlag,				gui_Paste		},
-{	"Clear",			0,		0,								gui_Clear		},
-{	"Select All",		'A',	gui_ControlFlag,				gui_SelectAll	},
-{	NULL,				0,		0,								0				},
+{	"Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
+{	"Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Redo		},
+{	"-",				0,  	0,								0,	0				},
+{	"Cut",				'X',	gui_ControlFlag,				0,	gui_Cut			},
+{	"Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
+{	"Paste",			'V',	gui_ControlFlag,				0,	gui_Paste		},
+{	"Clear",			0,		0,								0,	gui_Clear		},
+{	"Select All",		'A',	gui_ControlFlag,				0,	gui_SelectAll	},
+{	NULL,				0,		0,								0,	0				},
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
-{	"Pick Overlay Image...",	0,	0,							wed_PickOverlay		},
-{	"Toggle Overlay Image",		0,	0,							wed_ToggleOverlay	},
-{	NULL,						0,	0,							0					},
+{	"Pick Overlay Image...",	0,	0,							0,	wed_PickOverlay		},
+{	"Toggle Overlay Image",		0,	0,							0,	wed_ToggleOverlay	},
+{	"Toggle Terraserver",		0,	0,							0,	wed_ToggleTerraserver },
+{	NULL,						0,	0,							0,	0					},
 };
 
 
 static const GUI_MenuItem_t kTestMenu[] = {
-{	"An Item",			0,		0,								gui_Close		},
-{	"Submenu",			0,		0,								0				},
-{	NULL,				0,		0,								0,				}
+{	"An Item",			0,		0,								0,	gui_Close		},
+{	"Submenu",			0,		0,								0,	0				},
+{	NULL,				0,		0,								0,	0,				}
 };
 
 static const GUI_MenuItem_t kTestSubMenu[] = {
-{	"Sub 1",			0,		0,								gui_Close		},
-{	"Sub 2",			0,		0,								gui_Close		},
-{	NULL,				0,		0,								0,				}
+{	"Sub 1",			0,		0,								0,	gui_Close		},
+{	"Sub 2",			0,		0,								0,	gui_Close		},
+{	NULL,				0,		0,								0,	0,				}
 };
 
 

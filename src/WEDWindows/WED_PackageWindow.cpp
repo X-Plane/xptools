@@ -31,7 +31,7 @@ WED_PackageWindow::WED_PackageWindow(
 	
 	WED_PackageStatusPane * p = new WED_PackageStatusPane(inPackage, inCommander);
 	p->SetParent(contents);
-	p->SetBounds(0,0,360 * 5, 180 * 5);
+	p->SetBounds(0,0,360 * 8, 180 * 8);
 	p->Show();
 	
 	scroller->ContentGeometryChanged();
