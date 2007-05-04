@@ -22,6 +22,7 @@
  */
 #include "HTTPClient.h"
 #include "PCSBSocket.h"
+#include "AssertUtils.h"
 
 
 HTTPConnection::HTTPConnection(
@@ -39,6 +40,7 @@ HTTPConnection::HTTPConnection(
 
 HTTPConnection::~HTTPConnection()
 {
+	DebugAssert(mReqs.empty());
 	delete mSocket;
 }
 	
@@ -152,7 +154,8 @@ HTTPRequest::HTTPRequest(
 	mRequest.insert(mRequest.end(),request.begin(),request.end());
 	if (inContentBuffer) mRequest.insert(mRequest.end(),inContentBuffer,inContentBuffer+inContentBufferLength);
 	
-	Retry(inConnection);
+	if (inConnection)
+		Retry(inConnection);
 }	
 
 void HTTPRequest::Retry(HTTPConnection *	inConnection)
@@ -173,6 +176,7 @@ void HTTPRequest::Retry(HTTPConnection *	inConnection)
 	
 HTTPRequest::~HTTPRequest()
 {
+	DebugAssert(mConnection == NULL);
 	if (mDestFile)	fclose(mDestFile);
 }
 
@@ -229,7 +233,7 @@ bool	HTTPRequest::IsDone(void)
 	// Note: the response number will usually go from 0 as we work to a positive number as the server works.
 	// In the event of a "network surprise" it will go negative.
 	// Also: if the connection is null, we err'd out somehow.
-	return (mGotWholeHeader && mIncomingLength == mReceivedPayload && mResponseNum != status_Pending) || (mConnection == NULL);
+	return (mGotWholeHeader && mIncomingLength == mReceivedPayload && mResponseNum != status_Pending) || (mConnection == NULL && mResponseNum != status_Pending);
 }
 
 bool	HTTPRequest::IsError(void)

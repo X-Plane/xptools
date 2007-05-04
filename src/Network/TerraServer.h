@@ -30,9 +30,16 @@ class	GUI_GraphState;
 struct	ImageInfo;
 class	HTTPConnection;
 class	HTTPRequest;
-// All routines eturn 0 for success, or an error code.
 
-int	GetThemeInfo(const char * inTheme, string info[9]);
+/*************************************************************************************************************************************************
+ * SIMPLE SERVER ACCESS
+ *************************************************************************************************************************************************/			
+// All routines return 0 for success, or an error code.
+
+
+int		GetThemeInfo(
+			const char *	inTheme, 
+			string			info[9]);
 
 int		FetchTile(
 			const char * 	scale, 		// 4m, 1m, 500mm, etc.
@@ -43,7 +50,6 @@ int		FetchTile(
 			ImageInfo * 	destBitmap, // Dest bitmap to copy to
 			int 			pixLeft, 	// Offset into bitmap
 			int 			pixTop);
-
 
 
 int		FetchTilePositioning(
@@ -63,10 +69,33 @@ int		GetTilesForArea(
 			double 	inLonEast,
 			int		tiles[4][3]);		// NW, NE, SW, SE x X, Y, domain
 			
+/*************************************************************************************************************************************************
+ * ASYNC SERVER ACCESS
+ *************************************************************************************************************************************************/			
+ 
+class	AsyncImage;
+class	AsyncImageLocator;
+ 
+class	AsyncConnectionPool {
+public:
+	AsyncConnectionPool(int max_cons, int max_depth);
+	~AsyncConnectionPool();
+
+	void			ServiceLocator(HTTPRequest * req);
+	void			ServiceImage(HTTPRequest * req);
+	
+private:
+
+	HTTPConnection *				mLocatorCon;
+	vector<HTTPConnection *>		mImageCon;
+	int								mMaxCons;
+	int								mMaxDepths;
+};
+ 
 class	AsyncImage {
 public:
 
-	AsyncImage(const char * scale, const char * theme, int domain, int x, int y);
+	AsyncImage(AsyncConnectionPool * pool, const char * scale, const char * theme, int domain, int x, int y);
 	~AsyncImage();
 	
 	ImageInfo *		GetImage(void);
@@ -78,12 +107,18 @@ public:
 	#else
 		void		Draw(double coords[4][2]);
 	#endif
-	static int		TotalPending(void) { return sPending; }
+	
+	int				GetGen(void) { return mGen; }
+	void			SetGen(int g) { mGen = g; }
 	
 private:
 
+	friend	class	AsyncConnectionPool;
+
 	void			TryImage(void);
 	void			TryCoords(void);
+
+	AsyncConnectionPool *	mPool;
 
 	string			mTheme;
 	string			mScale;
@@ -91,7 +126,6 @@ private:
 	int				mY;
 	int				mDomain;
 
-	static HTTPConnection *mConnection;
 	HTTPRequest *	mFetchImage;
 	HTTPRequest *	mFetchCoords;
 	
@@ -107,15 +141,15 @@ private:
 	#else
 	int				mTexNum;
 	#endif
-	
-	static int		sPending;
+
+	int				mGen;
 
 };
 
 class	AsyncImageLocator {
 public:
 
-	AsyncImageLocator();
+	AsyncImageLocator(AsyncConnectionPool * pool);
 	~AsyncImageLocator();
 	
 	bool		GetLocation(const char* scale, const char * theme, double w, double s, double n, double e,
@@ -125,12 +159,14 @@ public:
 
 private:
 
+	friend	class	AsyncConnectionPool;
+
+	AsyncConnectionPool *	mPool;
 	double			mWest;
 	double			mEast;
 	double			mNorth;
 	double			mSouth;
 	
-	static HTTPConnection *mConnection;
 	HTTPRequest *	mFetch;
 	
 	int				mX1;

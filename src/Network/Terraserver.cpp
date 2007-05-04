@@ -22,6 +22,8 @@
  */
 #include "Terraserver.h"
 #include "HTTPClient.h"
+#include "AssertUtils.h"
+
 #if WED
 	#include "GUI_GraphState.h"
 #else
@@ -421,17 +423,96 @@ int	GetTilesForArea(const char * scale,
 	return 0;
 }
 
-int		AsyncImage::sPending = 0;
+/*************************************************************************************************************************************************
+ * ASYNC SERVER ACCESS
+ *************************************************************************************************************************************************/			
 
-HTTPConnection *AsyncImage::mConnection = NULL;
-HTTPConnection *AsyncImageLocator::mConnection = NULL;
+AsyncConnectionPool::AsyncConnectionPool(int max_cons, int max_depth) :
+	mMaxCons(max_cons),
+	mMaxDepths(max_depth),
+	mLocatorCon(NULL),
+	mImageCon(NULL)
+{
+}
+
+AsyncConnectionPool::~AsyncConnectionPool()
+{
+	if(mLocatorCon)
+	{
+		mLocatorCon->Kill();
+		mLocatorCon->DoProcessing();
+		delete mLocatorCon;
+	}
+	for(vector<HTTPConnection*>::iterator i = mImageCon.begin(); i != mImageCon.end(); ++i)
+	{
+		(*i)->Kill();
+		(*i)->DoProcessing();
+		delete (*i);
+	}
+}
+
+void	AsyncConnectionPool::ServiceImage(HTTPRequest * req)
+{	
+	vector<HTTPConnection*>::iterator i;
+
+	for(i = mImageCon.begin(); i != mImageCon.end(); ++i)
+	if (!(*i)->DoProcessing())
+	{
+		delete *i;
+		*i = new HTTPConnection("www.terraserver-usa.com",80);
+	}
+
+	if (!req->IsQueued() && !req->IsDone())
+	{
+		HTTPConnection *	best_con = NULL;
+		int					best_depth;
+
+		for(i = mImageCon.begin(); i != mImageCon.end(); ++i)
+		if((*i)->IsAlive())
+		if((*i)->QueueDepth() < mMaxDepths)
+		{
+			if (best_con == NULL || best_depth > (*i)->QueueDepth())
+			{
+				best_con = *i;
+				best_depth = (*i)->QueueDepth();
+			}
+		}
+		if (best_con)
+		{
+			req->Retry(best_con);
+			best_con->DoProcessing();
+		}
+		else if (mImageCon.size() < mMaxCons)
+		{
+			mImageCon.push_back(new HTTPConnection("www.terraserver-usa.com",80));
+			req->Retry(mImageCon.back());
+			mImageCon.back()->DoProcessing();
+		}
+	}
+}
+
+void	AsyncConnectionPool::ServiceLocator(HTTPRequest * req)
+{
+	if (mLocatorCon && !mLocatorCon->DoProcessing())
+	{
+		delete mLocatorCon;
+		mLocatorCon = NULL;
+	}
+	if (mLocatorCon == NULL)
+		mLocatorCon = new HTTPConnection("www.terraserver-usa.com",80);
+	if (!req->IsQueued() && !req->IsDone())
+		req->Retry(mLocatorCon);
+	mLocatorCon->DoProcessing();
+}
 
 
 #define	FETCH_LIMIT	60
 
 
-AsyncImage::AsyncImage(const char * scale, const char * theme, int domain, int x, int y)
+AsyncImage::AsyncImage(AsyncConnectionPool * pool, const char * scale, const char * theme, int domain, int x, int y)
 {
+	mGen = -1;
+	mPool = pool;
 	mX = x;
 	mY = y;
 	mDomain = domain;
@@ -454,20 +535,15 @@ void AsyncImage::TryCoords(void)
 
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, mTheme.c_str(), mScale.c_str(), mDomain, mX, mY);
 	
-	++sPending;
-	
-	if (!mConnection)
-		mConnection = new HTTPConnection(
-						"www.terraserver-usa.com",
-						80);
 	mFetchCoords = new HTTPRequest(
-						mConnection,
+						NULL,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
 						req_string,
 						strlen(req_string),
 						NULL);
+	mPool->ServiceImage(mFetchCoords);
 }
 
 void AsyncImage::TryImage()
@@ -479,19 +555,15 @@ void AsyncImage::TryImage()
 
 	sprintf(req_string, SOAP_GETTILE, mTheme.c_str(), mScale.c_str(), mDomain, mX, mY);
 
-	++sPending;
-	if (!mConnection)
-		mConnection = new HTTPConnection(
-						"www.terraserver-usa.com",
-						80);
 	mFetchImage = new HTTPRequest(
-						mConnection,
+						NULL,
 						"/TerraService2.asmx",
 						true,	// Post!
 						fields,
 						req_string,
 						strlen(req_string),
 						NULL);
+	mPool->ServiceImage(mFetchImage);
 }
 
 	
@@ -502,8 +574,6 @@ AsyncImage::~AsyncImage()
 		DestroyBitmap(mImage);
 		delete mImage;
 	}
-	if (mFetchImage)	sPending--;
-	if (mFetchCoords)	sPending--;
 	delete mFetchImage;
 	delete mFetchCoords;
 	
@@ -518,15 +588,12 @@ ImageInfo *		AsyncImage::GetImage(void)
 	
 	if (!mFetchImage)
 	{
-		if (sPending < FETCH_LIMIT)
-			TryImage();
-		else
-			return NULL;
+		TryImage();
 	}	
 	
 	if (!mFetchImage->IsDone())
 	{
-		mConnection->DoProcessing();
+		mPool->ServiceImage(mFetchImage);
 		return NULL;
 	}
 	
@@ -534,7 +601,6 @@ ImageInfo *		AsyncImage::GetImage(void)
 	if ((responseNum < 200) || (responseNum > 299))
 	{
 		mHasErr = true;
-		--sPending;
 		delete mFetchImage;
 		mFetchImage = NULL;
 		return NULL;
@@ -544,7 +610,6 @@ ImageInfo *		AsyncImage::GetImage(void)
 
 	XMLObject * root = ParseXML(&*foo.begin(), foo.size());
 	if (!root) {
-		--sPending;
 		delete mFetchImage;
 		mFetchImage = NULL;
 		mHasErr = true;
@@ -559,7 +624,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 		vector<char>	abuf;
 		abuf.resize(b64.length());		// Post-B64 decoding is always at least smaller than in b64.
 		char * inp = &*abuf.begin();
-		char *	outP;
+		char *	outP;	
 		decode(&*b64.begin(), &*b64.end(), inp, &outP);
 		int len = outP - inp;
 
@@ -567,7 +632,6 @@ ImageInfo *		AsyncImage::GetImage(void)
 		
 		if (CreateBitmapFromJPEGData(inp, len, mImage) == 0)
 		{
-			--sPending;
 			delete root;
 			delete mFetchImage;
 			mFetchImage = NULL;
@@ -584,7 +648,6 @@ ImageInfo *		AsyncImage::GetImage(void)
 	} // Else the XML response doesn't have the nodes we exepct
 
 	delete root;	
-	--sPending;
 	delete mFetchImage;
 	mFetchImage = NULL;
 	
@@ -604,17 +667,14 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 
 	if (!mFetchCoords)
 	{
-		if (sPending < FETCH_LIMIT)
-			TryCoords();
-		else
-			return NULL;
+		TryCoords();
 	}	
 	
 
 
 	if (!mFetchCoords->IsDone())
 	{
-		mConnection->DoProcessing();
+		mPool->ServiceImage(mFetchCoords);
 		return false;
 	}
 	
@@ -622,7 +682,6 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	if ((responseNum < 200) || (responseNum > 299))
 	{
 		mHasErr = true;
-		--sPending;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
 		return false;
@@ -633,7 +692,6 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	XMLObject * root = ParseXML(&*foo.begin(), foo.size());
 	if (!root) { 
 		mHasErr = true; 
-		--sPending;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
 		return false; 
@@ -643,7 +701,6 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	if (!result)
 	{
 		// Strange response!
-		--sPending;
 		delete root;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
@@ -663,7 +720,6 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	if (!nw_lat || !ne_lat || !se_lat || !sw_lat ||
 		!nw_lon || !ne_lon || !se_lon || !sw_lon)
 	{
-		--sPending;
 		delete root;
 		delete mFetchCoords;
 		mFetchCoords = NULL;
@@ -685,7 +741,6 @@ bool			AsyncImage::GetCoords(double	coords[4][2])
 	for (int j = 0; j < 2; ++j)
 		if (mCoords[i][j] != 0.0) allZero = false;
 
-		--sPending;
 	delete root;
 	delete mFetchCoords;
 	mFetchCoords = NULL;
@@ -742,8 +797,9 @@ void	AsyncImage::Draw(double coords[4][2])
 #endif
 
 
-AsyncImageLocator::AsyncImageLocator()
+AsyncImageLocator::AsyncImageLocator(AsyncConnectionPool * pool)
 {
+	mPool = pool;
 	mFetch = NULL;
 	mNorth = mSouth = mEast = mWest = -9.9e9;
 }
@@ -759,7 +815,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 	if (mFetch)
 	{
 		if (!mFetch->IsDone())
-			mConnection->DoProcessing();
+			mPool->ServiceLocator(mFetch);
 		else {
 
 			int responseNum = mFetch->GetResponseNum();
@@ -822,10 +878,19 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 								mX2 = max (mX2, tiles[n][0]+1);
 								mY1 = min (mY1, tiles[n][1]);
 								mY2 = max (mY2, tiles[n][1]+1);
+								
+								if (tiles[n][2] != mLayer)
+								{
+									mX1 = mY1 = mX2 = mY2 = -1;
+									break;
+								}								
 							}		
 							
-							mHas = true;	
+							DebugAssert(mX1 != -2147483648);
+							DebugAssert(mX2 >= mX1);
+							DebugAssert(mY2 >= mY1);
 							
+							mHas = true;								
 						}
 					}
 					delete root;			
@@ -846,12 +911,8 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 
 		sprintf(req_string, SOAP_GETAREAFROMRECT,	w, n, e, s, theme, scale);		
 		
-	if (!mConnection)
-		mConnection = new HTTPConnection(
-							"www.terraserver-usa.com",
-							80);
 		mFetch = new HTTPRequest(
-							mConnection,
+							NULL,
 							"/TerraService2.asmx",
 							true,	// Post!
 							fields,
@@ -862,6 +923,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 		mNorth = n;
 		mEast = e;
 		mSouth = s;
+		mPool->ServiceLocator(mFetch);
 	}
 	
 	if (mHas)

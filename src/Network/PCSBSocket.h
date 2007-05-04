@@ -37,6 +37,7 @@
 	#include <Winsock2.h>
 	#include <Ws2tcpip.h>
 #else
+	#define __DEBUGGING__
 	#if defined(__MWERKS__)
 		#include <Carbon.h>
 	#else
