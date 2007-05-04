@@ -13,3 +13,8 @@ WED_Windsock::WED_Windsock(WED_Archive * a, int i) : WED_GISPoint(a,i),
 WED_Windsock::~WED_Windsock()
 {
 }
+
+void	WED_Windsock::SetLit(int l)
+{
+	lit = l;
+}

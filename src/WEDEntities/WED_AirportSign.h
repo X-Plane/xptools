@@ -7,6 +7,11 @@ class WED_AirportSign : public WED_GISPoint_Heading {
 
 DECLARE_PERSISTENT(WED_AirportSign)
 
+public:
+
+		void		SetStyle(int style);
+		void		SetHeight(int height);
+
 private:
 
 	WED_PropIntEnum		style;

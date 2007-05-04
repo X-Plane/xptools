@@ -54,7 +54,12 @@ bool				WED_GISPolygon::WithinBox		(const Bbox2&  bounds) const
 
 bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
 {
-	return GetOuterRing()->IntersectsBox(bounds);
+	// A ring can NOT intersect the box because it goes AROUND it.  So this is NOT
+	// the same!
+//	return GetOuterRing()->IntersectsBox(bounds);
+	Bbox2	bnd;
+	GetBounds(bnd);
+	return bounds.overlap(bnd);
 }
 
 bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const

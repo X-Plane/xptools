@@ -9,6 +9,8 @@ DECLARE_INTERMEDIATE(WED_GISPoint_HeadingWidthLength)
 
 public:
 
+	virtual	GISClass_t		GetGISClass		(void				 ) const;
+
 	// IGISPoint_WidthLength
 	virtual	double	GetWidth (void		 ) const;
 	virtual	void	SetWidth (double width)      ;

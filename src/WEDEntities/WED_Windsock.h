@@ -7,6 +7,10 @@ class	WED_Windsock : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_Windsock)
 
+public:
+
+		void		SetLit(int);
+
 private:
 
 	WED_PropBoolText			lit;

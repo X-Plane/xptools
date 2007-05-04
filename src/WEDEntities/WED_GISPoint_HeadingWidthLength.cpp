@@ -24,6 +24,10 @@ WED_GISPoint_HeadingWidthLength::~WED_GISPoint_HeadingWidthLength()
 {
 }
 
+GISClass_t	WED_GISPoint_HeadingWidthLength::GetGISClass		(void				 ) const
+{
+	return gis_Point_HeadingWidthLength;
+}
 
 double	WED_GISPoint_HeadingWidthLength::GetWidth (void		 ) const
 {
@@ -59,7 +63,8 @@ void	WED_GISPoint_HeadingWidthLength::GetCorners(Point2 corners[4]) const
 	Point2		center;
 	GetLocation(center);
 	
-	NorthHeading2Vector(center, center, GetHeading(),dir);	
+	NorthHeading2VectorMeters(center, center, GetHeading(),dir);	
+	dir.normalize();
 	Vector2 right(dir.perpendicular_cw());
 	
 	Point2	zero(0,0);

@@ -7,6 +7,10 @@ class	WED_AirportNode : public WED_GISPoint_Bezier {
 
 DECLARE_PERSISTENT(WED_AirportNode)
 
+public:
+
+			void		SetAttributes(const set<int>& attrs);
+
 private:
 
 	WED_PropIntEnumSet			attrs;

@@ -7,6 +7,44 @@ class	WED_Runway : public WED_GISLine_Width {
 
 DECLARE_PERSISTENT(WED_Runway)
 
+public:
+
+	// These routines return a rectangle for the given sub-rect of the runway.  Like all rects
+	// they are clockwise, with the first point on the left side of the runway (looking from the low
+	// to high end) at the low end.
+	
+	// These routines return false if these elements aren't there.
+	bool		GetCornersBlas1(Point2 corners[4]) const;
+	bool		GetCornersBlas2(Point2 corners[4]) const;
+	bool		GetCornersDisp1(Point2 corners[4]) const;
+	bool		GetCornersDisp2(Point2 corners[4]) const;
+
+	void		SetSurface(int);
+	void		SetShoulder(int);
+	void		SetRoughness(double);
+	void		SetCenterLights(int);
+	void		SetEdgeLights(int);
+	void		SetRemainingSigns(int);
+	void		SetMarkings1(int);
+	void		SetAppLights1(int);
+	void		SetTDZL1(int);
+	void		SetREIL1(int);
+	void		SetMarkings2(int);
+	void		SetAppLights2(int);
+	void		SetTDZL2(int);
+	void		SetREIL2(int);
+
+
+	double		GetDisp1(void) const;
+	double		GetDisp2(void) const;
+	double		GetBlas1(void) const;
+	double		GetBlas2(void) const;
+
+	void		SetDisp1(double disp1);
+	void		SetDisp2(double disp2);
+	void		SetBlas1(double blas1);
+	void		SetBlas2(double blas2);
+
 private:
 
 	WED_PropIntEnum			surface;

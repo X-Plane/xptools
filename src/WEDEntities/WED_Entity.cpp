@@ -10,8 +10,8 @@ END_CASTING
 
 WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
-	locked(this,"locked","WED_entities","locked",0),
-	hidden(this,"hidden","WED_entities","hidden",0)
+	locked(this,"Locked","WED_entities","locked",0),
+	hidden(this,"Hidden","WED_entities","hidden",0)
 {
 }
 

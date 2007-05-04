@@ -7,6 +7,11 @@ class WED_LightFixture : public WED_GISPoint_Heading {
 
 DECLARE_PERSISTENT(WED_LightFixture)
 
+public:
+
+		void		SetLightType(int);
+		void		SetAngle(double);
+
 private:
 
 	WED_PropIntEnum		light_type;

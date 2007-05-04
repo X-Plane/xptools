@@ -7,6 +7,10 @@ class	WED_Sealane : public WED_GISLine_Width {
 
 DECLARE_PERSISTENT(WED_Sealane)
 
+public:
+
+	void		SetBuoys(int);
+
 private:
 
 	WED_PropBoolText		buoys;

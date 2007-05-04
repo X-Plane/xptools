@@ -14,3 +14,8 @@ WED_AirportBeacon::WED_AirportBeacon(WED_Archive * a, int i) : WED_GISPoint(a,i)
 WED_AirportBeacon::~WED_AirportBeacon()
 {
 }
+
+void		WED_AirportBeacon::SetKind(int k)
+{
+	kind = k;
+}

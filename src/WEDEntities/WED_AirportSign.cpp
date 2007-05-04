@@ -7,11 +7,21 @@ INHERITS_FROM(WED_GISPoint_Heading)
 END_CASTING
 
 WED_AirportSign::WED_AirportSign(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	style(this,"Style","WED_airportsign","style",Sign_Style,style_Default),
+	style(this,"Type","WED_airportsign","style",Sign_Style,style_Default),
 	height(this,"Size","WED_airportsign","size",Sign_Size,size_MediumTaxi)
 {
 }
 	
 WED_AirportSign::~WED_AirportSign()
 {
+}
+
+void	WED_AirportSign::SetStyle(int s)
+{
+	style = s;
+}
+
+void	WED_AirportSign::SetHeight(int h)
+{
+	height = h;
 }

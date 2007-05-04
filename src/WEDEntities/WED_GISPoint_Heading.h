@@ -10,6 +10,8 @@ DECLARE_INTERMEDIATE(WED_GISPoint_Heading)
 
 public:
 
+	virtual	GISClass_t		GetGISClass		(void				 ) const;
+
 	virtual	double	GetHeading(void			) const;
 	virtual	void	SetHeading(double heading)      ;
 

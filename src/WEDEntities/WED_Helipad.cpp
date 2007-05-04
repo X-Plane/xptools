@@ -19,3 +19,28 @@ WED_Helipad::WED_Helipad(WED_Archive * a, int i) : WED_GISPoint_HeadingWidthLeng
 WED_Helipad::~WED_Helipad()
 {
 }
+
+void		WED_Helipad::SetSurface(int x)
+{
+	surface = x;
+}
+
+void		WED_Helipad::SetMarkings(int x)
+{
+	markings = x;
+}
+
+void		WED_Helipad::SetShoulder(int x)
+{
+	shoulder = x;
+}
+
+void		WED_Helipad::SetRoughness(double x)
+{
+	roughness = x;
+}
+
+void		WED_Helipad::SetEdgeLights(int x)
+{
+	edgelights = x;
+}

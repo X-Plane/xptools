@@ -7,6 +7,14 @@ class	WED_Helipad : public WED_GISPoint_HeadingWidthLength {
 
 DECLARE_PERSISTENT(WED_Helipad)
 
+public:
+
+		void		SetSurface(int);
+		void		SetMarkings(int);
+		void		SetShoulder(int);
+		void		SetRoughness(double);
+		void		SetEdgeLights(int);
+
 private:
 
 	WED_PropIntEnum		surface;

@@ -1,5 +1,6 @@
 #include "WED_Runway.h"
 #include "WED_EnumSystem.h"
+#include "GISUtils.h"
 
 DEFINE_PERSISTENT(WED_Runway)
 START_CASTING(WED_Runway)
@@ -35,3 +36,148 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 WED_Runway::~WED_Runway()
 {
 }
+
+bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
+{
+	GetCorners(corners);
+	corners[1] = corners[0];
+	corners[2] = corners[3];
+	if (blas1.value == 0.0) return false;
+	Point2	bounds[4];
+	GetCorners(bounds);
+	
+	Point2	p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+
+	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	if (my_len == 0.0) return false;
+	
+	double frac = blas1.value / my_len;
+	
+	corners[0] = Segment2(bounds[0],bounds[1]).midpoint(-frac);
+	corners[1] = bounds[0];
+	corners[2] = bounds[3];
+	corners[3] = Segment2(bounds[3],bounds[2]).midpoint(-frac);
+
+	return true;
+}
+
+bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
+{
+	GetCorners(corners);
+	corners[0] = corners[1];
+	corners[3] = corners[2];
+	if (blas2.value == 0.0) return false;
+	Point2	bounds[4];
+	GetCorners(bounds);
+	
+	Point2	p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+
+	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	if (my_len == 0.0) return false;
+	
+	double frac = blas2.value / my_len;
+	
+	corners[0] = bounds[1];
+	corners[1] = Segment2(bounds[0],bounds[1]).midpoint(1.0 + frac);
+	corners[2] = Segment2(bounds[3],bounds[2]).midpoint(1.0 + frac);
+	corners[3] = bounds[2];
+
+	return true;
+}
+
+bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
+{
+	GetCorners(corners);
+	corners[1] = corners[0];
+	corners[2] = corners[3];
+	if (disp1.value == 0.0) return false;
+	Point2	bounds[4];
+	GetCorners(bounds);
+	
+	Point2	p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+
+	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	if (my_len == 0.0) return false;
+	
+	double frac = disp1.value / my_len;
+	
+	corners[0] = bounds[0];
+	corners[1] = Segment2(bounds[0],bounds[1]).midpoint(frac);
+	corners[2] = Segment2(bounds[3],bounds[2]).midpoint(frac);
+	corners[3] = bounds[3];
+
+	return true;
+}
+
+bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
+{
+	GetCorners(corners);
+	corners[0] = corners[1];
+	corners[3] = corners[2];
+	if (disp2.value == 0.0) return false;
+	Point2	bounds[4];
+	GetCorners(bounds);
+	
+	Point2	p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+
+	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	if (my_len == 0.0) return false;
+	
+	double frac = disp2.value / my_len;
+	
+	corners[0] = Segment2(bounds[0],bounds[1]).midpoint(1.0-frac);
+	corners[1] = bounds[1];
+	corners[2] = bounds[2];
+	corners[3] = Segment2(bounds[3],bounds[2]).midpoint(1.0-frac);
+
+	return true;
+}
+
+void		WED_Runway::SetDisp1(double n)
+{
+		disp1 = n;
+}
+
+void		WED_Runway::SetDisp2(double n)
+{
+		disp2 = n;
+}
+
+void		WED_Runway::SetBlas1(double n)
+{
+		blas1 = n;
+}
+
+void		WED_Runway::SetBlas2(double n)
+{
+		blas2 = n;
+}
+
+double		WED_Runway::GetDisp1(void) const { return disp1.value; }
+double		WED_Runway::GetDisp2(void) const { return disp2.value; }
+double		WED_Runway::GetBlas1(void) const { return blas1.value; }
+double		WED_Runway::GetBlas2(void) const { return blas2.value; }
+
+
+	void		WED_Runway::SetSurface(int x) { surface = x; }
+	void		WED_Runway::SetShoulder(int x) { shoulder = x; }
+	void		WED_Runway::SetRoughness(double x) { roughness = x; }
+	void		WED_Runway::SetCenterLights(int x) { center_lites = x; }
+	void		WED_Runway::SetEdgeLights(int x) { edge_lites = x; }
+	void		WED_Runway::SetRemainingSigns(int x) { remaining_signs = x; }
+	void		WED_Runway::SetMarkings1(int x) { mark1 = x; }
+	void		WED_Runway::SetAppLights1(int x) { appl1 = x; }
+	void		WED_Runway::SetTDZL1(int x) { tdzl1 = x; }
+	void		WED_Runway::SetREIL1(int x) { reil1 = x; }
+	void		WED_Runway::SetMarkings2(int x) { mark2 = x; }
+	void		WED_Runway::SetAppLights2(int x) { appl2 = x; }
+	void		WED_Runway::SetTDZL2(int x) { tdzl2 = x; }
+	void		WED_Runway::SetREIL2(int x) { reil2 = x; }

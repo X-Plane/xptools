@@ -15,7 +15,7 @@ END_CASTING
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
-	name(this,"name","WED_things", "name","unnamed entity")	
+	name(this,"Name","WED_things", "name","unnamed entity")	
 {
 	parent_id = 0;
 }

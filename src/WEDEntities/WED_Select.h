@@ -34,6 +34,7 @@ public:
 	virtual		int				GetSelectionCount(void) const;
 	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const;
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const;
+	virtual		IUnknown *		GetNthSelection(int n) const;
 
 	// WED_Persistent
 	virtual		void 			ReadFrom(IOReader * reader);

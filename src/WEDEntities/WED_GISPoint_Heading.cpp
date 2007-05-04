@@ -21,6 +21,11 @@ WED_GISPoint_Heading::~WED_GISPoint_Heading()
 {
 }
 
+GISClass_t		WED_GISPoint_Heading::GetGISClass		(void				 ) const
+{
+	return gis_Point_Heading;
+}
+
 double	WED_GISPoint_Heading::GetHeading(void			) const
 {
 	return heading.value;

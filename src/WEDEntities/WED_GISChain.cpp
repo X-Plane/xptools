@@ -138,21 +138,24 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	IGISPoint_Bezier * c1 = (p1->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p1) : NULL;
 	IGISPoint_Bezier * c2 = (p2->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p2) : NULL;
 
-	if (c1 == NULL && c2 == NULL)
+	p1->GetLocation(b.p1);
+	p2->GetLocation(b.p2);
+	b.c1 = b.p1;		// Mirror end-points to controls so that if we are a half-bezier,
+	b.c2 = b.p2;		// we don't have junk in our bezier.
+	
+	// If we have a bezier point, fetch i.  Null out our ptrs to the bezier point
+	// if the bezier handle doesn't exist -- this is a flag to us!
+	if (c1) if (!c1->GetControlHandleHi(b.c1)) c1 = NULL;
+	if (c2) if (!c2->GetControlHandleLo(b.c2)) c2 = NULL;
+	
+	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
+	// Simpify down to a segment and return it -- some code may use this 'fast case'.
+	if (!c1 && !c2)
 	{
-		p1->GetLocation(s.p1);
-		p2->GetLocation(s.p2);
+		s.p1 = b.p1;
+		s.p2 = b.p2;
 		return false;
 	}
-	else
-	{
-		p1->GetLocation(b.p1);
-		p2->GetLocation(b.p2);
-		b.c1 = b.p1;
-		b.c2 = b.p2;
-		if (c1) c1->GetControlHandleHi(b.c1);
-		if (c2) c2->GetControlHandleLo(b.c2);
-		return true;
-	}
+	return true;
 }
 

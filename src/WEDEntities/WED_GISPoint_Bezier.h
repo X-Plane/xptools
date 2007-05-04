@@ -13,15 +13,25 @@ public:
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);	
 	// IGISPoint_Bezier
-	virtual	void	GetControlHandleLo (      Point2& p) const;
+	
+	virtual	bool	GetControlHandleLo (      Point2& p) const;
+	virtual	bool	GetControlHandleHi (      Point2& p) const;
+	virtual	bool	IsSplit			   (void		   ) const;
+
 	virtual	void	SetControlHandleLo (const Point2& p)      ;
-	virtual	void	GetControlHandleHi (      Point2& p) const;
 	virtual	void	SetControlHandleHi (const Point2& p)      ;
+	virtual	void	DeleteHandleLo	   (void		   )	  ;
+	virtual	void	DeleteHandleHi	   (void		   )	  ;
+	virtual	void	SetSplit		   (bool is_split  )	  ;
 
 private:
 
-		WED_PropDoubleText		control_latitude;
-		WED_PropDoubleText		control_longitude;
+		WED_PropBoolText		is_split;
+
+		WED_PropDoubleText		ctrl_lat_lo;			// NOTE: THESE ARE STORED AS DELTAS!!!
+		WED_PropDoubleText		ctrl_lon_lo;
+		WED_PropDoubleText		ctrl_lat_hi;
+		WED_PropDoubleText		ctrl_lon_hi;
 
 };
 

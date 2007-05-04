@@ -14,3 +14,8 @@ WED_AirportNode::WED_AirportNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a
 WED_AirportNode::~WED_AirportNode()
 {
 }
+
+void	WED_AirportNode::SetAttributes(const set<int>& in_attrs)
+{
+	attrs = in_attrs;
+}

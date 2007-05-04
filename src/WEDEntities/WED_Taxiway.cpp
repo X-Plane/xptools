@@ -17,3 +17,18 @@ WED_Taxiway::~WED_Taxiway()
 {
 }
 
+void		WED_Taxiway::SetSurface(int s)
+{
+		surface = s;
+}
+
+void		WED_Taxiway::SetRoughness(double r)
+{
+		roughness = r;
+}
+
+void		WED_Taxiway::SetHeading(double h)
+{
+		heading = h;
+}
+

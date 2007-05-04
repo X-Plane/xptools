@@ -192,3 +192,16 @@ void			WED_Select::GetSelectionVector(vector<IUnknown *>& sel) const
 		sel.push_back(FetchPeer(*i));
 }
 
+IUnknown *		WED_Select::GetNthSelection(int n) const
+{
+	DebugAssert(n >= 0 && n < mSelected.size());
+	if (n < 0) return NULL;
+	set<int>::iterator i = mSelected.begin();
+	while (n > 0 && i != mSelected.end())
+	{
+		--n;
+		++i;
+	}
+	if (i == mSelected.end()) return NULL;
+	return FetchPeer(*i);	
+}

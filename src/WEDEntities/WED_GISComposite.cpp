@@ -35,7 +35,7 @@ bool			WED_GISComposite::IntersectsBox	(const Bbox2&  bounds) const
 {
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		if (GetNthEntity(i)->WithinBox(bounds)) return true;
+		if (GetNthEntity(i)->IntersectsBox(bounds)) return true;
 	return false;
 }
 

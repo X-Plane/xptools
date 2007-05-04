@@ -6,6 +6,11 @@
 class	WED_Taxiway : public WED_GISPolygon {
 
 DECLARE_PERSISTENT(WED_Taxiway)
+public:
+
+	void		SetSurface(int s);
+	void		SetRoughness(double r);
+	void		SetHeading(double h);
 
 private:
 

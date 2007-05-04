@@ -15,3 +15,8 @@ WED_Sealane::WED_Sealane(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 WED_Sealane::~WED_Sealane()
 {
 }
+
+void	WED_Sealane::SetBuoys(int x)
+{
+	buoys = x;
+}
