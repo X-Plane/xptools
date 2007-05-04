@@ -15,6 +15,7 @@
 
 START_CASTING(WED_ImageOverlayTool)
 IMPLEMENTS_INTERFACE(IControlHandles)
+IMPLEMENTS_INTERFACE(IPropertyObject)
 BASE_CASE
 END_CASTING
 
@@ -23,8 +24,8 @@ END_CASTING
 // | |
 // 3-0
 
-WED_ImageOverlayTool::WED_ImageOverlayTool(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path) :
-	WED_HandleToolBase(host,zoomer,resolver,root_path,selection_path),
+WED_ImageOverlayTool::WED_ImageOverlayTool(const char *	tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path) :
+	WED_HandleToolBase(tool_name, host,zoomer,resolver,root_path,selection_path),
 	mVisible(false),
 	mBits(false),
 	mTexID(0)
@@ -137,11 +138,6 @@ void	WED_ImageOverlayTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 	p = mCoords[n];
 }
 
-void	WED_ImageOverlayTool::SetNthControlHandle(int id, int n, const Point2& p)
-{
-	mCoords[n] = p;
-}
-
 int		WED_ImageOverlayTool::GetLinks		    (int id) const
 {
 	return 4;
@@ -189,5 +185,55 @@ void	WED_ImageOverlayTool::ControlsLinksBy	 (int id, int c, const Vector2& delta
 {
 	mCoords[c] += delta;
 	mCoords[(c+1)%4] += delta;
+}
+
+#pragma mark -
+
+static const char * strs[8] = { 
+	"SE Lon",
+	"SE Lat",
+	"NE Lon",
+	"NE Lat",
+	"NW Lon",
+	"NW Lat",
+	"SW Lon",
+	"SW Lat" };
+
+int			WED_ImageOverlayTool::FindProperty(const char * in_prop)
+{
+	for (int n = 0; n < 8; ++n)
+		if (strcmp(strs[n],in_prop)==0) return n;
+	return -1;
+}
+
+int			WED_ImageOverlayTool::CountProperties(void)
+{
+	return 8;
+}
+
+void		WED_ImageOverlayTool::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+{
+	info.can_edit = 1;
+	info.prop_kind = prop_Double;
+	info.prop_name = strs[n];
+}
+
+void		WED_ImageOverlayTool::GetNthPropertyDict(int n, PropertyDict_t& dict)
+{
+}
+
+void		WED_ImageOverlayTool::GetNthPropertyDictItem(int n, int e, string& item)
+{
+}
+	
+void		WED_ImageOverlayTool::GetNthProperty(int n, PropertyVal_t& val)
+{
+	val.prop_kind = prop_Double;
+	val.double_val = ((n % 2) ? mCoords[n / 2].y : mCoords[n / 2].x);	
+}
+
+void		WED_ImageOverlayTool::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	((n % 2) ? mCoords[n / 2].y : mCoords[n / 2].x) = val.double_val;
 }
 

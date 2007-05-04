@@ -10,6 +10,7 @@ casting macros in wed persistent ? hrm
 
 START_CASTING(WED_MarqueeTool)
 IMPLEMENTS_INTERFACE(IControlHandles)
+IMPLEMENTS_INTERFACE(IPropertyObject)
 BASE_CASE
 END_CASTING												\
 
@@ -40,12 +41,13 @@ static const double kApplyLinkY1[8] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 }
 static const double kApplyLinkY2[8] = { 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 
 WED_MarqueeTool::WED_MarqueeTool(
+										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
 										const char *			root_path,
 										const char *			selection_path) :
-				WED_HandleToolBase(host, zoomer, resolver, root_path, selection_path),				
+				WED_HandleToolBase(tool_name, host, zoomer, resolver, root_path, selection_path),				
 				mSelection(selection_path)				
 {
 	SetControlProvider(this);
@@ -103,21 +105,6 @@ void	WED_MarqueeTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 
 	p.x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
 	p.y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
-}
-
-void	WED_MarqueeTool::SetNthControlHandle(int id, int n, const Point2& p)
-{
-	Bbox2	bounds;
-	if (!GetTotalBounds(bounds)) return;
-	
-	if (bounds.is_point()) n = 8;
-	
-	Point2 old;
-	
-	old.x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
-	old.y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
-
-	this->ControlsHandlesBy(id, n, Vector2(old, p));
 }
 
 int		WED_MarqueeTool::GetLinks		    (int id) const

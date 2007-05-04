@@ -13,6 +13,7 @@ class	WED_CreateToolBase : public WED_MapToolNew {
 public:
 
 						 WED_CreateToolBase(
+									const char *		tool_name,
 									GUI_Pane *			host,
 									WED_MapZoomerNew *	zoomer, 
 									IResolver *			resolver,

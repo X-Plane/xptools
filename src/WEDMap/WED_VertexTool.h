@@ -1,22 +1,24 @@
-#ifndef WED_MARQUEETOOL_H
-#define WED_MARQUEETOOL_H
+#ifndef WED_VERTEXTOOL_H
+#define WED_VERTEXTOOL_H
 
 #include "WED_HandleToolBase.h"
 #include "IControlHandles.h"
 #include "IOperation.h"
 
-class	WED_MarqueeTool : public WED_HandleToolBase, public virtual IControlHandles {
+class	IGISEntity;
+
+class	WED_VertexTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
-						 WED_MarqueeTool(
+						 WED_VertexTool(
 										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
 										const char *			root_path,
-										const char *			selection_path);						 
-	virtual				~WED_MarqueeTool();
-	
+										const char *			selection_path,
+										int						sel_verts);						 
+	virtual				~WED_VertexTool();	
 
 	// CONTROL HANDLE INTERFACE:	
 	virtual		void	BeginEdit(void);
@@ -40,8 +42,6 @@ public:
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
-
-
 	virtual	int			FindProperty(const char * in_prop) { return -1; }
 	virtual int			CountProperties(void) { return 0; }
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) {} 
@@ -57,15 +57,15 @@ public:
 
 private:
 
-	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent) { return ent_AtomicOrContainer; }
+	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent);
 
-				void	GetEntityInternal(vector<IGISEntity *>& e);
-				bool	GetTotalBounds(Bbox2& b) const;
-				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
-
+			void		GetEntityInternal(vector<IGISEntity *>& e) const;
+			void		AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const;
+			
 		string					mSelection;
-
+		int						mSelVerts;
 	
 };
 
-#endif /* WED_MARQUEETOOL_H */
+
+#endif /* WED_VERTEXTOOL_H */

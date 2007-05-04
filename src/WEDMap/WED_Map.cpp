@@ -6,6 +6,7 @@
 #include "mathutils.h"
 #include "WED_Messages.h"
 #include "IResolver.h"
+#include "GUI_Fonts.h"
 
 WED_Map::WED_Map(IResolver * in_resolver, const char * in_sel, const char * in_gis_base) :
 	mResolver(in_resolver), mSel(in_sel), mGISBase(in_gis_base)
@@ -102,6 +103,15 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	{
 		(*l)->DrawSelected(cur == *l, state);
 	}
+	
+	int b[4];
+	GetBounds(b);
+	float white[4] = { 1.0, 1.0, 1.0, 1.0 };
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 15, mTool ? mTool->GetToolName() : "");
+	
+	const char * status = mTool ? mTool->GetStatusText() : NULL;
+	if (status)
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 }
 
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)

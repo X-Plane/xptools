@@ -37,6 +37,7 @@ static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
 }
 
 WED_CreateToolBase::WED_CreateToolBase(
+									const char *		tool_name,
 									GUI_Pane *			host,
 									WED_MapZoomerNew *	zoomer, 
 									IResolver *			resolver,
@@ -47,7 +48,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 									int					must_curve,
 									int					can_close,
 									int					must_close) :
-	WED_MapToolNew(host,zoomer,resolver),
+	WED_MapToolNew(tool_name, host,zoomer,resolver),
 	mArchive(archive),
 	mLastTime(-9.9e9),
 	mDirOpen(0),
@@ -89,7 +90,7 @@ void		WED_CreateToolBase::DrawStructure(int inCurrent, GUI_GraphState * g)
 	{
 		impute_pt = Point2(GetZoomer()->XPixelToLon(mStartX),GetZoomer()->YPixelToLat(mStartY));
 		impute_dir = Point2(GetZoomer()->XPixelToLon(mNowX),GetZoomer()->YPixelToLat(mNowY));
-		if (!mDirOpen) impute_dir = impute_pt;
+		if (!mDirOpen) impute_pt = impute_dir;
 	}
 	else
 	{
@@ -197,8 +198,8 @@ void		WED_CreateToolBase::HandleClickUp  (int inX, int inY, int inButton)
 	}
 	else
 	{
-		mPts.push_back(Point2(GetZoomer()->XPixelToLon(mStartX),GetZoomer()->YPixelToLat(mStartY)));
-		mDirs.push_back(Point2(GetZoomer()->XPixelToLon(mStartX),GetZoomer()->YPixelToLat(mStartY)));
+		mPts.push_back(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
+		mDirs.push_back(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
 		mHasDirs.push_back(0);
 	}
 	

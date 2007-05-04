@@ -3,31 +3,38 @@
 
 #include "WED_MapLayer.h"
 
+#define NUM_LEVELS 10
+
 class AsyncImage;
 class AsyncImageLocator;
+class AsyncConnectionPool;
 
 class	WED_TerraserverLayer : public WED_MapLayer {
 public:
 
 						 WED_TerraserverLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_TerraserverLayer();
+	
+			void		ToggleVis(void);
+			bool		IsVis(void) { return mVis; }
 
 	// These provide generalized drawing routines.  Use this to draw background images and other such stuff.
 	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
 	
 private:
 
-			const char *	ResString(void);
+			const char *	ResString(int z);
 
-	map<long long, AsyncImage*>		mImages;
+	map<long long, AsyncImage*>		mImages[NUM_LEVELS];
 
-	int mX1, mX2, mY1, mY2, mDomain, mHas;
+	int mX1[NUM_LEVELS], mX2[NUM_LEVELS], mY1[NUM_LEVELS], mY2[NUM_LEVELS], mDomain[NUM_LEVELS], mHas[NUM_LEVELS];
 
-	AsyncImageLocator *				mLocator;
+	AsyncImageLocator *						mLocator[NUM_LEVELS];
+	AsyncConnectionPool *					mPool;
 	
-	string							mData;
-	int								mRes;
-
+	string									mData;
+	int										mRes;
+	bool									mVis;
 
 };
 

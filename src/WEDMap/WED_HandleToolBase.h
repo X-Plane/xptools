@@ -17,6 +17,7 @@ class	WED_HandleToolBase : public WED_MapToolNew {
 public:
 
 						 WED_HandleToolBase(
+										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,

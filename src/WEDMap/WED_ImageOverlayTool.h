@@ -7,7 +7,7 @@
 class	WED_ImageOverlayTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
-						 WED_ImageOverlayTool(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path);
+						 WED_ImageOverlayTool(const char * tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path);
 	virtual				~WED_ImageOverlayTool();
 
 			void		PickFile(void);
@@ -27,7 +27,6 @@ public:
 
 	virtual		int		CountControlHandles(int id						  ) const;
 	virtual		void	GetNthControlHandle(int id, int n,		 Point2& p) const;
-	virtual		void	SetNthControlHandle(int id, int n, const Point2& p)		 ;
 
 	virtual		int		GetLinks		    (int id) const;
 	virtual		int		GetNthLinkSource   (int id, int n) const;
@@ -41,20 +40,21 @@ public:
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
+	// IPropertyObject
+	virtual	int			FindProperty(const char * in_prop);
+	virtual int			CountProperties(void);
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
+	
+	virtual void		GetNthProperty(int n, PropertyVal_t& val);
+	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+
 	// WED_MapToolNew
-	virtual int			GetNumProperties(void) { return 0; }
-	virtual	void		GetNthPropertyName(int, string&) { }
-	virtual	double		GetNthPropertyValue(int) { return 0; }
-	virtual	void		SetNthPropertyValue(int, double) { }
-	
-	virtual	int			GetNumButtons(void) { return 0; }
-	virtual	void		GetNthButtonName(int, string&) { }
-	virtual	void		NthButtonPressed(int) { }
-	
-	virtual	char *		GetStatusText(void) { return NULL; }
+	virtual	const char *		GetStatusText(void) { return mBits ? "Drag corners to reposition overlay." : "Please pick an overlay image from the View menu."; }
 
 	// IUnknown
-	virtual void *		QueryInterface(const char * class_id);
+//	virtual void *		QueryInterface(const char * class_id);
 
 private:
 

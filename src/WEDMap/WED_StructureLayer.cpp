@@ -3,6 +3,7 @@
 #include "GUI_GraphState.h"
 #include "GISUtils.h"GetSel()
 #include "WED_MapZoomerNew.h"
+#include "WED_Runway.h"
 
 #define	BEZ_COUNT 100
 
@@ -38,7 +39,91 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	IGISLine_Width *				lw;
 	IGISPolygon *					poly;
 	
-	switch(kind) {
+	WED_Runway *					rwy;
+	
+	if ((rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
+	{
+		Point2 corners[4];
+		rwy->GetCorners(corners);
+		corners[0] = GetZoomer()->LLToPixel(corners[0]);
+		corners[1] = GetZoomer()->LLToPixel(corners[1]);
+		corners[2] = GetZoomer()->LLToPixel(corners[2]);
+		corners[3] = GetZoomer()->LLToPixel(corners[3]);
+		
+		glBegin(GL_LINE_LOOP);
+		glVertex2(corners[0]);
+		glVertex2(corners[1]);
+		glVertex2(corners[2]);
+		glVertex2(corners[3]);
+		glEnd();
+		
+		glBegin(GL_LINES);
+		glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
+		glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
+		glEnd();
+	
+		glColor4f(1,1,0,1);
+		if (rwy->GetCornersBlas1(corners))
+		{
+			corners[0] = GetZoomer()->LLToPixel(corners[0]);
+			corners[1] = GetZoomer()->LLToPixel(corners[1]);
+			corners[2] = GetZoomer()->LLToPixel(corners[2]);
+			corners[3] = GetZoomer()->LLToPixel(corners[3]);
+			
+			glBegin(GL_LINE_LOOP);
+			glVertex2(corners[0]);
+			glVertex2(corners[1]);
+			glVertex2(corners[2]);
+			glVertex2(corners[3]);
+			glEnd();
+		}
+		if (rwy->GetCornersBlas2(corners))
+		{
+			corners[0] = GetZoomer()->LLToPixel(corners[0]);
+			corners[1] = GetZoomer()->LLToPixel(corners[1]);
+			corners[2] = GetZoomer()->LLToPixel(corners[2]);
+			corners[3] = GetZoomer()->LLToPixel(corners[3]);
+			
+			glBegin(GL_LINE_LOOP);
+			glVertex2(corners[0]);
+			glVertex2(corners[1]);
+			glVertex2(corners[2]);
+			glVertex2(corners[3]);
+			glEnd();
+		}
+
+		glColor4f(1,1,1,1);
+		if (rwy->GetCornersDisp1(corners))
+		{
+			corners[0] = GetZoomer()->LLToPixel(corners[0]);
+			corners[1] = GetZoomer()->LLToPixel(corners[1]);
+			corners[2] = GetZoomer()->LLToPixel(corners[2]);
+			corners[3] = GetZoomer()->LLToPixel(corners[3]);
+			
+			glBegin(GL_LINE_LOOP);
+			glVertex2(corners[0]);
+			glVertex2(corners[1]);
+			glVertex2(corners[2]);
+			glVertex2(corners[3]);
+			glEnd();
+		}
+		if (rwy->GetCornersDisp2(corners))
+		{
+			corners[0] = GetZoomer()->LLToPixel(corners[0]);
+			corners[1] = GetZoomer()->LLToPixel(corners[1]);
+			corners[2] = GetZoomer()->LLToPixel(corners[2]);
+			corners[3] = GetZoomer()->LLToPixel(corners[3]);
+			
+			glBegin(GL_LINE_LOOP);
+			glVertex2(corners[0]);
+			glVertex2(corners[1]);
+			glVertex2(corners[2]);
+			glVertex2(corners[3]);
+			glEnd();
+		}
+	
+	}
+	else switch(kind) {
 	case gis_Point:
 	case gis_Point_Bezier:
 		if ((pt = SAFE_CAST(IGISPoint,entity)) != NULL)
@@ -61,7 +146,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			Point2 l;
 			pth->GetLocation(l);
 			Vector2	dir;
-			NorthHeading2Vector(l,l,pth->GetHeading(),dir);
+			NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
 			Vector2 r(dir.perpendicular_cw());
 			l = GetZoomer()->LLToPixel(l);
 			
@@ -153,9 +238,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			
 			glBegin(GL_LINES);
 			glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
-			glVertex2(Segment2(
-						Segment2(corners[0],corners[1]).midpoint(1.5),
-						Segment2(corners[3],corners[2]).midpoint(1.5)).midpoint());
+			glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
 			glEnd();
 			
 		}

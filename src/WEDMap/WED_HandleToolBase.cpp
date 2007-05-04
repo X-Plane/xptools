@@ -88,12 +88,13 @@ inline bool within_seg(const Segment2& s, const Point2& p, double r)
 }
 
 WED_HandleToolBase::WED_HandleToolBase(
+				const char *			tool_name,
 				GUI_Pane *				host,
 				WED_MapZoomerNew *		zoomer,
 				IResolver *				resolver,				
 				const char *			root_path,
 				const char *			selection_path) :
-	WED_MapToolNew(host, zoomer,resolver),
+	WED_MapToolNew(tool_name, host, zoomer,resolver),
 	mRoot(root_path),
 	mHandles(NULL),
 	mDragType(drag_None),
@@ -253,6 +254,8 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 {
 	EntityHandling_t choice = TraverseEntity(entity);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
+	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
+	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
 	switch(choice) {	
 	case ent_Atomic:
 		if (entity->WithinBox(bounds)) 
@@ -265,6 +268,19 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 			for (int n = 0; n < count; ++n)
 				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result);
 		}
+		else if (seq) 
+		{
+			int count = seq->GetNumPoints();
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result);
+		}
+		else if(poly) 
+		{
+			int count = poly->GetNumHoles();
+			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result);
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result);
+		}
 		break;
 	case ent_AtomicOrContainer:
 		if (entity->WithinBox(bounds)) 
@@ -275,6 +291,19 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 			for (int n = 0; n < count; ++n)
 				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result);
 		}
+		else if (seq) 
+		{
+			int count = seq->GetNumPoints();
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result);
+		}
+		else if (poly) 
+		{
+			int count = poly->GetNumHoles();
+			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result);
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result);
+		}		
 		break;
 	}
 }
@@ -348,6 +377,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton)
 
 void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 {
+	if (!inCurrent) return;
 	if (mHandles != NULL)
 	{
 		int ei_count = mHandles->CountEntities();
