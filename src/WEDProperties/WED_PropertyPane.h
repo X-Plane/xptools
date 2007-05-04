@@ -24,10 +24,20 @@ class	GUI_Commander;
 class	GUI_ScrollerPane;
 class	GUI_Table;
 class	GUI_Header;
+class	GUI_Side;
 class	WED_Thing;
 class	WED_Select;
 
-class	WED_PropertyPane : public GUI_Packer {
+enum {
+
+	propPane_Hierarchy,
+	propPane_Filtered,
+	propPane_FilteredVertical,
+	propPane_Selection
+
+};
+
+class	WED_PropertyPane : public GUI_Packer, public GUI_Commander {
 public:
 
 			 WED_PropertyPane(
@@ -36,7 +46,9 @@ public:
 						WED_Select *			inSelect,
 						const char **			col_names,
 						int *					def_col_widths,
-						GUI_Broadcaster *		archive_broadcaster);						
+						GUI_Broadcaster *		archive_broadcaster,
+						int						pane_style,
+						const char **			filter);
 	virtual	~WED_PropertyPane();
 	
 private:
@@ -44,12 +56,13 @@ private:
 	GUI_ScrollerPane *				mScroller;
 	GUI_Table *						mTable;
 	GUI_Header *					mHeader;
+	GUI_Side *						mSide; 
 	
 	GUI_TextTable					mTextTable;
 	GUI_TextTableHeader				mTextTableHeader;
+	GUI_TextTableSide				mTextTableSide;
 	
 	WED_PropertyTable				mPropertyTable	;
-	WED_PropertyTableHeader			mPropertyTableHeader	;
 	
 };	
 
