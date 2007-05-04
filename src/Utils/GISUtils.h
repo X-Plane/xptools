@@ -55,8 +55,14 @@ inline int	latlon_bucket(int p)
 	else return ((-p + 9) / 10) * -10;
 }
 
-void NorthHeading2Vector(const Point2& ref, const Point2& p, double heading, Vector2& dir);
-void MetersToLLE(const Point2& ref, int count, Point2 * pts);
+void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir);
+double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);
+void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir);
+double VectorDegs2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir);
 
+void MetersToLLE(const Point2& ref, int count, Point2 * pts);
+//double VectorLengthMeters(const Point2& ref, const Vector2& vec);
+
+Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v);
 
 #endif

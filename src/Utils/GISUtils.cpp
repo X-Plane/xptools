@@ -180,7 +180,7 @@ void	CreateTranslatorForPolygon(
 	trans.mDstMax.y = (trans.mSrcMax.y - trans.mSrcMin.y) * DEG_TO_MTR_LAT;
 }					
 
-void NorthHeading2Vector(const Point2& ref, const Point2& p, double heading, Vector2& dir)
+void NorthHeading2VectorMeters(const Point2& ref, const Point2& p, double heading, Vector2& dir)
 {
 	double lon_delta = p.x - ref.x;
 	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
@@ -189,14 +189,59 @@ void NorthHeading2Vector(const Point2& ref, const Point2& p, double heading, Vec
 	dir.dy = cos(real_heading * DEG_TO_RAD);
 }
 
+double VectorDegs2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir)
+{
+	double dx = dir.dx * cos (ref.y * DEG_TO_RAD);
+	double h = atan2(dx, dir.dy) * RAD_TO_DEG;
+	if (h < 0.0) h += 360.0;
+	double lon_delta = p.x - ref.x;
+	return h + lon_delta * sin(p.y * DEG_TO_RAD);	
+}
+
+void NorthHeading2VectorDegs(const Point2& ref, const Point2& p, double heading, Vector2& dir)
+{
+	double lon_delta = p.x - ref.x;
+	double real_heading = heading - lon_delta * sin(p.y * DEG_TO_RAD);
+	
+	dir.dx = sin(real_heading * DEG_TO_RAD) / cos (ref.y * DEG_TO_RAD);
+	dir.dy = cos(real_heading * DEG_TO_RAD);
+}
+
+double VectorMeters2NorthHeading(const Point2& ref, const Point2& p, const Vector2& dir)
+{
+	double h = atan2(dir.dx, dir.dy) * RAD_TO_DEG;
+	if (h < 0.0) h += 360.0;
+	double lon_delta = p.x - ref.x;
+	return h + lon_delta * sin(p.y * DEG_TO_RAD);	
+}
+
+
 void MetersToLLE(const Point2& ref, int count, Point2 * pts)
 {
 	while(count--)
 	{
-		pts->y = ref.y + pts->y * DEG_TO_MTR_LAT;
-		pts->x = ref.x + pts->x * DEG_TO_MTR_LAT * cos(pts->y * DEG_TO_RAD);
+		pts->y = ref.y + pts->y * MTR_TO_DEG_LAT;
+		pts->x = ref.x + pts->x * MTR_TO_DEG_LAT / cos(pts->y * DEG_TO_RAD);
 		
 		++pts;
 	}
+}
+/*
+double VectorLengthMeters(const Point2& ref, const Vector2& vec)
+{
+	printf("LL: %lf,%lf ",vec.dx,vec.dy);
+	double dx = vec.dx * DEG_TO_MTR_LAT * cos(ref.y * DEG_TO_RAD);
+	double dy = vec.dy * DEG_TO_MTR_LAT;
+	printf("MTR: %lf,%lf\n",dx,dy);
+	return sqrt(dx*dx+dy*dy);
+}
+*/
+
+Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v)
+{
+	Vector2	ret(v);
+	ret.dx *= (DEG_TO_MTR_LAT * cos(ref.y * DEG_TO_RAD) );
+	ret.dy *= (DEG_TO_MTR_LAT							);
+	return ret;
 }
 
