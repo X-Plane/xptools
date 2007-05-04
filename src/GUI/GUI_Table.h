@@ -41,7 +41,7 @@ class	GUI_GraphState;
  ***********************************************************************************************/
 
 
-class	GUI_TableGeometry : public GUI_Broadcaster {
+class	GUI_TableGeometry {
 public:
 
 	// Getting geometry
@@ -65,7 +65,7 @@ public:
 	virtual	void		SetCellHeight(int n, int h)=0;
 };
 
-class	GUI_TableContent : public GUI_Broadcaster {
+class	GUI_TableContent {
 public:
 
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )=0;
@@ -76,7 +76,7 @@ public:
 
 };
 
-class	GUI_TableHeader : public GUI_Broadcaster {
+class	GUI_TableHeader {
 public:
 
 	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState			  )=0;
@@ -86,7 +86,7 @@ public:
 
 };
 
-class	GUI_TableSide : public GUI_Broadcaster {
+class	GUI_TableSide {
 public:
 
 	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  )=0;
@@ -111,6 +111,7 @@ public:
 			void		SetContent(GUI_TableContent * inContent);
 			int			GetScrollH(void) { return mScrollH; }
 			int			GetScrollV(void) { return mScrollV; }
+			void		SizeShowAll(void);
 
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);

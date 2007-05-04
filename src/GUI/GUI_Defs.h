@@ -178,6 +178,7 @@ struct	GUI_MenuItem_t {
 	const char *	name;
 	char			key;
 	GUI_KeyFlags	flags;
+	int				checked;
 	int				cmd;
 };
 

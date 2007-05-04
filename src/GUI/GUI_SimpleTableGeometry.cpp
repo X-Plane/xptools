@@ -3,11 +3,9 @@
 
 GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 			int		num_cols,
-			GUI_SimpleTableGeometryRowProvider * row_provider,
 			int *	default_col_widths,
 			int		row_height)
 {
-	mProvider = row_provider;
 	mRowHeight = row_height;
 	mCols.resize(num_cols);
 	int p = 0;
@@ -22,28 +20,26 @@ GUI_SimpleTableGeometry::~GUI_SimpleTableGeometry()
 {
 }
 
-int			GUI_SimpleTableGeometry::GetColCount(void)
-{
-	return mCols.size();
-}
+//int			GUI_SimpleTableGeometry::GetColCount(void)
+//{
+//	return mCols.size();
+//}
 
-int			GUI_SimpleTableGeometry::GetRowCount(void)
-{
-	return mProvider->CountRows();
-}
-	
 int			GUI_SimpleTableGeometry::GetCellLeft (int n)
 {
+	if(n > 0) ExtendTo(n-1);
 	return (n == 0) ? 0 : mCols[n-1];
 }
 
 int			GUI_SimpleTableGeometry::GetCellRight(int n)
 {
+	ExtendTo(n);
 	return mCols[n];
 }
 
 int			GUI_SimpleTableGeometry::GetCellWidth(int n)
 {
+	ExtendTo(n);
 	return (n == 0) ? mCols[0] : (mCols[n] - mCols[n-1]);
 }
 
@@ -79,12 +75,29 @@ int			GUI_SimpleTableGeometry::RowForY(int n)
 	
 void		GUI_SimpleTableGeometry::SetCellWidth (int n, int w)
 {
+	ExtendTo(n);
 	int delta = w - GetCellWidth(n);
 	for (int i = n; i < mCols.size(); ++i)	
 		mCols[i] += delta;
-	BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
+//	BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
 }
 
 void		GUI_SimpleTableGeometry::SetCellHeight(int n, int h)
 {
+}
+
+void		GUI_SimpleTableGeometry::ExtendTo(int n)
+{
+	if (n < mCols.size()) return;
+	int last_width = mCols[mCols.size()-1] - mCols[mCols.size()-2];
+	int pos = mCols[mCols.size()-1];
+	
+	int num_to_add = n + 1 - mCols.size();
+	
+	while (num_to_add > 0)
+	{
+		pos += last_width;
+		mCols.push_back(pos);
+		--num_to_add;
+	}	
 }

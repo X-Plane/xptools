@@ -3,6 +3,26 @@
 
 // TODO -- visibility culling?
 
+#if APL
+	#include <OpenGL/gl.h>
+#else	
+	#inclde <gl/gl.h>
+#endif
+
+static bool ClipTo(int pane[4], int cell[4])
+{
+	int clip[4] = { max(pane[0], cell[0]),
+					max(pane[1], cell[1]),
+					min(pane[2], cell[2]),
+					min(pane[3], cell[3]) };
+
+	int w = clip[2] - clip[0];
+	int h = clip[3] - clip[1];
+	if (w <= 0 || h <= 0) return false;
+	
+	glScissor(clip[0], clip[1], w, h);					
+}
+
 /************************************************************************************************************
  * MAIN TABLE
  ************************************************************************************************************/
@@ -21,20 +41,12 @@ GUI_Table::~GUI_Table()
 
 void		GUI_Table::SetGeometry(GUI_TableGeometry * inGeometry)
 {
-	if (mGeometry)
-		mGeometry->RemoveListener(this);
 	mGeometry = inGeometry;
-	if (mGeometry) 
-		mGeometry->AddListener(this);
 }
 		
 void		GUI_Table::SetContent(GUI_TableContent * inContent)
 {
-	if (mContent)
-		mContent->RemoveListener(this);
 	mContent = inContent;
-	if (mContent) 
-		mContent->AddListener(this);
 }
 
 
@@ -42,6 +54,12 @@ void		GUI_Table::Draw(GUI_GraphState * state)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+
+	glPushAttrib(GL_SCISSOR_BIT);
+	glEnable(GL_SCISSOR_TEST);
+	
+	int me[4];
+	GetVisibleBounds(me);
 	
 	int cells[4], cellbounds[4];
 	if (CalcVisibleCells(cells))
@@ -49,8 +67,10 @@ void		GUI_Table::Draw(GUI_GraphState * state)
 	for (int x = cells[0]; x < cells[2]; ++x)
 	{
 		if (CalcCellBounds(x,y,cellbounds))
+		if (ClipTo(me, cellbounds))
 			mContent->CellDraw(cellbounds,x,y,state);
 	}
+	glPopAttrib();
 }
 
 int			GUI_Table::MouseDown(int x, int y, int button)
@@ -260,6 +280,17 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 	return 1;
 }
 
+void		GUI_Table::SizeShowAll(void)
+{
+	if (!mGeometry) return;
+	int b[4];
+	GetBounds(b);
+	b[2] = b[0] + mGeometry->GetCellLeft(mGeometry->GetColCount()) - mGeometry->GetCellLeft(0);
+	b[3] = b[1] + mGeometry->GetCellBottom(mGeometry->GetRowCount()) - mGeometry->GetCellBottom(0);
+	SetBounds(b);
+}
+
+
 /************************************************************************************************************
  * HEADER 
  ************************************************************************************************************/
@@ -278,20 +309,12 @@ GUI_Header::~GUI_Header()
 
 void		GUI_Header::SetGeometry(GUI_TableGeometry * inGeometry)
 {
-	if (mGeometry)
-		mGeometry->RemoveListener(this);
 	mGeometry = inGeometry;
-	if (mGeometry) 
-		mGeometry->AddListener(this);
 }
 		
 void		GUI_Header::SetHeader(GUI_TableHeader * inHeader)
 {
-	if (mHeader)
-		mHeader->RemoveListener(this);
 	mHeader = inHeader;
-	if (mHeader) 
-		mHeader->AddListener(this);
 }
 
 void		GUI_Header::SetTable(GUI_Table * inTable)
@@ -303,14 +326,23 @@ void		GUI_Header::Draw(GUI_GraphState * state)
 {
 	if (mGeometry == NULL) return;
 	if (mHeader == NULL) return;
+
+	int me[4];
+	GetVisibleBounds(me);
+	
+	glPushAttrib(GL_SCISSOR_BIT);
+	glEnable(GL_SCISSOR_TEST);
 	
 	int cells[2], cellbounds[4];
 	if (CalcVisibleCells(cells))
 	for (int x = cells[0]; x < cells[1]; ++x)
 	{
 		if (CalcCellBounds(x,cellbounds))
+		if (ClipTo(me, cellbounds))			
 			mHeader->HeadDraw(cellbounds,x,state);
 	}
+	
+	glPopAttrib();	
 }
 
 int			GUI_Header::MouseDown(int x, int y, int button)
@@ -429,20 +461,12 @@ GUI_Side::~GUI_Side()
 
 void		GUI_Side::SetGeometry(GUI_TableGeometry * inGeometry)
 {
-	if (mGeometry)
-		mGeometry->RemoveListener(this);
 	mGeometry = inGeometry;
-	if (mGeometry) 
-		mGeometry->AddListener(this);
 }
 		
 void		GUI_Side::SetSide(GUI_TableSide * inSide)
 {
-	if (mSide)
-		mSide->RemoveListener(this);
 	mSide = inSide;
-	if (mSide) 
-		mSide->AddListener(this);
 }
 
 void		GUI_Side::SetTable(GUI_Table * inTable)
@@ -454,14 +478,22 @@ void		GUI_Side::Draw(GUI_GraphState * state)
 {
 	if (mGeometry == NULL) return;
 	if (mSide == NULL) return;
+
+	int me[4];
+	GetVisibleBounds(me);
+
+	glPushAttrib(GL_SCISSOR_BIT);
+	glEnable(GL_SCISSOR_TEST);
 	
 	int cells[2], cellbounds[4];
 	if (CalcVisibleCells(cells))
 	for (int y = cells[0]; y < cells[1]; ++y)
 	{
 		if (CalcCellBounds(y,cellbounds))
+		if (ClipTo(me, cellbounds))			
 			mSide->SideDraw(cellbounds,y,state);
 	}
+	glPopAttrib();
 }
 
 int			GUI_Side::MouseDown(int x, int y, int button)
@@ -562,3 +594,4 @@ int		GUI_Side::CalcCellBounds(int y, int bounds[4])
 
 	return 1;
 }
+

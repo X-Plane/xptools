@@ -42,18 +42,9 @@ void		GUI_TextTable::SetParentPanes(GUI_Pane * parent)
 	
 void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 {
-	if (mContent)		mContent->RemoveListener(this);
-						mContent = content;
-	if (mContent)		mContent->AddListener(this);	
+	mContent = content;
 }
 
-void		GUI_TextTable::ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
-{
-	BroadcastMessage(inMsg, inParam);
-}
 
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
@@ -262,11 +253,44 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].flags = 0;
 					items[i].cmd = 0;
 					if (mEditInfo.int_val == it->first) cur = i;
+					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo);
+				}
+			}
+			mEditInfo.content_type = gui_Cell_None;
+		}
+		break;
+	case gui_Cell_EnumSet:
+		{
+			GUI_EnumDictionary	dict;
+			mContent->GetEnumDictionary(cell_x, cell_y,dict);
+			if (!dict.empty())
+			{
+				vector<GUI_MenuItem_t>	items(dict.size()+1);
+				vector<int>				enum_vals(dict.size());
+				int i = 0;
+				int cur = -1;
+				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+				{
+					enum_vals[i] = it->first;
+					items[i].name = it->second.c_str();
+					items[i].key = 0;
+					items[i].flags = 0;
+					items[i].cmd = 0;
+					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
+				}
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				if (choice >= 0 && choice < enum_vals.size())
+				{
+					if(mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
+						mEditInfo.int_set_val.erase(enum_vals[choice]);
+					else
+						mEditInfo.int_set_val.insert(enum_vals[choice]);
 					mContent->AcceptEdit(cell_x, cell_y, mEditInfo);
 				}
 			}
@@ -394,9 +418,7 @@ GUI_TextTableHeader::~GUI_TextTableHeader()
 	
 void		GUI_TextTableHeader::SetProvider(GUI_TextTableHeaderProvider * content)
 {
-	if (mContent)	mContent->RemoveListener(this);
 	mContent = content;
-	if (mContent)	mContent->AddListener(this);
 }
 
 void		GUI_TextTableHeader::SetGeometry(GUI_TableGeometry * geometry)
@@ -446,6 +468,7 @@ void		GUI_TextTableHeader::HeadMouseDrag(int cell_bounds[4], int cell_x, int mou
 	{
 		mGeometry->SetCellWidth(mCellResize,mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
 		mLastX = mouse_x;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
 	}
 }
 
@@ -455,14 +478,86 @@ void		GUI_TextTableHeader::HeadMouseUp  (int cell_bounds[4], int cell_x, int mou
 	{
 		mGeometry->SetCellWidth(mCellResize,mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
 		mCellResize = -1;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
 	}
 }
 
-void		GUI_TextTableHeader::ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+GUI_TextTableSide::GUI_TextTableSide() : mContent(NULL), mGeometry(NULL)
+{	
+}
+
+GUI_TextTableSide::~GUI_TextTableSide()
 {
-	BroadcastMessage(inMsg, inParam);
+}
+	
+void		GUI_TextTableSide::SetProvider(GUI_TextTableHeaderProvider * content)
+{
+	mContent = content;
+}
+
+void		GUI_TextTableSide::SetGeometry(GUI_TableGeometry * geometry)
+{
+	mGeometry = geometry;
+}
+
+void		GUI_TextTableSide::SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  )
+{
+	inState->SetState(false, false, false,	false, false, false, false);
+	glColor3f(0.5,0.5,0.5);
+	glBegin(GL_LINE_LOOP);
+	glVertex2i(cell_bounds[0],cell_bounds[1]);
+	glVertex2i(cell_bounds[2],cell_bounds[1]);
+	glVertex2i(cell_bounds[2],cell_bounds[3]);
+	glVertex2i(cell_bounds[0],cell_bounds[3]);
+	glEnd();
+	
+	if (!mContent) return;
+	GUI_HeaderContent	c;
+	mContent->GetHeaderContent(cell_y,c);
+	
+	float col[4] = { 0.0,0.0,0.0,1.0 };
+	GUI_FontDraw(inState, font_UI_Basic, col, cell_bounds[0], cell_bounds[1], c.title.c_str());	
+}
+
+int			GUI_TextTableSide::SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)
+{	
+	mCellResize = -1;
+	if (mGeometry && fabs(mouse_y - cell_bounds[1]) < RESIZE_MARGIN && cell_y > 0)
+	{
+		mLastY = mouse_y;
+		mCellResize = cell_y -1;
+		return 1;
+	}
+	if (mGeometry && fabs(mouse_y - cell_bounds[2]) < RESIZE_MARGIN && cell_y < mGeometry->GetRowCount())
+	{
+		mLastY = mouse_y;
+		mCellResize = cell_y;
+		return 1;
+	}
+}
+
+void		GUI_TextTableSide::SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)
+{
+	if (mCellResize >= 0 && mGeometry)
+	{
+		mGeometry->SetCellHeight(mCellResize,mouse_y - mLastY + mGeometry->GetCellHeight(mCellResize));
+		mLastY = mouse_y;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
+	}
+}
+
+void		GUI_TextTableSide::SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)
+{
+	if (mCellResize >= 0 && mGeometry)
+	{
+		mGeometry->SetCellHeight(mCellResize,mouse_y - mLastY + mGeometry->GetCellWidth(mCellResize));
+		mCellResize = -1;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
+	}
 }
 

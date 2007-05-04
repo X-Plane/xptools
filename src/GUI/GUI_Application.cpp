@@ -331,6 +331,8 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
 					((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
 					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
+
+			::CheckMenuItem(new_menu,n+1,items[n].checked);
 					
 			++n;
 		}	

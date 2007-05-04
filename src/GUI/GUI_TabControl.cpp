@@ -26,7 +26,7 @@ void		GUI_TabControl::SetDescriptor(const string& inDesc)
 
 	mItems.clear();
 
-	string::iterator b, e;
+	string::const_iterator b, e;
 	b = inDesc.begin();
 	while (b != inDesc.end())
 	{
@@ -69,10 +69,11 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	}
 	
 	float c[4] = { 0,0,0,1};
+	float ch[4] = { 0.5, 0.5, 0.5, 1 };
 	GetBounds(bounds);
 	for (n = 0; n < mItems.size(); ++n)
 	{
-		GUI_FontDraw(state, font_UI_Basic, c, (bounds[0] + TAB_PADDING), bounds[1], mItems[n].c_str());
+		GUI_FontDraw(state, font_UI_Basic, (n == mTrackBtn && mHilite) ? ch : c, (bounds[0] + TAB_PADDING), bounds[1], mItems[n].c_str());
 		bounds[0] += mWidths[n];
 	}
 	
@@ -94,6 +95,7 @@ int			GUI_TabControl::MouseDown(int x, int y, int button)
 			Refresh();
 			return 1;
 		}
+		bounds[0] = bounds[2];
 	}
 	return 0;
 }

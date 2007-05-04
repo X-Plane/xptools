@@ -71,6 +71,36 @@ void	GUI_ScrollerPane::PositionInContentArea(GUI_Pane * inPane)
 	inPane->SetSticky(1,1,1,1);
 }
 
+void	GUI_ScrollerPane::PositionSidePane(GUI_Pane * pane)
+{
+	int bounds_me[4];
+	this->GetBounds(bounds_me);
+	if (mScrollH)
+		bounds_me[1] += kSBSIZE;
+	if (mScrollV)
+		bounds_me[2] -= kSBSIZE;
+	int bounds_child[4];
+	pane->GetBounds(bounds_child);
+	bounds_child[1] = bounds_me[1];
+	bounds_child[3] = bounds_me[3];
+	pane->SetBounds(bounds_child);	
+}
+
+void	GUI_ScrollerPane::PositionHeaderPane(GUI_Pane * pane)
+{
+	int bounds_me[4];
+	this->GetBounds(bounds_me);
+	if (mScrollH)
+		bounds_me[1] += kSBSIZE;
+	if (mScrollV)
+		bounds_me[2] -= kSBSIZE;
+	int bounds_child[4];
+	pane->GetBounds(bounds_child);
+	bounds_child[0] = bounds_me[0];
+	bounds_child[2] = bounds_me[2];
+	pane->SetBounds(bounds_child);	
+}
+
 void	GUI_ScrollerPane::SetContent(GUI_ScrollerPaneContent * inPane)
 {
 	if (mContent != NULL)

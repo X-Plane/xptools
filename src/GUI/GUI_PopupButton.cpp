@@ -82,12 +82,14 @@ int			GUI_PopupButton::MouseDown(int x, int y, int button)
 		items[n].key = 0;
 		items[n].flags = 0;
 		items[n].cmd = 0;
-	}
+		items[n].checked = 0;
+	}	
 
 	items.back().name = NULL;
 	items.back().key = 0;
 	items.back().flags = 0;
 	items.back().cmd = 0;
+	items.back().checked = 0;
 
 	int bounds[4];
 	GetBounds(bounds);

@@ -95,6 +95,7 @@ void	GUI_DrawCentered(
 	
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
+	glColor3f(1,1,1);
 	
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);
@@ -121,6 +122,7 @@ void	GUI_DrawStretched(
 	
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
+	glColor3f(1,1,1);
 	
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);

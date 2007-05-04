@@ -1,6 +1,8 @@
 #include "GUI_ToolBar.h"
 #include "GUI_Messages.h"
 #include "GUI_DrawUtils.h"
+#include "GUI_Resources.h"
+#include "MathUtils.h"
 
 GUI_ToolBar::GUI_ToolBar(int h, int v, const char * in_resource) :
 	GUI_Control(),
@@ -27,7 +29,7 @@ void		GUI_ToolBar::Draw(GUI_GraphState * state)
 	bounds[4] = bounds[2] - bounds[0];
 	bounds[5] = bounds[3] - bounds[1];
 	
-	int all_sel[4] = { 0, 0, 1, 2 };
+	int all_sel[4] = { 0, 0, 2, 1 };
 	
 	GUI_DrawStretched(state, mResource.c_str(), bounds, all_sel);
 	
@@ -38,13 +40,13 @@ void		GUI_ToolBar::Draw(GUI_GraphState * state)
 		int x = v % mH;
 		int y = v / mH;
 		
-		int hilite_sel[4] = { x, y + mV, mH, mV * 2 };
+		int hilite_sel[4] = { x + mH, y, mH * 2, mV };
 		
 		int sub_bounds[4] = { 
-			((float) (hilite_sel[0]  ) * (float) bounds[4] / (float) hilite_sel[2])+bounds[0],
-			((float) (hilite_sel[1]  ) * (float) bounds[5] / (float) hilite_sel[3])+bounds[1],
-			((float) (hilite_sel[0]+1) * (float) bounds[4] / (float) hilite_sel[2])+bounds[0],
-			((float) (hilite_sel[1]+1) * (float) bounds[5] / (float) hilite_sel[3])+bounds[1]
+			interp(0,bounds[0],mH,bounds[2],x  ),
+			interp(0,bounds[1],mV,bounds[3],y  ),
+			interp(0,bounds[0],mH,bounds[2],x+1),
+			interp(0,bounds[1],mV,bounds[3],y+1) 
 		};
 			
 		GUI_DrawStretched(state, mResource.c_str(), sub_bounds, hilite_sel);
@@ -76,3 +78,14 @@ int			GUI_ToolBar::MouseDown(int x, int y, int button)
 void		GUI_ToolBar::MouseDrag(int x, int y, int button) { 			}
 void		GUI_ToolBar::MouseUp  (int x, int y, int button) { 			}
 
+void	GUI_ToolBar::SizeToBitmap(void)
+{
+	GUI_TexPosition_t	metrics;
+	
+	GUI_GetTextureResource(mResource.c_str(),0,&metrics);
+	int bounds[4];
+	GetBounds(bounds);
+	bounds[2] = bounds[0] + metrics.real_width / 2;
+	bounds[1] = bounds[3] - metrics.real_height;
+	SetBounds(bounds);
+}

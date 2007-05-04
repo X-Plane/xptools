@@ -3,26 +3,18 @@
 
 #include "GUI_Table.h"
 
-class	GUI_SimpleTableGeometryRowProvider {
-public:
-
-	virtual	int			CountRows(void)=0;
-
-};
-
 class	GUI_SimpleTableGeometry : public GUI_TableGeometry {
 public:
 
 						 GUI_SimpleTableGeometry(
 										int		num_cols,
-										GUI_SimpleTableGeometryRowProvider * row_provider,
 										int *	default_col_widths,
 										int		row_height);
 										
 	virtual				~GUI_SimpleTableGeometry();
 
-	virtual	int			GetColCount(void);
-	virtual	int			GetRowCount(void);
+//	virtual	int			GetColCount(void)=0;
+//	virtual	int			GetRowCount(void)=0;
 	
 	virtual	int			GetCellLeft (int n);
 	virtual	int			GetCellRight(int n);
@@ -40,13 +32,10 @@ public:
 
 private:
 
-		GUI_SimpleTableGeometryRowProvider *		mProvider;
-		
+			void		ExtendTo(int x);
+
 			int			mRowHeight;
 			vector<int>	mCols;
-			
-			
-	
 };
 
 #endif

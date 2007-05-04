@@ -85,6 +85,8 @@ int	GUI_GetTextureResource(
 	info.metrics.real_height = info.metrics.tex_height * info.metrics.t_rescale;
 
 	sTexes[r] = info;
+
+	if (out_metrics)	memcpy(out_metrics, &info.metrics,sizeof(GUI_TexPosition_t));
 	
 	return info.tex_id;
 

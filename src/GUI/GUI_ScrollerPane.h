@@ -60,6 +60,8 @@ public:
 			void	AttachSlaveV(GUI_ScrollerPane *inSlaveV);
 
 			void	PositionInContentArea(GUI_Pane * inPane);		// Sticks between scrollbars
+			void	PositionSidePane(GUI_Pane * pane);
+			void	PositionHeaderPane(GUI_Pane * pane);
 			void	SetContent(GUI_ScrollerPaneContent * inPane);
 
 			void	ContentGeometryChanged(void);					// Fix scrollbars, we changed!

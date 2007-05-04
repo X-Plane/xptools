@@ -17,21 +17,23 @@ class	GUI_TextField;
 */
 
 #include "GUI_Listener.h"
+#include "GUI_Broadcaster.h"
+
 #include "GUI_Table.h"
 
 // Cell content as known by a text table - we have a few different kinds of cell
 // displays...see comments for which fields they use.
 
 enum GUI_CellContentType {
-								// GET				SET
+								// GET					SET
 	gui_Cell_None,
 	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
-	gui_Cell_EditText,			// string			string
-	gui_Cell_CheckBox,			// int val			int val
-	gui_Cell_Integer,			// int val			int val
-	gui_Cell_Double,			// double val		double val
-	gui_Cell_Enum,				// string&int		int
-	gui_Cell_EnumSet			// string val		int set
+	gui_Cell_EditText,			// string				string
+	gui_Cell_CheckBox,			// int val				int val
+	gui_Cell_Integer,			// int val				int val
+	gui_Cell_Double,			// double val			double val
+	gui_Cell_Enum,				// string&int			int
+	gui_Cell_EnumSet			// string val&int set	int set
 };
 
 struct	GUI_CellContent {
@@ -60,7 +62,7 @@ struct GUI_HeaderContent {
 
 typedef	map<int, string>		GUI_EnumDictionary;
 
-class	GUI_TextTableProvider : public GUI_Broadcaster {
+class	GUI_TextTableProvider {
 public:
 
 	virtual void	GetCellContent(
@@ -92,7 +94,7 @@ public:
 
 };
 
-class	GUI_TextTableHeaderProvider : public GUI_Broadcaster { 
+class	GUI_TextTableHeaderProvider { 
 public:
 
 	virtual	void	GetHeaderContent(
@@ -105,7 +107,7 @@ public:
 // It in turn queries the "provider" for the actual content.  It allows you to specify a table as strings (easy)
 // instead of drawing calls (PITA).
 
-class	GUI_TextTable : public GUI_TableContent, public GUI_Commander, public GUI_Listener {
+class	GUI_TextTable : public GUI_TableContent, public GUI_Broadcaster, public GUI_Commander {
 public:
 
 						 GUI_TextTable(GUI_Commander * parent);
@@ -120,12 +122,7 @@ public:
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button);
 	virtual	void		Deactivate(void);
 
-	virtual	void		ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam);
-
-	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 
 private:
 
@@ -144,7 +141,7 @@ private:
 
 
 
-class	GUI_TextTableHeader : public GUI_TableHeader, public GUI_Listener {
+class	GUI_TextTableHeader : public GUI_TableHeader, public GUI_Broadcaster {
 public:
 						 GUI_TextTableHeader();
 	virtual				~GUI_TextTableHeader();
@@ -157,11 +154,6 @@ public:
 	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button);
 	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button);
 
-	virtual	void		ReceiveMessage(
-							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam);
-
 private:
 	GUI_TextTableHeaderProvider *	mContent;
 	GUI_TableGeometry *				mGeometry;
@@ -169,6 +161,28 @@ private:
 	int								mLastX;
 
 };
+
+class	GUI_TextTableSide : public GUI_TableSide, public GUI_Broadcaster {
+public:
+						 GUI_TextTableSide();
+	virtual				~GUI_TextTableSide();
+	
+			void		SetProvider(GUI_TextTableHeaderProvider * content);
+			void		SetGeometry(GUI_TableGeometry * geometry);
+
+	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  );
+	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
+	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
+	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
+
+private:
+	GUI_TextTableHeaderProvider *	mContent;
+	GUI_TableGeometry *				mGeometry;
+	int								mCellResize;
+	int								mLastY;
+
+};
+
 
 
 #endif /* GUI_TEXTTABLE_H */
