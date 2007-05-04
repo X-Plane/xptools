@@ -32,6 +32,7 @@ public:
 	virtual		int				GetSelectionCount(void) const=0;
 	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const=0;
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const=0;
+	virtual		IUnknown *		GetNthSelection(int n) const=0;
 
 };
 

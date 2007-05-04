@@ -40,7 +40,6 @@ public:
 	// Control handles - by number - they can be moved around.
 	virtual		int		CountControlHandles(int id						  ) const=0;
 	virtual		void	GetNthControlHandle(int id, int n,		 Point2& p) const=0;
-	virtual		void	SetNthControlHandle(int id, int n, const Point2& p)		 =0;
 
 	// Links are structural lines between the control handles.  We have 0 or more links
 	// and each one has a start and end control handle index number.  This is not editable - 
