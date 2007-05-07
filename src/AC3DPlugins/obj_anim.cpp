@@ -10,6 +10,7 @@
 #endif
 #include <math.h>
 #include <set>
+#include <list>
 #include <map>
 #include "ac_utils.h"
 #include "XObjDefs.h"
@@ -18,6 +19,7 @@ using std::set;
 using std::map;
 using std::min;
 using std::max;
+using std::list;
 
 struct dataref_info {
 	float		min_v;
@@ -36,6 +38,12 @@ struct compare_key {
 		return lhs.key < rhs;
 	}
 };
+
+inline float slop_for_anim(int a)
+{
+	if (a == anim_show || a == anim_hide) 	return 1.0;
+											return 0.0;
+}
 
 inline float	extrap(float x1, float y1, float x2, float y2, float x)
 {
@@ -323,8 +331,9 @@ void	gather_datarefs(ACObject * obj)
 		i.now_v = g_previous[dataref];
 		for (int n = 0; n < OBJ_get_anim_keyframe_count(obj); ++n)
 		{
-			i.min_v = min(i.min_v, OBJ_get_anim_nth_value(obj, n));
-			i.max_v = max(i.max_v, OBJ_get_anim_nth_value(obj, n));
+			i.min_v = min(i.min_v, OBJ_get_anim_nth_value(obj, n)-slop_for_anim(OBJ_get_anim_type(obj)));
+			i.max_v = max(i.max_v, OBJ_get_anim_nth_value(obj, n)+slop_for_anim(OBJ_get_anim_type(obj)));
+			
 		}
 		i.now_v = min(i.max_v,max(i.min_v,i.now_v));
 	}
@@ -699,6 +708,9 @@ static float get_dataref_value(const char * dataref)
 	return i->second.now_v;
 }
 
+static int vis = 1;
+list<int>	push_stack;
+
 static void anim_pre_func(ACObject * ob, Boolean is_primary_render)
 {
 	if (!g_anim_enabled) return;
@@ -706,6 +718,8 @@ static void anim_pre_func(ACObject * ob, Boolean is_primary_render)
 	{
 		glMatrixMode(GL_MODELVIEW_MATRIX);
 		glPushMatrix();
+		push_stack.push_back(vis);
+		vis = 1;
 	}
 }
 
@@ -716,6 +730,8 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 	{
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
+		vis = push_stack.back();
+		push_stack.pop_back();
 	}
 	
 	int anim_t = OBJ_get_anim_type(ob);
@@ -724,6 +740,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 	{		
 		char dref[1024];
 		float now_v = get_dataref_value(OBJ_get_anim_dataref(ob,dref));
+		float k1, k2;
 		
 		float axis[3], offset[3];
 		
@@ -763,6 +780,26 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 								axis[0],axis[1],axis[2]);
 					glTranslatef(-offset[0],-offset[1],-offset[2]);
 				}
+			}
+			break;
+		case anim_hide:
+			k1 = OBJ_get_anim_nth_value(ob, 0);
+			k2 = OBJ_get_anim_nth_value(ob, 1);
+			if (now_v >= k1 && now_v <= k2)
+			{
+				if (vis)
+					glTranslatef(9.9e12,9.9e12,9.9e9);
+				vis = 0;
+			}
+			break;
+		case anim_show:
+			k1 = OBJ_get_anim_nth_value(ob, 0);
+			k2 = OBJ_get_anim_nth_value(ob, 1);
+			if (now_v >= k1 && now_v <= k2)
+			{
+				if (!vis)
+					glTranslatef(-9.9e12,-9.9e12,-9.9e12);
+				vis = 1;
 			}
 			break;
 		}
