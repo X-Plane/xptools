@@ -766,7 +766,8 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add command -label "Make Transparent" -command "ac3d xplane_make_transparent"
 .mbar.xplane.menu add command -label "Make Night Lighting" -command "ac3d xplane_make_night"
 .mbar.xplane.menu add command -label "Pseudo-Cylindrical UV Remap" -command "ac3d xplane_do_uvmap"
-.mbar.xplane.menu add command -label "Map Texture (Obj 2 Obj)" -command "ac3d xplane_do_map_from_obj"
+.mbar.xplane.menu add command -label "Copy UV Map" -command "ac3d xplane_uv_copy"
+.mbar.xplane.menu add command -label "Paste UV Map" -command "ac3d xplane_uv_paste"
 .mbar.xplane.menu add command -label "Reload All Textures" -command "ac3d xplane_reload_texes"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Make Animation Group" -command "ac3d xplane_make_anim_group"
