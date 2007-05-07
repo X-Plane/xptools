@@ -4,7 +4,7 @@
 #include <ac_plugin.h>
 
 void do_uv_map(void);
-void do_map_obj_to_obj(void);
-void map_obj_to_obj(ACObject * master, ACObject * slave);
+void do_uv_copy(void);
+void do_uv_paste(void);
 
 #endif

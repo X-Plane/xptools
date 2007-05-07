@@ -490,8 +490,9 @@ static int	better_tri(const a_tri& tri, const cgd::Line3& l, double& best_dist, 
 	return 0;
 }
 
-static void tex_a_surface(Surface * surf, const vector<a_tri>& tris)
+static int tex_a_surface(Surface * surf, const vector<a_tri>& tris)
 {	
+	int missed = 0;
 	for (List * p = surf->vertlist; p; p = p->next)
 	{
 		SVertex * sv = (SVertex *) p->data;
@@ -513,16 +514,19 @@ static void tex_a_surface(Surface * surf, const vector<a_tri>& tris)
 			find_st_for_tri(*best_tri, best_pt, st);
 			sv->tx = st.x;
 			sv->ty = st.y;			
-		}
+		} else
+			++missed;
 	}
-
+	return missed;
 }
 
-static void	tex_an_object(ACObject * ob, const vector<a_tri>& tris)
+static int	tex_an_object(ACObject * ob, const vector<a_tri>& tris)
 {
+	int total = 0;
 	List * l = ac_object_get_surfacelist(ob);
 	for (List * i = l; i; i = i->next)
-		tex_a_surface((Surface *) i->data, tris); 
+		total += tex_a_surface((Surface *) i->data, tris); 
+	return total;
 }
 
 static void tri_map_from_obj(ACObject * ob, vector<a_tri>& tris)
@@ -553,20 +557,29 @@ static void tri_map_from_obj(ACObject * ob, vector<a_tri>& tris)
 	}
 }
 
-void map_obj_to_obj(ACObject * master, ACObject * slave)
+static	vector<a_tri>	g_tris;
+
+void do_uv_copy(void)
 {
-	printf("Mapping from %s to %s\n", ac_object_get_name(master), ac_object_get_name(slave));
-	vector<a_tri>	tris;
-	tri_map_from_obj(master, tris);
-	tex_an_object(slave, tris);
+	vector<ACObject *> objs;
+
+	find_all_selected_objects_flat(objs);
+	if (objs.size() != 1) message_dialog("Please select one object.");
+	else
+	{
+		g_tris.clear();
+		tri_map_from_obj(objs[0], g_tris);
+	}
 }
 
-void do_map_obj_to_obj(void)
+void do_uv_paste(void)
 {
 	vector<ACObject *> objs;
 	find_all_selected_objects_flat(objs);
-	for (int n = 1; n < objs.size(); ++n)
+	int total = 0;
+	for (int n = 0; n < objs.size(); ++n)
 	{
-		map_obj_to_obj(objs[0], objs[n]);
+		total += tex_an_object(objs[n], g_tris);
 	}
+	if (total > 0) message_dialog("Unable to texture %d points.\n", total);
 }

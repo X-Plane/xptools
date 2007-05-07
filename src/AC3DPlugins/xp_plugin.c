@@ -29,7 +29,7 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
  * MAIN PLUGIN
  ***************************************************************************************************/
 
-#if !DEV
+#if DEV
 to doc
 	export prefix for textuers and tex handling
 	select in vertex mode
@@ -84,7 +84,8 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 
 	ac_add_command_full("xplane_do_uvmap", CAST_CMD(do_uv_map), 0, NULL, "ac3d xplane_do_uvmap", "Make a UV map.");
 	ac_add_command_full("xplane_reload_texes", CAST_CMD(do_reload_all_texes), 0, NULL, "ac3d xplane_reload_texes", "Reload all texes.");
-	ac_add_command_full("xplane_do_map_from_obj", CAST_CMD(do_map_obj_to_obj), 0, NULL, "ac3d xplane_do_map_from_obj", "Map tex from one obj to another.");
+	ac_add_command_full("xplane_uv_copy", CAST_CMD(do_uv_copy), 0, NULL, "ac3d xplane_uv_copy", "Copy UV map from an object.");
+	ac_add_command_full("xplane_uv_paste", CAST_CMD(do_uv_paste), 0, NULL, "ac3d xplane_uv_paste", "Project UV map onto a new object.");
 
 	setup_obj_anim();
 	register_updater();
