@@ -69,6 +69,7 @@ public:
 	// From GUI_Pane
 	virtual void	SetBounds(int x1, int y1, int x2, int y2);
 	virtual void	SetBounds(int inBounds[4]);
+	virtual	int		ScrollWheel(int x, int y, int dist, int axis);
 
 	// From GUI_Listener
 	virtual	void	ReceiveMessage(

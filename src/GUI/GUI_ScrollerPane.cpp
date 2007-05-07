@@ -128,6 +128,37 @@ void	GUI_ScrollerPane::SetBounds(int inBounds[4])
 	CalibrateSBs();
 }
 
+int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
+{
+	if (mContent)
+	{
+		float total[6], vis[6];
+		mContent->GetScrollBounds(total, vis);
+		total[4] = total[2] - total[0];
+		total[5] = total[3] - total[1];
+		vis[4] = vis[2] - vis[0];
+		vis[5] = vis[3] - vis[1];
+
+		float minv = 0;
+		float maxv = max(total[5] - vis[5], 0.0f);
+		float new_v = vis[1] - total[1] + dist;
+		float old_v = vis[1] - total[1];
+		
+		if (new_v < minv) new_v = minv;
+		if (new_v > maxv) new_v = maxv;
+
+		if (old_v != new_v)
+		{
+			mContent->ScrollV(new_v);
+			CalibrateSBs();
+			Refresh();
+		}
+		return 1;
+	}
+	return 0;
+}
+
+
 void	GUI_ScrollerPane::ReceiveMessage(
 		GUI_Broadcaster *		inSrc,
 		int						inMsg,
