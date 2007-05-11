@@ -81,16 +81,31 @@ public:
 						int							cell_x,
 						int							cell_y)=0;
 
-	virtual	void	SelectCell(
-						int							cell_x,
-						int							cell_y)=0;
-	virtual	void	SelectCellToggle(
-						int							cell_x,
-						int							cell_y)=0;
-	virtual	void	SelectCellExtend(
-						int							cell_x,
-						int							cell_y)=0;
-						
+	virtual void	SelectionStart(
+						int							clear)=0;
+	virtual	int		SelectGetExtent(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)=0;
+	virtual	int		SelectGetLimits(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)=0;
+	virtual	void	SelectRange(
+						int							start_x,
+						int							start_y,
+						int							end_x,
+						int							end_y,
+						int							is_toggle)=0;
+	virtual	void	SelectionEnd(void)=0;
+
+	virtual	int		TabAdvance(
+						int&						io_x,
+						int&						io_y,
+						int							reverse,
+						GUI_CellContent&			the_content)=0;
 
 };
 
@@ -116,13 +131,14 @@ public:
 			void		SetProvider(GUI_TextTableProvider * content);
 			void		SetParentPanes(GUI_Pane * parent);
 
-	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  );
-	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button);
-	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button);
-	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button);
+	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
+	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
+	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
+	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
 	virtual	void		Deactivate(void);
 
 	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
+	virtual	int			AcceptTakeFocus(void) 	{ return 1; }
 
 private:
 
@@ -137,6 +153,10 @@ private:
 	int						mTrackRight;
 	GUI_Pane *				mParent;
 	GUI_TextField *			mTextField;
+	
+	GUI_KeyFlags			mModifiers;
+	int						mSelStartX;
+	int						mSelStartY;
 };	
 
 
@@ -149,10 +169,10 @@ public:
 			void		SetProvider(GUI_TextTableHeaderProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 
-	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState			  );
-	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button);
-	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button);
-	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button);
+	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState);
+	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
+	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
+	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;
@@ -170,10 +190,10 @@ public:
 			void		SetProvider(GUI_TextTableHeaderProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 
-	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  );
-	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
-	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
-	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button);
+	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState);
+	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
+	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
+	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;

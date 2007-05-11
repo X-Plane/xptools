@@ -1,4 +1,5 @@
 #include "GUI_Pane.h"
+#include "GUI_Clipboard.h"
 #if APL
 	#if defined(__MWERKS__)
 		#include <Carbon.h>
@@ -243,6 +244,21 @@ GUI_Pane *	GUI_Pane::FindByID(int id)
 	return NULL;
 }
 
+GUI_Pane *	GUI_Pane::FindByPoint(int x, int y)
+{
+	int bounds[4];
+	if (!IsVisible()) return NULL;
+	GetBounds(bounds);
+	if (x < bounds[0] || x > bounds[2] || y < bounds[1] || y > bounds[3]) return NULL;
+	
+	for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+	{
+		GUI_Pane * who = (*c)->FindByPoint(x,y);
+		if (who) return who;
+	}
+	return this;
+}
+
 
 void		GUI_Pane::GetDescriptor(string& outDesc) const
 {
@@ -461,18 +477,220 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 	return NULL;
 }
 
-/*
-void		GUI_Pane::InternalKeyPress(char inKey, int inVK, int inFlags)
+GUI_DragOperation		GUI_Pane::InternalDragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
-	if (!this->KeyPress(inKey, inVK, inFlags))
-	if (mParent != NULL)
-		mParent->InternalKeyPress(inKey, inVK, inFlags);
+	mDragTarget = FindByPoint(x,y);
+	if (mDragTarget == NULL) return gui_Drag_None;
+							 return mDragTarget->DragEnter(x,y,drag,allowed, recommended);
 }
 
-int			GUI_Pane::InternalSetFocus(GUI_Pane * who)
+GUI_DragOperation		GUI_Pane::InternalDragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
-	if (mParent) return mParent->InternalSetFocus(who);
-	return false;	// no parent?  no focus!
+	GUI_Pane * target = FindByPoint(x,y);
+	
+	if (target == mDragTarget)
+	{
+		if (mDragTarget == NULL) return gui_Drag_None;
+								 return mDragTarget->DragOver(x,y,drag,allowed, recommended);
+	}
+	else
+	{
+		if (mDragTarget) mDragTarget->DragLeave();
+		mDragTarget = target;
+		if (mDragTarget) return mDragTarget->DragEnter(x,y,drag,allowed, recommended);
+						 return gui_Drag_None;
+	}
 }
 
-*/
+void					GUI_Pane::InternalDragLeave	(void)
+{
+	if (mDragTarget) mDragTarget->DragLeave();
+	mDragTarget = NULL;
+}
+
+GUI_DragOperation		GUI_Pane::InternalDrop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	GUI_Pane * target = FindByPoint(x,y);
+	if (target) return target->Drop(x,y,drag,allowed, recommended);
+	else		return gui_Drag_None;
+}
+
+#if IBM
+
+//	From Raymond Chen's blog: 
+//	http://blogs.msdn.com/oldnewthing/archive/2004/12/06/275659.aspx
+
+class GUI_DropSource : public IDropSource {
+public:
+	STDMETHODIMP		 QueryInterface(REFIID riid, void **ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
+
+	STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState);
+	STDMETHODIMP GiveFeedback(DWORD dwEffect);
+
+	GUI_DropSource() : m_cRef(1) { }
+private:
+	ULONG m_cRef;
+};
+
+HRESULT GUI_DropSource::QueryInterface(REFIID riid, void **ppv)
+{
+	IUnknown *punk = NULL;
+			if (riid == IID_IUnknown)		punk = static_cast<IUnknown*>(this);
+	else	if (riid == IID_IDropSource)	punk = static_cast<IDropSource*>(this);
+
+	*ppv = punk;
+	if (punk) 
+	{
+		punk->AddRef();
+		return S_OK;
+	} else
+	return E_NOINTERFACE;
+}
+
+ULONG GUI_DropSource::AddRef()
+{
+	return ++m_cRef;
+}
+
+ULONG GUI_DropSource::Release()
+{
+	ULONG cRef = --m_cRef;
+	if (cRef == 0) delete this;
+	return cRef;
+}
+
+HRESULT GUI_DropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
+{
+	if (fEscapePressed)								return DRAGDROP_S_CANCEL;
+	if (!(grfKeyState & (MK_LBUTTON | MK_RBUTTON)))	return DRAGDROP_S_DROP;
+													return S_OK;
+}
+
+HRESULT GUI_DropSource::GiveFeedback(DWORD dwEffect)
+{
+	return DRAGDROP_S_USEDEFAULTCURSORS;
+}
+
+#endif
+
+bool				GUI_Pane::IsDragClick(int x, int y)
+{
+	#if APL
+	Point	p;
+	GUI_Pane * top = this;
+	while (top->GetParent()) top = top->GetParent();
+	int bounds[4];
+	top->GetBounds(bounds);
+	p.h = x;
+	p.v = (bounds[3] - bounds[1]) - y;
+	LocalToGlobal(&p);
+	return WaitMouseMoved(	p);
+
+	#elif IBM
+		#error we need to do
+		DragDetect with our hwnd, and then RESET capture!  Yikes!
+			
+	#else
+		#error NOT IMLEMENTEd
+	#endif
+}
+
+GUI_DragOperation	GUI_Pane::DoDragAndDrop(
+							int						x, 
+							int						y,
+							int						where[4],
+							GUI_DragOperation		operations,
+							int						type_count, 
+							GUI_ClipType			inTypes[], 
+							int						sizes[], 
+							const void *			ptrs[],
+							GUI_GetData_f			fetch_func,
+							void *					ref)
+{
+	#if APL
+	
+		#if !DEV 
+		this is a huge hack!
+		#endif
+		
+		GUI_Pane * parent = this;
+		while (parent->GetParent() != NULL) parent = parent->GetParent();
+		int bounds[4];
+		parent->GetBounds(bounds);
+		
+		Point	mac_click;
+		mac_click.h = x;
+		mac_click.v = (bounds[3] - bounds[1]) - y;
+		LocalToGlobal(&mac_click);
+		
+		Rect	the_item;
+		the_item.left = where[0];
+		the_item.right = where[2];
+		the_item.bottom = (bounds[3] - bounds[1]) - where[1];
+		the_item.top = (bounds[3] - bounds[1]) - where[3];
+		LocalToGlobal((Point *) &the_item.top);
+		LocalToGlobal((Point *) &the_item.bottom);
+		
+			EventRecord	fake;
+
+		fake.what = mouseDown;
+		fake.when = TickCount();
+		fake.where = mac_click;
+		fake.modifiers = GetCurrentKeyModifiers() & 0xFFFF;
+		
+			DragRef		drag;
+			
+			NewDrag(&drag);
+			
+			RgnHandle rgn = NewRgn();
+			RectRgn(rgn, &the_item);
+
+		SetDragAllowableActions(drag, OP_GUI2Mac(operations),1);
+		SetDragAllowableActions(drag, OP_GUI2Mac(operations),0);
+
+		GUI_LoadSimpleDrag(drag, type_count, inTypes, sizes, ptrs, fetch_func, ref);
+
+		DragItemRef	item_ref;
+		GetDragItemReferenceNumber(drag, 1, &item_ref);
+		SetDragItemBounds(drag, item_ref, &the_item);
+
+								
+		int success = TrackDrag(drag, &fake, rgn) == noErr;
+
+		DisposeRgn(rgn);
+		
+		if (success)
+		{
+			DragActions act;
+			GetDragDropAction(drag, &act);
+			GUI_DragOperation result = OP_Mac2GUI(act);
+			DisposeDrag(drag);
+			return result;
+		} else {
+			
+			DisposeDrag(drag);
+			return gui_Drag_None;
+
+		}
+		
+	
+	#elif IBM
+		GUI_DropSource	* drop_source = new GUI_DropSource;
+		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, get_data_f, ref);
+		DROPEFFECT effect;
+		
+		if (DoDragDrop(data, drop_source, OP_GUI2Win(operatoins), &effect) != DRAGDROP_S_DROP)
+			effect = DROPEFFECT_NONE;
+			
+		data->Release();
+		drop_source->Release();
+		
+		GUI_DragOperation result = OP_Win2GUI(effect);
+		
+		return result;
+	#else
+		#error not implemented
+	#endif
+}

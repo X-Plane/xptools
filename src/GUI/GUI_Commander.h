@@ -29,14 +29,14 @@ public:
 							 GUI_Commander(GUI_Commander * inParent);
 	virtual					~GUI_Commander();
 
-			int				TakeFocus(void);
-			int				LoseFocus(int inForce);
+			int				TakeFocus(void);				// Try to focus this commander - returns 1 if successful.
+			int				LoseFocus(int inForce);			// Unfocus this commander.  Pass 1 to disallow veto.  Returns true if successful.
 	static	GUI_Commander *	GetCommanderRoot(void);	
 			GUI_Commander *	GetFocusForCommander(void);
-			int				FocusChain(int inForce);
+			int				FocusChain(int inForce);		// Make sure that we are participating in focus - force if needed.  
 			
-			int				IsFocused(void);
-			int				IsFocusedChain(void);
+			int				IsFocused(void);				// Are we THE focused commander?
+			int				IsFocusedChain(void);			// Is the focus belwo us (we might have a shot)?
 	
 			GUI_Commander *	GetCmdParent(void);
 	

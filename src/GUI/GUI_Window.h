@@ -6,6 +6,10 @@
 #include "GUI_Pane.h"
 #include "XWinGL.h"
 
+#if IBM
+class	GUI_Window_DND;
+#endif
+
 class	GUI_Window : public GUI_Pane, public GUI_Commander, public XWinGL {
 public:
 	
@@ -26,6 +30,9 @@ public:
 	virtual bool			IsActiveNow(void) const;
 	virtual bool			IsVisibleNow(void) const;
 	virtual	void			GetMouseLocNow(int * out_x, int * out_y);
+	
+	// From GUI_Commander
+	virtual	int				AcceptTakeFocus(void) 	{ return 1; }			// Because we START dispatching from here, do not refuse focus up to the app - we MUST be focused if active!
 	
 	// From XWinGL
 	virtual	void			Timer(void);
@@ -50,6 +57,19 @@ public:
 
 private:
 
+	#if IBM
+		GUI_Window_DND *	mDND;
+	#endif
+	
+	#if APL
+		static pascal OSErr	TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
+		static pascal OSErr	ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
+
+		static DragTrackingHandlerUPP	TrackingHandlerUPP;
+		static DragReceiveHandlerUPP	ReceiveHandlerUPP;
+
+	#endif
+	
 	GUI_GraphState	mState;
 	float			mClearColorRGBA[4];
 	bool			mClearDepth;

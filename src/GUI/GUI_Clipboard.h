@@ -1,8 +1,216 @@
 #ifndef GUI_CLIPBOARD_H
 #define GUI_CLIPBOARD_H
 
-bool	GUI_GetTextFromClipboard(string& outText);
-bool	GUI_SetTextToClipboard(const string& inText);
+#include <vector>
+#include "GUI_Defs.h"
+using std::vector;
 
-#endif
+//---------------------------------------------------------------------------------------------------------
+// TYPE MANAGEMENT
+//---------------------------------------------------------------------------------------------------------
+// 
+// Your application defines private clip types by registering them by string.  Text and any other already
+// known non-private clip types don't need to be registered - functions return their enum type.
 
+
+void			GUI_InitClipboard(void);
+GUI_ClipType	GUI_RegisterPrivateClipType(const char * clip_type);
+GUI_ClipType	GUI_GetTextClipType(void);
+
+//---------------------------------------------------------------------------------------------------------
+// DATA MANAGEMENT
+//---------------------------------------------------------------------------------------------------------
+//
+// These routines do low-level clipboard I/O.  Warning: getting the size and data of the clipboard can be
+// expensive because the providing app may be doing lazy conversions.  Getting the set of types or checking
+// for types should be quick.
+
+bool			GUI_Clipboard_HasClipType(GUI_ClipType inType);
+void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes);
+int				GUI_Clipboard_GetSize(GUI_ClipType inType);
+bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr);
+
+bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[]);
+
+//---------------------------------------------------------------------------------------------------------
+// CONVENIENCE ROUTINES
+//---------------------------------------------------------------------------------------------------------
+//
+// These routines provide an easy way to move plain-old-text around.
+
+bool			GUI_GetTextFromClipboard(string& outText);
+bool			GUI_SetTextToClipboard(const string& inText);
+
+//---------------------------------------------------------------------------------------------------------
+// DRAG & DROP - CROSS-PLATFORM
+//---------------------------------------------------------------------------------------------------------
+
+// GUI_DragData is a generic interface to info being dropped on a pane.  The pane receives one of these
+// and can then ask about what is being dropped and decide if it will accept it.
+
+class	GUI_DragData {
+public:
+
+	virtual	int		CountItems(void)=0;
+	virtual	bool	NthItemHasClipType(int n, GUI_ClipType ct)=0;
+	virtual	int		GetNthItemSize(int n, GUI_ClipType ct)=0;
+	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)=0;
+	
+};
+
+//---------------------------------------------------------------------------------------------------------
+// DRAG & DROP - WINDOWS
+//---------------------------------------------------------------------------------------------------------
+
+#if IBM
+
+// Convenience routines to convert our drop-actions to native and back.
+
+inline DROPEFFECT	OP_GUI2Win(GUI_DragOperation fx)
+{
+	return (fx & gui_Drag_Move ? DROPEFFECT_MOVE : DROPEFFECT_NONE) + 
+		   (fx & gui_Drag_Copy ? DROPEFFECT_COPY : DROPEFFECT_NONE);
+}
+
+inline GUI_DragOperation	OP_Win2GUI(DROPEFFECT fx)
+{
+	return (fx & DROPEFFECT_MOVE ?  gui_Drag_Move: gui_Drag_None) + 
+		   (fx & DROPEFFECT_COPY ?  gui_Drag_Copy: gui_Drag_None);
+}
+
+// GUI_OLE_Adapter implements GUI's generic drop-data interface as an
+// adapter from a COM IDataObject.  The idea is that we can wrap this
+// around the COM object and feed it to a pane - it essentially teaches
+// the pane how to speak COM.  (It is not a COM object in itself, and
+// is light-weight, so it can be use don the stack.)
+
+class	GUI_OLE_Adapter : public GUI_DragData {
+public:
+			 GUI_OLE_Adapter(IDataObject * data_obj);
+			~GUI_OLE_Adapter();
+
+	virtual	int		CountItems(void);
+	virtual	bool	NthItemHasClipType(int n, GUI_ClipType ct);
+	virtual	int		GetNthItemSize(int n, GUI_ClipType ct);
+	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr);
+private:
+	IDataObject *	mObject;
+}
+
+// GUI_SimpleDataObject is a COM object that implements IDataObject, the interface
+// for stuff you can drag around on Windows.  It does this by taking an explicit pile
+// of data, or a fetch-func that can be used to get the data later on demand.  (To use
+// the fetch func, pass NULL for the specific ptr).  Typically we would create one
+// of these with "new", use it to DoDragDrop, then Release() it.  
+//
+// Note that we cannot attach multiple drag objects to this object, even though the
+// generic query mechanism reveals multiple items.  There is some funky stuff going on
+// here:
+//
+// 1. Windows does not support multiple drag items on the OLE level - rather the specific
+//	  data must have an internal grouping that is teased apart by the application.
+// 2. The standard file-shell drag & drop (CF_HDROP) does have composite structure internally
+//	  with APIs to parse it and find the files.  Since we'd like to support "a single file"
+//    as a native type, the fetch API allows us to see each file by index.  This matches the
+//    Mac's approach to multiple-file dropping.
+// 3. Mac can have multiple drag items.
+//
+// So we make a receive API with multiple items (allowing the chance that there MIGHT be
+// multiple items, especially if we understand OS-file encoding) but we make a SEND API that
+// supports only one item, forcing our native types to fake their own groups.
+
+class GUI_SimpleDataObject : public IDataObject {
+public:
+	GUI_SimpleDataObject(
+							int						type_count, 
+							GUI_ClipType			inTypes[], 
+							int						sizes[], 
+							const void *			ptrs[],
+							GUI_GetData_f			fetch_func,
+							void *					ref);
+
+	STDMETHOD(QueryInterface)	(REFIID riid, void **ppv);
+	STDMETHOD_(ULONG,AddRef)	(void);
+	STDMETHOD_(ULONG,Release)	(void);
+
+	STDMETHOD(GetData)					(FORMATETC * pformatetcIn, STGMEDIUM * pmedium);
+	STDMETHOD(GetDataHere)				(FORMATETC * pformatetcIn, STGMEDIUM * pmedium);
+	STDMETHOD(QueryGetData)				(FORMATETC * pformatetcIn);             
+	STDMETHOD(GetCanonicalFormatEtc)	(FORMATETC *pformatectIn, FORMATETC  *pformatetcOut);        
+	STDMETHOD(SetData)					(FORMATETC *pformatetc, STGMEDIUM  *pmedium,BOOL fRelease);        
+	STDMETHOD(EnumFormatEtc)			(DWORD dwDirection, IEnumFORMATETC  * *ppenumFormatEtc);        
+	STDMETHOD(DAdvise)					(FORMATETC  *pformatetc, DWORD advf, IAdviseSink  *pAdvSink, DWORD  *pdwConnection);        
+	STDMETHOD(DUnadvise)				(DWORD dwConnection);        
+	STDMETHOD(EnumDAdvise)				(IEnumSTATDATA ** ppenumAdvise);
+
+private:
+	
+	friend	class	GUI_SimpleEnumFORMATETC;
+	
+	GUI_GetData_f				mFetchFunc;
+	void *						mFetchRef;
+	
+	map<GUI_ClipType, vector<char> >		mData;		// A map of buffers for our types.
+	ULONG									mRefCount;
+};
+
+   
+
+
+
+#endif /* IBM */
+
+//---------------------------------------------------------------------------------------------------------
+// DRAG & DROP - MAC
+//---------------------------------------------------------------------------------------------------------
+
+#if APL
+
+#include <Carbon/Carbon.h>
+
+// Convenience routines to convert our drop-actions to native and back.
+
+inline DragActions	OP_GUI2Mac(GUI_DragOperation fx)
+{
+	return (fx & gui_Drag_Move ? kDragActionMove : kDragActionNothing) + 
+		   (fx & gui_Drag_Copy ? kDragActionCopy : kDragActionNothing);
+}
+
+inline GUI_DragOperation	OP_Mac2GUI(DragActions fx)
+{
+	return (fx & kDragActionMove ?  gui_Drag_Move: gui_Drag_None) + 
+		   (fx & kDragActionCopy ?  gui_Drag_Copy: gui_Drag_None);
+}
+
+// GUI_DragMgr_Adapter is a light-weight adapter that makes a Mac Drag Mgr reference
+// look like GUI's generic drag & drop data.  It allows us to pass DragRefs to a pane.
+// IT is light weight - we can use it on the stack.
+
+class	GUI_DragMgr_Adapter : public GUI_DragData {
+public:
+			 GUI_DragMgr_Adapter(DragRef data_obj);
+			~GUI_DragMgr_Adapter();
+
+	virtual	int		CountItems(void);
+	virtual	bool	NthItemHasClipType(int n, GUI_ClipType ct);
+	virtual	int		GetNthItemSize(int n, GUI_ClipType ct);
+	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr);
+private:
+	DragRef		mObject;
+};
+
+// This routine loads  data into a drag...
+
+void GUI_LoadSimpleDrag(
+							DragRef					the_drag,
+							int						type_count, 
+							GUI_ClipType			inTypes[], 
+							int						sizes[], 
+							const void *			ptrs[],
+							GUI_GetData_f			fetch_func,
+							void *					ref);
+
+
+#endif /* APL */
+
+#endif /* GUI_CLIPBOAD_H */

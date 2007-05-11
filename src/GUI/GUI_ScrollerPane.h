@@ -65,7 +65,7 @@ public:
 			void	SetContent(GUI_ScrollerPaneContent * inPane);
 
 			void	ContentGeometryChanged(void);					// Fix scrollbars, we changed!
-
+			
 	// From GUI_Pane
 	virtual void	SetBounds(int x1, int y1, int x2, int y2);
 	virtual void	SetBounds(int inBounds[4]);

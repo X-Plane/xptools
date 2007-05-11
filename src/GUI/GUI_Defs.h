@@ -174,6 +174,10 @@ typedef int GUI_KeyFlags;
 #define GUI_VK_NUMPAD_ENT   0xBC
 #define GUI_VK_NUMPAD_EQ    0xBD
 
+#if !DEV
+doc this
+#endif
+
 struct	GUI_MenuItem_t {
 	const char *	name;
 	char			key;
@@ -181,6 +185,17 @@ struct	GUI_MenuItem_t {
 	int				checked;
 	int				cmd;
 };
+
+typedef	int	GUI_ClipType;
+typedef	void			(* GUI_FreeFunc_f)(const void * mem, void * ref);
+typedef GUI_FreeFunc_f	(* GUI_GetData_f)(GUI_ClipType clip_type, const void ** out_start, const void ** out_end, void * ref);
+
+enum {
+	gui_Drag_None	=	0,
+	gui_Drag_Move	=	1,
+	gui_Drag_Copy	=	2,
+};
+typedef int GUI_DragOperation;
 
 
 #endif

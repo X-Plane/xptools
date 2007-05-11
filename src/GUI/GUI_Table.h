@@ -68,10 +68,10 @@ public:
 class	GUI_TableContent {
 public:
 
-	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )=0;
-	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)=0;
+	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState)=0;
+	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
+	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
 	virtual	void		Deactivate(void)=0;
 
 };
@@ -79,20 +79,20 @@ public:
 class	GUI_TableHeader {
 public:
 
-	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState			  )=0;
-	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button)=0;
+	virtual	void		HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState)=0;
+	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
+	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  )=0;
 
 };
 
 class	GUI_TableSide {
 public:
 
-	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  )=0;
-	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)=0;
-	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)=0;
+	virtual	void		SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState)=0;
+	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
+	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									  )=0;
 
 };
 
@@ -130,11 +130,16 @@ public:
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
+			int		CalcCellBounds(int x, int y, int bounds[4]);
+			void	RevealCol(int x);
+			void	RevealRow(int y);
+			void	RevealCell(int x, int y);
+
+
 private:
 			int		MouseToCellX(int x);
 			int		MouseToCellY(int y);
 			int		CalcVisibleCells(int bounds[4]);
-			int		CalcCellBounds(int x, int y, int bounds[4]);
 
 			void	AlignContents(void);
 
@@ -144,6 +149,7 @@ private:
 			int						mScrollV;
 			int						mClickCellX;
 			int						mClickCellY;
+			int						mLocked;
 
 };
 
@@ -176,6 +182,7 @@ private:
 			GUI_TableHeader *		mHeader;
 			GUI_Table *				mTable;
 			int						mClickCellX;
+			int						mLocked;
 
 };
 
@@ -207,6 +214,7 @@ private:
 			GUI_TableSide *			mSide;
 			GUI_Table *				mTable;
 			int						mClickCellY;
+			int						mLocked;
 
 };
 

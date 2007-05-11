@@ -73,6 +73,85 @@ void		GUI_Table::Draw(GUI_GraphState * state)
 	glPopAttrib();
 }
 
+
+void	GUI_Table::RevealCol(int x)
+{
+	int cell_bounds[4], pane_bounds[6];
+	if (!CalcCellBounds(x,0,cell_bounds)) 
+		return;
+	
+	GetBounds(pane_bounds);
+	pane_bounds[4] = pane_bounds[2] - pane_bounds[0];
+	pane_bounds[5] = pane_bounds[3] - pane_bounds[1];
+	
+	if (cell_bounds[0] < pane_bounds[0])
+	{
+		mScrollH += max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2]));
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	} else if (cell_bounds[2] > pane_bounds[2])
+	{
+		mScrollH += min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0]));
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	}
+}
+
+
+void	GUI_Table::RevealRow(int y)
+{
+	int cell_bounds[4], pane_bounds[6];
+	if (!CalcCellBounds(0, y,cell_bounds)) 
+		return;
+	
+	GetBounds(pane_bounds);
+	pane_bounds[4] = pane_bounds[2] - pane_bounds[0];
+	pane_bounds[5] = pane_bounds[3] - pane_bounds[1];
+	
+	if (cell_bounds[1] < pane_bounds[1])
+	{
+		mScrollV += max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3]));
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	} else if (cell_bounds[3] > pane_bounds[3])
+	{
+		mScrollV += min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1]));
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	}
+}
+
+void	GUI_Table::RevealCell(int x, int y)
+{
+	int cell_bounds[4], pane_bounds[6];
+	if (!CalcCellBounds(x,y,cell_bounds)) 
+		return;
+	
+	GetBounds(pane_bounds);
+	pane_bounds[4] = pane_bounds[2] - pane_bounds[0];
+	pane_bounds[5] = pane_bounds[3] - pane_bounds[1];
+	
+	int old_h = mScrollH;
+	int old_v = mScrollV;
+	
+	if (cell_bounds[0] < pane_bounds[0])
+		mScrollH += max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2]));
+	else if (cell_bounds[2] > pane_bounds[2])
+		mScrollH += min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0]));
+
+	if (cell_bounds[1] < pane_bounds[1])
+		mScrollV += max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3]));
+	else if (cell_bounds[3] > pane_bounds[3])
+		mScrollV += min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1]));
+
+	if (old_h != mScrollH || old_v != mScrollV)
+	{
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	}
+}
+
+
 int			GUI_Table::MouseDown(int x, int y, int button)
 {
 	if (mGeometry == NULL) return 0;
@@ -86,7 +165,7 @@ int			GUI_Table::MouseDown(int x, int y, int button)
 	{
 		int cellbounds[4];
 		if (CalcCellBounds(mClickCellX, mClickCellY, cellbounds))
-		if (mContent->CellMouseDown(cellbounds, mClickCellX, mClickCellY, x, y, button))
+		if (mContent->CellMouseDown(cellbounds, mClickCellX, mClickCellY, x, y, button, this->GetModifiersNow(), mLocked))
 			return 1;
 	}
 	return 0;
@@ -96,6 +175,15 @@ void		GUI_Table::MouseDrag(int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+	if (!mLocked)
+	{
+		#if !DEV
+			auto scroll?
+			clamp this to keep all hell from breaking loose??
+		#endif
+		mClickCellX = MouseToCellX(x);
+		mClickCellY = MouseToCellY(y);
+	}
 	int cellbounds[4];
 	if (CalcCellBounds(mClickCellX, mClickCellY, cellbounds))
 		mContent->CellMouseDrag(cellbounds, mClickCellX, mClickCellY, x, y, button);	
@@ -105,6 +193,11 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+	if (!mLocked)
+	{
+		mClickCellX = MouseToCellX(x);
+		mClickCellY = MouseToCellY(y);
+	}
 	int cellbounds[4];
 	if (CalcCellBounds(mClickCellX, mClickCellY, cellbounds))
 		mContent->CellMouseUp(cellbounds, mClickCellX, mClickCellY, x, y, button);	
@@ -355,7 +448,7 @@ int			GUI_Header::MouseDown(int x, int y, int button)
 	{
 		int cellbounds[4];
 		if (CalcCellBounds(mClickCellX, cellbounds))
-		if (mHeader->HeadMouseDown(cellbounds, mClickCellX, x, y, button))
+		if (mHeader->HeadMouseDown(cellbounds, mClickCellX, x, y, button, this->GetModifiersNow(), mLocked))
 			return 1;
 	}
 	return 0;
@@ -366,6 +459,9 @@ void		GUI_Header::MouseDrag(int x, int y, int button)
 	if (mGeometry == NULL) return;
 	if (mHeader == NULL) return;
 	int cellbounds[4];
+	if (!mLocked)
+		mClickCellX = MouseToCellX(x);
+	
 	if (CalcCellBounds(mClickCellX, cellbounds))
 		mHeader->HeadMouseDrag(cellbounds, mClickCellX, x, y, button);	
 }
@@ -375,6 +471,8 @@ void		GUI_Header::MouseUp  (int x, int y, int button)
 	if (mGeometry == NULL) return;
 	if (mHeader == NULL) return;
 	int cellbounds[4];
+	if (!mLocked)
+		mClickCellX = MouseToCellX(x);
 	if (CalcCellBounds(mClickCellX, cellbounds))
 		mHeader->HeadMouseUp(cellbounds, mClickCellX, x, y, button);	
 }
@@ -506,7 +604,7 @@ int			GUI_Side::MouseDown(int x, int y, int button)
 	{
 		int cellbounds[4];
 		if (CalcCellBounds(mClickCellY, cellbounds))
-		if (mSide->SideMouseDown(cellbounds, mClickCellY, x, y, button))
+		if (mSide->SideMouseDown(cellbounds, mClickCellY, x, y, button, this->GetModifiersNow(), mLocked))
 			return 1;
 	}
 	return 0;
@@ -516,6 +614,9 @@ void		GUI_Side::MouseDrag(int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mSide == NULL) return;
+	if (!mLocked)
+		mClickCellY = MouseToCellY(y);
+		
 	int cellbounds[4];
 	if (CalcCellBounds(mClickCellY, cellbounds))
 		mSide->SideMouseDrag(cellbounds, mClickCellY, x, y, button);	
@@ -526,6 +627,8 @@ void		GUI_Side::MouseUp  (int x, int y, int button)
 	if (mGeometry == NULL) return;
 	if (mSide == NULL) return;
 	int cellbounds[4];
+	if (!mLocked)
+		mClickCellY = MouseToCellY(y);	
 	if (CalcCellBounds(mClickCellY, cellbounds))
 		mSide->SideMouseUp(cellbounds, mClickCellY, x, y, button);	
 }

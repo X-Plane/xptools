@@ -2,12 +2,248 @@
 #include "PlatformUtils.h"
 #include "GUI_Application.h"
 #include "AssertUtils.h"
+#include "GUI_Clipboard.h"
 
 static set<GUI_Window *>	sWindows;
 
-GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+//---------------------------------------------------------------------------------------------------------------------------------------
+// WINDOWS DND
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+#if IBM
+
+// GUI_Window_DND is an implementation of the COM IDropTarget interface that passes drop requests through to the window's base class
+// (GUI_Pane).  It handles coordinate conversion, but uses a helper class (GUI_OLE_Adapter) to convert data from the system's native
+// COM interfaces to something we can understand.
+
+class GUI_Window_DND : public IDropTarget {   
+public:    
+    GUI_Window_DND(GUI_Pane * iTarget, HWND inWindow)
+   ~GUI_Window_DND();
+
+   // IUnknown methods
+   STDMETHOD(QueryInterface)(REFIID, LPVOID*);
+   STDMETHOD_(ULONG, AddRef)(void);
+   STDMETHOD_(ULONG, Release)(void);
+
+   // IDropTarget methods
+   STDMETHOD(DragEnter)(LPDATAOBJECT, DWORD, POINTL, LPDWORD);
+   STDMETHOD(DragOver)(DWORD, POINTL, LPDWORD);
+   STDMETHOD(DragLeave)(void);
+   STDMETHOD(Drop)(LPDATAOBJECT, DWORD, POINTL, LPDWORD); 
+      
+private:
+	ULONG			mRefCount;  	
+	GUI_Pane *		mTarget;
+	HWND			mWindow;
+	IDataObject *	mData;
+   
+};
+
+GUI_Window_DND::GUI_Window_DND(GUI_Pane * inTarget, HWND inWindow) :
+	mRefCount(1), mWindow(inWindow), mTarget(inTarget)
 {
+}
+
+GUI_Window_DND::~GUI_Window_DND()
+{
+}
+
+STDMETHODIMP GUI_Window_DND::QueryInterface(REFIID riid, LPVOID* ppvOut)
+{
+	*ppvOut = NULL;
+
+		 if(IsEqualIID(riid, IID_IUnknown))		*ppvOut = this;
+	else if(IsEqualIID(riid, IID_IDropTarget))	*ppvOut = (IDropTarget*)this;
+
+	if(*ppvOut)
+	{
+		(*(LPUNKNOWN*)ppvOut)->AddRef();
+		return S_OK;
+	}
+	return E_NOINTERFACE;
+}
+
+STDMETHODIMP_(ULONG) GUI_Window_DND::AddRef(void)
+{
+	return ++mRefCount;
+}
+
+STDMETHODIMP_(ULONG) GUI_Window_DND::Release(void)
+{
+	if (--mRefCount == 0)
+	{
+		delete this;
+		return 0;
+	}
+	return mRefCount;
+}
+
+STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
+{
+	mData = data_obj;
+	mData->AddRef();
+	
+	RECT	rect;
+	GUI_OLE_Adapter	adapter(mData);	
+
+	DROPEFFECT allowed = *effect;
+	*effect = DROPEFFECT_NONE;
+
+	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+
+	if (::GetWindowRect(mWindow, &rect))
+		*effect = OP_GUI2WIN(mTarget->InternalDragEnter(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed), OP_WIN2GUI(recommended)));
+	return S_OK;
+}
+
+STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD effect)
+{
+	RECT	rect;
+	GUI_OLE_Adapter	adapter(mData);	
+
+	DROPEFFECT allowed = *effect;
+	*effect = DROPEFFECT_NONE;
+	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+	
+	if (::GetWindowRect(mWindow, &rect))
+		*effect = OP_GUI2WIN(mTarget->InternalDragOver(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed),OP_WIN2GUI(recommended)));
+	return S_OK;
+}
+
+STDMETHODIMP GUI_Window_DND::DragLeave(void)
+{
+	mTarget->InternalDragLeave(void);
+	mData->Release();
+	return S_OK;
+}
+
+STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
+{
+	RECT	rect;
+	GUI_OLE_Adapter	adapter(data_oboj);	
+
+	DROPEFFECT allowed = *effect;
+	*effect = DROPEFFECT_NONE;
+	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+
+	if (::GetWindowRect(mWindow, &rect))
+	{
+		*effect = OP_GUI2WIN(mTarget->InternalDrop(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed),OP_WIN2GUI(recommended)));
+		mTarget->InterlDragLeave();
+	}
+	return S_OK;
+	
+}
+    
+#endif
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+// MAC DND
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+#if APL
+
+// These are the Mac drag-tracking handlers.  Unlike Windows, we don't need a separate "object" to do this.  (On Windows we could have
+// derived our window from an IDropTarget, but whatever).  We simply shunt our calls back to our window, using GUI_DragMgr_Adapter
+// to convert drag-refs to something we understand.
+
+pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag)
+{
+	GUI_Window *	win = (GUI_Window *) ref;
+
+	Point	p;
+	GetDragMouse(theDrag, &p, NULL);
+	SetPortWindowPort(win->mWindow);
+	GlobalToLocal(&p);
+	Rect	bounds;
+	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
+	p.v = (bounds.bottom - bounds.top) - p.v;
+
+	DragActions	allowed;	
+	GetDragAllowableActions(theDrag, &allowed);
+	
+	GUI_DragMgr_Adapter	adapter(theDrag);
+
+	SInt16 modifiers;
+	GUI_DragOperation recommended = (allowed & kDragActionMove ) ? gui_Drag_Move : gui_Drag_None;
+
+	if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
+	if (modifiers & optionKey) 
+	if (allowed & kDragActionCopy)
+		recommended = gui_Drag_Copy;
+	
+	switch(message) {
+	case kDragTrackingEnterWindow:
+		allowed = OP_GUI2Mac(win->InternalDragEnter(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
+		SetDragDropAction(theDrag, allowed);
+		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+		else								return noErr;
+
+	case kDragTrackingInWindow:
+		allowed = OP_GUI2Mac(win->InternalDragOver(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
+		SetDragDropAction(theDrag, allowed);
+		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+		else								return noErr;
+
+ 	case kDragTrackingLeaveWindow:
+		win->InternalDragLeave();
+ 		return noErr;
+	}
+	return noErr;	
+}
+					
+pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef theDrag)
+{
+	GUI_Window *	win = (GUI_Window *) ref;
+
+	Point	p;
+	GetDragMouse(theDrag, &p, NULL);
+	SetPortWindowPort(win->mWindow);
+	GlobalToLocal(&p);
+	Rect	bounds;
+	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
+	p.v = (bounds.bottom - bounds.top) - p.v;
+
+	DragActions	allowed;	
+	GetDragAllowableActions(theDrag, &allowed);
+	
+	GUI_DragMgr_Adapter	adapter(theDrag);
+	
+	SInt16 modifiers;
+	GUI_DragOperation recommended = (allowed & kDragActionMove ) ? gui_Drag_Move : gui_Drag_None;
+
+	if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
+	if (modifiers & optionKey) 
+	if (allowed & kDragActionCopy)
+		recommended = gui_Drag_Copy;
+	
+	allowed = OP_GUI2Mac(win->InternalDrop(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
+	SetDragDropAction(theDrag, allowed);
+	if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
+	else								return noErr;
+}
+					
+DragTrackingHandlerUPP	GUI_Window::TrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
+DragReceiveHandlerUPP	GUI_Window::ReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
+
+#endif
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+// COMMON CODE
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+
+GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
+	XWinGL(0, inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+{
+	#if IBM
+		mDND = new GUI_Window_DND(this, mWindoW);
+	#endif
+	#if APL
+		InstallTrackingHandler(TrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
+		InstallReceiveHandler(ReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));	
+	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
 	mBounds[1] = 0;
@@ -42,6 +278,13 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 
 GUI_Window::~GUI_Window()
 {
+	#if IBM
+		mDND->Release();
+	#endif
+	#if APL
+		RemoveTrackingHandler(TrackingHandlerUPP, mWindow);
+		RemoveReceiveHandler (ReceiveHandlerUPP , mWindow);
+	#endif
 	sWindows.erase(this);
 }
 

@@ -8,7 +8,7 @@ GUI_Commander::GUI_Commander(GUI_Commander * inParent) : mCmdParent(inParent), m
 	if (inParent == NULL)
 	{
 		Assert(mCmdRoot == NULL);
-		mCmdRoot = inParent;
+		mCmdRoot = this;
 	} else
 		inParent->mCmdChildren.push_back(this);
 }
@@ -19,8 +19,11 @@ GUI_Commander::~GUI_Commander()
 	
 	if (mCmdParent != NULL)
 	{
-		if (mCmdParent->mCmdFocus == this)
-			mCmdParent->mCmdFocus = NULL;
+		// Note: we must lose focus by asking each parent ... each parent might kick to the next one up.  So..
+		// use LoseFocus, which already does this.  Passign force by-passes the "u sure u wnat to lose" check which
+		// is critical because: 1. we can't abord now - we are in the dtor and 2. we don't want a virtual function call,
+		// our vtable is bad at this point.
+		this->LoseFocus(1);
 		
 		mCmdParent->mCmdChildren.erase(find(mCmdParent->mCmdChildren.begin(),mCmdParent->mCmdChildren.end(), this));
 	}
@@ -51,7 +54,7 @@ int				GUI_Commander::TakeFocus(void)
 
 int				GUI_Commander::LoseFocus(int inForce)
 {
-	if (!this->AcceptLoseFocus(inForce) && !inForce) return 0;
+	if (!inForce && !this->AcceptLoseFocus(inForce)) return 0;
 
 	GUI_Commander *	new_focus = this->mCmdParent;
 	while (new_focus != NULL)
@@ -60,8 +63,11 @@ int				GUI_Commander::LoseFocus(int inForce)
 		{
 			new_focus->mCmdFocus = NULL;
 			return 1;
-		} else
+		} else {
+			// EVEN if we don't accept focus, NULL out our child - they might be dtored.
+			new_focus->mCmdFocus = NULL;		
 			new_focus = new_focus->mCmdParent;
+		}
 	}
 	return 0;
 }
@@ -87,7 +93,7 @@ int				GUI_Commander::FocusChain(int inForce)
 	// We have real work to do - point our parents at us!
 	if (mCmdParent->mCmdFocus != this)
 	{
-		if (!this->AcceptFocusChain()) return 0;
+		if (!inForce) if (!this->AcceptFocusChain()) return 0;
 		mCmdParent->mCmdFocus = this;
 	}
 	
