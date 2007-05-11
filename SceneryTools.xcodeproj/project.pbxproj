@@ -17,10 +17,28 @@
 				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
 				D61C26EB0B61559C0092E098 /* PBXTargetDependency */,
 				D61C26E90B61559A0092E098 /* PBXTargetDependency */,
-				D65E4B410B65428F004D7887 /* PBXTargetDependency */,
+				D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */,
 			);
 			name = "Build Tools";
 			productName = Untitled;
+		};
+		D6C68DDD0BEFB3B300C9F880 /* Build All */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D6C68DEF0BEFB3DB00C9F880 /* Build configuration list for PBXAggregateTarget "Build All" */;
+			buildPhases = (
+			);
+			dependencies = (
+				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DEB0BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DE30BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6C68DDF0BEFB3BE00C9F880 /* PBXTargetDependency */,
+			);
+			name = "Build All";
+			productName = "Build All";
 		};
 /* End PBXAggregateTarget section */
 
@@ -32,13 +50,10 @@
 		D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */; };
 		D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D80AB22C84003949C5 /* Terraserver.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D62433910AE3CB4B004F00E3 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338E0AE3CB4B004F00E3 /* libpng.a */; };
 		D624339E0AE3CDFF004F00E3 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D62433A70AE3CE48004F00E3 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D62434200AE3D03E004F00E3 /* trackball.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A30AB22C85003949C5 /* trackball.c */; };
 		D62434950AE3D6D0004F00E3 /* GeoUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377C0AB22C85003949C5 /* GeoUtils.cpp */; };
-		D624350E0AE3DFCE004F00E3 /* lib3ds.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624350C0AE3DFCE004F00E3 /* lib3ds.a */; };
-		D624350F0AE3DFCE004F00E3 /* libdime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624350D0AE3DFCE004F00E3 /* libdime.a */; };
 		D62435180AE3E004004F00E3 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D62435290AE401EF004F00E3 /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D624352A0AE401EF004F00E3 /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
@@ -55,8 +70,6 @@
 		D624353C0AE401EF004F00E3 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D624353D0AE401EF004F00E3 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D624353E0AE401EF004F00E3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
-		D624353F0AE401EF004F00E3 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338E0AE3CB4B004F00E3 /* libpng.a */; };
-		D62435400AE401EF004F00E3 /* libtiff.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338F0AE3CB4B004F00E3 /* libtiff.a */; };
 		D62435460AE40216004F00E3 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
 		D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
@@ -195,11 +208,6 @@
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D656B2440B5181F0003FF84F /* make_interface.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CF0AB22C85003949C5 /* make_interface.c */; };
 		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D656B27C0B518857003FF84F /* libfreetype.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B27B0B518857003FF84F /* libfreetype.a */; };
-		D656B27F0B518882003FF84F /* libproj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B27E0B518882003FF84F /* libproj.a */; };
-		D656B2810B518891003FF84F /* libtiffxx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2800B518891003FF84F /* libtiffxx.a */; };
-		D656B2860B518917003FF84F /* libjpeg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2710B5187D6003FF84F /* libjpeg.a */; };
-		D656B28C0B51892D003FF84F /* libgeotiff.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B28B0B51892D003FF84F /* libgeotiff.a */; };
 		D656B2A40B5189B0003FF84F /* dbfopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B2980B5189B0003FF84F /* dbfopen.c */; };
 		D656B2A80B5189B0003FF84F /* shpopen.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B29C0B5189B0003FF84F /* shpopen.c */; };
 		D656B33D0B518C9F003FF84F /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = D656B32A0B518C9F003FF84F /* xmlparse.c */; };
@@ -271,10 +279,6 @@
 		D65E4BB60B654570004D7887 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
 		D65E4BB70B654572004D7887 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
 		D65E4BB80B654574004D7887 /* Airports.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38300AB22C85003949C5 /* Airports.cpp */; };
-		D65E4BC70B654697004D7887 /* libtiffxx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2800B518891003FF84F /* libtiffxx.a */; };
-		D65E4BC80B654697004D7887 /* libtiff.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338F0AE3CB4B004F00E3 /* libtiff.a */; };
-		D65E4BC90B654698004D7887 /* libproj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B27E0B518882003FF84F /* libproj.a */; };
-		D65E4BCA0B65469E004D7887 /* libgeotiff.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B28B0B51892D003FF84F /* libgeotiff.a */; };
 		D65E4BCC0B6546B3004D7887 /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
 		D65E4BCD0B6546C2004D7887 /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D65E4BD40B6546E7004D7887 /* FAA_Obs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */; };
@@ -303,7 +307,6 @@
 		D65E4C200B65489B004D7887 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D65E4C280B6548C7004D7887 /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
 		D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
-		D65E4C300B6548E6004D7887 /* libpng.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624338E0AE3CB4B004F00E3 /* libpng.a */; };
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D65E4C390B654908004D7887 /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
@@ -362,8 +365,6 @@
 		D67EF98C0B61363600D9190C /* ConvertObjDXF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B60AB22C85003949C5 /* ConvertObjDXF.cpp */; };
 		D67EF9940B61367100D9190C /* ConvertObjUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67EF9930B61367100D9190C /* ConvertObjUI.cpp */; };
 		D67EF9A70B6141E600D9190C /* ConvertObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38B30AB22C85003949C5 /* ConvertObj.cpp */; };
-		D67EF9BB0B61422B00D9190C /* lib3ds.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624350C0AE3DFCE004F00E3 /* lib3ds.a */; };
-		D67EF9BC0B61422C00D9190C /* libdime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D624350D0AE3DFCE004F00E3 /* libdime.a */; };
 		D67EF9BE0B61423C00D9190C /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D67EF9BF0B61423D00D9190C /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
 		D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
@@ -427,6 +428,8 @@
 		D6BC3CCF0AB23C25003949C5 /* XGrinderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375A0AB22C85003949C5 /* XGrinderApp.cpp */; };
 		D6BC3CD20AB23C4D003949C5 /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D6BC3CD50AB23C7F003949C5 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
+		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
 		D6E0645A0BDD2E020070E31C /* GUI_ToolBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */; };
 		D6E064820BDD32010070E31C /* map_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E064810BDD32010070E31C /* map_tools.png */; };
 		D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */; };
@@ -571,8 +574,6 @@
 		D6FF2AFA0B6E908600960D5E /* WED_Thing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2AF90B6E908600960D5E /* WED_Thing.cpp */; };
 		D6FF2B8A0B6E985200960D5E /* WED_Group.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2B890B6E985200960D5E /* WED_Group.cpp */; };
 		D6FF2CAC0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */; };
-		D6FF34610B6FF69A00960D5E /* libgeos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6FF34600B6FF69A00960D5E /* libgeos.a */; };
-		D6FF34640B6FF6B300960D5E /* libgeos_c.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6FF34630B6FF6B300960D5E /* libgeos_c.a */; };
 		D6FF39B00B71B5C700960D5E /* WED_BezierTestTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF39AF0B71B5C700960D5E /* WED_BezierTestTool.cpp */; };
 /* End PBXBuildFile section */
 
@@ -605,12 +606,68 @@
 			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
 			remoteInfo = ObjView;
 		};
-		D65E4B400B65428F004D7887 /* PBXContainerItemProxy */ = {
+		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D65E4B200B65427C004D7887;
+			remoteGlobalIDString = D6ED369A0B67964D00D5484E /* WED */;
+			remoteInfo = WED;
+		};
+		D6C68DDE0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D67EF96F0B6135F400D9190C /* ObjConverter */;
+			remoteInfo = ObjConverter;
+		};
+		D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D65E4B200B65427C004D7887 /* RenderFarm */;
 			remoteInfo = RenderFarm;
+		};
+		D6C68DE20BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C /* DSFTool */;
+			remoteInfo = DSFTool;
+		};
+		D6C68DE40BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6ED369A0B67964D00D5484E /* WED */;
+			remoteInfo = WED;
+		};
+		D6C68DE60BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
+			remoteInfo = XGrinder;
+		};
+		D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D62435240AE401EF004F00E3 /* RenderFarmUI */;
+			remoteInfo = RenderFarmUI;
+		};
+		D6C68DEA0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */;
+			remoteInfo = ObjConverterUI;
+		};
+		D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D0C4E890486CD37000505A6 /* ObjView */;
+			remoteInfo = ObjView;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -627,10 +684,6 @@
 		D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ImageOverlayTool.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
-		D624338E0AE3CB4B004F00E3 /* libpng.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libpng.a; path = /usr/local/lib/libpng.a; sourceTree = "<absolute>"; };
-		D624338F0AE3CB4B004F00E3 /* libtiff.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtiff.a; path = /usr/local/lib/libtiff.a; sourceTree = "<absolute>"; };
-		D624350C0AE3DFCE004F00E3 /* lib3ds.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = lib3ds.a; path = /usr/local/lib/lib3ds.a; sourceTree = "<absolute>"; };
-		D624350D0AE3DFCE004F00E3 /* libdime.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdime.a; path = /usr/local/lib/libdime.a; sourceTree = "<absolute>"; };
 		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D629FA810B95CB5600A2FB57 /* WED_MapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapLayer.h; sourceTree = "<group>"; };
 		D629FA820B95CB5600A2FB57 /* WED_MapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapLayer.cpp; sourceTree = "<group>"; };
@@ -715,12 +768,7 @@
 		D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XFileTwiddle.mac.cpp; sourceTree = "<group>"; };
 		D656B12D0B51778F003FF84F /* XResources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XResources.h; sourceTree = "<group>"; };
 		D656B12E0B51778F003FF84F /* XResources.mac.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XResources.mac.cpp; sourceTree = "<group>"; };
-		D656B2710B5187D6003FF84F /* libjpeg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg.a; path = ../../usr/local/lib/libjpeg.a; sourceTree = "<group>"; };
 		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
-		D656B27B0B518857003FF84F /* libfreetype.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype.a; path = ../../usr/local/lib/libfreetype.a; sourceTree = "<group>"; };
-		D656B27E0B518882003FF84F /* libproj.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libproj.a; path = ../../usr/local/lib/libproj.a; sourceTree = "<group>"; };
-		D656B2800B518891003FF84F /* libtiffxx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtiffxx.a; path = ../../usr/local/lib/libtiffxx.a; sourceTree = "<group>"; };
-		D656B28B0B51892D003FF84F /* libgeotiff.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgeotiff.a; path = ../../usr/local/lib/libgeotiff.a; sourceTree = "<group>"; };
 		D656B2980B5189B0003FF84F /* dbfopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = dbfopen.c; sourceTree = "<group>"; };
 		D656B29C0B5189B0003FF84F /* shpopen.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = shpopen.c; sourceTree = "<group>"; };
 		D656B32A0B518C9F003FF84F /* xmlparse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = xmlparse.c; sourceTree = "<group>"; };
@@ -1283,6 +1331,8 @@
 		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
 		D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjConverterUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
+		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
 		D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ToolBar.cpp; sourceTree = "<group>"; };
 		D6E064590BDD2E020070E31C /* GUI_ToolBar.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_ToolBar.h; sourceTree = "<group>"; };
 		D6E064810BDD32010070E31C /* map_tools.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_tools.png; sourceTree = "<group>"; };
@@ -1291,7 +1341,6 @@
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6ED374F0B6796E800D5484E /* libsqlite3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsqlite3.a; path = /usr/local/lib/libsqlite3.a; sourceTree = "<absolute>"; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
@@ -1340,8 +1389,6 @@
 		D6FF2CAA0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_SimpleTableGeometry.h; sourceTree = "<group>"; };
 		D6FF2CAB0B6F7D6B00960D5E /* GUI_SimpleTableGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_SimpleTableGeometry.cpp; sourceTree = "<group>"; };
 		D6FF2DBE0B6F8C0400960D5E /* QuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuadTree.h; sourceTree = "<group>"; };
-		D6FF34600B6FF69A00960D5E /* libgeos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgeos.a; path = /usr/local/lib/libgeos.a; sourceTree = "<absolute>"; };
-		D6FF34630B6FF6B300960D5E /* libgeos_c.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgeos_c.a; path = /usr/local/lib/libgeos_c.a; sourceTree = "<absolute>"; };
 		D6FF39AE0B71B5C700960D5E /* WED_BezierTestTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_BezierTestTool.h; sourceTree = "<group>"; };
 		D6FF39AF0B71B5C700960D5E /* WED_BezierTestTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_BezierTestTool.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1354,7 +1401,7 @@
 				8D0C4E920486CD37000505A6 /* Carbon.framework in Frameworks */,
 				D6BC3A6E0AB22E5C003949C5 /* AGL.framework in Frameworks */,
 				D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */,
-				D62433910AE3CB4B004F00E3 /* libpng.a in Frameworks */,
+				D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1365,16 +1412,7 @@
 				D624353C0AE401EF004F00E3 /* Carbon.framework in Frameworks */,
 				D624353D0AE401EF004F00E3 /* AGL.framework in Frameworks */,
 				D624353E0AE401EF004F00E3 /* OpenGL.framework in Frameworks */,
-				D624353F0AE401EF004F00E3 /* libpng.a in Frameworks */,
-				D62435400AE401EF004F00E3 /* libtiff.a in Frameworks */,
 				D656B2790B51883C003FF84F /* libz.dylib in Frameworks */,
-				D656B27C0B518857003FF84F /* libfreetype.a in Frameworks */,
-				D656B27F0B518882003FF84F /* libproj.a in Frameworks */,
-				D656B2810B518891003FF84F /* libtiffxx.a in Frameworks */,
-				D656B2860B518917003FF84F /* libjpeg.a in Frameworks */,
-				D656B28C0B51892D003FF84F /* libgeotiff.a in Frameworks */,
-				D6FF34610B6FF69A00960D5E /* libgeos.a in Frameworks */,
-				D6FF34640B6FF6B300960D5E /* libgeos_c.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1384,11 +1422,6 @@
 			files = (
 				D65E4B350B65427C004D7887 /* Carbon.framework in Frameworks */,
 				D65E4B360B65427C004D7887 /* libz.dylib in Frameworks */,
-				D65E4BC70B654697004D7887 /* libtiffxx.a in Frameworks */,
-				D65E4BC80B654697004D7887 /* libtiff.a in Frameworks */,
-				D65E4BC90B654698004D7887 /* libproj.a in Frameworks */,
-				D65E4BCA0B65469E004D7887 /* libgeotiff.a in Frameworks */,
-				D65E4C300B6548E6004D7887 /* libpng.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1417,8 +1450,6 @@
 			files = (
 				D67EF9840B6135F400D9190C /* Carbon.framework in Frameworks */,
 				D67EF9850B6135F400D9190C /* libz.dylib in Frameworks */,
-				D67EF9BB0B61422B00D9190C /* lib3ds.a in Frameworks */,
-				D67EF9BC0B61422C00D9190C /* libdime.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1429,8 +1460,6 @@
 				D6BC3CC40AB2330E003949C5 /* Carbon.framework in Frameworks */,
 				D6BC3CC50AB2330E003949C5 /* AGL.framework in Frameworks */,
 				D6BC3CC60AB2330E003949C5 /* OpenGL.framework in Frameworks */,
-				D624350E0AE3DFCE004F00E3 /* lib3ds.a in Frameworks */,
-				D624350F0AE3DFCE004F00E3 /* libdime.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1494,19 +1523,7 @@
 		20286C32FDCF999611CA2CEA /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				D6FF34600B6FF69A00960D5E /* libgeos.a */,
-				D6FF34630B6FF6B300960D5E /* libgeos_c.a */,
-				D6ED374F0B6796E800D5484E /* libsqlite3.a */,
-				D656B28B0B51892D003FF84F /* libgeotiff.a */,
-				D656B2800B518891003FF84F /* libtiffxx.a */,
-				D656B27E0B518882003FF84F /* libproj.a */,
-				D656B27B0B518857003FF84F /* libfreetype.a */,
 				D656B2780B51883C003FF84F /* libz.dylib */,
-				D656B2710B5187D6003FF84F /* libjpeg.a */,
-				D624350C0AE3DFCE004F00E3 /* lib3ds.a */,
-				D624350D0AE3DFCE004F00E3 /* libdime.a */,
-				D624338E0AE3CB4B004F00E3 /* libpng.a */,
-				D624338F0AE3CB4B004F00E3 /* libtiff.a */,
 				D6BC3A710AB22E67003949C5 /* OpenGL.framework */,
 				D6BC3A6D0AB22E5C003949C5 /* AGL.framework */,
 				20286C33FDCF999611CA2CEA /* Carbon.framework */,
@@ -2184,7 +2201,6 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
-				D6BC37E80AB22C85003949C5 /* CVS.sandboxinfo */,
 				D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */,
 				D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */,
 				D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */,
@@ -2194,15 +2210,10 @@
 				D6BC37F10AB22C85003949C5 /* WED_PackageWindow.cpp */,
 				D6BC37F20AB22C85003949C5 /* WED_PackageWindow.h */,
 				D6BC37F30AB22C85003949C5 /* WED_UIDefs.h */,
+				D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */,
+				D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */,
 			);
 			path = WEDWindows;
-			sourceTree = "<group>";
-		};
-		D6BC37E80AB22C85003949C5 /* CVS.sandboxinfo */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = CVS.sandboxinfo;
 			sourceTree = "<group>";
 		};
 		D6BC37F40AB22C85003949C5 /* WorldEditor */ = {
@@ -2756,6 +2767,7 @@
 				D65E4B200B65427C004D7887 /* RenderFarm */,
 				D67EF96F0B6135F400D9190C /* ObjConverter */,
 				D61C26E70B6155960092E098 /* Build Tools */,
+				D6C68DDD0BEFB3B300C9F880 /* Build All */,
 			);
 		};
 /* End PBXProject section */
@@ -3366,6 +3378,7 @@
 				D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */,
 				D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */,
 				D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */,
+				D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3392,10 +3405,50 @@
 			target = 8D0C4E890486CD37000505A6 /* ObjView */;
 			targetProxy = D61C26EE0B6155A10092E098 /* PBXContainerItemProxy */;
 		};
-		D65E4B410B65428F004D7887 /* PBXTargetDependency */ = {
+		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6ED369A0B67964D00D5484E /* WED */;
+			targetProxy = D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DDF0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D67EF96F0B6135F400D9190C /* ObjConverter */;
+			targetProxy = D6C68DDE0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D65E4B200B65427C004D7887 /* RenderFarm */;
-			targetProxy = D65E4B400B65428F004D7887 /* PBXContainerItemProxy */;
+			targetProxy = D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DE30BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D67EF84A0B5E5C8700D9190C /* DSFTool */;
+			targetProxy = D6C68DE20BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6ED369A0B67964D00D5484E /* WED */;
+			targetProxy = D6C68DE40BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
+			targetProxy = D6C68DE60BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D62435240AE401EF004F00E3 /* RenderFarmUI */;
+			targetProxy = D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DEB0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */;
+			targetProxy = D6C68DEA0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D0C4E890486CD37000505A6 /* ObjView */;
+			targetProxy = D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3403,12 +3456,22 @@
 		C0E91AC608A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 			};
 			name = Debug;
 		};
 		C0E91AC708A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 			};
 			name = Release;
 		};
@@ -3515,6 +3578,16 @@
 					"$(inherited)",
 					"-fpermissive",
 				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeos.a,
+					/usr/local/lib/libgeos_c.a,
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 			};
 			name = Debug;
 		};
@@ -3531,6 +3604,16 @@
 					"$(inherited)",
 					"-fpermissive",
 				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeos.a,
+					/usr/local/lib/libgeos_c.a,
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 			};
 			name = Release;
 		};
@@ -3543,6 +3626,13 @@
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 				PRODUCT_NAME = RenderFarm;
 			};
 			name = Debug;
@@ -3556,6 +3646,13 @@
 				);
 				INSTALL_PATH = "$(HOME)/bin";
 				OTHER_CFLAGS = "-fpermissive";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
 				PRODUCT_NAME = RenderFarm;
 			};
 			name = Release;
@@ -3598,6 +3695,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/lib3ds.a,
+					/usr/local/lib/libdime.a,
+				);
 			};
 			name = Debug;
 		};
@@ -3609,6 +3711,11 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/lib3ds.a,
+					/usr/local/lib/libdime.a,
+				);
 				PREBINDING = NO;
 				ZERO_LINK = NO;
 			};
@@ -3617,12 +3724,44 @@
 		D6BC3CC80AB2330E003949C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/libdime.a,
+					/usr/local/lib/lib3ds.a,
+				);
 			};
 			name = Debug;
 		};
 		D6BC3CC90AB2330E003949C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/libdime.a,
+					/usr/local/lib/lib3ds.a,
+				);
+			};
+			name = Release;
+		};
+		D6C68DF00BEFB3DB00C9F880 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build All";
+			};
+			name = Debug;
+		};
+		D6C68DF10BEFB3DB00C9F880 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = "Build All";
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -3760,6 +3899,15 @@
 			buildConfigurations = (
 				D6BC3CC80AB2330E003949C5 /* Debug */,
 				D6BC3CC90AB2330E003949C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6C68DEF0BEFB3DB00C9F880 /* Build configuration list for PBXAggregateTarget "Build All" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6C68DF00BEFB3DB00C9F880 /* Debug */,
+				D6C68DF10BEFB3DB00C9F880 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
