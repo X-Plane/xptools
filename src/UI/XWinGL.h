@@ -85,8 +85,8 @@
 class	XWinGL : public XWin {
 public:
 	
-							XWinGL(XWinGL * inShare);
-							XWinGL(const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
+							XWinGL(int default_dnd, XWinGL * inShare);
+							XWinGL(int default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare);
 	virtual					~XWinGL();
 
 			void			SetGLContext(void);

@@ -34,7 +34,7 @@ extern	int	DispatchMenuCmd(xmenu, int);
 extern unsigned char * GetInterfaceBits(void);
 
 XPWidgetWin::XPWidgetWin() :
-	XWinGL(NULL)
+	XWinGL(1, NULL)
 {
 	SetTimerInterval(0.01);
 

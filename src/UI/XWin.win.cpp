@@ -49,7 +49,7 @@ extern	HINSTANCE	gInstance;
 
 map<HWND, XWin *>	sWindows;
 
-XWin::XWin()
+XWin::XWin(int default_dnd)
 {
 	sIniting = true;
 	mWindow = CreateWindow(sWindowClass, "FullScreen", 
@@ -68,15 +68,20 @@ XWin::XWin()
 		
 	sWindows[mWindow] = this;
 
-	mDropTarget = new CDropTarget;	
-	RegisterDragDrop(mWindow, mDropTarget);
-	mDropTarget->SetReceiver(this, mWindow);
-
+	if (default_dnd)
+	{
+		mDropTarget = new CDropTarget;	
+		RegisterDragDrop(mWindow, mDropTarget);
+		mDropTarget->SetReceiver(this, mWindow);
+	} else
+		mDropTarget = NULL;
+		
 	ShowWindow(mWindow, SW_SHOWMAXIMIZED);
 	sIniting = false;
 }	
 
 XWin::XWin(
+	int				default_dnd,
 	const char * 	inTitle,
 	int				inX,
 	int				inY,
@@ -97,10 +102,14 @@ XWin::XWin(
 		
 	sWindows[mWindow] = this;
 
-	mDropTarget = new CDropTarget;	
-	RegisterDragDrop(mWindow, mDropTarget);
-	mDropTarget->SetReceiver(this, mWindow);
-
+	if (default_dnd)
+	{
+		mDropTarget = new CDropTarget;	
+		RegisterDragDrop(mWindow, mDropTarget);
+		mDropTarget->SetReceiver(this, mWindow);
+	} else
+		mDropTarget = NULL;
+		
 	ShowWindow(mWindow, SW_SHOW);
 	sIniting = false;
 }	
@@ -113,10 +122,17 @@ XWin::~XWin()
 		KillTimer(mWindow, IDT_TIMER1);
 	}
 
+	#if !DEV
+		Ben says: I think this is a double-delete.  If destroying the window kills off the drag handler,
+		then mDropTarget will zero its ref count and self-die.
+		But...if we are not freeing it off, then we have been leaking it.
+		
+		-- hrm - making obj makes ref of 1 ... perhaps we shoud be calling release
+	#endif
+
 	if (mWindow)
 		DestroyWindow(mWindow);
-	delete mDropTarget;
-	
+	delete mDropTarget;	
 }
 
 void			XWin::SetTitle(const char * inTitle)

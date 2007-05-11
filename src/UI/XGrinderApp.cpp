@@ -63,7 +63,7 @@ public:
 
 };
 
-XGrinderWin::XGrinderWin() : XWin(gTitle.c_str(), 
+XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(), 
 	50, 100, 512, 100)	
 {
 }

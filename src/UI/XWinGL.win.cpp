@@ -28,8 +28,8 @@ PFNGLMULTITEXCOORD2FVARBPROC 		glMultiTexCoord2fvARB;
 PFNGLACTIVETEXTUREARBPROC    		glActiveTextureARB	;
 PFNGLCLIENTACTIVETEXTUREARBPROC    	glClientActiveTextureARB	;
 
-XWinGL::XWinGL(XWinGL * inShare) :
-	XWin()
+XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
+	XWin(default_dnd)
 {
 	mDC = ::GetDC(mWindow);
 	
@@ -68,8 +68,8 @@ XWinGL::XWinGL(XWinGL * inShare) :
 }	
 
 	
-XWinGL::XWinGL(const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
-	XWin(inTitle, inX, inY, inWidth, inHeight)
+XWinGL::XWinGL(default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
+	XWin(default_dnd, inTitle, inX, inY, inWidth, inHeight)
 {
 	mDC = ::GetDC(mWindow);
 	

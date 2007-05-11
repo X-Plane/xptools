@@ -31,7 +31,7 @@ static DragTrackingHandlerUPP	mTrackingHandler = NewDragTrackingHandlerUPP(XWin:
 static DragReceiveHandlerUPP	mReceiveHandler = NewDragReceiveHandlerUPP(XWin::MacReceiveHandler);
 static EventLoopTimerUPP		mTimerHandler = NewEventLoopTimerUPP(XWin::MacTimer);
 
-XWin::XWin()
+XWin::XWin(int default_dnd)
 {
 	sIniting = true;
 
@@ -69,13 +69,16 @@ XWin::XWin()
 			reinterpret_cast<void *>(this),
 			NULL);
 	if (err != noErr) throw err;
-	
-	err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
-	if (err != noErr) throw err;
-	
-	err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
-	if (err != noErr) throw err;
 
+	if (default_dnd)
+	{
+		err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
+		if (err != noErr) throw err;
+		
+		err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
+		if (err != noErr) throw err;
+	}
+	
 	ShowWindow(mWindow);	
 	sIniting = false;
 	
@@ -86,6 +89,7 @@ XWin::XWin()
 
 
 XWin::XWin(
+	int				default_dnd,
 	const char * 	inTitle,
 	int				inX,
 	int				inY,
@@ -132,12 +136,15 @@ XWin::XWin(
 			NULL);
 	if (err != noErr) throw err;
 	
-	err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
-	if (err != noErr) throw err;
+	if (default_dnd)
+	{
+		err = InstallTrackingHandler(mTrackingHandler, mWindow, reinterpret_cast<void *>(this));
+		if (err != noErr) throw err;
+		
+		err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
+		if (err != noErr) throw err;
+	}
 	
-	err = InstallReceiveHandler(mReceiveHandler, mWindow, reinterpret_cast<void *>(this));
-	if (err != noErr) throw err;
-
 	ShowWindow(mWindow);	
 	sIniting = false;
 	
@@ -239,9 +246,9 @@ void		XWin::GetMouseLoc(int * outX, int * outY)
 #pragma mark -
 
 pascal OSStatus	XWin::MacEventHandler(
-						EventHandlerCallRef inHandlerCallRef, EventRef 
-						inEvent, 
-						void *inUserData)
+						EventHandlerCallRef		inHandlerCallRef, 
+						EventRef				inEvent, 
+						void *					inUserData)
 {
 	if (sIniting)
 		return eventNotHandledErr;

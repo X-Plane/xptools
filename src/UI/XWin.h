@@ -56,8 +56,9 @@ public:
 		typedef HDC		XContext;
 #endif				
 
-							XWin();
+							XWin(int default_dnd);
 							XWin(
+								int				default_dnd,
 								const char * 	inTitle,
 								int				inX,
 								int				inY,
