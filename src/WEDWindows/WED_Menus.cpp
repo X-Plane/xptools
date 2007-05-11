@@ -30,6 +30,18 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	NULL,						0,	0,							0,	0					},
 };
 
+static const GUI_MenuItem_t kCreateMenu[] = {
+{	"Group",					'G',	gui_ControlFlag,							0,	wed_Group		},
+{	"Ungroup",					'G'	,	gui_ControlFlag+gui_ShiftFlag,				0,	wed_Ungroup	},
+{	NULL,						0,	0,							0,	0					},
+};
+
+static const GUI_MenuItem_t kAirportMenu[] = {
+{	"Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
+{	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt },
+{	NULL,				0,		0,								0,	0,				}
+};
+
 
 static const GUI_MenuItem_t kTestMenu[] = {
 {	"An Item",			0,		0,								0,	gui_Close		},
@@ -56,6 +68,12 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"View", kViewMenu, inApp->GetMenuBar(), 0);		
 
+	GUI_Menu	create_menu = inApp->CreateMenu(
+		"Create", kCreateMenu, inApp->GetMenuBar(),0);
+	
+	GUI_Menu	airpor_menu = inApp->CreateMenu(
+		"Airport", kAirportMenu, inApp->GetMenuBar(),0);	
+	
 	test1 = inApp->CreateMenu(
 		"Test", kTestMenu, inApp->GetMenuBar(), 0);
 

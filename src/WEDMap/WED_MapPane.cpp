@@ -21,7 +21,7 @@
 
 WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive)
 {
-	mMap = new WED_Map(resolver, "selection","world");
+	mMap = new WED_Map(resolver);
 
 	// Visualizatoin layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
@@ -29,9 +29,9 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 
 	// TOOLS
-	mTools.push_back(					new WED_MarqueeTool("Select",mMap, mMap, resolver, "world", "selection"));
-	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, "world", "selection", 1));
-	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Ref Image",mMap, mMap, resolver, "world", "selection"));
+	mTools.push_back(					new WED_MarqueeTool("Select",mMap, mMap, resolver));
+	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
+	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Ref Image",mMap, mMap, resolver));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxiway",mMap, mMap, resolver, archive, create_Taxi));
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxi Lines",mMap, mMap, resolver, archive, create_Marks));

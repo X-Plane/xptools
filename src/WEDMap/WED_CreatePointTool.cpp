@@ -24,14 +24,17 @@
 #include "WED_CreatePointTool.h"
 #include "WED_Archive.h"
 #include "WED_AirportBeacon.h"
+#include "WED_Airport.h"
 #include "WED_AirportSign.h"
 #include "WED_Helipad.h"
 #include "WED_LightFixture.h"
 #include "WED_EnumSystem.h"
 #include "WED_RampPosition.h"
 #include "WED_TowerViewpoint.h"
+#include "WED_ToolUtils.h"
 #include "WED_Windsock.h"
 #include "GISUtils.h"
+#include "WED_ToolUtils.h"
 #include "IResolver.h"
 
 static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0 };
@@ -58,7 +61,8 @@ WED_CreatePointTool::WED_CreatePointTool(
 	kIsToolDirectional[tool],		// curve allowed
 	kIsToolDirectional[tool],		// curve required?
 	0,								// close allowed
-	0),								// close required?
+	0,								// close required? 
+	1),								// Requires airport
 	mType(tool),
 		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			"","",Airport_Beacon,beacon_Airport),
 		sign_text		(tool==create_Sign			?this:NULL,"Text",			"","","{@L}A"),
@@ -92,7 +96,7 @@ void	WED_CreatePointTool::AcceptPath(
 
 	GetArchive()->StartCommand(buf);
 
-	IUnknown * host = GetResolver()->Resolver_Find("world");
+	WED_Airport * host = WED_GetCurrentAirport(GetResolver());
 
 	WED_GISPoint * new_pt_obj = NULL;
 	WED_GISPoint_Heading * new_pt_h = NULL;
@@ -151,11 +155,22 @@ void	WED_CreatePointTool::AcceptPath(
 	
 	static int n = 0;
 	++n;
-	new_pt_obj->SetParent(SAFE_CAST(WED_Thing,host),0);	
+	new_pt_obj->SetParent(host, host->CountChildren());
 	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
 	if (mType != create_Sign)
 		new_pt_obj->SetName(buf);
 			
 	GetArchive()->CommitCommand();
 
+}
+
+const char *	WED_CreatePointTool::GetStatusText(void)
+{
+	static char buf[256];
+	if (WED_GetCurrentAirport(GetResolver()) == NULL)
+	{
+		sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
+		return buf;
+	}
+	return NULL;
 }

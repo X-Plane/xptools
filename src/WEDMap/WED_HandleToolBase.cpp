@@ -4,6 +4,7 @@
 #include "GUI_GraphState.h"
 #include "IControlHandles.h"
 #include "IResolver.h"
+#include "WED_Thing.h"
 #include "IGIS.h"
 #include "ISelection.h"
 #include "IOperation.h"
@@ -91,11 +92,8 @@ WED_HandleToolBase::WED_HandleToolBase(
 				const char *			tool_name,
 				GUI_Pane *				host,
 				WED_MapZoomerNew *		zoomer,
-				IResolver *				resolver,				
-				const char *			root_path,
-				const char *			selection_path) :
+				IResolver *				resolver) :
 	WED_MapToolNew(tool_name, host, zoomer,resolver),
-	mRoot(root_path),
 	mHandles(NULL),
 	mDragType(drag_None),
 	mCanSelect(1)
@@ -217,7 +215,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		
 		mDragX = inX;
 		mDragY = inY;
-		IGISEntity * ent_base = SAFE_CAST(IGISEntity, GetResolver()->Resolver_Find(mRoot.c_str()));
+		IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 		ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if (sel && ent_base)
@@ -333,7 +331,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 		{	
 			mSelX = inX;
 			mSelY = inY;
-			IGISEntity * ent_base = SAFE_CAST(IGISEntity, GetResolver()->Resolver_Find(mRoot.c_str()));
+			IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
 			{

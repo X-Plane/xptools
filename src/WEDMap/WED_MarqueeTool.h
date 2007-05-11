@@ -12,9 +12,7 @@ public:
 										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
-										IResolver *				resolver,
-										const char *			root_path,
-										const char *			selection_path);						 
+										IResolver *				resolver);						 
 	virtual				~WED_MarqueeTool();
 	
 
@@ -63,9 +61,6 @@ private:
 				bool	GetTotalBounds(Bbox2& b) const;
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
 
-		string					mSelection;
-
-	
 };
 
 #endif /* WED_MARQUEETOOL_H */

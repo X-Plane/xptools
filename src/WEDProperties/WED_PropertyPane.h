@@ -25,8 +25,7 @@ class	GUI_ScrollerPane;
 class	GUI_Table;
 class	GUI_Header;
 class	GUI_Side;
-class	WED_Thing;
-class	WED_Select;
+class	IResolver;
 
 enum {
 
@@ -42,8 +41,7 @@ public:
 
 			 WED_PropertyPane(
 						GUI_Commander *			inCommander,
-						WED_Thing *				inRoot,
-						WED_Select *			inSelect,
+						IResolver *				inResolver,
 						const char **			col_names,
 						int *					def_col_widths,
 						GUI_Broadcaster *		archive_broadcaster,

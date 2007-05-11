@@ -205,3 +205,12 @@ IUnknown *		WED_Select::GetNthSelection(int n) const
 	if (i == mSelected.end()) return NULL;
 	return FetchPeer(*i);	
 }
+
+int			WED_Select::IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const
+{
+	int n = 0;
+	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+		if ((n=func(FetchPeer(*i), ref)) != 0) 
+			return n;
+	return 0;
+}

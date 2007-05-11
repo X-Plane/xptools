@@ -7,7 +7,7 @@
 class	WED_ImageOverlayTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
 
-						 WED_ImageOverlayTool(const char * tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path);
+						 WED_ImageOverlayTool(const char * tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_ImageOverlayTool();
 
 			void		PickFile(void);

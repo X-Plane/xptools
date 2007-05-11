@@ -7,6 +7,10 @@ class	WED_Airport : public WED_GISComposite {
 
 DECLARE_PERSISTENT(WED_Airport)
 
+public:
+
+	void		GetICAO(string& icao) const;
+
 private:
 
 	WED_PropIntEnum			airport_type;

@@ -21,7 +21,11 @@
 class	WED_Entity : public WED_Thing { 
 
 DECLARE_INTERMEDIATE(WED_Entity)
-	
+
+public:
+
+		int		GetLocked(void) const;
+		int		GetHidden(void) const;
 private:
 
 	WED_PropBoolText			locked;

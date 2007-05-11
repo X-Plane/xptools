@@ -11,8 +11,10 @@
 #include "WED_PropertyPane.h"
 #include "GUI_TabPane.h"
 #include "WED_Thing.h"
+#include "WED_Menus.h"
 #include "WED_Select.h"
 #include "GUI_Splitter.h"
+#include "WED_GroupCommands.h"
 
 
 WED_DocumentWindow::WED_DocumentWindow(
@@ -27,10 +29,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
 	mDocument->AddListener(this);
 					
-	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
-	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("selection"));
-	DebugAssert(root);
-	DebugAssert(s);
+//	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
+//	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("selection"));
+//	DebugAssert(root);
+//	DebugAssert(s);
 	
 	/****************************************************************************************************************************************************************
 	 * MAP VIEW
@@ -75,7 +77,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * sel_t[] = { "Name", "Type", NULL };
 	static		 int	sel_w[] = { 100, 100 };
 	
-	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);	
+	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);	
 	prop_tabs->AddPane(prop_pane1, "Selection");
 
 	// --------------- AIRPORT
@@ -84,7 +86,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static		 int	air_w[] = { 100, 100, 100, 50, 100  };
 	static const char * air_f[] = { "WED_Airport", NULL };
 	
-	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
+	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
 	prop_tabs->AddPane(prop_pane2, "Airports");
 	
 	// --------------- LIGHTS, SIGNS, BEACONS ---------------
@@ -93,7 +95,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static		 int	sin_w[] = { 100, 100, 100, 100  };
 	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
 	
-	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);	
+	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);	
 	prop_tabs->AddPane(prop_pane3, "Signs");
 
 	// --------------- RUNWAYS ---------------
@@ -106,7 +108,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 									100, 100, 100, 100, 100, 100, 100 };
 	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
 	
-	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);	
+	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);	
 	prop_tabs->AddPane(prop_pane4, "Runways");
 
 	// --------------- TAXIWAYS ---------------
@@ -115,7 +117,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static		 int	tax_w[] = { 100, 150, 100, 100  };
 	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
 	
-	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);	
+	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);	
 	prop_tabs->AddPane(prop_pane5, "Taxiways");
 
 	// --------------- HELIPADS ---------------
@@ -124,7 +126,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static		 int	hel_w[] = { 100, 150, 150, 150, 100, 150 };
 	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
 	
-	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), root, s, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);	
+	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);	
 	prop_tabs->AddPane(prop_pane6, "Helipads");
 
 	// --------------- Hierarchy  View ---------------
@@ -132,7 +134,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * titles[] =  { "Name", "Locked", "Hidden", 0 };
 	static int widths[] =			{ 100,		50,		50		};
 
-	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, root, s, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
+	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
 	prop_pane->SetParent(prop_splitter);
 	prop_pane->Show();
 	prop_pane->SetSticky(1,1,1,1);
@@ -161,6 +163,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	switch(command) {
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
+	case wed_Group:		WED_DoGroup(mDocument); return 1;
+	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
+	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
+	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:	return 1;
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
@@ -176,6 +182,11 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
 						else				{								return 0; }
 	case gui_Close:															return 1;
+	case wed_Group:		return WED_CanGroup(mDocument);
+	case wed_Ungroup:	return WED_CanUngroup(mDocument);
+	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument); 
+	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
+
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }

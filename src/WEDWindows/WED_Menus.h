@@ -15,7 +15,13 @@ enum {
 	// View menu
 	wed_PickOverlay,
 	wed_ToggleOverlay,
-	wed_ToggleTerraserver
+	wed_ToggleTerraserver,
+	// Create Menu
+	wed_Group,
+	wed_Ungroup,
+	// Airport Menu
+	wed_CreateApt,
+	wed_EditApt
 
 };
 

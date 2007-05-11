@@ -23,6 +23,8 @@
 
 #include "WED_CreateLineTool.h"
 #include "IResolver.h"
+#include "WED_Airport.h"
+#include "WED_ToolUtils.h"
 #include "WED_Runway.h"
 #include "WED_EnumSystem.h"
 #include "WED_RunwayNode.h"
@@ -46,7 +48,8 @@ WED_CreateLineTool::WED_CreateLineTool(
 	0,								// curve allowed
 	0,								// curve required?
 	0,								// close allowed
-	0),								// close required?
+	0,								// close required?
+	1),								// Requires airport?
 	mType(tool),
 		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",					"","",Surface_Type,	surf_Concrete),
 		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",					"","",Shoulder_Type,shoulder_None),
@@ -78,7 +81,7 @@ void	WED_CreateLineTool::AcceptPath(
 
 	GetArchive()->StartCommand(buf);
 
-	IUnknown * host = GetResolver()->Resolver_Find("world");
+	WED_Airport * host = WED_GetCurrentAirport(GetResolver());
 
 	WED_GISLine_Width * obj = NULL;
 	
@@ -122,10 +125,22 @@ void	WED_CreateLineTool::AcceptPath(
 	obj->SetWidth(50.0);
 	static int n = 0;
 	++n;
-	obj->SetParent(SAFE_CAST(WED_Thing,host),0);	
+	obj->SetParent(host, host->CountChildren());
 	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
 	obj->SetName(buf);
 			
 	GetArchive()->CommitCommand();
 
+}
+
+
+const char *	WED_CreateLineTool::GetStatusText(void)
+{
+	static char buf[256];
+	if (WED_GetCurrentAirport(GetResolver()) == NULL)
+	{
+		sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
+		return buf;
+	}
+	return NULL;
 }

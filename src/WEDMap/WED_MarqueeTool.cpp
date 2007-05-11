@@ -1,6 +1,7 @@
 #include "WED_MarqueeTool.h"
 #include "ISelection.h"
 #include "IResolver.h"
+#include "WED_ToolUtils.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
 #if !DEV
@@ -44,11 +45,8 @@ WED_MarqueeTool::WED_MarqueeTool(
 										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
-										IResolver *				resolver,
-										const char *			root_path,
-										const char *			selection_path) :
-				WED_HandleToolBase(tool_name, host, zoomer, resolver, root_path, selection_path),				
-				mSelection(selection_path)				
+										IResolver *				resolver) :
+				WED_HandleToolBase(tool_name, host, zoomer, resolver)
 {
 	SetControlProvider(this);
 }
@@ -59,21 +57,23 @@ WED_MarqueeTool::~WED_MarqueeTool()
 
 void	WED_MarqueeTool::BeginEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
-	DebugAssert(sel != NULL);
-	sel->StartOperation("Marquee Drag");
+	ISelection * sel = WED_GetSelect(GetResolver());
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	DebugAssert(sel != NULL && op != NULL);
+	op->StartOperation("Marquee Drag");
 }
 
 void	WED_MarqueeTool::EndEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
-	DebugAssert(sel != NULL);
-	sel->CommitOperation();
+	ISelection * sel = WED_GetSelect(GetResolver());
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	DebugAssert(sel != NULL && op != NULL);
+	op->CommitOperation();
 }
 
 int		WED_MarqueeTool::CountEntities(void) const
 {
-	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
 	if (sel->GetSelectionCount() == 0)	return 0;
@@ -183,7 +183,7 @@ void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 
 void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 {
-	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;
@@ -212,7 +212,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 {
 	b = Bbox2();
-	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;
@@ -235,7 +235,7 @@ bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 
 void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
-	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;

@@ -23,7 +23,8 @@ public:
 									int					can_curve,
 									int					must_curve,
 									int					can_close,
-									int					must_close);
+									int					must_close,
+									int					requires_airport);
 	virtual				~WED_CreateToolBase();
 
 	virtual	int			HandleClickDown(int inX, int inY, int inButton);
@@ -76,6 +77,8 @@ private:
 	int		mMustClose;
 	int		mCanCurve;
 	int		mMustCurve;
+	
+	int		mMustHaveApt;
 
 };
 

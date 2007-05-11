@@ -24,8 +24,8 @@ END_CASTING
 // | |
 // 3-0
 
-WED_ImageOverlayTool::WED_ImageOverlayTool(const char *	tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver, const char * root_path, const char * selection_path) :
-	WED_HandleToolBase(tool_name, host,zoomer,resolver,root_path,selection_path),
+WED_ImageOverlayTool::WED_ImageOverlayTool(const char *	tool_name, GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
+	WED_HandleToolBase(tool_name, host,zoomer,resolver),
 	mVisible(false),
 	mBits(false),
 	mTexID(0)

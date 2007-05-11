@@ -19,3 +19,12 @@ WED_Entity::~WED_Entity()
 {
 }
 
+int		WED_Entity::GetLocked(void) const
+{
+	return locked.value;
+}
+
+int		WED_Entity::GetHidden(void) const
+{
+	return hidden.value;
+}

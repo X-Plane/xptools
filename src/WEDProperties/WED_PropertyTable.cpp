@@ -1,15 +1,17 @@
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
 #include "WED_Thing.h"
-#include "WED_Select.h"
+#include "ISelection.h"
+#include "IOperation.h"
+#include "IGIS.h"
 #include "WED_Messages.h"
 #include "GUI_Messages.h"
+#include "WED_ToolUtils.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
 WED_PropertyTable::WED_PropertyTable(
-									WED_Thing *				root,
-									WED_Select *			selection,
+									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
 									int						vertical,
@@ -20,7 +22,7 @@ WED_PropertyTable::WED_PropertyTable(
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
-	mArchive(root->GetArchive()), mEntity(root->GetID()), mSelect(selection->GetID())
+	mResolver(resolver)
 {
 	if (col_names)
 	while(*col_names)
@@ -52,7 +54,7 @@ void	WED_PropertyTable::GetCellContent(
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t == NULL) return;
 	
-	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
+	ISelection * s = WED_GetSelect(mResolver);	
 	
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 	if (idx == -1) return;
@@ -101,10 +103,14 @@ void	WED_PropertyTable::GetCellContent(
 		if (the_content.text_val.empty())	the_content.text_val="-";
 		break;		
 	}
-	
+	int unused_vis, unused_kids;
+	if (cell_x == 0)
+	GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
+
 	the_content.can_edit = inf.can_edit;
-	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
-	the_content.is_disclosed = 	mOpen[t->GetID()] != 0 && the_content.can_disclose;
+//	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
+//	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
+//	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
 	the_content.indent_level = (!mVertical && cell_x == 0) ? GetThingDepth(t) : 0;	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 	#if !DEV
 		enforce entity locking here?
@@ -174,54 +180,145 @@ void	WED_PropertyTable::ToggleDisclose(
 {
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t)
-		mOpen[t->GetID()] = 1 - mOpen[t->GetID()];
+		ToggleOpen(t->GetID());
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
 
-void	WED_PropertyTable::SelectCell(
-						int							cell_x,
-						int							cell_y)
+void	WED_PropertyTable::SelectionStart(
+						int							clear)
 {
-	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
-	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
-	if (t && s)
-	{
-		s->StartCommand("Change Selection.");
-		s->Select(t);
-		s->CommitCommand();
-	}
+	ISelection * s = WED_GetSelect(mResolver);
+	IOperation * op = dynamic_cast<IOperation *>(s);
+	op->StartOperation("Change Selection");
+	if (clear) s->Clear();
+	
+	s->GetSelectionVector(mSelSave);
 }
 
-void	WED_PropertyTable::SelectCellToggle(
-						int							cell_x,
-						int							cell_y)
-{
-	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
-	WED_Select * s = SAFE_CAST(WED_Select,mArchive->Fetch(mSelect));
-	if (t && s)
-	{
-		s->StartCommand("Change Selection.");
-		s->Toggle(t);
-		s->CommitCommand();
-	}
-}
-
-void	WED_PropertyTable::SelectCellExtend(
-						int							cell_x,
-						int							cell_y)
+int		WED_PropertyTable::SelectGetExtent(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)
 {
 	#if !DEV
-		hello
+		speed of this sux
 	#endif
+	ISelection * s = WED_GetSelect(mResolver);
+	
+	int num = mVertical ? GetColCount() : GetRowCount();
+
+	int has = 0;
+	low_x = low_y = num;
+	high_x = high_y = 0;
+	
+	for (int n = 0; n < num; ++n)
+	{
+		WED_Thing * t = FetchNth(n);
+		if (t)
+		{
+			if (s->IsSelected(t))
+			{
+				has = 1;
+				low_x = low_y = min(low_x, n);
+				high_x = high_y = max(high_x, n);
+			}
+		}
+	}
+	return has;
+}
+
+int		WED_PropertyTable::SelectGetLimits(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)
+{
+	low_x = low_y = 0;
+	high_x = GetColCount()-1;
+	high_y = GetRowCount()-1;
+	return (high_x >= 0 && high_y >= 0);
 }
 
 
+void	WED_PropertyTable::SelectRange(
+						int							start_x,
+						int							start_y,
+						int							end_x,
+						int							end_y,
+						int							is_toggle)
+{
+	ISelection * s = WED_GetSelect(mResolver);
+	
+	s->Clear();
+	for (vector<IUnknown *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+		s->Insert(*u);
+	#if !DEV
+		provide accelerated sel-save-restore ops!
+	#endif
 
+	for (int n = (mVertical ? start_x : start_y); n <= (mVertical ? end_x : end_y); ++n)
+	{
+		#if !DEV
+			for loop is n-squared perf - fix this!
+		#endif
+		WED_Thing * t = FetchNth(n);
+		if (t)
+		{
+			if (is_toggle)	s->Toggle(t);
+			else			s->Insert(t);
+		}
+	}
+}
+
+void	WED_PropertyTable::SelectionEnd(void)
+{
+	ISelection * s = WED_GetSelect(mResolver);
+	IOperation * op = dynamic_cast<IOperation *>(s);
+	op->CommitOperation();
+	mSelSave.clear();
+}
+
+int		WED_PropertyTable::TabAdvance(
+						int&						io_x,
+						int&						io_y,
+						int							reverse,
+						GUI_CellContent&			the_content)
+{
+	int start_x = io_x;
+	int start_y = io_y;
+	
+	int width = GetColCount();
+	int height =GetRowCount(); 
+	
+	if (height == 0 || width == 0) return 0;
+	
+	do 
+	{
+		if (reverse)	--io_x;
+		else			++io_x;
+		if (io_x >= width) { io_x = 0; --io_y; }
+		if (io_x < 0	 ) { io_x = width-1; ++io_y; }
+		if (io_y >=height) { io_y = 0;		   }
+		if (io_y < 0	 ) { io_y = height-1;   }
+	
+		GetCellContent(io_x, io_y, the_content);
+		if (the_content.can_edit && (
+			the_content.content_type == gui_Cell_EditText ||
+			the_content.content_type == gui_Cell_Integer ||
+			the_content.content_type == gui_Cell_Double))
+		{
+			return 1;
+		}
+	
+	} while (start_x != io_x || start_y != io_y);
+	return 0;
+}
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
-	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
-	ISelection * sel = SAFE_CAST(ISelection,mArchive->Fetch(mSelect));
+	WED_Thing * root = WED_GetWorld(mResolver);
+	ISelection * sel = WED_GetSelect(mResolver);
 	if (!root) return NULL;
 	// Ben says: tables are indexed bottom=0 to match OGL coords.
 	// INvert our numbers here because we really need to count up when we traverse the tree!
@@ -232,7 +329,7 @@ WED_Thing *	WED_PropertyTable::FetchNth(int row)
 
 int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
 {
-	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
+	WED_Thing * root = WED_GetWorld(mResolver);
 	if (!root) return 0;
 
 	int ret = 0;
@@ -250,17 +347,16 @@ WED_Thing *	WED_PropertyTable::FetchNthRecursive(WED_Thing * e, int& row, ISelec
 {
 	if (e == NULL) return NULL;
 
-	int filtered = 1;
-	if (!mSelOnly || !sel || sel->IsSelected(e))
-	if (mFilter.empty() || mFilter.count(e->GetClass()))
-	{	
+	int vis,kids,can_disclose,is_disclose;
+	GetFilterStatus(e,sel,vis,kids,can_disclose, is_disclose);
+
+	if (vis)
+	{
 		if (row == 0) return e;	
-		filtered = 0;
 		--row;
 	}
 	
-	if (mOpen[e->GetID()] != 0 || mVertical || filtered)	
-	for (int n = 0; n < e->CountChildren(); ++n)
+	for (int n = 0; n < kids; ++n)
 	{
 		WED_Thing * c = FetchNthRecursive(e->GetNthChild(n), row, sel);
 		if (c) return c;
@@ -273,8 +369,8 @@ int			WED_PropertyTable::GetColCount(void)
 	if (!mVertical)
 		return mColNames.size();
 
-	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
-	ISelection * sel = SAFE_CAST(ISelection,mArchive->Fetch(mSelect));
+	WED_Thing * root = WED_GetWorld(mResolver);
+	ISelection * sel = WED_GetSelect(mResolver);
 	return CountRowsRecursive(root, sel);
 }
 
@@ -283,8 +379,8 @@ int			WED_PropertyTable::GetRowCount(void)
 	if (mVertical)
 		return mColNames.size();
 
-	WED_Thing * root = SAFE_CAST(WED_Thing,mArchive->Fetch(mEntity));
-	ISelection * sel = SAFE_CAST(ISelection,mArchive->Fetch(mSelect));
+	WED_Thing * root = WED_GetWorld(mResolver);
+	ISelection * sel = WED_GetSelect(mResolver);
 	
 	return CountRowsRecursive(root, sel);
 }
@@ -293,21 +389,16 @@ int			WED_PropertyTable::CountRowsRecursive(WED_Thing * e, ISelection * sel)
 {
 	if (e == NULL) return 0;
 	int total = 0;
+
+	int vis,kids,can_disclose,is_disclose;
+	GetFilterStatus(e,sel,vis,kids,can_disclose, is_disclose);
 	
-	int filtered = 1;
-	
-	if (!mSelOnly || !sel || sel->IsSelected(e))
-	if (mFilter.empty() || mFilter.count(e->GetClass()))
+	if (vis)
 	{
 		++total;
-		filtered = 0;
 	}
 	
-	int cc = e->CountChildren();
-	if (!mVertical)
-	if (!filtered)
-	if (mOpen[e->GetID()] == 0)	cc = 0;	
-	for (int c = 0; c < cc; ++c)
+	for (int c = 0; c < kids; ++c) 
 	{
 		total += CountRowsRecursive(e->GetNthChild(c), sel);
 	}
@@ -367,3 +458,61 @@ void	WED_PropertyTable::GetHeaderContent(
 	}
 }
 
+// These routines encapsulate the hash table that tracks the disclosure of various WED things.  We wrap it like this so we can
+// easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
+// the behavior.
+
+bool WED_PropertyTable::GetOpen(int id)
+{
+	return mOpen.count(id) == 0 || mOpen[id] != 0;
+}
+
+void WED_PropertyTable::ToggleOpen(int id)
+{
+	mOpen[id] = GetOpen(id) ? 0 : 1;
+}
+
+// This is the main "filter" function - it determines four properties at once about an entity:
+// 1. Can we actually see this entity?
+// 2. How many kids do we recurse (basically forcing this to 0 "hides" it.
+// 3. Is there UI to disclose this element?
+// 4. Is it disclosed now?
+// This routine assures some useful sync:
+// - It understands that vertical layouts (entities across the top) don't have tree behavior.
+// - It makes sure the children are not listed if the item is not disclosed.
+// - It makes sure that filtered items are inherently open (since we can't disclose them).
+// - Right now it is programmed not to iterate on the children of not-truly-composite GIS entities
+//  (Thus it hides the guts of a polygon).
+
+void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel, 
+									int&	visible, 
+									int&	recurse_children,
+									int&	can_disclose,
+									int&	is_disclose)
+{
+	visible = recurse_children = can_disclose = is_disclose = 0;
+	if (what == NULL) return;
+
+	int is_composite = 0;
+	visible = 0;
+	
+	IGISEntity * e = SAFE_CAST(IGISEntity, what);
+	if (e) is_composite = e->GetGISClass() == gis_Composite;
+
+	if (!mSelOnly || !sel || sel->IsSelected(what))
+	if (mFilter.empty() || mFilter.count(what->GetClass()))
+		visible = 1;
+
+	recurse_children = what->CountChildren();
+	
+	if (!visible || mVertical)
+	{	
+		if (!is_composite) recurse_children = 0;
+	}
+	else
+	{
+		can_disclose = is_composite;
+		is_disclose = can_disclose && GetOpen(what->GetID());
+		if (!is_disclose) recurse_children = 0;
+	}
+}

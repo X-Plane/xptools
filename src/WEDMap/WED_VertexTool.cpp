@@ -4,6 +4,7 @@
 #include "IOperation.h"
 #include "AssertUtils.h"
 #include "WED_Persistent.h"
+#include "WED_ToolUtils.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -34,11 +35,8 @@ WED_VertexTool::WED_VertexTool(
 				GUI_Pane *				host,
 				WED_MapZoomerNew *		zoomer,
 				IResolver *				resolver,
-				const char *			root_path,
-				const char *			selection_path,
 				int						sel_verts) :
-		WED_HandleToolBase(tool_name, host, zoomer, resolver, root_path, selection_path),				
-		mSelection(selection_path),
+		WED_HandleToolBase(tool_name, host, zoomer, resolver),				
 		mSelVerts(sel_verts)
 {
 	SetControlProvider(this);
@@ -50,16 +48,18 @@ WED_VertexTool::~WED_VertexTool()
 
 void	WED_VertexTool::BeginEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
-	DebugAssert(sel != NULL);
-	sel->StartOperation("Marquee Drag");
+	ISelection * sel = WED_GetSelect(GetResolver());
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	DebugAssert(sel != NULL && op != NULL);
+	op->StartOperation("Marquee Drag");
 }
 
 void	WED_VertexTool::EndEdit(void)
 {
-	IOperation * sel = SAFE_CAST(IOperation,GetResolver()->Resolver_Find(mSelection.c_str()));
-	DebugAssert(sel != NULL);
-	sel->CommitOperation();
+	ISelection * sel = WED_GetSelect(GetResolver());
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	DebugAssert(sel != NULL && op != NULL);
+	op->CommitOperation();
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -536,6 +536,15 @@ void	WED_VertexTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent)
 {
+	// Ben says: we tried always selecting INTO "fake" composite entities - that is, entities that are
+	// not technically composite but have a hierarchy.  So we would always selected polygon nodes and not
+	// the whole polygon.	
+	// BUT: atomic-or-container is better:
+	// 1.	if we select the whole poly, we can STILL drag each vertex, that works automagically as part of
+	//		the object-decomposition we do.
+	// 2.	it is weird to the user to marquee an object and NOT get the whole thing selected.
+	return ent_AtomicOrContainer;
+	/*
 	switch(ent->GetGISClass()) {
 	case gis_Composite:		return	ent_AtomicOrContainer;
 	case gis_Polygon:		return	ent_Container;
@@ -544,11 +553,12 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	case gis_Chain:			return	ent_Container;
 	default:				return	ent_Atomic;
 	}
+	*/
 }
 
 void WED_VertexTool::GetEntityInternal(vector<IGISEntity *>& e) const
 {
-	ISelection * sel = SAFE_CAST(ISelection,GetResolver()->Resolver_Find(mSelection.c_str()));
+	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
 	vector<IUnknown *>	iu;

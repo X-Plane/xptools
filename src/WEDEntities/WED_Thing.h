@@ -34,6 +34,7 @@ public:
 			WED_Thing *			GetNamedChild(const string& s) const;
 			WED_Thing *			GetParent(void) const;
 			void				SetParent(WED_Thing * parent, int nth);
+			int					GetMyPosition(void) const;
 
 			void				GetName(string& name) const;
 			void				SetName(const string& name);

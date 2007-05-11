@@ -17,3 +17,8 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 WED_Airport::~WED_Airport()
 {
 }
+
+void	WED_Airport::GetICAO(string& i) const
+{
+	i = icao.value;
+}

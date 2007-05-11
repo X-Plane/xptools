@@ -20,9 +20,7 @@ public:
 										const char *			tool_name,
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
-										IResolver *				resolver,
-										const char *			root_path,
-										const char *			selection_path);
+										IResolver *				resolver);
 										
 	virtual				~WED_HandleToolBase();
 	
@@ -68,7 +66,6 @@ private:
 	};
 
 		IControlHandles *		mHandles;
-		string					mRoot;
 		int						mCanSelect;
 		
 		// Variables for drag tracking

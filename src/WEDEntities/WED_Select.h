@@ -36,6 +36,8 @@ public:
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const;
 	virtual		IUnknown *		GetNthSelection(int n) const;
 
+	virtual		int				IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const;
+
 	// WED_Persistent
 	virtual		void 			ReadFrom(IOReader * reader);
 	virtual		void 			WriteTo(IOWriter * writer);

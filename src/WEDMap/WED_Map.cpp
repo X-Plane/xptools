@@ -1,15 +1,19 @@
 #include "WED_Map.h"
 #include "WED_MapLayer.h"
 #include "WED_MapToolNew.h"
+#include "WED_Entity.h"
 #include "IGIS.h"
+#include "WED_Airport.h"
+#include "WED_Thing.h"
 #include "ISelection.h"
 #include "mathutils.h"
+#include "WED_ToolUtils.h"
 #include "WED_Messages.h"
 #include "IResolver.h"
 #include "GUI_Fonts.h"
 
-WED_Map::WED_Map(IResolver * in_resolver, const char * in_sel, const char * in_gis_base) :
-	mResolver(in_resolver), mSel(in_sel), mGISBase(in_gis_base)
+WED_Map::WED_Map(IResolver * in_resolver) :
+	mResolver(in_resolver)
 {
 	mTool = NULL;
 	mIsToolClick = 0;
@@ -109,6 +113,17 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	float white[4] = { 1.0, 1.0, 1.0, 1.0 };
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 15, mTool ? mTool->GetToolName() : "");
 	
+	WED_Airport * apt = WED_GetCurrentAirport(mResolver);
+	string n = "(No current airport.)";
+	if (apt) 
+	{
+		string an, icao;
+		apt->GetName(an);
+		apt->GetICAO(icao);
+		n = an + string("(") + icao + string(")");
+	}
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 30, n.c_str());
+	
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
@@ -118,6 +133,9 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 {
 	if (!what->IntersectsBox(bounds)) return;
 	IGISComposite * c;
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
+	if (e && e->GetHidden()) return;
 	
 	layer->DrawEntityVisualization(current, what, g, GetSel() && GetSel()->IsSelected(what));
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
@@ -132,6 +150,10 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 {
 	if (!what->IntersectsBox(bounds))	return;
 	IGISComposite * c;
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
+	if (e && e->GetHidden()) return;
+
 	layer->DrawEntityStructure(current, what, g, GetSel() && GetSel()->IsSelected(what));
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
@@ -204,10 +226,10 @@ void		WED_Map::ReceiveMessage(
 
 IGISEntity *	WED_Map::GetGISBase()
 {
-	return SAFE_CAST(IGISEntity, mResolver->Resolver_Find(mGISBase.c_str()));
+	return dynamic_cast<IGISEntity *>(WED_GetWorld(mResolver));
 }
 
 ISelection *	WED_Map::GetSel()
 {
-	return SAFE_CAST(ISelection, mResolver->Resolver_Find(mSel.c_str()));
+	return WED_GetSelect(mResolver);
 }

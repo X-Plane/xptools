@@ -3,8 +3,12 @@
 #include "WED_Taxiway.h"
 #include "IResolver.h"
 #include "WED_AirportNode.h"
+#include "WED_ToolUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_AirportBoundary.h"
+#include "WED_Airport.h"
+
+const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking" };
 
 START_CASTING(WED_CreatePolygonTool)
 IMPLEMENTS_INTERFACE(IPropertyObject)
@@ -24,7 +28,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	1,				// curve allowed
 	0,				// curve required?
 	1,				// close allowed
-	tool != create_Marks),		// close required?
+	tool != create_Marks,		// close required?
+	1),				// req airport?
 	mType(tool),
 		mPavement(tool == create_Taxi ? this : NULL,"Pavement","","",Surface_Type,surf_Concrete),
 		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25),
@@ -53,7 +58,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	}
 
 	WED_AirportChain *	outer_ring = WED_AirportChain::CreateTyped(GetArchive());
-	IUnknown * host = GetResolver()->Resolver_Find("world");
+	WED_Airport * host = WED_GetCurrentAirport(GetResolver());
 	
 	static int n = 0;
 	++n;
@@ -63,7 +68,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		{
 			WED_Taxiway *		tway = WED_Taxiway::CreateTyped(GetArchive());	
 			outer_ring->SetParent(tway,0);	
-			tway->SetParent(SAFE_CAST(WED_Thing,host),0);
+			tway->SetParent(host, host->CountChildren());
 			
 			sprintf(buf,"New Taxiway %d",n);
 			tway->SetName(buf);
@@ -80,7 +85,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		{
 			WED_AirportBoundary *		bwy = WED_AirportBoundary::CreateTyped(GetArchive());	
 			outer_ring->SetParent(bwy,0);	
-			bwy->SetParent(SAFE_CAST(WED_Thing,host),0);
+			bwy->SetParent(host, host->CountChildren());
 			
 			sprintf(buf,"Airport Boundary %d",n);
 			bwy->SetName(buf);
@@ -91,7 +96,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		break;
 	case create_Marks:
 		{
-			outer_ring->SetParent(SAFE_CAST(WED_Thing,host),0);	
+			outer_ring->SetParent(host, host->CountChildren());
 			sprintf(buf,"Linear Feature %d",n);
 			outer_ring->SetName(buf);
 		}
@@ -115,4 +120,15 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	GetArchive()->CommitCommand();
 
+}
+
+const char *	WED_CreatePolygonTool::GetStatusText(void)
+{
+	static char buf[256];
+	if (WED_GetCurrentAirport(GetResolver()) == NULL)
+	{
+		sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
+		return buf;
+	}
+	return NULL;
 }

@@ -5,7 +5,9 @@
 #include "GUI_Listener.h"
 #include "GUI_SimpleTableGeometry.h"
 
+class	IUnknown;
 class	ISelection;
+class	IResolver;
 class	WED_Thing;
 class	WED_Archive;
 class	WED_Select;
@@ -15,8 +17,7 @@ class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGe
 public:
 
 					 WED_PropertyTable(
-									WED_Thing *				root,
-									WED_Select *			selection,
+									IResolver *				resolver,
 									const char **			col_names,
 									int *					def_col_widths,
 									int						vertical,
@@ -40,15 +41,31 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y);
-	virtual	void	SelectCell(
-						int							cell_x,
-						int							cell_y);
-	virtual	void	SelectCellToggle(
-						int							cell_x,
-						int							cell_y);
-	virtual	void	SelectCellExtend(
-						int							cell_x,
-						int							cell_y);
+	virtual void	SelectionStart(
+						int							clear);
+	virtual	int		SelectGetExtent(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y);
+	virtual	int		SelectGetLimits(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y);
+	virtual	void	SelectRange(
+						int							start_x,
+						int							start_y,
+						int							end_x,
+						int							end_y,
+						int							is_toggle);
+	virtual	void	SelectionEnd(void);
+
+	virtual	int		TabAdvance(
+						int&						io_x,
+						int&						io_y,
+						int							reverse,
+						GUI_CellContent&			the_content);
 
 	virtual	int		GetColCount(void);
 	virtual	int		GetRowCount(void);
@@ -69,11 +86,21 @@ private:
 			int				CountRowsRecursive(WED_Thing * thing, ISelection * sel);
 			int				GetThingDepth(WED_Thing * d);
 
+			bool			GetOpen(int id);
+			void			ToggleOpen(int id);
+			void			GetFilterStatus(WED_Thing * what, ISelection * sel, 
+									int&	visible, 
+									int&	recurse_children,
+									int&	can_disclose,
+									int&	is_disclose);
+
 	vector<string>				mColNames;
 
-	WED_Archive *				mArchive;
-	int							mEntity;	
-	int							mSelect;
+//	WED_Archive *				mArchive;
+//	int							mEntity;	
+//	int							mSelect;
+	IResolver *					mResolver;
+
 	
 	hash_map<int,int>			mOpen;
 	
@@ -81,6 +108,8 @@ private:
 	int							mDynamicCols;
 	int							mSelOnly;
 	set<string>					mFilter;
+	
+	vector<IUnknown *>			mSelSave;
 };
 
 

@@ -1,6 +1,7 @@
 #include "WED_CreateToolBase.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_GraphState.h"
+#include "WED_ToolUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -47,7 +48,8 @@ WED_CreateToolBase::WED_CreateToolBase(
 									int					can_curve,
 									int					must_curve,
 									int					can_close,
-									int					must_close) :
+									int					must_close,
+									int					requires_airport) :
 	WED_MapToolNew(tool_name, host,zoomer,resolver),
 	mArchive(archive),
 	mLastTime(-9.9e9),
@@ -58,7 +60,8 @@ WED_CreateToolBase::WED_CreateToolBase(
 	mCanClose(can_close),
 	mMustClose(must_close),
 	mCanCurve(can_curve),
-	mMustCurve(must_curve)
+	mMustCurve(must_curve),
+	mMustHaveApt(requires_airport)
 {
 }
 	
@@ -149,6 +152,8 @@ void		WED_CreateToolBase::DrawStructure(int inCurrent, GUI_GraphState * g)
 int			WED_CreateToolBase::HandleClickDown(int inX, int inY, int inButton)
 {
 	if (inButton > 0) return 0;
+	if (mMustHaveApt && WED_GetCurrentAirport(GetResolver()) == NULL) return 0;
+	
 	int now = GetHost()->GetTimeNow();
 	if (now-mLastTime < kDoubleClickTime &&
 		fabs(inX-mLastX) < kDoubleClickDist &&

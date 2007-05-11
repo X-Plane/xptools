@@ -28,7 +28,11 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 {
 	g->SetState(false,0,false,   false,true,false,false);
 	
-	glColor4f(selected ? 1 : 0, 1, selected ? 1 : 0, selected ? 1.0 : 0.75);
+	int locked = 0;
+	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
+	if (thing) locked = thing->GetLocked();
+	
+	glColor4f(selected ? 1 : (locked ? 0.5 : 0), (locked ? 0.5 : 1), selected ? 1 : (locked ? 0.5 : 0), selected ? 1.0 : 0.75);
 	
 	GISClass_t kind = entity->GetGISClass();
 

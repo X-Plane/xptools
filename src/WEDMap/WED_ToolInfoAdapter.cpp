@@ -134,22 +134,50 @@ void	WED_ToolInfoAdapter::ToggleDisclose(
 {
 }
 
-void	WED_ToolInfoAdapter::SelectCell(
-				int							cell_x,
-				int							cell_y)
+void	WED_ToolInfoAdapter::SelectionStart(
+						int							clear)
 {
 }
 
-void	WED_ToolInfoAdapter::SelectCellToggle(
-				int							cell_x,
-				int							cell_y)
+int		WED_ToolInfoAdapter::SelectGetExtent(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)
+{
+	return 0;
+}
+
+int		WED_ToolInfoAdapter::SelectGetLimits(
+						int&						low_x,
+						int&						low_y,
+						int&						high_x,
+						int&						high_y)
+{
+	return 0;
+}
+
+
+void	WED_ToolInfoAdapter::SelectRange(
+						int							start_x,
+						int							start_y,
+						int							end_x,
+						int							end_y,
+						int							is_toggle)
 {
 }
 
-void	WED_ToolInfoAdapter::SelectCellExtend(
-				int							cell_x,
-				int							cell_y)
+void	WED_ToolInfoAdapter::SelectionEnd(void)
 {
+}
+
+int		WED_ToolInfoAdapter::TabAdvance(
+						int&						io_x,
+						int&						io_y,
+						int							reverse,
+						GUI_CellContent&			the_content)
+{
+	return 0;
 }
 
 int			WED_ToolInfoAdapter::GetColCount(void)

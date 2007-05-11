@@ -4,8 +4,7 @@ const char * filters[] = { "WED_Runway", "WED_Taxiway" };
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
-						WED_Thing *				inRoot,
-						WED_Select *			inSelect,
+						IResolver *				resolver,
 						const char **			col_names,
 						int *					def_col_widths,
 						GUI_Broadcaster *		archive_broadcaster,
@@ -13,7 +12,7 @@ WED_PropertyPane::WED_PropertyPane(
 						const char **			filter) :
 	GUI_Commander(inCommander),
 	mTextTable(this),
-	mPropertyTable(inRoot, inSelect, col_names, def_col_widths, 
+	mPropertyTable(resolver, col_names, def_col_widths, 
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
 			pane_style == propPane_Selection,

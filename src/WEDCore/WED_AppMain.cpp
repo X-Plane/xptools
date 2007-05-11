@@ -31,6 +31,7 @@
 #include "DEMTables.h"
 #include "ObjTables.h"
 #include <CGAL/assertions.h>
+#include "GUI_Clipboard.h"
 #include "WED_Package.h"
 #include "WED_Application.h"
 
@@ -169,6 +170,7 @@ restore this
 //void	XGrindInit(string& outName)
 int main(int argc, const char * argv[])
 {
+	GUI_InitClipboard();
 	WED_Application	app;
 
 	WED_MakeMenus(&app);

@@ -155,6 +155,15 @@ void				WED_Thing::SetParent(WED_Thing * parent, int nth)
 	if (parent) parent->AddChild(GetID(),nth);
 }
 
+int			WED_Thing::GetMyPosition(void) const
+{
+	WED_Thing * parent = SAFE_CAST(WED_Thing, FetchPeer(parent_id));
+	if (!parent) return 0;
+	int n = 0;
+	vector<int>::iterator i = find(parent->child_id.begin(), parent->child_id.end(), this->GetID());
+	return distance(parent->child_id.begin(), i);
+}
+
 void				WED_Thing::AddChild(int id, int n)
 {
 	StateChanged();

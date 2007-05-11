@@ -15,7 +15,7 @@ class	ISelection;
 class	WED_Map : public GUI_Pane, public WED_MapZoomerNew, public GUI_Listener {
 public:
 		
-						 WED_Map(IResolver * in_resolver, const char * in_sel, const char * in_gis_base);
+						 WED_Map(IResolver * in_resolver);
 	virtual				~WED_Map();
 
 			void		SetTool(WED_MapToolNew * tool);
@@ -48,8 +48,6 @@ private:
 	vector<WED_MapLayer *>			mLayers;
 	WED_MapToolNew *				mTool;
 	IResolver *						mResolver;
-	string							mGISBase;
-	string							mSel;
 
 	int				mIsToolClick;
 	int				mIsMapDrag;

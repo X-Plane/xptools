@@ -15,8 +15,6 @@ public:
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver,
-										const char *			root_path,
-										const char *			selection_path,
 										int						sel_verts);						 
 	virtual				~WED_VertexTool();	
 
@@ -62,7 +60,6 @@ private:
 			void		GetEntityInternal(vector<IGISEntity *>& e) const;
 			void		AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const;
 			
-		string					mSelection;
 		int						mSelVerts;
 	
 };

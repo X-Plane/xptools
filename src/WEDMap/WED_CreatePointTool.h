@@ -49,7 +49,7 @@ public:
 	virtual				~WED_CreatePointTool();
 
 	// WED_MapToolNew
-	virtual	const char *		GetStatusText(void) { return NULL; }	
+	virtual	const char *		GetStatusText(void);
 //	virtual void *		QueryInterface(const char * class_id);
 
 protected:
