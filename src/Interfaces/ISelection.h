@@ -34,6 +34,8 @@ public:
 	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const=0;
 	virtual		IUnknown *		GetNthSelection(int n) const=0;
 
+	virtual		int				IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const=0;
+
 };
 
 #endif /* ISELECTION_H */
