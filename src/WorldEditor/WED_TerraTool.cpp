@@ -44,7 +44,8 @@ WED_TerraTool::WED_TerraTool(WED_MapZoomer * inZoomer) :
 	if (first_time)
 		PCSBSocket::StartupNetworking(true);
 	first_time = false;
-	mLocator = new AsyncImageLocator;
+	mPool = new AsyncConnectionPool(4,5);
+	mLocator = new AsyncImageLocator(mPool);
 	mHas = 0;
 	mRes = 4;
 	mData = "1";
@@ -73,7 +74,7 @@ void	WED_TerraTool::DrawFeedbackUnderlay(
 			long long h = hash_xy(x,y);
 			if (mImages.count(h) == 0)
 			{
-				mImages[h] = new AsyncImage(ResString(), mData.c_str(), mDomain, x, y);
+				mImages[h] = new AsyncImage(mPool, ResString(), mData.c_str(), mDomain, x, y);
 			}
 			
 			AsyncImage * i = mImages[h];
@@ -201,7 +202,7 @@ char *	WED_TerraTool::GetStatusText(void)
 	
 	static char buf[1024];
 	if (mHas)
-		sprintf(buf, "Domain=%d, X=%d-%d,Y=%d-%d Done=%d Pending=%d Bad=%d Total=%d Sockets=%d", mDomain, mX1,mX2,mY1,mY2, done, pending, bad, total, AsyncImage::TotalPending());
+		sprintf(buf, "Domain=%d, X=%d-%d,Y=%d-%d Done=%d Pending=%d Bad=%d Total=%d", mDomain, mX1,mX2,mY1,mY2, done, pending, bad, total);
 	else 
 		sprintf(buf, "No area established.");
 	return buf;

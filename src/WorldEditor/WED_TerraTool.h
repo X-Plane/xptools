@@ -27,6 +27,7 @@
 
 class AsyncImage;
 class AsyncImageLocator;
+class AsyncConnectionPool;
 
 class	WED_TerraTool : public WED_MapTool {
 public:
@@ -64,6 +65,7 @@ private:
 	int mX1, mX2, mY1, mY2, mDomain, mHas;
 
 	AsyncImageLocator *				mLocator;
+	AsyncConnectionPool *			mPool;
 	
 	string							mData;
 	int								mRes;
