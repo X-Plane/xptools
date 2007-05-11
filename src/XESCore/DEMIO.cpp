@@ -759,6 +759,35 @@ bail:
 //	magnitude-signed big-endian shorts for elevatoin
 //  4-byte checksum
 
+/*
+DTED:
+	HEADER INFO: 
+
+	fixed length 80
+	fixed length header - 648 ASCII CHARS! - dataset ID
+	accuracy: 2700 chars
+	
+	Data is then stored in vertical columns, each column goes S->N, columns go EW
+	
+	column header:
+	252, 3-byte block count 0-baseD, 2-byte lon count, 2 byte lat count
+		8 bytes of crap then
+	2N bytes of elev big endian 16 bit, signed magnitude!
+	4 byte checksum
+
+TOTAL: 3428 bytes header + 12 bytes per column
+
+offset 4: lon, 7 dig
+offset 11: west/east cap letter
+offset 12: lat, 7 dig padded
+offset 19: north south cap letter
+offset 47: num samples X? 4 dig padded
+offset 51: num samples Y? 4 dig padded
+offset 55: dted level char 0, 1, etc. possibly needed to determine east width- increases with lat - we need the table
+
+
+*/
+
 struct DTED_UHL_t {
 	char			cookie[3];					// Must be 'UHL'
 	char			version;					// Must be	'1'
