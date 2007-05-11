@@ -1,12 +1,7 @@
 #include "WED_GISLine.h"
 #include "AssertUtils.h"
 
-START_CASTING(WED_GISLine)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPointSequence)
-IMPLEMENTS_INTERFACE(IGISLine)
-INHERITS_FROM(WED_Entity)
-END_CASTING
+
 
 WED_GISLine::WED_GISLine(WED_Archive * parent, int id) :
 	WED_Entity(parent, id)

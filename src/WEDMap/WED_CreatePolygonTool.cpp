@@ -10,10 +10,7 @@
 
 const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking" };
 
-START_CASTING(WED_CreatePolygonTool)
-IMPLEMENTS_INTERFACE(IPropertyObject)
-BASE_CASE
-END_CASTING
+
 
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,

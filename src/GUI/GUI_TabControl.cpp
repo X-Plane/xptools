@@ -61,11 +61,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 		int tile_tab[4] = { 0, (n == GetValue()) ? 2 : 1, 1, 3 };
 		bounds[2] = bounds[0] + mWidths[n];
 		GUI_DrawStretched(state,"tabs.png",bounds,tile_tab);
-		bounds[0] = bounds[2];		
-		
-		#if !DEV
-		no hilite for tab?
-		#endif
+		bounds[0] = bounds[2];				
 	}
 	
 	float c[4] = { 0,0,0,1};

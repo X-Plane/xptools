@@ -5,13 +5,7 @@
 #include "GISUtils.h"
 #include "WED_Errors.h"
 
-START_CASTING(WED_GISPoint_HeadingWidthLength)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPoint)
-IMPLEMENTS_INTERFACE(IGISPoint_Heading)
-IMPLEMENTS_INTERFACE(IGISPoint_WidthLength)
-INHERITS_FROM(WED_GISPoint_Heading)
-END_CASTING
+
 
 WED_GISPoint_HeadingWidthLength::WED_GISPoint_HeadingWidthLength(WED_Archive * parent, int id) :
 	WED_GISPoint_Heading(parent, id),

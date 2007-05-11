@@ -165,13 +165,14 @@ pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef 
 	
 	GUI_DragMgr_Adapter	adapter(theDrag);
 
-	SInt16 modifiers;
-	GUI_DragOperation recommended = (allowed & kDragActionMove ) ? gui_Drag_Move : gui_Drag_None;
-
-	if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-	if (modifiers & optionKey) 
-	if (allowed & kDragActionCopy)
-		recommended = gui_Drag_Copy;
+	GUI_DragOperation recommended = allowed;	
+	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
+	{
+		SInt16 modifiers;
+		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
+		if (modifiers & optionKey) 
+			recommended = gui_Drag_Copy;
+	}
 	
 	switch(message) {
 	case kDragTrackingEnterWindow:
@@ -210,14 +211,15 @@ pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef
 	
 	GUI_DragMgr_Adapter	adapter(theDrag);
 	
-	SInt16 modifiers;
-	GUI_DragOperation recommended = (allowed & kDragActionMove ) ? gui_Drag_Move : gui_Drag_None;
-
-	if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-	if (modifiers & optionKey) 
-	if (allowed & kDragActionCopy)
-		recommended = gui_Drag_Copy;
-	
+	GUI_DragOperation recommended = allowed;	
+	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
+	{
+		SInt16 modifiers;
+		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
+		if (modifiers & optionKey) 
+			recommended = gui_Drag_Copy;
+	}
+		
 	allowed = OP_GUI2Mac(win->InternalDrop(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
 	SetDragDropAction(theDrag, allowed);
 	if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
@@ -706,7 +708,7 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	int w,h;
 	XWinGL::GetBounds(&w, &h);
-	TrackPopupCommands(menu,x,h-y,-1);
+	TrackPopupCommands((MenuRef) menu,x,h-y,-1);
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -719,5 +721,122 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	
 	int w,h;
 	XWinGL::GetBounds(&w, &h);
-	return TrackPopupCommands(popup_temp,x,h-y, current);	
+	return TrackPopupCommands((MenuRef) popup_temp,x,h-y, current);	
+}
+
+bool				GUI_Window::IsDragClick(int x, int y)
+{
+	#if APL
+	
+		Point	p;
+		int bounds[4];
+
+		SetPortWindowPort(mWindow);
+		GUI_Pane::GetBounds(bounds);
+
+		p.h = x;
+		p.v = (bounds[3] - bounds[1]) - y;
+		LocalToGlobal(&p);
+		return WaitMouseMoved(p);
+
+	#elif IBM
+		#error we need to do
+		DragDetect with our hwnd, and then RESET capture!  Yikes!
+			
+	#else
+		#error NOT IMLEMENTEd
+	#endif
+}
+
+GUI_DragOperation	GUI_Window::DoDragAndDrop(
+							int						x, 
+							int						y,
+							int						where[4],
+							GUI_DragOperation		operations,
+							int						type_count, 
+							GUI_ClipType			inTypes[], 
+							int						sizes[], 
+							const void *			ptrs[],
+							GUI_GetData_f			fetch_func,
+							void *					ref)
+{
+	#if APL
+	
+		int bounds[4];
+		SetPortWindowPort(mWindow);
+		GUI_Pane::GetBounds(bounds);
+		
+		Point	mac_click;
+		mac_click.h = x;
+		mac_click.v = (bounds[3] - bounds[1]) - y;
+		LocalToGlobal(&mac_click);
+		
+		Rect	the_item;
+		the_item.left = where[0];
+		the_item.right = where[2];
+		the_item.bottom = (bounds[3] - bounds[1]) - where[1];
+		the_item.top = (bounds[3] - bounds[1]) - where[3];
+		LocalToGlobal((Point *) &the_item.top);
+		LocalToGlobal((Point *) &the_item.bottom);
+		
+			EventRecord	fake;
+
+		fake.what = mouseDown;
+		fake.when = TickCount();
+		fake.where = mac_click;
+		fake.modifiers = GetCurrentKeyModifiers() & 0xFFFF;
+		
+			DragRef		drag;
+			
+			NewDrag(&drag);
+			
+			RgnHandle rgn = NewRgn();
+			RectRgn(rgn, &the_item);
+
+		SetDragAllowableActions(drag, OP_GUI2Mac(operations),1);
+		SetDragAllowableActions(drag, OP_GUI2Mac(operations),0);
+
+		GUI_LoadSimpleDrag(drag, type_count, inTypes, sizes, ptrs, fetch_func, ref);
+
+		DragItemRef	item_ref;
+		GetDragItemReferenceNumber(drag, 1, &item_ref);
+		SetDragItemBounds(drag, item_ref, &the_item);
+
+								
+		int success = TrackDrag(drag, &fake, rgn) == noErr;
+
+		DisposeRgn(rgn);
+		
+		if (success)
+		{
+			DragActions act;
+			GetDragDropAction(drag, &act);
+			GUI_DragOperation result = OP_Mac2GUI(act);
+			DisposeDrag(drag);
+			return result;
+		} else {
+			
+			DisposeDrag(drag);
+			return gui_Drag_None;
+
+		}
+		
+	
+	#elif IBM
+		GUI_DropSource	* drop_source = new GUI_DropSource;
+		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, get_data_f, ref);
+		DROPEFFECT effect;
+		
+		if (DoDragDrop(data, drop_source, OP_GUI2Win(operatoins), &effect) != DRAGDROP_S_DROP)
+			effect = DROPEFFECT_NONE;
+			
+		data->Release();
+		drop_source->Release();
+		
+		GUI_DragOperation result = OP_Win2GUI(effect);
+		
+		return result;
+	#else
+		#error not implemented
+	#endif
 }

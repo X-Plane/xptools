@@ -70,7 +70,7 @@ WED_PropertyPane::WED_PropertyPane(
 		mSide->SetTable(mTable);
 	}
 	
-	#if !DEV
+	#if BENTODO
 		this is real arbitrary - would be nice if we did not have to just KNOW all the braodcaster reelatoinships outside the impls
 	#endif
 	

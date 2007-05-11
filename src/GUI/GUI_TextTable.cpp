@@ -13,11 +13,11 @@
 	#include <GL/gl.h>
 #endif
 
-#if !DEV
-	todo
-	editing: popups, check boxes
-	graphical display of check boxes
+#if BENTODO
 	numeric precision control?
+#endif
+
+#if OPTIMIZE
 	provider to provide content IN BULK?
 #endif
 

@@ -1,23 +1,6 @@
 #ifndef GUI_DEFS_H
 #define GUI_DEFS_H
 
-#if !DEV
-get this the hell out of here
-#endif
-
-#if APL
-typedef struct OpaqueMenuRef*           MenuRef;
-typedef MenuRef                         MenuHandle;
-#endif
-
-
-#if APL
-#define GUI_Menu MenuRef
-#elif IBM
-#define GUI_Menu HMENU
-#endif
-
-
 /***************************************************************************
  * KEY FLAGS
  ***************************************************************************/
@@ -174,28 +157,47 @@ typedef int GUI_KeyFlags;
 #define GUI_VK_NUMPAD_ENT   0xBC
 #define GUI_VK_NUMPAD_EQ    0xBD
 
-#if !DEV
-doc this
-#endif
+
+/***************************************************************************
+ * MENU DEFINES
+ ***************************************************************************/
+typedef void *	GUI_Menu;
 
 struct	GUI_MenuItem_t {
-	const char *	name;
-	char			key;
-	GUI_KeyFlags	flags;
-	int				checked;
-	int				cmd;
+	const char *	name;			// Item Name
+	char			key;			// Menu Key - note that this is ASCII, not a vkey code
+	GUI_KeyFlags	flags;			// Modifier Flags
+	int				checked;		// Checked
+	int				cmd;			// Commadn enum for this menu item
 };
 
+/***************************************************************************
+ * KEY CLIPBOARD
+ ***************************************************************************/
+
+// GUI clipboard type.  Declared here to avoid having to grab GUI_Clipboard.h all
+// over the place.
 typedef	int	GUI_ClipType;
+
+// Free function - used to deallocate memory.
 typedef	void			(* GUI_FreeFunc_f)(const void * mem, void * ref);
+
+// GUI data fetcher function.  This routine is passed around as a way of getting data
+// for clipboard/drag and drop later.  
+// Passed in: clip_type.
+// Returned: set out_start and out_end to the range of memory for the data, or set
+// out_start to a NULL ptr on failure.  
+// Return: if the memory needs to be deallocated, return a free func that can be used
+// on the start ptr.
 typedef GUI_FreeFunc_f	(* GUI_GetData_f)(GUI_ClipType clip_type, const void ** out_start, const void ** out_end, void * ref);
 
+// Drag & Drop Operation Enums.
+// These defines the kind of drag & drop gestures we support - copy, or move.  See GUI_Pane for how they are used.
 enum {
 	gui_Drag_None	=	0,
 	gui_Drag_Move	=	1,
 	gui_Drag_Copy	=	2,
 };
 typedef int GUI_DragOperation;
-
 
 #endif

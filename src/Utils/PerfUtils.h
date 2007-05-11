@@ -41,10 +41,8 @@ struct StProfileInit {
 
 #if APL
 	#if __MACH__
-//		#include <Carbon/Carbon.h>
-	#if !DEV 
-	fixt his
-	#endif
+		#define __DEBUGGING__
+		#include <Carbon/Carbon.h>
 	#else
 		#include <Timer.h>
 	#endif
@@ -87,7 +85,7 @@ public:
 	
 	inline	void Start(void)
 	{
-#if APL && 0
+#if APL
 		::Microseconds((UnsignedWide *) &mStart);
 #else	
 		mStart = clock();

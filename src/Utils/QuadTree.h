@@ -47,7 +47,7 @@
 
 */
 
-#if !DEV
+#if BENTODO
 bulk remove?
 put in some assertions, etc.
 #endif

@@ -2,9 +2,6 @@
 #include "WED_EnumSystem.h"
 
 DEFINE_PERSISTENT(WED_Helipad)
-START_CASTING(WED_Helipad)
-INHERITS_FROM(WED_GISPoint_HeadingWidthLength)
-END_CASTING
 
 WED_Helipad::WED_Helipad(WED_Archive * a, int i) : WED_GISPoint_HeadingWidthLength(a,i),
 

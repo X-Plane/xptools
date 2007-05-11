@@ -13,11 +13,7 @@
 	#include <gl/gl.h>
 #endif
 
-START_CASTING(WED_ImageOverlayTool)
-IMPLEMENTS_INTERFACE(IControlHandles)
-IMPLEMENTS_INTERFACE(IPropertyObject)
-BASE_CASE
-END_CASTING
+
 
 // Handles:
 // 2-1

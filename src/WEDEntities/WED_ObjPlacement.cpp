@@ -3,6 +3,8 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
+DEFINE_PERSISTENT(WED_ObjPlacement)
+
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int id) : WED_GISPoint_Heading(a,id)
 {
 	model_id = 0;
@@ -12,10 +14,6 @@ WED_ObjPlacement::~WED_ObjPlacement()
 {
 }
 
-DEFINE_PERSISTENT(WED_ObjPlacement)
-START_CASTING(WED_ObjPlacement)
-INHERITS_FROM(WED_GISPoint_Heading)
-END_CASTING
 
 
 void 			WED_ObjPlacement::ReadFrom(IOReader * reader)

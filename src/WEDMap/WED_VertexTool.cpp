@@ -23,11 +23,7 @@ const double kRunwayBlend3[4] = { 0.25,		0.0,	0.25,	0.0		};
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
 
-START_CASTING(WED_VertexTool)
-IMPLEMENTS_INTERFACE(IControlHandles)
-IMPLEMENTS_INTERFACE(IPropertyObject)
-BASE_CASE
-END_CASTING												\
+
 
 
 WED_VertexTool::WED_VertexTool(
@@ -195,9 +191,6 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 				p += dir * 15.0;
 				p = GetZoomer()->PixelToLL(p);				
 			}
-			#if !DEV
-				sync with structure?  mmm..not sure.
-			#endif
 			return;
 		}
 		break;
@@ -436,9 +429,6 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 				dir = Vector2(me,p);
 				dir.normalize();
 				pt_h->SetHeading(VectorDegs2NorthHeading(me,me,dir));
-				#if !DEV
-					hrm - since we work RELATIVE to our last mouse positoin, if the user "slops" way out on the lnie, small moves STILL have a big impact.  Hrm.
-				#endif
 			}
 			return;
 		}

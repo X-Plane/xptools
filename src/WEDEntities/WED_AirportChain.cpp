@@ -5,9 +5,6 @@
 #include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_AirportChain)
-START_CASTING(WED_AirportChain)
-INHERITS_FROM(WED_GISChain)
-END_CASTING
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0)

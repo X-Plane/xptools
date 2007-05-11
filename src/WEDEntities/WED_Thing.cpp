@@ -3,16 +3,6 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
-START_CASTING(WED_Thing)
-IMPLEMENTS_INTERFACE(IPropertyObject)
-IMPLEMENTS_INTERFACE(IArray)
-IMPLEMENTS_INTERFACE(IDirectory)
-IMPLEMENTS_INTERFACE(IOperation)
-IMPLEMENTS_INTERFACE(WED_Persistent)
-BASE_CASE
-END_CASTING
-
-
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
 	name(this,"Name","WED_things", "name","unnamed entity")	

@@ -577,24 +577,8 @@ HRESULT GUI_DropSource::GiveFeedback(DWORD dwEffect)
 
 bool				GUI_Pane::IsDragClick(int x, int y)
 {
-	#if APL
-	Point	p;
-	GUI_Pane * top = this;
-	while (top->GetParent()) top = top->GetParent();
-	int bounds[4];
-	top->GetBounds(bounds);
-	p.h = x;
-	p.v = (bounds[3] - bounds[1]) - y;
-	LocalToGlobal(&p);
-	return WaitMouseMoved(	p);
-
-	#elif IBM
-		#error we need to do
-		DragDetect with our hwnd, and then RESET capture!  Yikes!
-			
-	#else
-		#error NOT IMLEMENTEd
-	#endif
+	if (mParent)	return mParent->IsDragClick(x,y);
+	else			return false;
 }
 
 GUI_DragOperation	GUI_Pane::DoDragAndDrop(
@@ -609,88 +593,6 @@ GUI_DragOperation	GUI_Pane::DoDragAndDrop(
 							GUI_GetData_f			fetch_func,
 							void *					ref)
 {
-	#if APL
-	
-		#if !DEV 
-		this is a huge hack!
-		#endif
-		
-		GUI_Pane * parent = this;
-		while (parent->GetParent() != NULL) parent = parent->GetParent();
-		int bounds[4];
-		parent->GetBounds(bounds);
-		
-		Point	mac_click;
-		mac_click.h = x;
-		mac_click.v = (bounds[3] - bounds[1]) - y;
-		LocalToGlobal(&mac_click);
-		
-		Rect	the_item;
-		the_item.left = where[0];
-		the_item.right = where[2];
-		the_item.bottom = (bounds[3] - bounds[1]) - where[1];
-		the_item.top = (bounds[3] - bounds[1]) - where[3];
-		LocalToGlobal((Point *) &the_item.top);
-		LocalToGlobal((Point *) &the_item.bottom);
-		
-			EventRecord	fake;
-
-		fake.what = mouseDown;
-		fake.when = TickCount();
-		fake.where = mac_click;
-		fake.modifiers = GetCurrentKeyModifiers() & 0xFFFF;
-		
-			DragRef		drag;
-			
-			NewDrag(&drag);
-			
-			RgnHandle rgn = NewRgn();
-			RectRgn(rgn, &the_item);
-
-		SetDragAllowableActions(drag, OP_GUI2Mac(operations),1);
-		SetDragAllowableActions(drag, OP_GUI2Mac(operations),0);
-
-		GUI_LoadSimpleDrag(drag, type_count, inTypes, sizes, ptrs, fetch_func, ref);
-
-		DragItemRef	item_ref;
-		GetDragItemReferenceNumber(drag, 1, &item_ref);
-		SetDragItemBounds(drag, item_ref, &the_item);
-
-								
-		int success = TrackDrag(drag, &fake, rgn) == noErr;
-
-		DisposeRgn(rgn);
-		
-		if (success)
-		{
-			DragActions act;
-			GetDragDropAction(drag, &act);
-			GUI_DragOperation result = OP_Mac2GUI(act);
-			DisposeDrag(drag);
-			return result;
-		} else {
-			
-			DisposeDrag(drag);
-			return gui_Drag_None;
-
-		}
-		
-	
-	#elif IBM
-		GUI_DropSource	* drop_source = new GUI_DropSource;
-		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, get_data_f, ref);
-		DROPEFFECT effect;
-		
-		if (DoDragDrop(data, drop_source, OP_GUI2Win(operatoins), &effect) != DRAGDROP_S_DROP)
-			effect = DROPEFFECT_NONE;
-			
-		data->Release();
-		drop_source->Release();
-		
-		GUI_DragOperation result = OP_Win2GUI(effect);
-		
-		return result;
-	#else
-		#error not implemented
-	#endif
+	if (mParent)	return	mParent->DoDragAndDrop(x,y,where,operations,type_count,inTypes,sizes,ptrs,fetch_func,ref);
+	else			return	gui_Drag_None;
 }

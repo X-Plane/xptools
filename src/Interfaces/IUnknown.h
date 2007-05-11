@@ -29,28 +29,12 @@
 	
 */
 
-#if !DEV
-	clean this mess up!
-#endif
-
 class	IUnknown {
 public:
 
 	virtual void			__Dummy(void) { }
-//	virtual void *			QueryInterface(const char * class_id)=0;
 
 };
-
-// Safe cast macro based on safe-cast mechanism
-/*
-inline void * __SAFE_CAST(IUnknown * interface, const char * class_id)
-{
-	// We use an inline function to avoid double-evaluating our interface var, which might
-	// come from an expensive expression in the macro!
-	if (interface) return interface->QueryInterface(class_id);
-	return NULL;
-}
-*/
 
 template <class T>
 inline T * __SAFE_CAST(IUnknown * inf)
@@ -59,7 +43,6 @@ inline T * __SAFE_CAST(IUnknown * inf)
 	return dynamic_cast<T*>(inf);
 }
 
-//#define SAFE_CAST(__Class,__Var) reinterpret_cast<__Class *>(__SAFE_CAST(__Var,#__Class))
 #define SAFE_CAST(__Class,__Var) __SAFE_CAST<__Class>(__Var)
 
 #endif

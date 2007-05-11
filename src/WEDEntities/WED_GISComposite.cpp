@@ -1,10 +1,6 @@
 #include "WED_GISComposite.h"
 
-START_CASTING(WED_GISComposite)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISComposite)
-INHERITS_FROM(WED_Entity)
-END_CASTING
+
 
 WED_GISComposite::WED_GISComposite(WED_Archive * a, int i) : WED_Entity(a,i)
 {

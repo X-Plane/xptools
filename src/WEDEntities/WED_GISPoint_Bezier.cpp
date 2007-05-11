@@ -3,12 +3,7 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
-START_CASTING(WED_GISPoint_Bezier)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPoint)
-IMPLEMENTS_INTERFACE(IGISPoint_Bezier)
-INHERITS_FROM(WED_GISPoint)
-END_CASTING
+
 
 // NOTE: control lat/lon are positive vectors FROM the origin pt!
 

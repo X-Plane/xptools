@@ -75,7 +75,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 
 	HICommand 	cmd;
 	OSStatus	status;
-	GUI_Menu	amenu;
+	MenuRef		amenu;
 
 	UInt32	clss = ::GetEventClass(inEvent);	
 	UInt32	kind = ::GetEventKind(inEvent);
@@ -254,7 +254,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 
 #if APL
-	GUI_Menu	new_menu;
+	MenuRef	new_menu;
 	::CreateNewMenu(gIDs++, kMenuAttrAutoDisable, &new_menu);
 	if (parent != GetPopupContainer())
 		::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
@@ -267,7 +267,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	
 	if (new_menu && parent != GetPopupContainer())
 	{
-		::SetMenuItemHierarchicalID(parent, parentItem + 1, ::GetMenuID(new_menu));
+		::SetMenuItemHierarchicalID((MenuRef) parent, parentItem + 1, ::GetMenuID(new_menu));
 	}
 
 	RebuildMenu(new_menu, items);
@@ -305,8 +305,8 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[])
 {
 	#if APL
-		if (CountMenuItems(new_menu) > 0)
-			DeleteMenuItems(new_menu,1,CountMenuItems(new_menu));
+		if (CountMenuItems((MenuRef) new_menu) > 0)
+			DeleteMenuItems((MenuRef) new_menu,1,CountMenuItems((MenuRef) new_menu));
 
 		int n = 0;
 		while (items[n].name)
@@ -314,25 +314,25 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			string	itemname(items[n].name);
 			NukeAmpersand(itemname);
 			CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
-			::AppendMenuItemTextWithCFString(new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
+			::AppendMenuItemTextWithCFString((MenuRef) new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
 			CFRelease(cfstr);
 			
 			switch(items[n].key) {
-			case GUI_KEY_UP:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuUpArrowGlyph);		break;
-			case GUI_KEY_DOWN:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuDownArrowGlyph);		break;
-			case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuRightArrowGlyph);	break;
-			case GUI_KEY_LEFT:		SetMenuItemKeyGlyph(new_menu,n+1, kMenuLeftArrowGlyph);		break;
-			case GUI_KEY_DELETE:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuDeleteLeftGlyph);	break;
-			case GUI_KEY_RETURN:	SetMenuItemKeyGlyph(new_menu,n+1, kMenuReturnGlyph);		break;
-			default:				::SetItemCmd(new_menu, n+1, items[n].key);					break;
+			case GUI_KEY_UP:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuUpArrowGlyph);		break;
+			case GUI_KEY_DOWN:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDownArrowGlyph);	break;
+			case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuRightArrowGlyph);	break;
+			case GUI_KEY_LEFT:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuLeftArrowGlyph);	break;
+			case GUI_KEY_DELETE:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDeleteLeftGlyph);	break;
+			case GUI_KEY_RETURN:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuReturnGlyph);		break;
+			default:				::SetItemCmd((MenuRef) new_menu, n+1, items[n].key);				break;
 			}
 
-			::SetMenuItemModifiers(new_menu, n+1,
+			::SetMenuItemModifiers((MenuRef) new_menu, n+1,
 					((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
 					((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
 					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
 
-			::CheckMenuItem(new_menu,n+1,items[n].checked);
+			::CheckMenuItem((MenuRef) new_menu,n+1,items[n].checked);
 					
 			++n;
 		}	

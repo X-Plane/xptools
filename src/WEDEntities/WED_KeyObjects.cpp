@@ -4,10 +4,6 @@
 #include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_KeyObjects)
-START_CASTING(WED_KeyObjects)
-IMPLEMENTS_INTERFACE(IDirectoryEdit)
-INHERITS_FROM(WED_Thing)
-END_CASTING
 
 WED_KeyObjects::WED_KeyObjects(WED_Archive * a, int id) : WED_Thing(a,id)
 {

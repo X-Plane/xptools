@@ -91,7 +91,7 @@ void		GUI_GraphState::EnableDepth(bool read, bool write)
 
 void		GUI_GraphState::BindTex(int id, int unit)
 {
-	#if !DEV
+	#if OPTIMIZE
 		eliminate dupe bindings?
 	#endif
 	glActiveTextureARB(GL_TEXTURE0_ARB + unit);

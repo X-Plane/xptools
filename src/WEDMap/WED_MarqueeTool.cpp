@@ -4,16 +4,6 @@
 #include "WED_ToolUtils.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
-#if !DEV
-casting macros in wed persistent ? hrm
-#endif
-#include "WED_Persistent.h"
-
-START_CASTING(WED_MarqueeTool)
-IMPLEMENTS_INTERFACE(IControlHandles)
-IMPLEMENTS_INTERFACE(IPropertyObject)
-BASE_CASE
-END_CASTING												\
 
 //	HANDLES			LINKS
 // 2-3-4			+2-3+

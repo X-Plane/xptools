@@ -3,9 +3,6 @@
 #include "GISUtils.h"
 
 DEFINE_PERSISTENT(WED_Runway)
-START_CASTING(WED_Runway)
-INHERITS_FROM(WED_GISLine_Width)
-END_CASTING
 
 WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	surface			(this,"Surface",					"WED_runway",	"surface",				Surface_Type,	surf_Concrete),

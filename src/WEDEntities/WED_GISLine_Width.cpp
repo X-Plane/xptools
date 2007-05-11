@@ -2,13 +2,7 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 
-START_CASTING(WED_GISLine_Width)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPointSequence)
-IMPLEMENTS_INTERFACE(IGISLine)
-IMPLEMENTS_INTERFACE(IGISLine_Width)
-INHERITS_FROM(WED_GISLine)
-END_CASTING
+
 
 WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) : 
 	WED_GISLine(parent, id),

@@ -5,11 +5,6 @@
 #include "WED_Messages.h"
 
 DEFINE_PERSISTENT(WED_Select)
-START_CASTING(WED_Select)
-IMPLEMENTS_INTERFACE(ISelection)
-INHERITS_FROM(WED_Thing)
-END_CASTING
-
 
 WED_Select::WED_Select(WED_Archive * parent, int id) :
 	WED_Thing(parent, id)

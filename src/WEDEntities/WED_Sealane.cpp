@@ -1,9 +1,6 @@
 #include "WED_Sealane.h"
 
 DEFINE_PERSISTENT(WED_Sealane)
-START_CASTING(WED_Sealane)
-INHERITS_FROM(WED_GISLine_Width)
-END_CASTING
 
 WED_Sealane::WED_Sealane(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	buoys(this,"Show Buoys", "WED_sealane","buoys",1),

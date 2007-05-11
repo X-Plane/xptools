@@ -1,10 +1,6 @@
 #include "WED_GISChain.h"
 
-START_CASTING(WED_GISChain)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPointSequence)
-INHERITS_FROM(WED_Entity)
-END_CASTING
+
 
 WED_GISChain::WED_GISChain(WED_Archive * parent, int id) :
 	WED_Entity(parent, id)

@@ -3,12 +3,7 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
-START_CASTING(WED_GISPoint_Heading)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPoint)
-IMPLEMENTS_INTERFACE(IGISPoint_Heading)
-INHERITS_FROM(WED_GISPoint)
-END_CASTING
+
 
 
 WED_GISPoint_Heading::WED_GISPoint_Heading(WED_Archive * parent, int id) :

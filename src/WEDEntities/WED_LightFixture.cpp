@@ -2,9 +2,6 @@
 #include "WED_EnumSystem.h"
 
 DEFINE_PERSISTENT(WED_LightFixture)
-START_CASTING(WED_LightFixture)
-INHERITS_FROM(WED_GISPoint_Heading)
-END_CASTING
 
 WED_LightFixture::WED_LightFixture(WED_Archive * a, int i) : WED_GISPoint_Heading(a, i),
 	light_type(this, "Type", "WED_lightfixture", "kind", Light_Fixt, light_VASI),

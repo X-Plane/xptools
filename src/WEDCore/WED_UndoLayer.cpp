@@ -25,12 +25,10 @@ void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 	{
 		// There is only one possible "rewrite" - if we are creating and knew
 		// about the obj - it better have been destroyed!  In this case 
-		// destroy + recreate = change
+		// destroy + recreate = change.  But keep the original data, the earliest
+		// not this recent data.
 		Assert(iter->second.op == op_Destroyed);		
 		iter->second.op = op_Changed;
-//		delete iter->second.buffer;
-//		iter->second.buffer = new WED_Buffer;		
-//		inObject->WriteTo(iter->second.buffer);	
 		
 	} else {	
 		// Brand new object
@@ -52,19 +50,9 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 		// Object is changed - it must not have been destroyed before!
 		Assert(iter->second.op != op_Destroyed);
 		// Create + change = create, change + change = change, so
-		// no change in the op, just a change in the data.
-		if (iter->second.op == op_Created)
-		{
-			// Creation - nothing to do - we don't save state for newly
-			// created objects.
-		} else {
-		#if !DEV
-			doc why this logic is wrong - hint -- we only need to save the FIRST change not the most RECENT one!
-		#endif
-//			delete iter->second.buffer;
-//			iter->second.buffer = new WED_Buffer;		
-//			inObject->WriteTo(iter->second.buffer);	
-		}
+		// no change in the op.  Not even a change is needed, because we
+		// want to store the original data, not this latest change.
+
 	} else {
 		// First time changed
 		ObjInfo	info;
@@ -92,10 +80,9 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 			// and is unneeded in the bigger scheme of things.
 			mObjects.erase(iter);			
 		} else {
+			// Note that we don't need to save the data - the original 
+			// change op already saved it!
 			iter->second.op = op_Destroyed;
-//			delete iter->second.buffer;
-//			iter->second.buffer = new WED_Buffer;		
-//			inObject->WriteTo(iter->second.buffer);	
 		}
 	} else {
 		// First time changed

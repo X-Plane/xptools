@@ -110,13 +110,6 @@ const char * __Class::GetClass(void) const						\
 	return #__Class;											\
 }
 
-#define START_CASTING(__Class)
-#define IMPLEMENTS_INTERFACE(CLASS)
-#define INHERITS_FROM(CLASS)
-#define BASE_CASE	
-#define END_CASTING
-
-
 
 class	WED_Persistent : public virtual IUnknown {
 public:

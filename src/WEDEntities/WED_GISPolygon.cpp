@@ -1,10 +1,6 @@
 #include "WED_GISPolygon.h"
 
-START_CASTING(WED_GISPolygon)
-IMPLEMENTS_INTERFACE(IGISEntity)
-IMPLEMENTS_INTERFACE(IGISPolygon)
-INHERITS_FROM(WED_Entity)
-END_CASTING
+
 
 class Bezier_Seq_Iterator {
 public:

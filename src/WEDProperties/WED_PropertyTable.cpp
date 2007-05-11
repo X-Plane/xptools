@@ -201,7 +201,7 @@ int		WED_PropertyTable::SelectGetExtent(
 						int&						high_x,
 						int&						high_y)
 {
-	#if !DEV
+	#if OPTIMIZE
 		speed of this sux
 	#endif
 	ISelection * s = WED_GetSelect(mResolver);
@@ -253,13 +253,13 @@ void	WED_PropertyTable::SelectRange(
 	s->Clear();
 	for (vector<IUnknown *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 		s->Insert(*u);
-	#if !DEV
+	#if OPTIMIZE
 		provide accelerated sel-save-restore ops!
 	#endif
 
 	for (int n = (mVertical ? start_x : start_y); n <= (mVertical ? end_x : end_y); ++n)
 	{
-		#if !DEV
+		#if OPTIMIZE
 			for loop is n-squared perf - fix this!
 		#endif
 		WED_Thing * t = FetchNth(n);
