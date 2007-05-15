@@ -29,18 +29,6 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
  * MAIN PLUGIN
  ***************************************************************************************************/
 
-#if DEV
-to doc
-	export prefix for textuers and tex handling
-	select in vertex mode
-	precision fixed
-	export by tex
-	lit tex handling
-	export paths
-	uv remapper
-	reload texes
-#endif	
-
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 {
 	prefs_init();
@@ -63,7 +51,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_register_file_importer("OBJ8Load", ".obj", "X-Plane 8 Object File", do_obj8_load, "X-Plane 7/8 Object File Import Plugin"); 
 
 //	ac_register_file_exporter("DSFSave", ".dsf", "X-Plane DSF (scenery) File", do_dsf_save, "X-Plane 8 DSF Export Plugin"); 
-	ac_register_file_importer("DSFLoad", ".dsf", "X-Plane DSF (scenery) File", do_dsf_load, "X-Plane 8 DSF Import Plugin"); 
+//	ac_register_file_importer("DSFLoad", ".dsf", "X-Plane DSF (scenery) File", do_dsf_load, "X-Plane 8 DSF Import Plugin"); 
 
 //	ac_register_file_exporter("XAutoCarSave", ".car", "X-Auto Car File", do_car_save, "X-Auto Car File Export Plugin"); 
 //	ac_register_file_importer("XAutoCarLoad", ".car", "X-Auto Car File", do_car_load, "X-Auto Car File Import Plugin"); 
@@ -102,6 +90,6 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
-    return("OBJ8 Import/Export Plugin v3.0a1 - by Ben Supnik");
+    return("OBJ8 Import/Export Plugin v3.0b2 - by Ben Supnik");
 }
 
