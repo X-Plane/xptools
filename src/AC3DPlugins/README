@@ -12,11 +12,19 @@ CHANGE HISTORY:
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 
-Version 3.0
+Version 3.0b2 5/15/07
+	- Prefix can be provided for texture export.
+	- Workspace can be epxorted by texture.
+	- Textures can be reloaded.
+	- Bug fix: texture paths fixed.
+	- Bug fix: object properties can be edited in vertex mode.
+	- Bug fix: precision of numeric fields limited.
+	- Bug fix: TEXTURE_LIT not written if there is no _LIT.png on disk.
+	- Bug fix: show/hide animation can be previewed.
+Version 3.0b1 8/15/06
 	- Total rewrite of how x-plane properties are managed
 	- Previev of animation
 	- Support for materials, smoke, named lights, custom lights, show/hide animation
-
 Version 2.1b2 2/15/06
 	- Fixed texture repeat-offset export (was ignored since 2.0).
 Version 2.1b1 1/20/06
@@ -106,26 +114,25 @@ master format for editing, rather just as a final output format.
 TEXTURES AND AC3D
 -------------------------------------------------------------------------------
 
-Object 7 and 8 files can have only one texture; make sure you use the same texture
-for every object in your model.  The easiest way to do this is to select all
-objects via the Object Hierarchy window (click on 'World') and then pick your
-texture from the Object->Texture submenu.
+Object 7 and 8 files can have only one texture; make sure you use the same 
+texture for every object in your model.  The easiest way to do this is to 
+select all objects via the Object Hierarchy window (click on 'World') and then
+pick your texture from the Object->Texture submenu.
 
 AC3D requires a plugin to read .png files; it can read .bmp files by default.
 
 When an object file is loaded, the texture will be loaded if it is in the same
 directory as the .obj file itself.
 
-Textures are always saved without any relative path information.  For example,
-if the texture file for my object is "jetway.bmp", only "jetway" is written to
-the OBJ7 file, and the texture must be directly in the "Custom Object Textures"
-folder within your custom scenery package.  If you want to specify a texture
-in a subfolder for X-Plane, you will have to edit the beginning of your OBJ7
-file manually with a text editor; AC3D cannot write out textures in sub-
-directories automatically.
+Textures are normally saved without any relative path information.  For 
+example, if the texture file for my object is "jetway.bmp", only "jetway" is 
+written to the OBJ7 file, and the texture must be in the same folder as the 
+object (X-Plane 8) or the "Custom Object Textures" folder (X-Plane 7).
 
-For X-Plane 8 users the recommended practice is to keep your OBJ and texture
-file in the same directory, so this should not present a problem.
+If you want to specify a texture in a subfolder for X-Plane, you can use the
+"texture export prefix" setting (in the X-Plane export preferences).  You can
+use a prefix that includes slashes to specify that textures belong in 
+subfolders.
 
 For X-Plane 7 users: Because this texture handling is different from X-plane's, 
 you may want to keep textures with your objects until you are done editing your 
@@ -383,10 +390,9 @@ Anchor
 	
 Dataref
 
-	For any type of animation, this is the dataref
-	to link to.  NOTE: if you want to use your own datarefs, you must
-	edit the copy of datarefs.txt that can be found in the ac3d plugins
-	folder.
+	For any type of animation, this is the dataref to link to.  If you
+	type part of a dataref name into the dataref combo-box, you can search
+	among all datarefs for matches.
 	
 You can click the "go" button next to the value 0 and value 1 fields to change
 the current preview of your model to this time.
@@ -666,6 +672,22 @@ If you have a complex model like an airport that is exported as multiple OBJs,
 use this to export the whole thing quickly.
 
 -------------------------------------------------------------------------------
+BY-TEXTURE EXPORT
+-------------------------------------------------------------------------------
+
+This command exports one or more objects based on the textures used, allowing
+the entire workspace to be exported with a minimal number of objects.  
+Geometry that has no texture or does not require a texture (lines, lights, 
+panel-textured objects) are exported to the first object that is emitted.
+
+-------------------------------------------------------------------------------
+RELOAD TEXTURES
+-------------------------------------------------------------------------------
+
+The reload textures command will reload all PNG files, showing any changes that
+have been made on disk.
+
+-------------------------------------------------------------------------------
 X-PLANE EXPORT SETTINGS
 -------------------------------------------------------------------------------
 
@@ -704,6 +726,10 @@ Bulk Export Prefix
 	You can use a partial file path to export into a directory.  For example
 	preview/ is a valid prefix that would cause everything to be saved in
 	a subdirectory called preview.
+	
+Texture Export Prefix
+
+	This stirng is prefixed to the names of any textures that are output.
 
 -------------------------------------------------------------------------------
 WARNING MESSAGES
