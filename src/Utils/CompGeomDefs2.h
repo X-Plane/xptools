@@ -40,7 +40,9 @@ struct	Vector2;
 
 	
 
-
+#if IBM
+	inline double cbrt(double x) { return pow(x, 1.0/3.0); } 
+#endif
 
 enum {
 	LEFT_TURN = 1,
@@ -179,7 +181,7 @@ struct	Segment2 {
 	bool	could_intersect(const Segment2& rhs) const;
 	bool	intersect(const Segment2& rhs, Point2& p) const;
 
-	bool	near(const Point2& p, double distance) const;
+	bool	is_near(const Point2& p, double distance) const;
 	
 	double	y_at_x(double x) const { 	if (p1.x == p2.x) 	return p1.y; 
 										if (x == p1.x) 		return p1.y; 
@@ -371,7 +373,7 @@ struct	Bezier2 {
 	
 	bool	self_intersect(int depth) const;										// True if curve intersects itself except at end-points
 	bool	intersect(const Bezier2& rhs, int depth) const;							// True if curves intersect except at end-points
-	bool	near(const Point2& p, double distance) const;
+	bool	is_near(const Point2& p, double distance) const;
 
 	double	y_at_x(double x) const;
 	double	x_at_y(double y) const;
@@ -577,7 +579,7 @@ inline bool	Segment2::intersect(const Segment2& rhs, Point2& p) const
 	return collinear_has_on(p) && rhs.collinear_has_on(p);
 }
 
-inline bool	Segment2::near(const Point2& p, double distance) const
+inline bool	Segment2::is_near(const Point2& p, double distance) const
 {
 	distance *= distance;
 	if (p.squared_distance(p1) < distance) return true;
@@ -1001,7 +1003,7 @@ inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 		l2.intersect(r2,d-1);
 }
 
-inline bool	Bezier2::near(const Point2& p, double d) const
+inline bool	Bezier2::is_near(const Point2& p, double d) const
 {
 	Bbox2	me, pt_box;
 	this->bounds(me);
@@ -1013,7 +1015,7 @@ inline bool	Bezier2::near(const Point2& p, double d) const
 	
 	Bezier2	ls, rs;
 	this->partition(ls,rs);
-	return ls.near(p,d) || rs.near(p,d);
+	return ls.is_near(p,d) || rs.is_near(p,d);
 }
 
 inline bool Bezier2::self_intersect_recursive(const Bezier2& rhs, int d) const
