@@ -3,7 +3,7 @@ catch {namespace import combobox::*}
 set MAX_KEYFRAMES 50
 set MAX_SEL 5
 
-set USE_KEYFRAMES 1
+set USE_KEYFRAMES 0
 
 ##########################################################################################################################################################
 # UTILS
@@ -196,76 +196,108 @@ proc xplane_prefs_dialog {} {
 # OBJECT INSPECTOR
 ##########################################################################################################################################################
 
-proc recurse_menu { base path } {
-	set path_parent [lrange $path 0 end-1]
-	
-	set widget_parent $base.[join $path_parent ".m"]
-	set widget_itself $base.[join $path ".m"]
-	
-	if ![llength $path_parent] {
-		set widget_parent $base
+proc update_listbox_sel { lb tv } {
+	global $tv
+	set temp [$lb curselection]
+	if [llength $temp] {
+		set $tv [$lb get [lindex $temp 0]]
 	}
-	
-	if ![winfo exists $widget_parent] {
-		if [llength $path_parent] {
-			recurse_menu $base $path_parent
-		}
-	}
-	
-	menu $widget_itself	
-	$widget_parent add cascade -label [lindex $path end] -menu $widget_itself		
 }
 
-proc build_popup { popup textvar use_arrays } {
-	menu $popup.test_menu
-	$popup.test_menu add command -label "none" -command "set $textvar none"
+proc refilter_listbox { lb tv } {
+	global all_datarefs
+	global $tv
+	set now [set $tv]
+	set drefs [list none]
+	$lb list delete 0 end
+#	foreach x $all_datarefs {
+#		if [string match $now $x] {
+#			lappend drefs $x
+#		}
+#	}
 
-	catch {
+	if {$now == "none"} {
+		set now ""
+	}
+	
+	if [string length $now] {
+		if { [string first "*" $now] == -1} {
+			set now "*$now*"
+		}
+	} else {
+		set now "*"
+	}
+	
+	set now [string map { [ \\[ ] \\] } $now]
+
+	set drefs [lsearch -all -inline $all_datarefs $now]
+	$lb list insert end "none"
+	foreach x $drefs {
+		$lb list insert end $x
+	}
+}
+
+proc build_listbox { listbox scrollbar textvar } {
+
+	global all_datarefs
+#	listbox $listbox -width 50 -height 20 -yscrollcommand "$scrollbar set"
+#	scrollbar $scrollbar -command "$listbox yview"
+#	pack $scrollbar $listbox -side right -fill y -expand yes
+#	bind $listbox <<ListboxSelect>> "update_listbox_sel %W $textvar"
+
+
+	namespace import combobox::*
+
+	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox $listbox $textvar"
+#	foreach x $all_datarefs {
+#		$listbox list insert end $x
+#	}
+
+	pack $listbox
+
+}
+
+proc fetch_all_datarefs {} {
+	global all_datarefs
+		
+	if {[catch {
 		set fi [open "plugins/datarefs.txt" r]
-		gets $fi line	
-		while { [gets $fi line] >= 0 } {
-			if [llength $line] {
-			   set dref_fullname [lindex $line 0]
-			   set dref_dtype [lindex $line 1]
-			   set dref_dtype_l [split $dref_dtype "\[\]"]
-			   set array_count -1
-			   if { [llength $dref_dtype_l] > 1 } {
-					set array_count [lindex $dref_dtype_l 1]
-			   }
-				
-				if {$use_arrays == 0} {
-					set array_count -1
+	}]} { return }
+
+	gets $fi line	
+	while { [gets $fi line] >= 0 } {
+		if [llength $line] {
+		   set dref_fullname [lindex $line 0]
+		   set dref_dtype [lindex $line 1]
+		   set dref_dtype_l [split $dref_dtype "\[\]"]
+		   set array_count -1
+		   if { [llength $dref_dtype_l] > 1 } {
+				set array_count [lindex $dref_dtype_l 1]
+		   }
+			
+		   if { $array_count > 0 && $array_count <= 100 } {
+				for {set x 0} {$x<$array_count} {incr x} {
+#					$listbox insert end "$dref_fullname\[$x\]"
+#					$listbox list insert end "$dref_fullname\[$x\]"
+					lappend all_datarefs "$dref_fullname\[$x\]"
 				}
-			   
-			   if { $array_count > 0 && $array_count <= 10 } {
-					for {set x 0} {$x<$array_count} {incr x} {
-						set dref_path [split $dref_fullname "/"]
-						lappend dref_path $x
-						set dref_name [lindex $dref_path end]
-
-						set dref_parents [lrange $dref_path 0 end-1]   
-						set widget_parent [join $dref_parents ".m"]
-						if ![winfo exists $popup.test_menu.$widget_parent] {
-							recurse_menu $popup.test_menu $dref_parents
-						}				   
-						$popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname\\\[$x\\\]"
-					}
-			   } else {
-					set dref_path [split $dref_fullname "/"]
-					set dref_name [lindex $dref_path end]			   
-					set dref_parents [lrange $dref_path 0 end-1]   
-					set widget_parent [join $dref_parents ".m"]			   
-					if ![winfo exists $popup.test_menu.$widget_parent] {
-						recurse_menu $popup.test_menu $dref_parents
-					}
-					$popup.test_menu.$widget_parent add command -label $dref_name -command "set $textvar $dref_fullname"
-			   }
-			}
+		   } else {
+#				$listbox insert end "$dref_fullname"
+#				$listbox list insert end "$dref_fullname"
+				lappend all_datarefs "$dref_fullname"
+		   }
+		   
+		   lappend cats [string range $dref_fullname 0 [string last "/" $dref_fullname] ]
 		}
-		close $fi   
-	} msg		
+	}
+	
+	set cats [lsort -unique $cats]
+	foreach x $cats {
+		set all_datarefs [linsert $all_datarefs 0 $x]
+	}
+	
+	close $fi   
 }
-
 
 proc xplane_inspector_sync {} {
 	global MAX_SEL
@@ -350,7 +382,7 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.static
 	pack forget $container.obj.show
 	pack forget $container.obj.hide
-	pack forget $container.obj.dref_btn
+	pack forget $container.obj.dref_list
 	
 	if { [set xplane_anim_type$idx] == "no animation"} { pack $container.obj.none }
 	if { [set xplane_anim_type$idx] == "rotate"} { 
@@ -361,7 +393,7 @@ proc xplane_obj_sync { idx container } {
 		for {set x 0} {$x< [set xplane_anim_keyframe_count$idx] } {incr x} {
 			pack $container.obj.rotate.xplane_anim_value$x$idx
 		}
-		pack $container.obj.dref_btn
+		pack $container.obj.dref_list
 	}
 	if { [set xplane_anim_type$idx] == "translate"} { 
 		pack $container.obj.trans
@@ -371,18 +403,18 @@ proc xplane_obj_sync { idx container } {
 		for {set x 0} {$x< [set xplane_anim_keyframe_count$idx]} {incr x} {
 			pack $container.obj.trans.xplane_anim_value$x$idx
 		}
-		pack $container.obj.dref_btn		
+		pack $container.obj.dref_list		
 	}
 	if { [set xplane_anim_type$idx] == "static"} { 
 		pack $container.obj.static 
 	}
 	if { [set xplane_anim_type$idx] == "show"  } { 
 		pack $container.obj.show 
-		pack $container.obj.dref_btn
+		pack $container.obj.dref_list
 	}
 	if { [set xplane_anim_type$idx] == "hide"  } { 
 		pack $container.obj.hide 
-		pack $container.obj.dref_btn
+		pack $container.obj.dref_list
 	}
 	
 	pack forget $container.obj.none.blend_level	
@@ -482,9 +514,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.light.dataref "T1:" xplane_light_t1$idx
 				make_labeled_entry $container.light.dataref "S2:" xplane_light_s2$idx
 				make_labeled_entry $container.light.dataref "T2:" xplane_light_t2$idx
-				menubutton $container.light.dataref.dref_btn -menu $container.light.dataref.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_light_dataref$idx
-				build_popup $container.light.dataref.dref_btn xplane_light_dataref$idx 0
-				pack $container.light.dataref.dref_btn
+				build_listbox $container.light.dataref.dref_list $container.light.dataref.scroll xplane_light_dataref$idx				
 				
 			pack $container.light.dataref
 
@@ -598,10 +628,8 @@ proc xplane_inspector {} {
 #				build_popup $container.obj.hide.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.hide.dref_btn
 			pack $container.obj.hide
-			
-			menubutton $container.obj.dref_btn -menu $container.obj.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
-			build_popup $container.obj.dref_btn xplane_anim_dataref$idx 1
-			pack $container.obj.dref_btn
+		
+			build_listbox $container.obj.dref_list $container.obj.dref_scroll xplane_anim_dataref$idx
 
 			#-------------------------------------- GROUP --------------------------------------
 
@@ -765,9 +793,11 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add command -label "Change Texture..." -command "ac3d xplane_change_texture"
 .mbar.xplane.menu add command -label "Make Transparent" -command "ac3d xplane_make_transparent"
 .mbar.xplane.menu add command -label "Make Night Lighting" -command "ac3d xplane_make_night"
+if {$USE_KEYFRAMES} {
 .mbar.xplane.menu add command -label "Pseudo-Cylindrical UV Remap" -command "ac3d xplane_do_uvmap"
 .mbar.xplane.menu add command -label "Copy UV Map" -command "ac3d xplane_uv_copy"
 .mbar.xplane.menu add command -label "Paste UV Map" -command "ac3d xplane_uv_paste"
+}
 .mbar.xplane.menu add command -label "Reload All Textures" -command "ac3d xplane_reload_texes"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Make Animation Group" -command "ac3d xplane_make_anim_group"
@@ -790,6 +820,7 @@ set UI(menu_xplane) .mbar.xplane.menu
 .mbar.xplane.menu add command -label "Update from old plugin" -command "ac3d xplane_update_selection"
 
 
+fetch_all_datarefs
 
 ##########################################################################################################################################################
 # DATAREFS
