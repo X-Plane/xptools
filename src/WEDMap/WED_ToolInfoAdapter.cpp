@@ -33,6 +33,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	the_content.can_select = 0;
 	the_content.is_disclosed = 0;
 	the_content.is_selected = 0;
+	the_content.can_drag = 0;
 	the_content.indent_level = 0;
 
 	if (!mTool) return;
@@ -131,6 +132,14 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 void	WED_ToolInfoAdapter::ToggleDisclose(
 			int							cell_x,
 			int							cell_y)
+{
+}
+
+void	WED_ToolInfoAdapter::DoDrag(
+						GUI_Pane *					drag_emitter,
+						int							mouse_x,
+						int							mouse_y,
+						int							bounds[4])
 {
 }
 

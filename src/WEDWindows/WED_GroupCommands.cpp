@@ -29,33 +29,6 @@
 #include "WED_Airport.h"
 #include "WED_Group.h"
 
-static int	Iterate_IsAirport(IUnknown * what, void * ref)
-{
-	if (dynamic_cast<WED_Airport *>(what)) return 1;
-	return 0;
-}
-
-static int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
-{
-	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
-	if (!who) return 0;
-	
-	WED_Thing * my_parent = who->GetParent();
-	if (!my_parent) return 0;
-	
-	IGISEntity * e = dynamic_cast<IGISEntity *>(my_parent);
-	if (!e) return 0;
-	
-	switch(e->GetGISClass()) {
-	case gis_PointSequence:	
-	case gis_Line:
-	case gis_Line_Width:
-	case gis_Ring:
-	case gis_Chain:
-	case gis_Polygon:	return 1;
-	default:			return 0;
-	}		
-}
 
 int		WED_CanGroup(IResolver * inResolver)
 {
@@ -69,24 +42,18 @@ int		WED_CanGroup(IResolver * inResolver)
 	WED_Thing * global_parent = WED_FindParent(sel, NULL, NULL);
 	if (global_parent == NULL) return 0;
 	
-	int has_parent_airport = 0;
-	while (global_parent)
+	if (Iterate_IsOrParentAirport(global_parent, NULL))
 	{
-		if (dynamic_cast<WED_Airport *>(global_parent))
-		{
-			has_parent_airport = 1;
-			break;
-		}
-		global_parent = global_parent->GetParent();
+		// We are going into an airport.  DO NOT allow an airport into another one.
+		if (sel->IterateSelection(Iterate_IsOrChildAirport, NULL)) return 0;
 	}
+	else
+	{
+		// Not going into an airport.  If we need to, well, we can't do this.
+		if (sel->IterateSelection(	Iterate_ChildRequiresAirport, NULL)) return 0;
 	
-	return !has_airport || !has_parent_airport;
-}
-
-static int Iterate_IsNotGroup(IUnknown * what, void * ref)
-{
-	if (dynamic_cast<WED_Group *>(what) == NULL) return 1;
-	return 0;
+	}
+	return 1;
 }
 
 int		WED_CanUngroup(IResolver * inResolver)
@@ -225,4 +192,110 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver)
 	want_sel->CommitCommand();
 
 	
+}
+
+
+int		WED_CanReorder(IResolver * resolver, int direction, int to_end)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	
+	if (sel->GetSelectionCount() == 0) return 0;
+	
+	WED_Thing * obj = dynamic_cast<WED_Thing *>(sel->GetNthSelection(0));
+	if (obj == NULL) return 0;
+	if (obj->GetParent() == NULL) return 0;
+	
+	if (sel->IterateSelection(Iterate_ParentMismatch, obj->GetParent())) return 0;	
+																		 return 1;
+}
+
+void	WED_DoReorder (IResolver * resolver, int direction, int to_end)
+{
+	vector<WED_Thing *>	sel;
+	vector<WED_Thing *>::iterator it;
+	vector<WED_Thing *>::reverse_iterator rit;
+	WED_GetSelectionInOrder(resolver, sel);
+	
+	if (sel.empty()) return;
+	
+	WED_Thing * parent = sel.front()->GetParent();
+	int count = parent->CountChildren();
+	
+	parent->StartCommand("Reorder");
+	
+	int insert_slot = sel.front()->GetMyPosition();
+	if (!to_end)
+	{
+		for (it = sel.begin(); it != sel.end(); ++it)
+		if (direction > 0)		insert_slot = max(insert_slot,(*it)->GetMyPosition());
+		else					insert_slot = min(insert_slot,(*it)->GetMyPosition());
+		
+		if (direction < 0)  { --insert_slot; if (insert_slot < 0	 ) insert_slot = 0; }
+		else				{ ++insert_slot; if (insert_slot >= count) insert_slot = count-1; }
+	} else {
+		insert_slot = (direction < 0) ? 0 : (count-1);
+	}
+	
+	if (direction < 0)
+	for (rit = sel.rbegin(); rit != sel.rend(); ++rit)
+	{
+		(*rit)->SetParent(parent, insert_slot);
+	}
+	else
+	for (it = sel.begin(); it != sel.end(); ++it)
+	{
+		(*it)->SetParent(parent, insert_slot);
+	}
+	
+	parent->CommitCommand();
+}
+
+int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	
+	// If the selection is nested, e.g. a parent of the selection is part of the selection, well, we can't
+	// reorder, as it would involve "flattening" the selection, which is NOT what the user expects!!
+	if (WED_IsSelectionNested(resolver)) return 0;	
+	
+	// We cannot move a grandparent of the container INTO the container - that'd make a loop.
+	// (This includes moving the container into itself.
+	if (sel->IterateSelection(Iterate_IsParentOf, dest)) return 0;
+	
+	if (dynamic_cast<IGISComposite *>(dest) == NULL) return 0;
+	
+	if (Iterate_IsOrParentAirport(dest, NULL))
+	{
+		// We are going into an airport.  DO NOT allow an airport into another one.
+		if (sel->IterateSelection(Iterate_IsOrChildAirport, NULL)) return 0;
+	}
+	else
+	{
+		// Not going into an airport.  If we need to, well, we can't do this.
+		if (sel->IterateSelection(	Iterate_ChildRequiresAirport, NULL)) return 0;
+	}	
+	return 1;
+}
+
+void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot)
+{
+	vector<WED_Thing *>	sel;
+	vector<WED_Thing *>::iterator it;
+	
+	WED_GetSelectionInOrder(resolver, sel);
+	
+	if (sel.empty()) return;
+	
+	dest->StartCommand("Reorder");
+	
+	for (it = sel.begin(); it != sel.end(); ++it)
+	{
+		// Note that if we are moving an object to LATER in its OWN parent, then 
+		// 1. We don't need to increment our destination, because moving this guy effectively moves everyone up a notch and
+		// 2. We need to move the object one slot higher because the positio is counted WTIHOUT its old position being taken into account.
+		if ((*it)->GetParent() == dest && (*it)->GetMyPosition() < dest_slot)		(*it)->SetParent(dest, dest_slot-1);	
+		else																		(*it)->SetParent(dest, dest_slot++);	
+	}
+	
+	dest->CommitCommand();	
 }

@@ -69,9 +69,16 @@ class	GUI_TableContent {
 public:
 
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState)=0;
+
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
+
+	virtual	GUI_DragOperation	CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
+	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
+	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y)=0;
+	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
+
 	virtual	void		Deactivate(void)=0;
 
 };
@@ -117,6 +124,11 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	GUI_DragOperation			DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
+	virtual	GUI_DragOperation			DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
+	virtual	void						DragScroll	(int x, int y);
+	virtual	void						DragLeave	(void);
+	virtual	GUI_DragOperation			Drop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
@@ -140,7 +152,7 @@ private:
 			int		MouseToCellX(int x);
 			int		MouseToCellY(int y);
 			int		CalcVisibleCells(int bounds[4]);
-
+			
 			void	AlignContents(void);
 
 			GUI_TableGeometry *		mGeometry;
@@ -150,7 +162,9 @@ private:
 			int						mClickCellX;
 			int						mClickCellY;
 			int						mLocked;
-
+		int					mDragX;
+		int					mDragY;
+		
 };
 
 class	GUI_Header : public GUI_Pane, public GUI_Listener {

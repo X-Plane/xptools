@@ -36,7 +36,7 @@ WED_PropertyPane::WED_PropertyPane(
 	mTable->Show();
 	mScroller->PositionInContentArea(mTable);
 	mScroller->SetContent(mTable);	
-	mTextTable.SetParentPanes(mTable);
+	mTextTable.SetParentTable(mTable);
 	
 	if (!vertical)
 	{

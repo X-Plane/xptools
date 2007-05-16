@@ -55,6 +55,7 @@ public:
 	virtual	void			ClickDown(int inX, int inY, int inButton);
 	virtual	void			ClickUp(int inX, int inY, int inButton);
 	virtual	void			ClickDrag(int inX, int inY, int inButton);
+	virtual	void			ClickMove(int inX, int inY);
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis);
 	virtual	int				KeyPressed(char inKey, long msg, long p1, long p2);
 	virtual void			Activate(int active);
@@ -90,6 +91,9 @@ private:
 	bool			mClearColor;
 	GUI_Pane *		mMouseFocusPane;
 	int				mMouseFocusButton;
+	int				mInDrag;
+	int				mLastDragX;
+	int				mLastDragY;
 	
 };
 

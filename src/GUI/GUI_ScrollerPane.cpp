@@ -138,11 +138,13 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 		total[5] = total[3] - total[1];
 		vis[4] = vis[2] - vis[0];
 		vis[5] = vis[3] - vis[1];
-
+		
 		float minv = 0;
 		float maxv = max(total[5] - vis[5], 0.0f);
 		float new_v = vis[1] - total[1] + dist;
 		float old_v = vis[1] - total[1];
+		
+		if (maxv == 0.0) return 1;
 		
 		if (new_v < minv) new_v = minv;
 		if (new_v > maxv) new_v = maxv;

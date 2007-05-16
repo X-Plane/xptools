@@ -156,6 +156,12 @@ void			XWin::ForceRefresh(void)
 	::InvalidateRect(mWindow, NULL, false);	// Invalidate whole window, no erase, async
 }
 
+void			XWin::UpdateNow(void)
+{
+	UpdateWindow(mWindow);					// This does a sync refresh
+}
+
+
 void			XWin::SetTimerInterval(double seconds)
 {
 	if (seconds)
@@ -272,7 +278,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj && dragging > -1)
 			obj->ClickDrag(LOWORD(lParam), HIWORD(lParam), dragging);
 		else
-			result = DefWindowProc(hWnd, message, wParam, lParam);		
+			obj->ClickMove(LOWORD(lParam), HIWORD(lParam));
 		break;
 
 	case WM_WINDOWPOSCHANGED:

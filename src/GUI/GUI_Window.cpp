@@ -93,7 +93,10 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
 
 	if (::GetWindowRect(mWindow, &rect))
+	{
 		*effect = OP_GUI2WIN(mTarget->InternalDragEnter(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed), OP_WIN2GUI(recommended)));
+							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
+	}
 	return S_OK;
 }
 
@@ -107,7 +110,10 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
 	
 	if (::GetWindowRect(mWindow, &rect))
+	{
 		*effect = OP_GUI2WIN(mTarget->InternalDragOver(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed),OP_WIN2GUI(recommended)));
+							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
+	}
 	return S_OK;
 }
 
@@ -177,18 +183,31 @@ pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef 
 	switch(message) {
 	case kDragTrackingEnterWindow:
 		allowed = OP_GUI2Mac(win->InternalDragEnter(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
+		win->mInDrag = 1;
+		win->SetTimerInterval(0.05);
+		win->mLastDragX = p.h;
+		win->mLastDragY = p.v;
 		SetDragDropAction(theDrag, allowed);
+		// If we are dragging to ourselve, our event pump is blocked in the call to do-drag.  Flush now to
+		// force to the screen anything drawn.
+		win->UpdateNow();
 		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
 		else								return noErr;
 
 	case kDragTrackingInWindow:
 		allowed = OP_GUI2Mac(win->InternalDragOver(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
+		win->mLastDragX = p.h;
+		win->mLastDragY = p.v;
 		SetDragDropAction(theDrag, allowed);
+		win->UpdateNow();
 		if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
 		else								return noErr;
 
  	case kDragTrackingLeaveWindow:
+		win->mInDrag = 0;
+		win->SetTimerInterval(0.0);	
 		win->InternalDragLeave();
+		win->UpdateNow();
  		return noErr;
 	}
 	return noErr;	
@@ -239,6 +258,7 @@ DragReceiveHandlerUPP	GUI_Window::ReceiveHandlerUPP = NewDragReceiveHandlerUPP(G
 GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(0, inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
+	mInDrag = 0;
 	#if IBM
 		mDND = new GUI_Window_DND(this, mWindoW);
 	#endif
@@ -297,8 +317,11 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 	mMouseFocusPane = InternalMouseDown(inX, h-inY, inButton);
 	mMouseFocusButton = inButton;
-	if (mMouseFocusPane)
-		SetTimerInterval(0.1);
+	
+//		Ben says - we should not need to poll on mouse clickig...turn off for now
+//					until we find out what the hell needed this!
+//	if (mMouseFocusPane)
+//		SetTimerInterval(0.1);
 
 }
 
@@ -322,6 +345,14 @@ void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
 
 	if (mMouseFocusPane)
 		mMouseFocusPane->MouseDrag(inX, h-inY, inButton);
+}
+
+void		GUI_Window::ClickMove(int inX, int inY)
+{
+	int	w, h;
+	XWinGL::GetBounds(&w, &h);
+
+	this->InternalMouseMove(inX, h-inY);
 }
 
 void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
@@ -692,6 +723,16 @@ void		GUI_Window::Timer(void)
 		XWinGL::GetMouseLoc(&x, &y);
 		mMouseFocusPane->MouseDrag(x, h-y, mMouseFocusButton);
 	}
+
+	// BEN SAYS: Mac D&D mgr does not call us back during drag if the mouse is still.  So use a timer to tell us
+	// that time has passed.  Why here?  Well, we need to force a redraw since update events are blocked.
+	// So do this down in the window where we can know these things.  Prevent knowledge of blocked window redraws
+	// from getting out into the rest of GUI or worse the whole app.
+	if (mInDrag) 
+	{
+		InternalDragScroll(mLastDragX, mLastDragY);
+		UpdateNow();
+	}
 }
 
 void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
@@ -727,6 +768,10 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 bool				GUI_Window::IsDragClick(int x, int y)
 {
 	#if APL
+	
+		// Ben says: we're about to block waiting for a drag.  But any immediate pre-block feedback isn't on screen
+		// because we haven't processed events (and are not about to).  So...draw now.
+		UpdateNow();
 	
 		Point	p;
 		int bounds[4];

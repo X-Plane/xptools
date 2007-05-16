@@ -165,6 +165,11 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
+	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
+	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
+	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
+	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
+	
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:	return 1;
@@ -186,6 +191,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument); 
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
+	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);	
+	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);	
+	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);	
+	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);	
 
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}

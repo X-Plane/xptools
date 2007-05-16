@@ -34,7 +34,8 @@ static EventLoopTimerUPP		mTimerHandler = NewEventLoopTimerUPP(XWin::MacTimer);
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-
+	mInDrag = 0;
+	
 		Rect	bounds;
 		
 	bounds = (**(::GetMainDevice())).gdRect;
@@ -49,6 +50,7 @@ XWin::XWin(int default_dnd)
 //			kEventClassMouse,	kEventMouseDown,
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
+			kEventClassMouse,	kEventMouseMoved,
 			kEventClassMouse,	kEventMouseWheelMoved,
 			kEventClassWindow, 	kEventWindowHandleContentClick,
 			kEventClassWindow,	kEventWindowDrawContent,
@@ -60,6 +62,7 @@ XWin::XWin(int default_dnd)
 			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
 			kEventClassKeyboard,kEventRawKeyRepeat,
+			kEventClassKeyboard,kEventRawKeyModifiersChanged,
 			kEventClassCommand,	kEventCommandProcess
 		};			
 		
@@ -97,7 +100,8 @@ XWin::XWin(
 	int				inHeight)
 {
 	sIniting = true;
-
+	mInDrag = 0;
+	
 		Rect	bounds;
 	
 	bounds.left = inX;
@@ -115,6 +119,7 @@ XWin::XWin(
 //			kEventClassMouse,	kEventMouseDown,
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
+			kEventClassMouse,	kEventMouseMoved,
 			kEventClassMouse,	kEventMouseWheelMoved,
 			kEventClassWindow, 	kEventWindowHandleContentClick,
 			kEventClassWindow,	kEventWindowDrawContent,
@@ -126,6 +131,7 @@ XWin::XWin(
 			kEventClassWindow,	kEventWindowDeactivated,
 			kEventClassKeyboard,kEventRawKeyDown,
 			kEventClassKeyboard,kEventRawKeyRepeat,
+			kEventClassKeyboard,kEventRawKeyModifiersChanged,
 			kEventClassCommand,	kEventCommandProcess
 		};			
 		
@@ -214,6 +220,20 @@ void			XWin::ForceRefresh(void)
 	::InvalWindowRect(mWindow, &bounds);
 }
 
+void			XWin::UpdateNow(void)
+{
+	RgnHandle	vis = NewRgn();
+	
+	GetWindowRegion(mWindow, kWindowUpdateRgn,vis);
+	if (!EmptyRgn(vis))
+	{
+		BeginUpdate(mWindow);
+		Update(NULL);
+		EndUpdate(mWindow);
+	}
+	DisposeRgn(vis);
+}
+
 void			XWin::SetTimerInterval(double seconds)
 {
 	RemoveEventLoopTimer(mTimer);
@@ -281,24 +301,32 @@ pascal OSStatus	XWin::MacEventHandler(
 	SetPortWindowPort(me->mWindow);
 	GlobalToLocal(&pt);
 	
-	static	bool	got_down = false;
-	
 	switch(clss) {
 	case kEventClassMouse:
 		if ((btn == 1) && (modifiers & controlKey))	btn = 2;
 		switch(kind) {
 		case kEventMouseDown:
-			got_down = true;
+			me->mInDrag = true;
+			me->mLastMouseX = pt.v;
+			me->mLastMouseY = pt.v;
+			me->mLastMouseButton = btn-1;
 			me->ClickDown(pt.h, pt.v, btn - 1);
 			return noErr;
 		case kEventMouseUp:
-			if (got_down)
+			if (me->mInDrag)
 				me->ClickUp(pt.h, pt.v, btn - 1);
-			got_down = false;
+			me->mInDrag = false;
 			return noErr;
 		case kEventMouseDragged:
-			if (got_down)
-				me->ClickDrag(pt.h, pt.v, btn - 1);				
+		case kEventMouseMoved:
+			if (me->mInDrag)
+				me->ClickDrag(pt.h, pt.v, btn - 1);	
+			else
+				me->ClickMove(pt.h, pt.v);	
+			me->mLastMouseX = pt.h;
+			me->mLastMouseY = pt.v;
+			if (kind == kEventMouseDragged)
+				me->mLastMouseButton = btn-1;
 			return noErr;
 		case kEventMouseWheelMoved:
 			me->MouseWheel(pt.h, pt.v, delta, (axis == kEventMouseWheelAxisY) ? 0 : 1);
@@ -317,7 +345,10 @@ pascal OSStatus	XWin::MacEventHandler(
 			return noErr;			
 		case kEventWindowHandleContentClick:
 			if ((btn == 1) && (modifiers & controlKey))	btn = 2;
-			got_down = true;
+			me->mInDrag = true;
+			me->mLastMouseX = pt.h;
+			me->mLastMouseY = pt.v;
+			me->mLastMouseButton =btn-1;
 			me->ClickDown(pt.h, pt.v, btn - 1);
 			return noErr;
 		case kEventWindowDrawContent:
@@ -356,6 +387,11 @@ pascal OSStatus	XWin::MacEventHandler(
 						me->MouseWheel(e.where.h, e.where.v, -1, 0);
 				}
 			}
+			return noErr;
+		case kEventRawKeyModifiersChanged:
+			if(me->mInDrag)				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,me->mLastMouseButton);
+			else						me->ClickMove(me->mLastMouseX, me->mLastMouseY					   );
+				
 			return noErr;
 		default:
 			return eventNotHandledErr;

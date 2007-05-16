@@ -55,7 +55,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTable->SetParent(this);
 	mTable->Show();
 	mTable->SizeShowAll();
-	mTextTable->SetParentPanes(mTable);
+	mTextTable->SetParentTable(mTable);
 	mTable->SetSticky(1,1,1,0);
 	this->PackPane(mTable, gui_Pack_Bottom);
 	mTextTable->AddListener(mTable);

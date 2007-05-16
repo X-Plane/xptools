@@ -25,6 +25,7 @@
 #define WED_GroupCommands_H
 
 class	IResolver;
+class	WED_Thing;
 
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
@@ -36,5 +37,12 @@ void	WED_DoMakeNewAirport(IResolver * inResolver);
 
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);
+
+int		WED_CanReorder(IResolver * resolver, int direction, int to_end);
+void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
+
+// This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
+int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
+void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 
 #endif /* WED_GroupCommands_H */

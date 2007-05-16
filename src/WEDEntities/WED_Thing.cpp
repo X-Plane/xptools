@@ -157,6 +157,8 @@ int			WED_Thing::GetMyPosition(void) const
 void				WED_Thing::AddChild(int id, int n)
 {
 	StateChanged();
+	DebugAssert(n >= 0);
+	DebugAssert(n <= child_id.size());	
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
 	DebugAssert(i == child_id.end());
 	child_id.insert(child_id.begin()+n,id);

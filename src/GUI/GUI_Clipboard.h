@@ -166,6 +166,7 @@ private:
 
 #if APL
 
+#define __DEBUGGING__
 #include <Carbon/Carbon.h>
 
 // Convenience routines to convert our drop-actions to native and back.

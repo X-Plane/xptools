@@ -71,6 +71,7 @@ public:
 			void			MoveTo(int inX, int inY);
 			void			Resize(int inWidth, int inHeight);
 			void			ForceRefresh(void);
+			void			UpdateNow(void);
 			void			SetTimerInterval(double seconds);
 			
 			void			GetBounds(int * outX, int * outY);
@@ -92,6 +93,7 @@ public:
 	virtual	void			ClickDown(int inX, int inY, int inButton)=0;
 	virtual	void			ClickUp(int inX, int inY, int inButton)=0;
 	virtual	void			ClickDrag(int inX, int inY, int inButton)=0;	// 0 = left
+	virtual	void			ClickMove(int inX, int inY)=0;	// 0 = left
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis)=0;	// 0 = up-down
 	virtual	void			DragEnter(int inX, int inY)=0;
 	virtual	void			DragOver(int inX, int inY)=0;
@@ -116,7 +118,10 @@ protected:
 
 		WindowRef				mWindow;
 		EventLoopTimerRef		mTimer;
-
+		int						mInDrag;
+		int						mLastMouseX;
+		int						mLastMouseY;
+		int						mLastMouseButton;
 public:
 		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 		static pascal OSErr		MacTrackingHandler(DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
@@ -129,7 +134,7 @@ public:
 		HWND			mWindow;
 		CDropTarget *	mDropTarget;
 		int				mMouseX;
-		int				mMouseY;
+		int				mMouseY;		
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

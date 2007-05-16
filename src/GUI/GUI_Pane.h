@@ -54,12 +54,41 @@
 		4.	The drop result is a little bit different - the receiver returns "move" if the desired 
 			operation is a move AND the receiver is only able to do a copy (requiring the source to
 			do the corresponding delete).  Note that if the operation is a copy, or a move that is
-			fully completed by the receiver, or no op, the result is always "none".
+			fully completed by the receiver, the result is "copy".  If the operation is aborted, the result
+			is "none".  (This is necessary for the Mac, which must know if we aborted the op.)
 			
 		Note that the receiver has total control over what operation actually happens, based on allowed 
 		ops, recommended ops, and examination of the source data (and self-knowledge) of the drop site,
 		the drop target thus makes the final call.
-
+		
+	SCREEN REFRESH
+	
+		The screen is always refreshed asynchronously.  Call "Refresh" to force a redraw later of this pane.
+		You can never draw synchronously.
+		
+		It should be noted that basically all "wait time" in the app is expected to happen blocking for UI.
+		(There are three times this happens: between calls to handlers in the app main loop, when waiting to
+		see if a click is a drag, and while doing a drag & drop op).  In all 3 cases, the framework does
+		refreshing before the block, during the block, or after a handler is called out of a block.  The 
+		result is that you can simply make sure your handlers are fast and call Refresh() and updates will
+		happen later.
+		
+	MODIFIER KEYS AND EVENT BLOCKING
+	
+		GUI_Pane makes a function call every time the mouse is moved...in that sense it's not terribly good
+		about idling the CPU, but ... today's computers are fast, and today's OSes do SOME dispatch work
+		whether we want this or not.
+		
+		GUI_Pane does not send events when mod keys change.  However, it does send a FAKE move/drag event
+		(a move/drag callback when the mouse hasn't really moved) if the modifiers change.  The GUI routine
+		GetModifiersNow return the modifier keys based on the event we are handling (that is, they are
+		event-dispatch-synchronized, which is what we want), so it is always safe to simply look at them
+		when handling mouse up/down/move/drag/wheel.
+		
+		Mouse location is NOT event-synchronized.  This is probably a good thing because (1) we don't get
+		mouse events if the cursor is outside the app window (or we're in the background) but (2) we may
+		have to redraw anyway due to a timer.  So this keeps the mouse tracking correct for animated
+		windows that track the mouse.
 */
 
 #include "GUI_Defs.h"
@@ -108,7 +137,7 @@ public:
 
 	virtual	bool		IsActiveNow(void) const;
 			
-	virtual void		Refresh(void);		// Schedule an async window redraw.
+	virtual void		Refresh(void);				// Schedule an async window redraw.
 	
 	virtual	void		PopupMenu(GUI_Menu menu, int x, int y);											// Pop up a menu - useful for providing main or fixed menus contextually
 	virtual	int			PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);		// Pop up dynamic content.  No nesting, built on fly.  For enums, etc.
@@ -134,6 +163,7 @@ public:
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 	virtual	void		Draw(GUI_GraphState * state) { }
 	
+	virtual	int			MouseMove(int x, int y			  ) { return 0; }
 	virtual	int			MouseDown(int x, int y, int button) { return 0; }
 	virtual	void		MouseDrag(int x, int y, int button) { 			}
 	virtual	void		MouseUp  (int x, int y, int button) { 			}
@@ -141,6 +171,7 @@ public:
 
 	virtual	GUI_DragOperation			DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) { return gui_Drag_None;	}
 	virtual	GUI_DragOperation			DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) { return gui_Drag_None;	}
+	virtual	void						DragScroll	(int x, int y) { }
 	virtual	void						DragLeave	(void) { }
 	virtual	GUI_DragOperation			Drop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) { return gui_Drag_None;	}
 	
@@ -153,11 +184,13 @@ private:
 
 			void		InternalDraw(GUI_GraphState * state);
 			GUI_Pane *	InternalMouseDown(int x, int y, int button);
+			GUI_Pane *	InternalMouseMove(int x, int y);
 			int			InternalMouseWheel(int x, int y, int dist, int axis);
 			void		ParentResized(int inOldBounds[4], int inNewBounds[4]);
 
 			GUI_DragOperation			InternalDragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 			GUI_DragOperation			InternalDragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
+			void						InternalDragScroll	(int x, int y);
 			void						InternalDragLeave	(void);
 			GUI_DragOperation			InternalDrop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 
@@ -171,6 +204,7 @@ private:
 		string				mDesc;
 
 		GUI_Pane *			mDragTarget;
+		
 
 	GUI_Pane(const GUI_Pane&);
 	GUI_Pane& operator=(const GUI_Pane&);

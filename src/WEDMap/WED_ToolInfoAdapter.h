@@ -28,6 +28,11 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y);
+	virtual	void	DoDrag(
+						GUI_Pane *					drag_emitter,
+						int							mouse_x,
+						int							mouse_y,
+						int							bounds[4]);
 	virtual void	SelectionStart(
 						int							clear);
 	virtual	int		SelectGetExtent(
@@ -53,6 +58,47 @@ public:
 						int&						io_y,
 						int							reverse,
 						GUI_CellContent&			the_content);
+
+	virtual	void					GetLegalDropOperations(
+											int&						allow_between_col,
+											int&						allow_between_row,
+											int&						allow_into_cell) { allow_between_col = allow_between_row = allow_into_cell = 0; }
+	virtual	GUI_DragOperation		CanDropIntoCell(
+											int							cell_x,
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended,
+											int&						whole_col,
+											int&						whole_row) { return gui_Drag_None; }
+	virtual	GUI_DragOperation		CanDropBetweenColumns(
+											int							cell_x,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)  { return gui_Drag_None; }
+	virtual	GUI_DragOperation		CanDropBetweenRows(
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)  { return gui_Drag_None; }
+
+
+	virtual	GUI_DragOperation		DoDropIntoCell(
+											int							cell_x,
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)  { return gui_Drag_None; }
+	virtual	GUI_DragOperation		DoDropBetweenColumns(
+											int							cell_x,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)  { return gui_Drag_None; }
+	virtual	GUI_DragOperation		DoDropBetweenRows(
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)  { return gui_Drag_None; }
 
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);

@@ -9,6 +9,8 @@
 	#inclde <gl/gl.h>
 #endif
 
+#define	AUTOSCROLL_DIST	15
+
 static bool ClipTo(int pane[4], int cell[4])
 {
 	int clip[4] = { max(pane[0], cell[0]),
@@ -31,7 +33,8 @@ GUI_Table::GUI_Table() :
 	mGeometry(NULL),
 	mContent(NULL),
 	mScrollH(0),
-	mScrollV(0)
+	mScrollV(0),
+	mDragX(-1),mDragY(-1)
 {	
 }
 
@@ -202,6 +205,135 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 	if (CalcCellBounds(mClickCellX, mClickCellY, cellbounds))
 		mContent->CellMouseUp(cellbounds, mClickCellX, mClickCellY, x, y, button);	
 }
+
+GUI_DragOperation			GUI_Table::DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	if (mGeometry == NULL) return gui_Drag_None;
+	if (mContent == NULL) return gui_Drag_None;
+	
+	mDragX = MouseToCellX(x);
+	mDragY = MouseToCellY(y);
+	if (mClickCellX >= 0 &&
+		mClickCellX < mGeometry->GetColCount() &&
+		mClickCellY >= 0 &&
+		mClickCellY < mGeometry->GetRowCount())
+	{
+		int cellbounds[4];
+		if (CalcCellBounds(mDragX, mDragY, cellbounds))
+		return mContent->CellDragEnter(cellbounds, mDragX, mDragY, x, y, drag, allowed, recommended);
+	}
+	mDragX = -1;
+	mDragY = -1;	
+	return gui_Drag_None;
+}
+	
+GUI_DragOperation			GUI_Table::DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	if (mGeometry == NULL) return gui_Drag_None;
+	if (mContent == NULL) return gui_Drag_None;
+
+	int new_x = MouseToCellX(x);
+	int new_y = MouseToCellY(y);
+		int cellbounds[4];
+	
+	if (new_x < 0 || new_x >= mGeometry->GetColCount() || new_y < 0 || new_y >= mGeometry->GetRowCount())
+		new_x = new_y = -1;
+	
+	if (new_x != mDragX || new_y != mDragY)
+	{
+		if (mDragX != -1 && mDragY != -1)
+		{
+			if (CalcCellBounds(mDragX, mDragY, cellbounds))
+			mContent->CellDragLeave(cellbounds, mDragX, mDragY);
+		}
+		mDragX = new_x;
+		mDragY = new_y;
+		if (mDragX != -1 && mDragY != -1)
+		{
+			if (CalcCellBounds(mDragX, mDragY, cellbounds))
+			return mContent->CellDragEnter(cellbounds, mDragX, mDragY, x, y, drag, allowed, recommended);
+		}
+	}
+	else
+	{
+		if (mDragX != -1 && mDragY != -1)
+		{
+			if (CalcCellBounds(mDragX, mDragY, cellbounds))
+			return mContent->CellDragWithin(cellbounds, mDragX, mDragY, x, y, drag, allowed, recommended);
+		}
+	}
+	mDragX = mDragY = -1;
+	return gui_Drag_None;
+}
+
+void					GUI_Table::DragScroll	(int x, int y)
+{
+	int me[4];
+	GetBounds(me);
+	float total[4], vis[4];	
+	GetScrollBounds(total, vis);
+
+	int old_h = mScrollH;
+	int old_v = mScrollV;
+	
+	int max_left  =	max(vis[0] - total[0], 0.0f);
+	int max_right = max(total[2] - vis[2], 0.0f);
+	int max_bottom = max(vis[1] - total[1], 0.0f);
+	int max_top    = max(total[3] - vis[3], 0.0f);
+	
+	int speed_left   = me[0] - x + AUTOSCROLL_DIST;
+	int speed_right  = x - me[2] + AUTOSCROLL_DIST;
+	int speed_bottom = me[1] - y + AUTOSCROLL_DIST;
+	int speed_top    = y - me[3] + AUTOSCROLL_DIST;
+				
+	speed_left = min(AUTOSCROLL_DIST, max(0, speed_left));
+	speed_right = min(AUTOSCROLL_DIST, max(0, speed_right));
+	speed_bottom = min(AUTOSCROLL_DIST, max(0, speed_bottom));
+	speed_top = min(AUTOSCROLL_DIST, max(0, speed_top));
+
+	mScrollH -= min(speed_left, max_left);
+	mScrollH += min(speed_right, max_right);
+	mScrollV -= min(speed_bottom, max_bottom);
+	mScrollV += min(speed_top, max_top);
+
+	if (old_h != mScrollH || old_v != mScrollV)
+	{
+		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		Refresh();
+	}	
+}
+
+void						GUI_Table::DragLeave	(void)
+{
+	if (mGeometry == NULL) return;
+	if (mContent == NULL) return;
+
+	int cellbounds[4];
+	if (mDragX != -1 && mDragY != -1)
+	{
+		if (CalcCellBounds(mDragX, mDragY, cellbounds))
+		mContent->CellDragLeave(cellbounds, mDragX, mDragY);
+	}
+	mDragX = -1;
+	mDragY = -1;
+}
+
+GUI_DragOperation			GUI_Table::Drop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
+{
+	if (mGeometry == NULL) return gui_Drag_None;
+	if (mContent == NULL) return gui_Drag_None;
+	
+	int new_x = MouseToCellX(x);
+	int new_y = MouseToCellY(y);
+	int cellbounds[4];
+	
+	if (new_x >= 0 && new_x < mGeometry->GetColCount() && new_y >= 0 && new_y < mGeometry->GetRowCount())
+	if (CalcCellBounds(mDragX, mDragY, cellbounds))
+			return mContent->CellDrop(cellbounds, new_x,new_y,x,y,drag,allowed,recommended);
+	return gui_Drag_None;
+	
+}
+
 
 void		GUI_Table::SetBounds(int x1, int y1, int x2, int y2)
 {

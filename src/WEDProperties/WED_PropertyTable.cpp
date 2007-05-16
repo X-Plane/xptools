@@ -7,6 +7,7 @@
 #include "WED_Messages.h"
 #include "GUI_Messages.h"
 #include "WED_ToolUtils.h"
+#include "WED_GroupCommands.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
 
@@ -49,6 +50,7 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_select = 0;
 	the_content.is_disclosed = 0;
 	the_content.is_selected = 0;
+	the_content.can_drag = 1;	
 	the_content.indent_level = 0;
 	
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
@@ -184,6 +186,16 @@ void	WED_PropertyTable::ToggleDisclose(
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
 
+void	WED_PropertyTable::DoDrag(
+						GUI_Pane *					drag_emitter,
+						int							mouse_x,
+						int							mouse_y,
+						int							bounds[4])
+{
+	WED_DoDragSelection(drag_emitter, mouse_x, mouse_y, bounds);
+}
+
+
 void	WED_PropertyTable::SelectionStart(
 						int							clear)
 {
@@ -313,6 +325,171 @@ int		WED_PropertyTable::TabAdvance(
 	
 	} while (start_x != io_x || start_y != io_y);
 	return 0;
+}
+
+void					WED_PropertyTable::GetLegalDropOperations(
+							int&						allow_between_col,
+							int&						allow_between_row,
+							int&						allow_into_cell)
+{ 
+	allow_between_col = mVertical && !mSelOnly && mFilter.empty(); 
+	allow_between_row = !mVertical && !mSelOnly && mFilter.empty(); 
+	allow_into_cell = !mSelOnly && mFilter.empty(); 
+}
+
+GUI_DragOperation		WED_PropertyTable::CanDropIntoCell(
+							int							cell_x,
+							int							cell_y,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended,
+							int&						whole_col,
+							int&						whole_row) 
+{ 
+	if (mSelOnly) return gui_Drag_None;
+	if (!mFilter.empty()) return gui_Drag_None;
+	whole_col = mVertical; 
+	whole_row = !mVertical; 
+	
+	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
+	
+	#if !DEV
+		address allow/recommend
+	#endif
+	
+	WED_Thing * who = FetchNth(mVertical ? cell_x : cell_y);
+	if (who)
+		return WED_CanMoveSelectionTo(mResolver, who, who->CountChildren()) ? gui_Drag_Move : gui_Drag_None;
+	
+	return gui_Drag_None; 
+}
+
+GUI_DragOperation		WED_PropertyTable::CanDropBetweenColumns(
+							int							cell_x,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended)
+{
+	if (mSelOnly) return gui_Drag_None;
+	if (!mFilter.empty()) return gui_Drag_None;
+
+	if (!mVertical) return gui_Drag_None;
+	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
+	
+	if (cell_x == GetColCount())
+	{
+		WED_Thing * who = FetchNth(cell_x-1);
+		if (who && who->GetParent())
+			return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1) ? gui_Drag_Move : gui_Drag_None;
+	}
+	else
+	{
+		WED_Thing * who = FetchNth(cell_x);
+		if (who && who->GetParent())
+			return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()) ? gui_Drag_Move : gui_Drag_None;
+	}	
+	
+	return gui_Drag_None; 
+}
+
+GUI_DragOperation		WED_PropertyTable::CanDropBetweenRows(
+							int							cell_y,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended)
+{
+	if (mSelOnly) return gui_Drag_None;
+	if (!mFilter.empty()) return gui_Drag_None;
+
+	if (mVertical) return gui_Drag_None;
+	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
+	
+	if (cell_y == GetRowCount())
+	{
+		// We are dragging into the top slot of the table.  Go right before the top entity.
+		WED_Thing * who = FetchNth(cell_y-1);
+		if (who && who->GetParent())
+			return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()) ? gui_Drag_Move : gui_Drag_None;
+	} 
+	else
+	{
+		// All drags other than the top slot are handled by finding teh guy above us.  If above us is open, we drop right into his
+		// first slot, otherwise we go right behind him in his parent.
+		WED_Thing * who = FetchNth(cell_y);
+		if (who && who->GetParent())
+		{
+			int v,r,c,i;
+			GetFilterStatus(who, WED_GetSelect(mResolver),v,r,c,i);
+			if (i)		return WED_CanMoveSelectionTo(mResolver, who, 0) ? gui_Drag_Move : gui_Drag_None;
+			else		return WED_CanMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1) ? gui_Drag_Move : gui_Drag_None;
+		}
+	}
+	
+	return gui_Drag_None; 
+}
+
+
+GUI_DragOperation		WED_PropertyTable::DoDropIntoCell(
+							int							cell_x,
+							int							cell_y,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended)
+{
+	WED_Thing * who = FetchNth(mVertical ? cell_x : cell_y);
+	if (who)
+		WED_DoMoveSelectionTo(mResolver, who, who->CountChildren());
+	return gui_Drag_Copy;
+}
+
+GUI_DragOperation		WED_PropertyTable::DoDropBetweenColumns(
+							int							cell_x,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended)
+{ 	
+	if (!mVertical) return gui_Drag_None;
+	if (cell_x == GetColCount())
+	{	
+		WED_Thing * who = FetchNth(cell_x-1);
+		if (who && who->GetParent())
+			WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1);
+	} else {
+		WED_Thing * who = FetchNth(cell_x);
+		if (who && who->GetParent())
+			WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition());
+	}
+	return gui_Drag_Copy;
+}
+
+GUI_DragOperation		WED_PropertyTable::DoDropBetweenRows(
+							int							cell_y,
+							GUI_DragData *				drag, 
+							GUI_DragOperation			allowed, 
+							GUI_DragOperation			recommended)  
+{
+	if (mVertical) return gui_Drag_None;
+
+	
+	if (cell_y == GetRowCount())
+	{
+		WED_Thing * who = FetchNth(cell_y-1);
+		if (who && who->GetParent())
+			WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1);
+	} 
+	else
+	{
+		WED_Thing * who = FetchNth(cell_y);
+		if (who && who->GetParent())
+		{
+			int v,r,c,i;
+			GetFilterStatus(who, WED_GetSelect(mResolver),v,r,c,i);
+			if (i)				WED_DoMoveSelectionTo(mResolver, who, 0);
+			else				WED_DoMoveSelectionTo(mResolver, who->GetParent(), who->GetMyPosition()+1);
+		}
+	}
+
+	return gui_Drag_Copy;
 }
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)

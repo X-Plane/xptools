@@ -36,11 +36,13 @@ enum GUI_CellContentType {
 	gui_Cell_EnumSet			// string val&int set	int set
 };
 
+
 struct	GUI_CellContent {
 	GUI_CellContentType		content_type;
 	int						can_edit;
 	int						can_disclose;
 	int						can_select;
+	int						can_drag;
 	
 	int						is_disclosed;
 	int						is_selected;
@@ -80,6 +82,11 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y)=0;
+	virtual	void	DoDrag(
+						GUI_Pane *					drag_emitter,
+						int							mouse_x,
+						int							mouse_y,
+						int							bounds[4])=0;
 
 	virtual void	SelectionStart(
 						int							clear)=0;
@@ -107,6 +114,48 @@ public:
 						int							reverse,
 						GUI_CellContent&			the_content)=0;
 
+	virtual	void					GetLegalDropOperations(
+											int&						allow_between_col,
+											int&						allow_between_row,
+											int&						allow_into_cell)=0;						
+	virtual	GUI_DragOperation		CanDropIntoCell(
+											int							cell_x,
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended,
+											int&						whole_col,
+											int&						whole_row)=0;
+	virtual	GUI_DragOperation		CanDropBetweenColumns(
+											int							cell_x,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)=0;
+	virtual	GUI_DragOperation		CanDropBetweenRows(
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)=0;
+
+
+	virtual	GUI_DragOperation		DoDropIntoCell(
+											int							cell_x,
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)=0;
+	virtual	GUI_DragOperation		DoDropBetweenColumns(
+											int							cell_x,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)=0;
+	virtual	GUI_DragOperation		DoDropBetweenRows(
+											int							cell_y,
+											GUI_DragData *				drag, 
+											GUI_DragOperation			allowed, 
+											GUI_DragOperation			recommended)=0;
+
+
 };
 
 class	GUI_TextTableHeaderProvider { 
@@ -129,12 +178,16 @@ public:
 	virtual				~GUI_TextTable();
 	
 			void		SetProvider(GUI_TextTableProvider * content);
-			void		SetParentPanes(GUI_Pane * parent);
+			void		SetParentTable(GUI_Table * parent);
 
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
+	virtual	GUI_DragOperation	CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
+	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
+	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y);
+	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void		Deactivate(void);
 
 	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
@@ -142,8 +195,28 @@ public:
 
 private:
 
-			int			TerminateEdit(bool inSave);
-		
+	enum GUI_DragPart {			// DRAG PARTS - divide the cell into 4 zones, for the uppe rand lower half, and closer to the center or edges.
+		drag_LowerOrInto,		// If the cell doesn't support reordering, we use "whole cell".
+		drag_IntoOrLower,
+		drag_IntoOrHigher,
+		drag_HigherOrInto,
+		drag_WholeCell
+	};
+
+	enum GUI_DragTableDest {	// Where we expect the row to go:
+		gui_Table_None,					// No drag
+		gui_Table_Row,					// Entire row at once - INTO cell
+		gui_Table_Column,				// Entire col at once - INTO cell
+		gui_Table_Cell,					// Just the cell! - INTO cell
+		gui_Insert_Left,				// INsertions - BETWEEN cells, based on this position relative to the insert cell.
+		gui_Insert_Right,
+		gui_Insert_Bottom,
+		gui_Insert_Top
+	};
+
+			int				TerminateEdit(bool inSave);			
+			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
+					
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;
 	int						mClickCellY;
@@ -151,12 +224,19 @@ private:
 	int						mInBounds;
 	int						mTrackLeft;
 	int						mTrackRight;
-	GUI_Pane *				mParent;
+	GUI_Table *				mParent;
 	GUI_TextField *			mTextField;
 	
 	GUI_KeyFlags			mModifiers;
 	int						mSelStartX;
 	int						mSelStartY;
+	
+	
+	GUI_DragTableDest		mDragDest;
+	int						mDragX;
+	int						mDragY;
+	GUI_DragPart			mDragPart;
+	GUI_DragOperation		mLastOp;
 };	
 
 

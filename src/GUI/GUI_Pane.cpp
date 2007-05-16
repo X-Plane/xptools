@@ -20,7 +20,8 @@
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 {
 #if APL
-	UInt32	mods = GetCurrentKeyModifiers();
+	// http://developer.apple.com/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/Reference/reference.html#//apple_ref/doc/uid/TP30000135-CH1g-DontLinkElementID_16
+	UInt32	mods = GetCurrentEventKeyModifiers();
 	
 	GUI_KeyFlags	flags = 0;
 	
@@ -32,6 +33,7 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 		flags |= gui_OptionAltFlag;
 	return flags;
 #elif IBM
+	// http://blogs.msdn.com/oldnewthing/archive/2004/11/30/272262.aspx
 	GUI_KeyFlags	flags = 0;
 	
 	if (::GetKeyState(VK_SHIFT) & ~1)
@@ -437,6 +439,27 @@ void		GUI_Pane::InternalDraw(GUI_GraphState * state)
 	}
 }
 
+GUI_Pane *	GUI_Pane::InternalMouseMove(int x, int y)
+{
+	if (mVisible)
+	{
+		if (x >= mBounds[0] && x <= mBounds[2] &&
+			y >= mBounds[1] && y <= mBounds[3])
+		{
+			GUI_Pane * target;
+			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			{
+				target = (*c)->InternalMouseMove(x, y);
+				if (target) return target;
+			}
+			
+			if (this->MouseMove(x, y))
+				return this;			
+		}
+	}
+	return NULL;
+}
+
 GUI_Pane *	GUI_Pane::InternalMouseDown(int x, int y, int button)
 {
 	if (mVisible)
@@ -500,6 +523,11 @@ GUI_DragOperation		GUI_Pane::InternalDragOver	(int x, int y, GUI_DragData * drag
 		if (mDragTarget) return mDragTarget->DragEnter(x,y,drag,allowed, recommended);
 						 return gui_Drag_None;
 	}
+}
+
+void GUI_Pane::InternalDragScroll(int x, int y)
+{
+	if (mDragTarget)	mDragTarget->DragScroll(x,y);
 }
 
 void					GUI_Pane::InternalDragLeave	(void)
