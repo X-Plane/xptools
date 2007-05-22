@@ -20,7 +20,7 @@ GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 		mScrollH = new GUI_ScrollBar();
 		mScrollH->SetParent(this);
 		mScrollH->AddListener(this);
-		mScrollH->SetBounds(0, 0, inVScroll ? (100-kSBSIZE) : 100, kSBSIZE);
+		mScrollH->SetBounds(0, 0, inVScroll ? (100-mScrollH->GetMinorAxis(1)) : 100, mScrollH->GetMinorAxis(0));
 		mScrollH->SetMin(0);
 		mScrollH->SetMax(0);
 		mScrollH->SetValue(0);
@@ -33,7 +33,7 @@ GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 		mScrollV = new GUI_ScrollBar();
 		mScrollV->SetParent(this);
 		mScrollV->AddListener(this);
-		mScrollV->SetBounds(100-kSBSIZE, inHScroll ? kSBSIZE : 0, 100, 100);
+		mScrollV->SetBounds(100-mScrollV->GetMinorAxis(1), inHScroll ? mScrollV->GetMinorAxis(0) : 0, 100, 100);
 		mScrollV->SetMin(0);
 		mScrollV->SetMax(0);
 		mScrollV->SetValue(0);
@@ -63,9 +63,9 @@ void	GUI_ScrollerPane::PositionInContentArea(GUI_Pane * inPane)
 	int bounds_me[4];
 	this->GetBounds(bounds_me);
 	if (mScrollH)
-		bounds_me[1] += kSBSIZE;
+		bounds_me[1] += mScrollH->GetMinorAxis(0);
 	if (mScrollV)
-		bounds_me[2] -= kSBSIZE;
+		bounds_me[2] -= mScrollV->GetMinorAxis(1);
 	
 	inPane->SetBounds(bounds_me);
 	inPane->SetSticky(1,1,1,1);
@@ -76,9 +76,9 @@ void	GUI_ScrollerPane::PositionSidePane(GUI_Pane * pane)
 	int bounds_me[4];
 	this->GetBounds(bounds_me);
 	if (mScrollH)
-		bounds_me[1] += kSBSIZE;
+		bounds_me[1] += mScrollH->GetMinorAxis(0);
 	if (mScrollV)
-		bounds_me[2] -= kSBSIZE;
+		bounds_me[2] -= mScrollV->GetMinorAxis(1);
 	int bounds_child[4];
 	pane->GetBounds(bounds_child);
 	bounds_child[1] = bounds_me[1];
@@ -91,9 +91,9 @@ void	GUI_ScrollerPane::PositionHeaderPane(GUI_Pane * pane)
 	int bounds_me[4];
 	this->GetBounds(bounds_me);
 	if (mScrollH)
-		bounds_me[1] += kSBSIZE;
+		bounds_me[1] += mScrollH->GetMinorAxis(0);
 	if (mScrollV)
-		bounds_me[2] -= kSBSIZE;
+		bounds_me[2] -= mScrollV->GetMinorAxis(1);
 	int bounds_child[4];
 	pane->GetBounds(bounds_child);
 	bounds_child[0] = bounds_me[0];

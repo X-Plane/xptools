@@ -25,6 +25,18 @@ void	GUI_DrawCentered(
 				int *						out_width,		// can be null
 				int *						out_height);
 
+void	GUI_DrawHorizontalStretch(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							bounds[4],
+				int							tile_sel[4]);
+
+void	GUI_DrawVerticalStretch(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							bounds[4],
+				int							tile_sel[4]);
+
 void	GUI_DrawStretched(
 				GUI_GraphState *			state,
 				const char *				in_resource,

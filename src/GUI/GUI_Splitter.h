@@ -24,6 +24,8 @@ public:
 
 private:
 
+			int			GetSplitSize(void);
+
 	int		mDirection;
 	int		mSlop;		// mouse - boundary = slop
 	int		mClick;

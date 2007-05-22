@@ -24,6 +24,7 @@ public:
 	
 	virtual	void		SetValue(float inValue);
 	
+			int			GetNaturalHeight(void);
 private:
 
 		vector<string>		mItems;

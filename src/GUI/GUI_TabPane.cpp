@@ -29,8 +29,8 @@
 GUI_TabPane::GUI_TabPane(GUI_Commander * parent) :
 	GUI_Commander(parent), GUI_Packer()
 {
-	int b[4] = { 0, 0, 20, 20 };
 	mTabs = new GUI_TabControl;
+	int b[4] = { 0, 0, 30, mTabs->GetNaturalHeight() };
 	mTabs->SetParent(this);
 	mTabs->Show();
 	mTabs->SetBounds(b);

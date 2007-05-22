@@ -20,6 +20,8 @@ public:
 	virtual	void	SetMax(float inMax);
 	virtual	void	SetPageSize(float inPageSize);
 
+			int		GetMinorAxis(int vertical);
+
 private:
 
 		int		mClickPart;

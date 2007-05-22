@@ -1,5 +1,7 @@
 #include "GUI_ScrollBar.h"
 #include "GUI_GraphState.h"
+#include "GUI_Resources.h"
+#include "GUI_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -16,7 +18,8 @@ enum {
 	sb_PartUpButton
 };
 
-int SB_BuildMetrix(
+static int SB_BuildMetrix(
+				int vertical,
 				float M1, float M2, float MD,	// Major axis - min, max, span
 				float m1, float m2, float md,	// Minor axis - min, max, span
 				float vnow,						// Actual scroll bar values
@@ -27,9 +30,17 @@ int SB_BuildMetrix(
 				float& thumb2,					// top of th umb
 				float& maxbut)					// cut from sb to max button's start
 {
-	float sbl = MD - 2.0 * md;		// real scroll bar len - buttons
-	minbut = M1 + md;				// subtract square buttons from ends
-	maxbut = M2 - md;	
+	GUI_TexPosition_t	metrics;
+	metrics.real_width  = metrics.real_height = 11;
+	
+	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
+
+
+	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
+
+	float sbl = MD - 2.0 * button_len;		// real scroll bar len - buttons
+	minbut = M1 + button_len;				// subtract square buttons from ends
+	maxbut = M2 - button_len;	
 	
 	if (vmax <= vmin)
 	{
@@ -61,6 +72,20 @@ GUI_ScrollBar::~GUI_ScrollBar()
 {
 }
 
+int		GUI_ScrollBar::GetMinorAxis(int vertical)
+{
+	GUI_TexPosition_t	metrics;
+
+	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
+
+
+	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
+
+	
+
+}
+
+
 int			GUI_ScrollBar::MouseDown(int x, int y, int button)
 {
 	int b[4];
@@ -76,17 +101,19 @@ int			GUI_ScrollBar::MouseDown(int x, int y, int button)
 	float track_coord = (bf[4] > bf[5])	? x : y;
 
 	if (bf[4] > bf[5])	
-		alive = SB_BuildMetrix(bf[0], bf[2], bf[4],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[0], bf[2], bf[4],
 					   bf[1], bf[3], bf[5],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
 	else		
-		alive = SB_BuildMetrix(bf[1], bf[3], bf[5],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[1], bf[3], bf[5],
 					   bf[0], bf[2], bf[4],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
 	
-	if (!alive) return 0;
+	if (!alive) return 1;
 		
 	if (track_coord < b1)
 	{
@@ -142,12 +169,14 @@ void		GUI_ScrollBar::MouseDrag(int x, int y, int button)
 	float track_coord = (bf[4] > bf[5])	? x : y;
 
 	if (bf[4] > bf[5])	
-		alive = SB_BuildMetrix(bf[0], bf[2], bf[4],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[0], bf[2], bf[4],
 					   bf[1], bf[3], bf[5],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
 	else		
-		alive = SB_BuildMetrix(bf[1], bf[3], bf[5],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[1], bf[3], bf[5],
 					   bf[0], bf[2], bf[4],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
@@ -209,6 +238,12 @@ void		GUI_ScrollBar::MouseUp(int x, int y, int button)
 
 void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 {
+
+	int x, y;
+//	GetMouseLocNow(&x,&y);
+//	if (x > 500)
+//		return;
+		
 	int b[4];
 	GetBounds(b);
 	float bf[6] = { b[0], b[1], b[2], b[3], b[2]-b[0],b[3]-b[1] };
@@ -216,15 +251,7 @@ void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 
 	float vnow, vmin, vmax, vpage;
 	float b1, b2, t1, t2;
-	state->SetState(false, 0, false,   false, false, 	false, false);
-	glColor3f(0.2,0.2,0.2);
-	glBegin(GL_QUADS);
 
-	glVertex2f(bf[0], bf[1]);
-	glVertex2f(bf[0], bf[3]);
-	glVertex2f(bf[2], bf[3]);
-	glVertex2f(bf[2], bf[1]);
-	
 	vnow = this->GetValue();
 	vmin = this->GetMin();
 	vmax = this->GetMax();
@@ -234,69 +261,75 @@ void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 	if (bf[4] > bf[5])	
 	{
 		// Horizontal scrollbar
-		alive = SB_BuildMetrix(bf[0], bf[2], bf[4],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[0], bf[2], bf[4],
 					   bf[1], bf[3], bf[5],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
 
-		// down but
-		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 1.0 : 0.5, 0.0, 0.0);		
-		glVertex2f(bf[0], bf[1]);
-		glVertex2f(bf[0], bf[3]);
-		glVertex2f(b1, bf[3]);
-		glVertex2f(b1, bf[1]);
-
+		int tile_s_bar[4] = { 0, 0, 1, 2 };
+		int bounds_bar[4] = { b1, bf[1], b2, bf[3] };		
+		GUI_DrawHorizontalStretch(state, "scrollbar_h.png", bounds_bar, tile_s_bar);
+		
 		if (alive)
 		{
 			// thumb
+			int thumb_sel[4] = { 0, 1, 1, 2 };
+			int thumb_bnd[4] = { t1, bf[1], t2, bf[3] };
 			glColor3f(0.0, (mInPart && mClickPart == sb_PartThumb) ? 1.0 : 0.5, 0.0);				
-			glVertex2f(t1, bf[1]);
-			glVertex2f(t1, bf[3]);
-			glVertex2f(t2, bf[3]);
-			glVertex2f(t2, bf[1]);
+			GUI_DrawHorizontalStretch(state, "scrollbar_h.png", thumb_bnd, thumb_sel);
 		}
-				
+
+		// Down btn
+		int tile_sel[4] = { 0, 0, 2, 1 };
+		int	bounds[4] = { bf[0], bf[1], b1, bf[3] };
+		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
+		GUI_DrawCentered(state, "scroll_btn_h.png", bounds, 0, 0, tile_sel, NULL, NULL);
+		
+		
 		// up button
-		glColor3f((mInPart && mClickPart == sb_PartUpButton) ? 1.0 : 0.5, 0.0, 0.0);		
-		glVertex2f(b2, bf[1]);
-		glVertex2f(b2, bf[3]);
-		glVertex2f(bf[2], bf[3]);
-		glVertex2f(bf[2], bf[1]);
+		int up_sel[4] = { 1, 0, 2, 1 };
+		int	up_bnd[4] = { b2, bf[1], bf[2], bf[3] };
+		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
+		GUI_DrawCentered(state, "scroll_btn_h.png", up_bnd, 0, 0, up_sel, NULL, NULL);
 	} 
 	else 
 	{
 		// Vertical scrollbar
-		alive = SB_BuildMetrix(bf[1], bf[3], bf[5],
+		alive = SB_BuildMetrix(bf[5] > bf[4], 
+					   bf[1], bf[3], bf[5],
 					   bf[0], bf[2], bf[4],
 					   vnow, vmin, vmax, vpage,
 					   b1, t1, t2, b2);
 					   
-		// down but
-		glColor3f(mClickPart == sb_PartDownButton ? 1.0 : 0.5, 0.0, 0.0);		
-		glVertex2f(bf[0], bf[1]);
-		glVertex2f(bf[0], b1);
-		glVertex2f(bf[2], b1);
-		glVertex2f(bf[2], bf[1]);
-
+		int tile_s_bar[4] = { 0, 0, 2, 1 };
+		int bounds_bar[4] = { bf[0], b1, bf[2], b2 };		
+		GUI_DrawVerticalStretch(state, "scrollbar_v.png", bounds_bar, tile_s_bar);
+		
 		if (alive)
 		{
 			// thumb
-			glColor3f(0.0, mClickPart == sb_PartThumb ? 1.0 : 0.5, 0.0);				
-			glVertex2f(bf[0], t1);
-			glVertex2f(bf[0], t2);
-			glVertex2f(bf[2], t2);
-			glVertex2f(bf[2], t1);
+			int thumb_sel[4] = { 1, 0, 2, 1 };
+			int thumb_bnd[4] = { bf[0], t1, bf[2], t2 };
+			glColor3f(0.0, (mInPart && mClickPart == sb_PartThumb) ? 1.0 : 0.5, 0.0);				
+			GUI_DrawVerticalStretch(state, "scrollbar_v.png", thumb_bnd, thumb_sel);
 		}
-				
+
+		// Down btn
+		int tile_sel[4] = { 0, 0, 1, 2 };
+		int	bounds[4] = { bf[0], bf[1], bf[2], b1 };
+		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
+		GUI_DrawCentered(state, "scroll_btn_v.png", bounds, 0, 0, tile_sel, NULL, NULL);
+		
+		
 		// up button
-		glColor3f(mClickPart == sb_PartUpButton ? 1.0 : 0.5, 0.0, 0.0);		
-		glVertex2f(bf[0], b2);
-		glVertex2f(bf[0], bf[3]);
-		glVertex2f(bf[2], bf[3]);
-		glVertex2f(bf[2], b2);					   
+		int up_sel[4] = { 0, 1, 1, 2 };
+		int	up_bnd[4] = { bf[0], b2, bf[2], bf[3] };
+		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
+		GUI_DrawCentered(state, "scroll_btn_v.png", up_bnd, 0, 0, up_sel, NULL, NULL);
+					   
+
 	}
-	
-	glEnd();
 }
 
 void	GUI_ScrollBar::SetValue(float inValue)

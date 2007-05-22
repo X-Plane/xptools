@@ -1,5 +1,7 @@
 #include "GUI_Splitter.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+#include "GUI_Resources.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -7,7 +9,7 @@
 	#include <gl.h>
 #endif
 
-const int	gui_SplitSize = 5;
+//const int	gui_SplitSize = 5;
 
 GUI_Splitter::GUI_Splitter(int direction)
 	: mDirection(direction),
@@ -27,26 +29,20 @@ void		GUI_Splitter::Draw(GUI_GraphState * state)
 		GetBounds(b);
 		GetNthChild(0)->GetBounds(b1);
 		GetNthChild(1)->GetBounds(b2);
+
 		
-		state->SetState(false, 0, false, false, false, false, false);
-		
-		glColor3f(0,mClick ? 1.0 : 0.5,1.0);
-		glBegin(GL_QUADS);
-		
-		if (mDirection == gui_Split_Horizontal)
+		if (mDirection == gui_Split_Vertical)
 		{
-			glVertex2i(b1[2],b[1]);
-			glVertex2i(b1[2],b[3]);
-			glVertex2i(b2[0],b[3]);
-			glVertex2i(b2[0],b[1]);
+			int tile_sel[4] = { 0, mClick ? 1 : 0, 1, 2 };
+			b[1] = b1[3];
+			b[3] = b2[1];
+			GUI_DrawHorizontalStretch(state, "splitter_h.png", b, tile_sel);			
 		} else {
-			glVertex2i(b[0],b1[3]);
-			glVertex2i(b[0],b2[1]);
-			glVertex2i(b[2],b2[1]);
-			glVertex2i(b[2],b1[3]);
+			b[0] = b1[2];
+			b[2] = b2[0];
+			int tile_sel[4] = { mClick ? 1 : 0, 0, 2, 1 };
+			GUI_DrawVerticalStretch(state, "splitter_v.png", b, tile_sel);
 		}
-		glEnd();
-		
 	}
 }
 
@@ -83,12 +79,12 @@ void		GUI_Splitter::MouseDrag(int x, int y, int button)
 		if (mDirection == gui_Split_Horizontal)
 		{
 			b1[2] = x - mSlop;
-			b2[0] = x - mSlop + gui_SplitSize;
+			b2[0] = x - mSlop + GetSplitSize();
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
 			b1[3] = y - mSlop;
-			b2[1] = y - mSlop + gui_SplitSize;
+			b2[1] = y - mSlop + GetSplitSize();
 			b1[0] = b2[0] = b[0];
 			b1[2] = b2[2] = b[2];
 		}
@@ -113,21 +109,21 @@ void		GUI_Splitter::AlignContents()
 		GetNthChild(1)->GetBounds(b2);
 		
 		int split = mDirection == gui_Split_Horizontal ?
-			(b1[2] + b2[0] + gui_SplitSize) / 2 :
-			(b1[3] + b2[1] + gui_SplitSize) / 2;
+			(b1[2] + b2[0] + GetSplitSize()) / 2 :
+			(b1[3] + b2[1] + GetSplitSize()) / 2;
 		
 		if (mDirection == gui_Split_Horizontal)
 		{
 			b1[0] = b[0];
 			b1[2] = split;
-			b2[0] = split + gui_SplitSize;
+			b2[0] = split + GetSplitSize();
 			b2[2] = b[2];
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
 			b1[1] = b[1];
 			b1[3] = split;
-			b2[1] = split + gui_SplitSize;
+			b2[1] = split + GetSplitSize();
 			b2[3] = b[3];
 			b1[0] = b2[0] = b[0];
 			b1[2] = b2[2] = b[2];
@@ -152,14 +148,14 @@ void		GUI_Splitter::AlignContentsAt(int split)
 		{
 			b1[0] = b[0];
 			b1[2] = split;
-			b2[0] = split + gui_SplitSize;
+			b2[0] = split + GetSplitSize();
 			b2[2] = b[2];
 			b1[1] = b2[1] = b[1];
 			b1[3] = b2[3] = b[3];
 		} else {
 			b1[1] = b[1];
 			b1[3] = split;
-			b2[1] = split + gui_SplitSize;
+			b2[1] = split + GetSplitSize();
 			b2[3] = b[3];
 			b1[0] = b2[0] = b[0];
 			b1[2] = b2[2] = b[2];
@@ -170,3 +166,16 @@ void		GUI_Splitter::AlignContentsAt(int split)
 
 }
 
+int		GUI_Splitter::GetSplitSize(void)
+{
+		GUI_TexPosition_t	metrics;
+
+	if (mDirection == gui_Split_Vertical)
+	{
+		GUI_GetTextureResource("splitter_h.png", 0, &metrics);
+		return metrics.real_height / 2;
+	} else {
+		GUI_GetTextureResource("splitter_v.png", 0, &metrics);
+		return metrics.real_width / 2;
+	}
+}

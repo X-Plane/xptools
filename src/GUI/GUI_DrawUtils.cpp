@@ -90,7 +90,11 @@ void	GUI_DrawCentered(
 	GUI_TexPosition_t metrics;	
 	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
 	
-	int	image_size[4] = { 0, 0, metrics.real_width, metrics.real_height };
+	int	image_size[4] = { 
+		(float) tile_sel[0]    * (float)metrics.real_width  / (float)tile_sel[2],
+		(float) tile_sel[1]    * (float)metrics.real_height / (float)tile_sel[3],
+		(float)(tile_sel[0]+1) * (float)metrics.real_width  / (float)tile_sel[2],
+		(float)(tile_sel[1]+1) * (float)metrics.real_height / (float)tile_sel[3] };
 
 	GUI_PositionRect(bounds, image_size, just_h, just_v);
 	
@@ -104,17 +108,10 @@ void	GUI_DrawCentered(
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);
 	
-	glBegin(GL_QUADS);
-	
+	glBegin(GL_QUADS);	
 	gl_quad(image_size[0],image_size[1],image_size[2],image_size[3],
 					sts[0],sts[1],sts[2],sts[3]);
 	glEnd();
-	
-//	state->SetState(0,0,0,  0,0,0,0);
-//	glBegin(GL_LINE_LOOP);
-//	gl_quad(image_size[0],image_size[1],image_size[2],image_size[3],
-//					sts[0],sts[1],sts[2],sts[3]);
-//	glEnd();
 	
 	if (out_width)	*out_width = metrics.real_width;
 	if (out_height)	*out_height = metrics.real_height;
@@ -144,6 +141,69 @@ void	GUI_DrawStretched(
 	glEnd();
 	
 }
+
+void	GUI_DrawHorizontalStretch(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							bounds[4],
+				int							tile_sel[4])
+{
+	GUI_TexPosition_t metrics;
+	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
+	
+	int centered[4] = { bounds[0], 0, bounds[2], metrics.real_height / tile_sel[3]};
+	GUI_PositionRect(bounds, centered, 0, 0);
+	
+	if ((centered[3] - centered[1]) % 2)		centered[1]++, centered[3]++;	
+	
+	int p1 = bounds[0] + metrics.real_width * 0.33 / tile_sel[2];
+	int p2 = bounds[2] - metrics.real_width * 0.33 / tile_sel[2];
+	
+	int b1[4] = { bounds[0], centered[1], p1,		 centered[3] };
+	int b2[4] = { p1,		 centered[1], p2,		 centered[3] };
+	int b3[4] = { p2,		 centered[1], bounds[2], centered[3] };
+	
+	int t1[4] = { tile_sel[0] * 3    , tile_sel[1], tile_sel[2] * 3, tile_sel[3] };
+	int t2[4] = { tile_sel[0] * 3 + 1, tile_sel[1], tile_sel[2] * 3, tile_sel[3] };
+	int t3[4] = { tile_sel[0] * 3 + 2, tile_sel[1], tile_sel[2] * 3, tile_sel[3] };
+	
+	GUI_DrawStretched(state, in_resource, b1, t1);
+	GUI_DrawStretched(state, in_resource, b2, t2);
+	GUI_DrawStretched(state, in_resource, b3, t3);	
+}
+
+void	GUI_DrawVerticalStretch(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							bounds[4],
+				int							tile_sel[4])
+{
+	GUI_TexPosition_t metrics;
+	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
+	
+	int centered[4] = { 0, bounds[1], metrics.real_width / tile_sel[2], bounds[3] };
+	GUI_PositionRect(bounds, centered, 0, 0);
+	
+	if ((centered[2] - centered[0]) % 2)		centered[0]++, centered[2]++;	
+	
+	int p1 = bounds[1] + metrics.real_height * 0.33 / tile_sel[3];
+	int p2 = bounds[3] - metrics.real_height * 0.33 / tile_sel[3];
+	
+	int b1[4] = { centered[0], bounds[1],	centered[2], p1		   };
+	int b2[4] = { centered[0], p1,			centered[2], p2		   };
+	int b3[4] = { centered[0], p2,			centered[2], bounds[3] };
+	
+	int t1[4] = { tile_sel[0], tile_sel[1] * 3   , tile_sel[2], tile_sel[3] * 3 };
+	int t2[4] = { tile_sel[0], tile_sel[1] * 3 +1, tile_sel[2], tile_sel[3] * 3 };
+	int t3[4] = { tile_sel[0], tile_sel[1] * 3 +2, tile_sel[2], tile_sel[3] * 3 };
+
+	GUI_DrawStretched(state, in_resource, b1, t1);
+	GUI_DrawStretched(state, in_resource, b2, t2);
+	GUI_DrawStretched(state, in_resource, b3, t3);	
+}
+
+
+
 
 void	GUI_PlotIcon(
 				GUI_GraphState *			state,
