@@ -23,6 +23,27 @@
 #include "CompGeomDefs2.h"
 #include "IUnknown.h"
 
+// Handle types - these specify how they are drawn.
+
+enum HandleType_t {
+	handle_None,		// Draw nothing
+	handle_Square,		// Default square for marquee
+	handle_Vertex,		// Movable vertex (forms a bezier curve)
+	handle_VertexSharp,	// Movable vertex (no bezier curve)
+	handle_Bezier,		// Bezier control handle endpoint
+	handle_ClosePt,		// Point to hit to close a loop
+	handle_Cross,		// Cross for precise placement
+	handle_ArrowHead,	// Arrow head, no stem
+	handle_Arrow		// Arrow with stem
+};
+
+enum LinkType_t {
+	link_None,			// Draw nothing
+	link_Solid,			// Draw solid line...
+	link_BezierCtrl,	// Thin line for bezier handles	
+	link_Ghost			// implicit ghost line
+};
+
 class	IControlHandles : public virtual IUnknown {
 public:
 
@@ -38,13 +59,14 @@ public:
 	virtual		int		GetNthEntityID(int n) const=0;
 
 	// Control handles - by number - they can be moved around.
-	virtual		int		CountControlHandles(int id						  ) const=0;
-	virtual		void	GetNthControlHandle(int id, int n,		 Point2& p) const=0;
+	virtual		int				CountControlHandles(int id										) const=0;
+	virtual		void			GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const=0;
 
 	// Links are structural lines between the control handles.  We have 0 or more links
 	// and each one has a start and end control handle index number.  This is not editable - 
 	// it can only be queried.	
 	virtual		int		GetLinks		    (int id) const=0;
+	virtual		void	GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const =0;
 	virtual		int		GetNthLinkSource   (int id, int n) const=0;
 	virtual		int		GetNthLinkSourceCtl(int id, int n) const=0;	// -1 if no bezier ctl point!
 	virtual		int		GetNthLinkTarget   (int id, int n) const=0;

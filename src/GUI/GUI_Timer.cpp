@@ -4,6 +4,10 @@
 EventLoopTimerUPP GUI_Timer::sTimerCB = NewEventLoopTimerUPP(GUI_Timer::TimerCB);
 #endif
 
+#if !APL
+#error not coded
+#endif
+
 
 GUI_Timer::GUI_Timer(void)
 {

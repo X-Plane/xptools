@@ -854,6 +854,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 		TerminateEdit(false);
 		return 1;
 	}
+	return 0;
 }
 
 

@@ -31,4 +31,11 @@ void	GUI_DrawStretched(
 				int							bounds[4],
 				int							tile_sel[4]);	// can be null
 
+void	GUI_PlotIcon(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							x,
+				int							y,
+				float						angle);
+
 #endif

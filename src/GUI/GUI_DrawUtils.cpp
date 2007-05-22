@@ -4,8 +4,10 @@
 #include "GUI_Resources.h"
 #if APL
 	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
 #else
 	#include <GL/gl.h>
+	#include <GL/glu.h>
 #endif
 
 // for ui - no mipmap, no linear interp, no magenta filter, no wrapping
@@ -85,13 +87,15 @@ void	GUI_DrawCentered(
 				int *						out_width,
 				int *						out_height)
 {
-	GUI_TexPosition_t metrics;
-	
+	GUI_TexPosition_t metrics;	
 	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
 	
 	int	image_size[4] = { 0, 0, metrics.real_width, metrics.real_height };
 
 	GUI_PositionRect(bounds, image_size, just_h, just_v);
+	
+	if (metrics.real_width % 2)		image_size[0]++, image_size[2]++;
+	if (metrics.real_height % 2)	image_size[1]++, image_size[3]++;
 	
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
@@ -105,6 +109,12 @@ void	GUI_DrawCentered(
 	gl_quad(image_size[0],image_size[1],image_size[2],image_size[3],
 					sts[0],sts[1],sts[2],sts[3]);
 	glEnd();
+	
+//	state->SetState(0,0,0,  0,0,0,0);
+//	glBegin(GL_LINE_LOOP);
+//	gl_quad(image_size[0],image_size[1],image_size[2],image_size[3],
+//					sts[0],sts[1],sts[2],sts[3]);
+//	glEnd();
 	
 	if (out_width)	*out_width = metrics.real_width;
 	if (out_height)	*out_height = metrics.real_height;
@@ -133,4 +143,28 @@ void	GUI_DrawStretched(
 					sts[0],sts[1],sts[2],sts[3]);
 	glEnd();
 	
+}
+
+void	GUI_PlotIcon(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							x,
+				int							y,
+				float						angle)
+{
+	int bounds[4] = { x - 10, y - 10, x + 10, y + 10 };
+	
+	int tile_sel[4] = { 0, 0, 1, 1 };
+	
+	if (angle)
+	{
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glTranslatef(x,y,0);
+		glRotatef	(angle,0,0,-1);	// cw rotate
+		glTranslatef(-x,-y,0);
+	}
+	
+	GUI_DrawCentered(state, in_resource, bounds, 0, 0,  tile_sel, NULL, NULL);
+	if (angle) glPopMatrix();
 }
