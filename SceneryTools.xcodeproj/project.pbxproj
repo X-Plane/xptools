@@ -45,6 +45,24 @@
 /* Begin PBXBuildFile section */
 		8D0C4E920486CD37000505A6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
+		D60BFC480C03619A00AD5EB7 /* map_airbase.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */; };
+		D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3E0C03619A00AD5EB7 /* map_airport.png */; };
+		D60BFC4A0C03619A00AD5EB7 /* map_beacon.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */; };
+		D60BFC4B0C03619A00AD5EB7 /* map_helipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC400C03619A00AD5EB7 /* map_helipad.png */; };
+		D60BFC4C0C03619A00AD5EB7 /* map_heliport.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC410C03619A00AD5EB7 /* map_heliport.png */; };
+		D60BFC4D0C03619A00AD5EB7 /* map_light.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC420C03619A00AD5EB7 /* map_light.png */; };
+		D60BFC4E0C03619A00AD5EB7 /* map_rampstart.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC430C03619A00AD5EB7 /* map_rampstart.png */; };
+		D60BFC4F0C03619A00AD5EB7 /* map_seaport.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC440C03619A00AD5EB7 /* map_seaport.png */; };
+		D60BFC500C03619A00AD5EB7 /* map_taxisign.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC450C03619A00AD5EB7 /* map_taxisign.png */; };
+		D60BFC510C03619A00AD5EB7 /* map_towerview.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC460C03619A00AD5EB7 /* map_towerview.png */; };
+		D60BFC520C03619A00AD5EB7 /* map_windsock.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC470C03619A00AD5EB7 /* map_windsock.png */; };
+		D60BFCDC0C03664F00AD5EB7 /* handle_arrowhead.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */; };
+		D60BFCDD0C03664F00AD5EB7 /* handle_closeloop.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */; };
+		D60BFCDE0C03664F00AD5EB7 /* handle_control.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD70C03664F00AD5EB7 /* handle_control.png */; };
+		D60BFCDF0C03664F00AD5EB7 /* handle_cross.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD80C03664F00AD5EB7 /* handle_cross.png */; };
+		D60BFCE00C03664F00AD5EB7 /* handle_square.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD90C03664F00AD5EB7 /* handle_square.png */; };
+		D60BFCE10C03664F00AD5EB7 /* handle_vertexround.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCDA0C03664F00AD5EB7 /* handle_vertexround.png */; };
+		D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */; };
 		D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */; };
 		D613A0FB0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */; };
 		D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */; };
@@ -610,63 +628,63 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E /* WED */;
+			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
 			remoteInfo = WED;
 		};
 		D6C68DDE0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF96F0B6135F400D9190C /* ObjConverter */;
+			remoteGlobalIDString = D67EF96F0B6135F400D9190C;
 			remoteInfo = ObjConverter;
 		};
 		D6C68DE00BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D65E4B200B65427C004D7887 /* RenderFarm */;
+			remoteGlobalIDString = D65E4B200B65427C004D7887;
 			remoteInfo = RenderFarm;
 		};
 		D6C68DE20BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C /* DSFTool */;
+			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C;
 			remoteInfo = DSFTool;
 		};
 		D6C68DE40BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D6ED369A0B67964D00D5484E /* WED */;
+			remoteGlobalIDString = D6ED369A0B67964D00D5484E;
 			remoteInfo = WED;
 		};
 		D6C68DE60BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C /* XGrinder */;
+			remoteGlobalIDString = D67EF4EE0B5CF9F400D9190C;
 			remoteInfo = XGrinder;
 		};
 		D6C68DE80BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D62435240AE401EF004F00E3 /* RenderFarmUI */;
+			remoteGlobalIDString = D62435240AE401EF004F00E3;
 			remoteInfo = RenderFarmUI;
 		};
 		D6C68DEA0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */;
+			remoteGlobalIDString = D6BC3CAF0AB2330E003949C5;
 			remoteInfo = ObjConverterUI;
 		};
 		D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 8D0C4E890486CD37000505A6 /* ObjView */;
+			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
 			remoteInfo = ObjView;
 		};
 /* End PBXContainerItemProxy section */
@@ -678,6 +696,24 @@
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D60A99AC0B7A57E0002680BD /* GUI_Packer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Packer.h; sourceTree = "<group>"; };
 		D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Packer.cpp; sourceTree = "<group>"; };
+		D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_airbase.png; sourceTree = "<group>"; };
+		D60BFC3E0C03619A00AD5EB7 /* map_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_airport.png; sourceTree = "<group>"; };
+		D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_beacon.png; sourceTree = "<group>"; };
+		D60BFC400C03619A00AD5EB7 /* map_helipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_helipad.png; sourceTree = "<group>"; };
+		D60BFC410C03619A00AD5EB7 /* map_heliport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_heliport.png; sourceTree = "<group>"; };
+		D60BFC420C03619A00AD5EB7 /* map_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_light.png; sourceTree = "<group>"; };
+		D60BFC430C03619A00AD5EB7 /* map_rampstart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_rampstart.png; sourceTree = "<group>"; };
+		D60BFC440C03619A00AD5EB7 /* map_seaport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_seaport.png; sourceTree = "<group>"; };
+		D60BFC450C03619A00AD5EB7 /* map_taxisign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_taxisign.png; sourceTree = "<group>"; };
+		D60BFC460C03619A00AD5EB7 /* map_towerview.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_towerview.png; sourceTree = "<group>"; };
+		D60BFC470C03619A00AD5EB7 /* map_windsock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_windsock.png; sourceTree = "<group>"; };
+		D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_arrowhead.png; sourceTree = "<group>"; };
+		D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_closeloop.png; sourceTree = "<group>"; };
+		D60BFCD70C03664F00AD5EB7 /* handle_control.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_control.png; sourceTree = "<group>"; };
+		D60BFCD80C03664F00AD5EB7 /* handle_cross.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_cross.png; sourceTree = "<group>"; };
+		D60BFCD90C03664F00AD5EB7 /* handle_square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_square.png; sourceTree = "<group>"; };
+		D60BFCDA0C03664F00AD5EB7 /* handle_vertexround.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexround.png; sourceTree = "<group>"; };
+		D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexsharp.png; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A0F90BD62B0F00D50803 /* WED_ImageOverlayTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ImageOverlayTool.h; sourceTree = "<group>"; };
@@ -1538,6 +1574,38 @@
 			children = (
 			);
 			name = "Configuration Files";
+			sourceTree = "<group>";
+		};
+		D60BFC3C0C03619A00AD5EB7 /* icons */ = {
+			isa = PBXGroup;
+			children = (
+				D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */,
+				D60BFC3E0C03619A00AD5EB7 /* map_airport.png */,
+				D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */,
+				D60BFC400C03619A00AD5EB7 /* map_helipad.png */,
+				D60BFC410C03619A00AD5EB7 /* map_heliport.png */,
+				D60BFC420C03619A00AD5EB7 /* map_light.png */,
+				D60BFC430C03619A00AD5EB7 /* map_rampstart.png */,
+				D60BFC440C03619A00AD5EB7 /* map_seaport.png */,
+				D60BFC450C03619A00AD5EB7 /* map_taxisign.png */,
+				D60BFC460C03619A00AD5EB7 /* map_towerview.png */,
+				D60BFC470C03619A00AD5EB7 /* map_windsock.png */,
+			);
+			path = icons;
+			sourceTree = "<group>";
+		};
+		D60BFCD40C03664F00AD5EB7 /* handles */ = {
+			isa = PBXGroup;
+			children = (
+				D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */,
+				D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */,
+				D60BFCD70C03664F00AD5EB7 /* handle_control.png */,
+				D60BFCD80C03664F00AD5EB7 /* handle_cross.png */,
+				D60BFCD90C03664F00AD5EB7 /* handle_square.png */,
+				D60BFCDA0C03664F00AD5EB7 /* handle_vertexround.png */,
+				D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */,
+			);
+			path = handles;
 			sourceTree = "<group>";
 		};
 		D656B1160B51778F003FF84F /* Installer */ = {
@@ -2500,6 +2568,8 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D60BFCD40C03664F00AD5EB7 /* handles */,
+				D60BFC3C0C03619A00AD5EB7 /* icons */,
 				D6E064810BDD32010070E31C /* map_tools.png */,
 				D6A1860D0BA9A59C00BBCD0C /* tabs.png */,
 				D6A185AC0BA878B100BBCD0C /* checkbutton.png */,
@@ -2812,6 +2882,24 @@
 				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
 				D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */,
 				D6E064820BDD32010070E31C /* map_tools.png in Resources */,
+				D60BFC480C03619A00AD5EB7 /* map_airbase.png in Resources */,
+				D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */,
+				D60BFC4A0C03619A00AD5EB7 /* map_beacon.png in Resources */,
+				D60BFC4B0C03619A00AD5EB7 /* map_helipad.png in Resources */,
+				D60BFC4C0C03619A00AD5EB7 /* map_heliport.png in Resources */,
+				D60BFC4D0C03619A00AD5EB7 /* map_light.png in Resources */,
+				D60BFC4E0C03619A00AD5EB7 /* map_rampstart.png in Resources */,
+				D60BFC4F0C03619A00AD5EB7 /* map_seaport.png in Resources */,
+				D60BFC500C03619A00AD5EB7 /* map_taxisign.png in Resources */,
+				D60BFC510C03619A00AD5EB7 /* map_towerview.png in Resources */,
+				D60BFC520C03619A00AD5EB7 /* map_windsock.png in Resources */,
+				D60BFCDC0C03664F00AD5EB7 /* handle_arrowhead.png in Resources */,
+				D60BFCDD0C03664F00AD5EB7 /* handle_closeloop.png in Resources */,
+				D60BFCDE0C03664F00AD5EB7 /* handle_control.png in Resources */,
+				D60BFCDF0C03664F00AD5EB7 /* handle_cross.png in Resources */,
+				D60BFCE00C03664F00AD5EB7 /* handle_square.png in Resources */,
+				D60BFCE10C03664F00AD5EB7 /* handle_vertexround.png in Resources */,
+				D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
