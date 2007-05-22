@@ -187,7 +187,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			Segment2	s;
 			if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
 			{
-				if (b.near(click_pt, LINE_DIST))
+				if (b.is_near(click_pt, LINE_DIST))
 				{
 					mHandleIndex = n;
 					mDragType = drag_Links;

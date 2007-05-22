@@ -51,7 +51,7 @@ bool			WED_GISLine::PtOnFrame		(const Point2& p, double dist ) const
 	GetSource()->GetLocation(s.p1);
 	GetTarget()->GetLocation(s.p2);
 	
-	return s.near(p,dist);
+	return s.is_near(p,dist);
 }
 
 void	WED_GISLine::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)

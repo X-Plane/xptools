@@ -79,9 +79,9 @@ bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
 		Bezier2 b;
 		if (GetSide(n,s,b))
 		{
-			if (b.near(p,d)) return true;		
+			if (b.is_near(p,d)) return true;		
 		} else {
-			if (s.near(p,d)) return true;
+			if (s.is_near(p,d)) return true;
 		}		
 	}
 	return false;
