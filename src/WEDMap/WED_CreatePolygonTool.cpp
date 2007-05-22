@@ -42,8 +42,10 @@ WED_CreatePolygonTool::~WED_CreatePolygonTool()
 
 void	WED_CreatePolygonTool::AcceptPath(
 							const vector<Point2>&	pts,
+							const vector<Point2>&	dirs_lo,
+							const vector<Point2>&	dirs_hi,
 							const vector<int>		has_dirs,
-							const vector<Point2>&	dirs,
+							const vector<int>		has_split,
 							int						closed)
 {
 		char buf[256];
@@ -106,8 +108,17 @@ void	WED_CreatePolygonTool::AcceptPath(
 	{
 		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 		node->SetLocation(pts[n]);
-		node->SetSplit(0);
-		node->SetControlHandleHi(dirs[n]);
+		if (!has_dirs[n])
+		{
+			node->DeleteHandleHi();
+			node->DeleteHandleLo();
+		}
+		else
+		{
+			node->SetSplit(has_split[n]);
+			node->SetControlHandleHi(dirs_hi[n]);
+			node->SetControlHandleLo(dirs_lo[n]);
+		}
 		node->SetParent(outer_ring, n);
 		node->SetAttributes(mMarkings.value);
 		sprintf(buf,"Node %d",n+1);

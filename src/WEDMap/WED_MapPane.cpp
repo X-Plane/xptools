@@ -130,7 +130,7 @@ void	WED_MapPane::ZoomShowAll(void)
 
 int		WED_MapPane::Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	return 0;
+	return mMap->KeyPress(inKey, inVK, inFlags);
 }
 
 int		WED_MapPane::Map_HandleCommand(int command)

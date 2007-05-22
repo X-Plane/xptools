@@ -154,7 +154,10 @@ WED_DocumentWindow::~WED_DocumentWindow()
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {	
-	return mMapPane->Map_KeyPress(inKey, inVK, inFlags);
+	if ( mMapPane->Map_KeyPress(inKey, inVK, inFlags)) return 1;
+	if (inKey == GUI_KEY_DELETE && (inFlags & gui_DownFlag))
+	if (WED_CanClear(mDocument)) { WED_DoClear(mDocument); return 1; }
+	return 0;
 }
 
 int	WED_DocumentWindow::HandleCommand(int command)
@@ -163,6 +166,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	switch(command) {
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
+	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
@@ -186,6 +190,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
 						else				{								return 0; }
+	case gui_Clear:		return	WED_CanClear(mDocument);
 	case gui_Close:															return 1;
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);

@@ -44,6 +44,7 @@ WED_VertexTool::~WED_VertexTool()
 
 void	WED_VertexTool::BeginEdit(void)
 {
+	mInEdit = 0;
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
@@ -132,10 +133,15 @@ int		WED_VertexTool::CountControlHandles(int id						  ) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
+void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * dir) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	
+	if (active) *active=1;
+	if (con_type) *con_type = handle_Square;
+	if (dir) *dir = Vector2();
+	if (!p) return;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -155,8 +161,17 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 		case 7:	rwy->GetCornersDisp2(corners);	break;
 		case 8:	rwy->GetCornersBlas2(corners);	break;
 		}
-		p.x =	corners[0].x * kRunwayBlend0[n-5] + corners[1].x * kRunwayBlend1[n-5] + corners[2].x * kRunwayBlend2[n-5] + corners[3].x * kRunwayBlend3[n-5];
-		p.y =	corners[0].y * kRunwayBlend0[n-5] + corners[1].y * kRunwayBlend1[n-5] + corners[2].y * kRunwayBlend2[n-5] + corners[3].y * kRunwayBlend3[n-5];
+		p->x =	corners[0].x * kRunwayBlend0[n-5] + corners[1].x * kRunwayBlend1[n-5] + corners[2].x * kRunwayBlend2[n-5] + corners[3].x * kRunwayBlend3[n-5];
+		p->y =	corners[0].y * kRunwayBlend0[n-5] + corners[1].y * kRunwayBlend1[n-5] + corners[2].y * kRunwayBlend2[n-5] + corners[3].y * kRunwayBlend3[n-5];
+		
+		if (dir)
+		{
+			rwy->GetCorners(corners);
+			*dir = Vector2(Segment2(corners[0],corners[3]).midpoint(),Segment2(corners[1],corners[2]).midpoint());
+			if (n == 5 || n == 7) *dir = -*dir;
+		}
+		if (con_type) *con_type = handle_ArrowHead;
+		
 		return;
 	}
 	
@@ -164,17 +179,33 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
-			pt->GetLocation(p);
+			pt->GetLocation(*p);
 			return;
 		}
 		break;
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
+				Point2 dummy;
+			if (active) *active = (n == 0);
 			switch(n) {
-			case 0:	pt_b->GetLocation(p);	break;
-			case 1:	pt_b->GetControlHandleLo(p);	break;
-			case 2: pt_b->GetControlHandleHi(p);	break;
+			case 0:	pt_b->GetLocation(*p);			
+					if (con_type)
+					{
+						*con_type = handle_VertexSharp;
+						if (pt_b->GetControlHandleLo(dummy) || pt_b->GetControlHandleHi(dummy))
+							*con_type = handle_Vertex;
+					}
+					break;
+			case 1:	if (pt_b->GetControlHandleLo(*p) && active) *active=1;	if (con_type) *con_type = handle_Bezier;	break;
+			case 2: if (pt_b->GetControlHandleHi(*p) && active)	*active=1;	if (con_type) *con_type = handle_Bezier;	break;
+			}
+			
+			if (active)
+			{
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+				if ((mods & gui_OptionAltFlag) && n == 0 && !pt_b->GetControlHandleHi(dummy))	*active = 0;
+				if ((mods & gui_OptionAltFlag) && n == 2 && !pt_b->GetControlHandleHi(dummy))	*active = 1;
 			}
 			return;
 		}
@@ -182,14 +213,17 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 	case gis_Point_Heading:
 		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
 		{
-			pt_h->GetLocation(p);
-			Vector2	dir;
-			NorthHeading2VectorMeters(p,p,pt_h->GetHeading(),dir);
+			pt_h->GetLocation(*p);
+			Vector2	vdir;
+			NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
 			if(n==1)				
 			{ 
-				p = GetZoomer()->LLToPixel(p);
-				p += dir * 15.0;
-				p = GetZoomer()->PixelToLL(p);				
+				Point2 orig (*p);
+				*p = GetZoomer()->LLToPixel(*p);
+				*p += vdir * 15.0;
+				*p = GetZoomer()->PixelToLL(*p);				
+				if (dir) *dir = Vector2(orig, *p);
+				if (con_type) *con_type = handle_Arrow;
 			}
 			return;
 		}
@@ -199,16 +233,23 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 		{
 			Point2 corners[4];
 			pt_wl->GetCorners(corners);
-			p.x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
-			p.y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
+			p->x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
+			p->y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
+			if (n==5)
+			{
+				Point2 c;
+				pt_wl->GetLocation(c);
+				if (dir) *dir = Vector2(c,*p);
+				if (con_type) *con_type = handle_Arrow;
+			}
 			return;
 		}
 		break;
 	case gis_Line:
 		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
 		{
-			if (n == 0) ln->GetSource()->GetLocation(p);
-			else		ln->GetTarget()->GetLocation(p);
+			if (n == 0) ln->GetSource()->GetLocation(*p);
+			else		ln->GetTarget()->GetLocation(*p);
 			return;
 		}
 		break;
@@ -217,8 +258,8 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 		{
 			Point2 corners[4];
 			ln_w->GetCorners(corners);
-			p.x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
-			p.y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
+			p->x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
+			p->y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
 			return;
 		}
 		break;
@@ -226,6 +267,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n,		 Point2& p) const
 	DebugAssert(!"Cast failed!");
 	return; 
 }
+
 
 int		WED_VertexTool::GetLinks		    (int id) const
 {	
@@ -282,6 +324,25 @@ int		WED_VertexTool::GetLinks		    (int id) const
 	return 0;
 }
 
+void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
+{
+	if (active) *active=0;
+	if (ltype) *ltype = link_Solid;
+
+	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);	
+	IGISPoint_Bezier * pt_b;
+	
+	switch(en->GetGISClass()) {
+	case gis_Point_Bezier:
+		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
+		{
+			if (ltype) *ltype = link_BezierCtrl;
+		}
+		break;
+	}
+}
+
+
 int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
@@ -297,7 +358,7 @@ int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 	Point2	dummy;
 	
 	switch(en->GetGISClass()) {
-	case gis_Point_Bezier:		return n;
+	case gis_Point_Bezier:		return 0;
 	case gis_Point_Heading:		return 0;
 	case gis_Line:				return 0;
 	case gis_Point_HeadingWidthLength:	
@@ -396,10 +457,35 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
+			if (!mInEdit)
+			{
+				pt_b->GetLocation(p);
+				Point2 dummy;
+				mInEdit = 1;
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+				if ((mods & gui_OptionAltFlag) && (mods & gui_ShiftFlag))
+				{
+					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(dummy))	pt_b->DeleteHandleLo(); else pt_b->SetControlHandleLo(p+delta); }
+					if (n == 2) { pt_b->SetSplit(true); if (pt_b->GetControlHandleHi(dummy))	pt_b->DeleteHandleHi(); else pt_b->SetControlHandleHi(p+delta); }					
+				}				
+				else if (mods & gui_OptionAltFlag)
+				{
+					if (n == 1) { if (pt_b->GetControlHandleLo(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleLo(p+delta); } }
+					if (n == 2) { if (pt_b->GetControlHandleHi(dummy))	pt_b->SetSplit(true); else { pt_b->SetSplit(false); pt_b->SetControlHandleHi(p+delta); } }
+				}					
+				else if (mods & gui_ShiftFlag && n != 0)
+				{
+					if (pt_b->IsSplit()) pt_b->SetSplit(false);
+					else {
+						if (n == 1) { pt_b->DeleteHandleLo(); return; }
+						if (n == 2) { pt_b->DeleteHandleHi(); return; }
+					}
+				}
+			}
 			switch(n) {
-			case 0:	pt_b->GetLocation(p);	break;
-			case 1:	pt_b->GetControlHandleLo(p);	break;
-			case 2: pt_b->GetControlHandleHi(p);	break;
+			case 0:	pt_b->GetLocation(p);						break;
+			case 1:	if (!pt_b->GetControlHandleLo(p)) return;	break;
+			case 2: if (!pt_b->GetControlHandleHi(p)) return;	break;
 			}
 			p += delta;
 			switch(n) {
@@ -561,13 +647,20 @@ void WED_VertexTool::GetEntityInternal(vector<IGISEntity *>& e) const
 	en.reserve(iu.size());
 	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
-		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
-		if (ent) AddEntityRecursive(ent, e);
+		IGISEntity * gent = SAFE_CAST(IGISEntity,*i);
+		if (gent) AddEntityRecursive(gent, e);
 	}
 }
 
 void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const
 {
+	WED_Entity * went = SAFE_CAST(WED_Entity,e);
+	if (went)
+	{
+		if (went->GetLocked()) return;
+		if (went->GetHidden()) return;
+	}
+
 	IGISPointSequence * ps;
 	IGISPolygon * poly;
 	IGISComposite * cmp;

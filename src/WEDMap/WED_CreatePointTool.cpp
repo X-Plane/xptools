@@ -86,8 +86,10 @@ WED_CreatePointTool::~WED_CreatePointTool()
 
 void	WED_CreatePointTool::AcceptPath(
 							const vector<Point2>&	pts,
+							const vector<Point2>&	dirs_lo,
+							const vector<Point2>&	dirs_hi,
 							const vector<int>		has_dirs,
-							const vector<Point2>&	dirs,
+							const vector<int>		has_split,
 							int						closed)
 {
 		char buf[256];
@@ -151,7 +153,7 @@ void	WED_CreatePointTool::AcceptPath(
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
 	
 	new_pt_obj->SetLocation(pts[0]);
-	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs[0])));
+	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
 	
 	static int n = 0;
 	++n;

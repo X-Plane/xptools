@@ -129,14 +129,23 @@ int		WED_ImageOverlayTool::CountControlHandles(int id						  ) const
 	return 4;
 }
 
-void	WED_ImageOverlayTool::GetNthControlHandle(int id, int n,		 Point2& p) const
+void	WED_ImageOverlayTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
 {
-	p = mCoords[n];
+	if (active) *active=1;
+	if (con_type) *con_type = handle_Square;
+	if (direction) *direction = Vector2();
+	if (p) *p = mCoords[n];
 }
 
 int		WED_ImageOverlayTool::GetLinks		    (int id) const
 {
 	return 4;
+}
+
+void	WED_ImageOverlayTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
+{
+	if (active) *active=1;
+	if (ltype) *ltype = link_Solid;
 }
 
 int		WED_ImageOverlayTool::GetNthLinkSource   (int id, int n) const

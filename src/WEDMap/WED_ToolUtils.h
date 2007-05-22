@@ -16,6 +16,7 @@ WED_Thing *		WED_FindParent(ISelection * isel,	// Selected objects
 					WED_Thing * backup_choice);		// If selection is empty, we'll use this.
 
 void			WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel);
+void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel);
 bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there are parent-children who are selected!
 
 WED_Airport *	WED_GetCurrentAirport(IResolver * resolver);

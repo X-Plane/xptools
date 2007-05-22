@@ -26,9 +26,10 @@ public:
 	virtual		int		GetNthEntityID(int n) const;
 
 	virtual		int		CountControlHandles(int id						  ) const;
-	virtual		void	GetNthControlHandle(int id, int n,		 Point2& p) const;
+	virtual		void	GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const;
 
 	virtual		int		GetLinks		    (int id) const;
+	virtual		void	GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const;
 	virtual		int		GetNthLinkSource   (int id, int n) const;
 	virtual		int		GetNthLinkSourceCtl(int id, int n) const;	// -1 if no bezier ctl point!
 	virtual		int		GetNthLinkTarget   (int id, int n) const;
@@ -61,7 +62,7 @@ private:
 			void		AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const;
 			
 		int						mSelVerts;
-	
+		int						mInEdit;
 };
 
 

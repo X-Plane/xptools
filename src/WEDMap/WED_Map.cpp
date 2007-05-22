@@ -27,6 +27,7 @@ WED_Map::~WED_Map()
 
 void		WED_Map::SetTool(WED_MapToolNew * tool)
 {
+	if (mTool) mTool->KillOperation();
 	mTool = tool;
 }
 
@@ -167,7 +168,7 @@ int			WED_Map::MouseDown(int x, int y, int button)
 {
 	mIsToolClick = 1;
 	mIsMapDrag = 0;
-	if (mTool && mTool->HandleClickDown(x,y,button)) return 1;
+	if (mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { Refresh(); return 1; }
 	mIsToolClick = 0;
 	mIsMapDrag = 1;
 	mX = x;
@@ -179,7 +180,7 @@ int			WED_Map::MouseDown(int x, int y, int button)
 
 void		WED_Map::MouseDrag(int x, int y, int button)
 {
-	if (mIsToolClick && mTool) mTool->HandleClickDrag(x,y,button);
+	if (mIsToolClick && mTool) mTool->HandleClickDrag(x,y,button, GetModifiersNow());
 	if (mIsMapDrag)
 	{
 		this->PanPixels(mX, mY, x, y);
@@ -191,11 +192,24 @@ void		WED_Map::MouseDrag(int x, int y, int button)
 
 void		WED_Map::MouseUp  (int x, int y, int button)
 {
-	if (mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button);
+	if (mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button, GetModifiersNow());
 	if (mIsMapDrag)				this->PanPixels(mX, mY, x, y);
 	mIsToolClick = mIsMapDrag = 0;
 	Refresh();
 }
+
+int	WED_Map::MouseMove(int x, int y)
+{
+	Refresh();
+	return 1;
+}
+
+int			WED_Map::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+{
+	if (mTool) 	return mTool->HandleKeyPress(inKey, inVK, inFlags);
+	else		return 0;
+}
+
 
 int			WED_Map::ScrollWheel(int x, int y, int dist, int axis)
 {

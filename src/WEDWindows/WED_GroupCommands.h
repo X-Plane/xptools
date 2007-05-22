@@ -41,6 +41,9 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver);
 int		WED_CanReorder(IResolver * resolver, int direction, int to_end);
 void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 
+int		WED_CanClear(IResolver * resolver);
+void	WED_DoClear(IResolver * resolver);
+
 // This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);

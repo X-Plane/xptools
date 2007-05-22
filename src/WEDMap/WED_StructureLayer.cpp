@@ -3,7 +3,17 @@
 #include "GUI_GraphState.h"
 #include "GISUtils.h"GetSel()
 #include "WED_MapZoomerNew.h"
+#include "XESConstants.h"
 #include "WED_Runway.h"
+#include "WED_Helipad.h"
+#include "WED_LightFixture.h"
+#include "WED_AirportSign.h"
+#include "WED_TowerViewpoint.h"
+#include "WED_RampPosition.h"
+#include "WED_Windsock.h"
+#include "WED_AirportBeacon.h"
+
+#include "GUI_DrawUtils.h"
 
 #define	BEZ_COUNT 100
 
@@ -44,6 +54,15 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	IGISPolygon *					poly;
 	
 	WED_Runway *					rwy;
+	WED_Helipad *					helipad;
+
+	WED_LightFixture *				lfix;
+	WED_AirportSign *				sign;
+	WED_RampPosition *				ramp;
+
+	WED_TowerViewpoint *			tower;
+	WED_Windsock *					sock;
+	WED_AirportBeacon *				beacon;
 	
 	if ((rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
 	{
@@ -135,12 +154,28 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			Point2 l;
 			pt->GetLocation(l);
 			l = GetZoomer()->LLToPixel(l);
-			glBegin(GL_LINES);
-			glVertex2f(l.x, l.y - 3);
-			glVertex2f(l.x, l.y + 3);
-			glVertex2f(l.x - 3, l.y);
-			glVertex2f(l.x + 3, l.y);
-			glEnd();
+			
+			if ((tower = SAFE_CAST(WED_TowerViewpoint, pt)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_towerview.png", l.x,l.y,0);
+			}
+			else if ((sock = SAFE_CAST(WED_Windsock, pt)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_windsock.png", l.x,l.y,0);
+			}
+			else if ((beacon = SAFE_CAST(WED_AirportBeacon, pt)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_beacon.png", l.x,l.y,0);
+			}
+			else
+			{
+				glBegin(GL_LINES);
+				glVertex2f(l.x, l.y - 3);
+				glVertex2f(l.x, l.y + 3);
+				glVertex2f(l.x - 3, l.y);
+				glVertex2f(l.x + 3, l.y);
+				glEnd();
+			}
 		}
 		break;
 
@@ -154,10 +189,25 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			Vector2 r(dir.perpendicular_cw());
 			l = GetZoomer()->LLToPixel(l);
 			
-			glBegin(GL_LINES);
-			glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
-			glVertex2(l - r   * 3.0);			glVertex2(l + r   * 3.0);
-			glEnd();
+			if ((lfix = SAFE_CAST(WED_LightFixture, pth)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_light.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+			}
+			else if ((sign = SAFE_CAST(WED_AirportSign,pth)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_taxisign.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+			}
+			else if ((ramp = SAFE_CAST(WED_RampPosition,pth)) != NULL)
+			{
+				GUI_PlotIcon(g,"map_rampstart.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+			}
+			else
+			{
+				glBegin(GL_LINES);
+				glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
+				glVertex2(l - r   * 3.0);			glVertex2(l + r   * 3.0);
+				glEnd();
+			}
 		}
 		break;
 	case gis_Point_HeadingWidthLength:
@@ -186,6 +236,13 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 						Segment2(corners[3],corners[2]).midpoint(1.5)).midpoint());
 			glEnd();
 			
+			if ((helipad = SAFE_CAST(WED_Helipad, ptwl)) != NULL)
+			{
+				Point2	p;
+				helipad->GetLocation(p);
+				p = GetZoomer()->LLToPixel(p);
+				GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0);
+			}
 		}
 		break;
 	case gis_PointSequence:

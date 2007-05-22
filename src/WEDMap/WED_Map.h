@@ -29,7 +29,10 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	int			MouseMove(int x, int y);
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis);
+	
+	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -58,3 +61,4 @@ private:
 
 
 #endif
+

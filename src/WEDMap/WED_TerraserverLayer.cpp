@@ -38,7 +38,7 @@ WED_TerraserverLayer::~WED_TerraserverLayer()
 	delete mLocator;
 }
 
-void		WED_TerraserverLayer::ToggleVis(void) { mVis = !mVis; GetHost()->Refresh(); }
+void		WED_TerraserverLayer::ToggleVis(void) { mVis = !mVis; GetHost()->Refresh(); if (mVis) Start(0.1); else Stop(); }
 
 
 void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * g)
@@ -116,7 +116,6 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 	sprintf(buf,"%d of %d (%f%% done, %d errors).  %d ppm Mem use: %d",total_now,total_vis,total_vis ? (100.0 * (float) total_now / (float) total_vis) : 100.0, total_err, 1 << top_res, total_loaded);
 	float clr[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, buf);
-	GetHost()->Refresh();
 	
 	if (total_loaded > 2000)
 	{
@@ -146,3 +145,10 @@ const char *	WED_TerraserverLayer::ResString(int res)
 	sprintf(resbuf, "%dm", res);
 	return resbuf;
 }
+
+void	WED_TerraserverLayer::TimerFired(void)
+{
+	GetHost()->Refresh();
+}
+
+

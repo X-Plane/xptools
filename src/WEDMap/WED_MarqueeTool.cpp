@@ -2,6 +2,7 @@
 #include "ISelection.h"
 #include "IResolver.h"
 #include "WED_ToolUtils.h"
+#include "WED_Entity.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
 
@@ -83,19 +84,26 @@ int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 									return 9;
 }
 
-void	WED_MarqueeTool::GetNthControlHandle(int id, int n,		 Point2& p) const
+void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
 {
-	Bbox2	bounds;
-	if (!GetTotalBounds(bounds))
+	if(active) *active=1;
+	if (con_type) *con_type = handle_Square;
+	if (direction) *direction=Vector2();
+	if (p)
 	{
-		p = Point2(); return;
-	}
-	
-	if (bounds.is_point()) n = 8;
+		Bbox2	bounds;
+		if (!GetTotalBounds(bounds))
+		{
+			*p = Point2(); return;
+		}
+		
+		if (bounds.is_point()) n = 8;
 
-	p.x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
-	p.y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
+		p->x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
+		p->y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
+	}	
 }
+
 
 int		WED_MarqueeTool::GetLinks		    (int id) const
 {
@@ -103,6 +111,12 @@ int		WED_MarqueeTool::GetLinks		    (int id) const
 	if (!GetTotalBounds(bounds))	return 0;
 	if (bounds.is_point())			return 0;
 									return 8;
+}
+
+void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
+{
+	if (active) *active=1;
+	if (ltype) *ltype = link_Solid;
 }
 
 int		WED_MarqueeTool::GetNthLinkSource   (int id, int n) const
@@ -170,7 +184,7 @@ void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 	ApplyRescale(old_b,new_b);
 }
 
-
+/*
 void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 {
 	ISelection * sel = WED_GetSelect(GetResolver());
@@ -190,7 +204,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 		if (ent) e.push_back(ent);
 	}
 }
-
+*/
 #if !DEV
 	hrm - ths is a case where bulk fetch would be more efficient by a factor of, um, 8??
 	but - this is a special case.  in most cases the data model can produce answers quickly,
@@ -212,6 +226,13 @@ bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 	if (iu.empty()) return false;
 	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
+		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
+		if (went)
+		{
+			if (went->GetLocked()) continue;
+			if (went->GetHidden()) continue;
+		}
+	
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		if (ent)
 		{
@@ -234,6 +255,13 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
+		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
+		if (went)
+		{
+			if (went->GetLocked()) continue;
+			if (went->GetHidden()) continue;
+		}
+		
 		if (ent)
 		{
 			ent->Rescale(old_bounds,new_bounds);

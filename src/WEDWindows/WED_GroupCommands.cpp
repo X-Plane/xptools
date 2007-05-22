@@ -250,6 +250,37 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end)
 	parent->CommitCommand();
 }
 
+int		WED_CanClear(IResolver * resolver)
+{
+	ISelection * s = WED_GetSelect(resolver);
+	return s->GetSelectionCount() > 0;
+}
+
+void	WED_DoClear(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *> (sel);
+
+	set<WED_Thing *>	who;
+	WED_GetSelectionRecursive(resolver, who);
+	if (who.empty()) return;
+	
+	op->StartOperation("Clear");
+	
+	sel->Clear();
+	
+	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	{
+		(*i)->SetParent(NULL, 0);
+		(*i)->Delete();
+	}
+	
+	op->CommitOperation();
+	
+}
+
+
+
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot)
 {
 	ISelection * sel = WED_GetSelect(resolver);

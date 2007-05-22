@@ -14,6 +14,10 @@ const int kDoubleClickDist = 3;
 const int kCloseLoopDist = 5;
 const int BEZ_STEPS = 50;
 
+inline bool	within_dist(const Point2& p1, const Point2& p2, WED_MapZoomerNew * z, float dist)
+{
+	return Segment2(z->LLToPixel(p1),z->LLToPixel(p2)).squared_length() < (dist * dist);
+}
 
 static void ogl_bezier(const Bezier2& b, WED_MapZoomerNew * z)
 {
@@ -50,10 +54,9 @@ WED_CreateToolBase::WED_CreateToolBase(
 									int					can_close,
 									int					must_close,
 									int					requires_airport) :
-	WED_MapToolNew(tool_name, host,zoomer,resolver),
+	WED_HandleToolBase(tool_name, host,zoomer,resolver),
 	mArchive(archive),
 	mLastTime(-9.9e9),
-	mDirOpen(0),
 	mCreating(0),	
 	mMinPts(min_num_pts),
 	mMaxPts(max_num_pts),
@@ -63,101 +66,207 @@ WED_CreateToolBase::WED_CreateToolBase(
 	mMustCurve(must_curve),
 	mMustHaveApt(requires_airport)
 {
+	SetControlProvider(this);
+	SetCanSelect(0);
 }
 	
 WED_CreateToolBase::~WED_CreateToolBase()
 {
 }
 
-void		WED_CreateToolBase::DrawStructure(int inCurrent, GUI_GraphState * g)
+void	WED_CreateToolBase::BeginEdit(void)
 {
-	g->SetState(false, 0, false,    false, true, false, false);
-	
-	// Existing segments!
-	
-	glColor3f(1,0,0);
-	for(int n = 1; n < mPts.size(); ++n)
+	mEditStarted = 0;
+}
+
+void	WED_CreateToolBase::EndEdit(void)
+{
+}
+
+int		WED_CreateToolBase::CountEntities(void) const
+{
+	return mPts.empty() ? 0 : 1;
+}
+
+int		WED_CreateToolBase::GetNthEntityID(int n) const
+{
+	return 0;
+}
+
+int		WED_CreateToolBase::CountControlHandles(int id						  ) const
+{
+	return mPts.size() * 3;
+}
+
+void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
+{
+		int idx = n / 3;
+		int kind = n % 3;
+
+	if (active) *active = 0;
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+	if (mods & (gui_ControlFlag+gui_OptionAltFlag+gui_ShiftFlag) && active)
 	{
-		Bezier2	c;
-		c.p1 = mPts [n-1];
-		c.c1 = mDirs[n-1];
-		c.p2 = mPts [n  ];
-		c.c2 = mPts [n  ]+Vector2(mDirs[n],mPts[n]);
-		
-		ogl_bezier(c,GetZoomer());
+		if (mHasDirs[idx]) *active = 1;
+		else { *active = (kind != 0) == ((mods & gui_OptionAltFlag) != 0);
+			if (kind == 1) *active = 0; }
 	}
 	
-	Point2	impute_pt,impute_dir;
-		
-	if(mCreating)
-	{
-		impute_pt = Point2(GetZoomer()->XPixelToLon(mStartX),GetZoomer()->YPixelToLat(mStartY));
-		impute_dir = Point2(GetZoomer()->XPixelToLon(mNowX),GetZoomer()->YPixelToLat(mNowY));
-		if (!mDirOpen) impute_pt = impute_dir;
-	}
-	else
-	{
-		int x, y;
-		GetHost()->GetMouseLocNow(&x,&y);
-		impute_pt = impute_dir = Point2(GetZoomer()->XPixelToLon(x),GetZoomer()->YPixelToLat(y));
-		
-	}
-	
-	if (mCreating && mDirOpen)
-	{
-		glColor3f(1,1,0);
-		glBegin(GL_LINES);
+	if (con_type) *con_type = (mods & (gui_ControlFlag+gui_OptionAltFlag+gui_ShiftFlag)) ? (kind == 0 ? (mHasDirs[idx] ? handle_Vertex : handle_VertexSharp) : handle_Bezier) : handle_None;
+	if (direction) *direction = Vector2();
 
-		Point2 p1 = impute_pt ;
-		Point2 p2 = impute_dir;
-		if (!mPts.empty())
-			p1 = p1 + Vector2(p2,p1);
-
-		glVertex2f(GetZoomer()->LonToXPixel(p1.x),GetZoomer()->LatToYPixel(p1.y));
-		glVertex2f(GetZoomer()->LonToXPixel(p2.x),GetZoomer()->LatToYPixel(p2.y));		
-		
-		glEnd();
-	}	
-
-	if (!mPts.empty())
+	// If we can, make the first point have the hollow circle to show it.
+	if (con_type && *con_type == handle_None && idx == 0 && mCanClose  && kind == 0)					*con_type = handle_ClosePt;
+	// First point for runways or points: cross shows placement
+	if (con_type && *con_type == handle_None && idx == 0 && mMaxPts<=2 && kind == 0)					*con_type = handle_Cross;
+	// For a directional point, draw arrow head to hi control point.
+	if (con_type && *con_type == handle_None && idx == 0 && mMaxPts==1 && kind == 2 && mMustCurve)
+	if (mPts[idx] != mControlHi[idx])
 	{
-		glColor4f(1,1,1,0.5);
-		Bezier2	active;
-		active.p1 = mPts.back();
-		active.c1 = mDirs.back();
-		active.p2 = impute_pt;
-		active.c2 = impute_pt+Vector2(impute_dir,impute_pt);
-		ogl_bezier(active,GetZoomer());
-		
-		if(mMustClose)
-		{
-			glColor4f(1,0,0,0.5);
-			Bezier2	closer;
-			closer.p1 = impute_pt;
-			closer.c1 = impute_dir;
-			closer.p2 = mPts.front();
-			closer.c2 = mPts.front()+Vector2(mDirs.front(),mPts.front());
-			ogl_bezier(closer,GetZoomer());
-		}	
-
-		GetHost()->Refresh();
-		#if !DEV
-			we need to examine this
-		#endif
+		*con_type = handle_Arrow;
+		if (direction) *direction = Vector2(mPts[idx],mControlHi[idx]);
 	}
 	
+	if (p)
+	{
+		switch(kind){
+		case 0: *p = mPts[idx];			break;
+		case 1: *p = mControlLo[idx];	break;
+		case 2: *p = mControlHi[idx];	break;
+		}
+	}
+}
+
+		
+int		WED_CreateToolBase::GetLinks		    (int id) const
+{
+	return mPts.size() * 3;
+}
+
+void	WED_CreateToolBase::GetNthLinkInfo(int id, int n, int * active, LinkType_t * ltype) const
+{
+	if (active) *active = 0;
+	if (!ltype) return;
+	
+	int idx = n / 3;
+	int kind = n % 3;
+	
+	int m = (idx+1)%mPts.size();
+	switch(kind) {
+	case 0:
+		if (m <= idx) *ltype = mMustClose ? link_Ghost : link_None;
+		else		 *ltype = link_Solid;
+		break;
+	case 1:
+		*ltype = mHasDirs[idx] ? link_BezierCtrl : link_None;
+		if (mMaxPts == 1 && mMustCurve) *ltype = link_None;	// for directional pts.
+		break;
+	case 2:
+		*ltype = mHasDirs[idx] ? link_BezierCtrl : link_None;		
+		break;
+	}
 }
 
 
-int			WED_CreateToolBase::HandleClickDown(int inX, int inY, int inButton)
+int		WED_CreateToolBase::GetNthLinkSource   (int id, int n) const
 {
-	if (inButton > 0) return 0;
+	int idx = n / 3;
+	int kind = n % 3;
+	return idx*3;
+}
+
+
+int		WED_CreateToolBase::GetNthLinkSourceCtl(int id, int n) const
+{
+	int idx = n / 3;
+	int kind = n % 3;
+	if (kind != 0) return -1;
+	return idx*3+2;
+}
+
+int		WED_CreateToolBase::GetNthLinkTarget   (int id, int n) const
+{
+	int idx = n / 3;
+	int kind = n % 3;
+	switch(kind) {
+	case 0:	return ((idx+1)%mPts.size()) * 3;
+	case 1: return idx*3+1;
+	case 2: return idx*3+2;
+	}
+}
+
+int		WED_CreateToolBase::GetNthLinkTargetCtl(int id, int n) const
+{
+	int idx = n / 3;
+	int kind = n % 3;
+	if (kind != 0) return -1;
+	return ((idx+1)%mPts.size())*3+1;
+}
+
+bool	WED_CreateToolBase::PointOnStructure(int id, const Point2& p) const
+{
+	return 0;
+}
+
+void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta)
+{
+	int idx = c / 3;
+	int kind = c % 3;
+	if (!mEditStarted)
+	{
+		mEditStarted = 1;	
+		GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+		if ((kind) != 0 && (mods & gui_OptionAltFlag))
+		{
+			if (mHasDirs[idx])
+				mIsSplit[idx] = 1;
+			else
+				mHasDirs[idx] = 1;
+		}
+
+		if ((kind) != 0 && (mods & gui_ShiftFlag))
+		{
+			if (mIsSplit[idx]) {
+				mIsSplit[idx] = 0;
+				if (kind == 1) mControlHi[idx] = mPts[idx] + Vector2(mControlLo[idx],mPts[idx]);
+				if (kind == 2) mControlLo[idx] = mPts[idx] + Vector2(mControlHi[idx],mPts[idx]);
+			} else
+				mHasDirs[idx] = 0;
+		}
+	}
+	
+	switch(kind) {
+	case 0:		mPts[idx] += delta;	mControlLo[idx] += delta; mControlHi[idx] += delta;		break;
+	case 1:		mControlLo[idx] += delta;	if (!mIsSplit[idx]) mControlHi[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
+	case 2:		mControlHi[idx] += delta;	if (!mIsSplit[idx]) mControlLo[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
+	}
+}
+
+void	WED_CreateToolBase::ControlsLinksBy	 (int id, int c, const Vector2& delta)
+{
+	if (c != mPts.size()-1)
+	{
+		mPts[c+1] += delta;
+		mControlHi[c+1] += delta;
+		mControlLo[c+1] += delta;
+	}
+
+	mPts[c] += delta;
+	mControlHi[c] += delta;
+	mControlLo[c] += delta;
+}
+
+void	WED_CreateToolBase::ControlsMoveBy	 (int id,        const Vector2& delta)
+{
+}
+
+int			WED_CreateToolBase::CreationDown(const Point2& start_pt)
+{
 	if (mMustHaveApt && WED_GetCurrentAirport(GetResolver()) == NULL) return 0;
 	
-	int now = GetHost()->GetTimeNow();
+	float now = GetHost()->GetTimeNow();	
 	if (now-mLastTime < kDoubleClickTime &&
-		fabs(inX-mLastX) < kDoubleClickDist &&
-		fabs(inY-mLastY) < kDoubleClickDist)
+		within_dist(start_pt, mLastPt, GetZoomer(), kDoubleClickDist))
 	{
 		if (mPts.size() >= mMinPts)
 			DoEmit(0);
@@ -165,48 +274,44 @@ int			WED_CreateToolBase::HandleClickDown(int inX, int inY, int inButton)
 	}
 	else
 	{
-		mNowX = mStartX = inX;
-		mNowY = mStartY = inY;
-		mDirOpen = mMustCurve;
+		mPts.push_back(start_pt);
+		mControlLo.push_back(start_pt);
+		mControlHi.push_back(start_pt);
+		mHasDirs.push_back(mMustCurve);
+		mIsSplit.push_back(0);
 		mCreating = 1;
 	}
 
 	mLastTime = now;
-	mLastX = inX;
-	mLastY = inY;
+	mLastPt = start_pt;
 	return 1;
 }
 
 
-void		WED_CreateToolBase::HandleClickDrag(int inX, int inY, int inButton)
+void		WED_CreateToolBase::CreationDrag(const Point2& start_pt, const Point2& now_pt)
 {
 	if (!mCreating) return;
 	
-	if (!mDirOpen && mCanCurve && 
-		(fabs(inX - mStartX) > kDoubleClickDist || fabs(inY - mStartY) > kDoubleClickDist))
+	if (!mHasDirs.back() && mCanCurve && 
+		!within_dist(start_pt,now_pt,GetZoomer(), kDoubleClickDist))
 	{
-		mDirOpen = 1;
+		mHasDirs.back() = 1;
 	}
-	mNowX = inX;
-	mNowY = inY;
+	
+	if (mHasDirs.back())
+		mControlHi.back() = now_pt;
+	else
+		mControlHi.back() = mPts.back() = now_pt;
+
+	mControlLo.back() = mPts.back() + (Vector2(mControlHi.back(), mPts.back()));
+
 }
 
-void		WED_CreateToolBase::HandleClickUp  (int inX, int inY, int inButton)
+void		WED_CreateToolBase::CreationUp(const Point2& start_pt, const Point2& now_pt)
 {
 	if (!mCreating) return;
-
-	if(mDirOpen)
-	{
-		mPts.push_back(Point2(GetZoomer()->XPixelToLon(mStartX),GetZoomer()->YPixelToLat(mStartY)));
-		mDirs.push_back(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
-		mHasDirs.push_back(1);
-	}
-	else
-	{
-		mPts.push_back(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
-		mDirs.push_back(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));
-		mHasDirs.push_back(0);
-	}
+	
+	CreationDrag(start_pt, now_pt);
 	
 	if(mPts.size() >= mMaxPts)
 		DoEmit(0);		
@@ -217,16 +322,12 @@ void		WED_CreateToolBase::HandleClickUp  (int inX, int inY, int inButton)
 	// - we have enough pts that throwing one out is okay
 	else if (mCanClose && mPts.size() > 2 && !mHasDirs.back() && mPts.size() > mMinPts)
 	{
-		int dist_x = GetZoomer()->LonToXPixel(mPts.front().x) - GetZoomer()->LonToXPixel(mPts.back().x);
-		int dist_y = GetZoomer()->LatToYPixel(mPts.front().y) - GetZoomer()->LatToYPixel(mPts.back().y);
-		if (fabs(dist_x) < kCloseLoopDist && fabs(dist_y) < kCloseLoopDist)
+		if (within_dist(mPts.front(), mPts.back(), GetZoomer(), kCloseLoopDist))
 			DoEmit(1);
 	}
 		
-	mDirOpen = 0;
 	mCreating = 0;
 }
-
 
 void		WED_CreateToolBase::DoEmit(int do_close)
 {
@@ -236,14 +337,65 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 	{
 		do_close = 1;
 		mPts.pop_back();
-		mDirs.pop_back();
+		mIsSplit.pop_back();
 		mHasDirs.pop_back();
+		mControlLo.pop_back();
+		mControlHi.pop_back();
 	}
 
-	this->AcceptPath(mPts,mHasDirs,mDirs,closed);
+	this->AcceptPath(mPts,mControlLo, mControlHi, mHasDirs, mIsSplit, closed);
 	mPts.clear();
 	mHasDirs.clear();
-	mDirs.clear();
+	mIsSplit.clear();
+	mControlLo.clear();
+	mControlHi.clear();
 
 }
 
+void			WED_CreateToolBase::KillOperation(void)
+{
+	WED_HandleToolBase::KillOperation();
+	mPts.clear();
+	mHasDirs.clear();
+	mIsSplit.clear();
+	mControlLo.clear();
+	mControlHi.clear();
+	mCreating = 0;
+}
+
+int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )
+{
+	if (!mCreating && (inFlags & gui_DownFlag))
+	switch (inKey) {
+	case GUI_KEY_DELETE:
+		if (!mPts.empty()) {
+			mPts.pop_back();
+			mHasDirs.pop_back();
+			mIsSplit.pop_back();
+			mControlLo.pop_back();
+			mControlHi.pop_back();
+			GetHost()->Refresh();
+			return 1;
+		}
+		break;
+	case GUI_KEY_ESCAPE:
+		if (!mPts.empty()) {
+			mPts.clear();
+			mHasDirs.clear();
+			mIsSplit.clear();
+			mControlLo.clear();
+			mControlHi.clear();
+			GetHost()->Refresh();
+			return 1;
+		}
+		break;
+	case GUI_KEY_RETURN:
+		if (mPts.size() >= mMinPts)
+		{
+			DoEmit(0);
+			return 1;
+		}
+		break;
+	}
+	return WED_HandleToolBase::HandleKeyPress(inKey, inVK, inFlags);
+}

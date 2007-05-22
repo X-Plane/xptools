@@ -70,8 +70,10 @@ protected:
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
+							const vector<Point2>&	dirs_lo,
+							const vector<Point2>&	dirs_hi,
 							const vector<int>		has_dirs,
-							const vector<Point2>&	dirs,
+							const vector<int>		has_split,
 							int						closed);
 
 		CreatePoint_t	mType;

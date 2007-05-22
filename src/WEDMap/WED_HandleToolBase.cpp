@@ -1,7 +1,10 @@
 #include "WED_HandleToolBase.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
+#include "WED_Entity.h"
+#include "XESConstants.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
 #include "IControlHandles.h"
 #include "IResolver.h"
 #include "WED_Thing.h"
@@ -37,8 +40,8 @@ static bool	ControlLinkToCurve(
 	
 	if (sc == -1 && tc == -1)
 	{
-		h->GetNthControlHandle(ei,sp,s.p1);
-		h->GetNthControlHandle(ei,tp,s.p2);
+		h->GetNthControlHandle(ei,sp, NULL, NULL, &s.p1, NULL);
+		h->GetNthControlHandle(ei,tp, NULL, NULL, &s.p2, NULL);
 		
 		if (z)
 		{
@@ -53,10 +56,10 @@ static bool	ControlLinkToCurve(
 	{
 		if(sc==-1)sc=sp;
 		if(tc==-1)tc=tp;
-		h->GetNthControlHandle(ei,sp,b.p1);
-		h->GetNthControlHandle(ei,tc,b.c1);
-		h->GetNthControlHandle(ei,tp,b.p2);
-		h->GetNthControlHandle(ei,tc,b.c2);
+		h->GetNthControlHandle(ei,sp,NULL,NULL,&b.p1, NULL);
+		h->GetNthControlHandle(ei,sc,NULL,NULL,&b.c1, NULL);
+		h->GetNthControlHandle(ei,tp,NULL,NULL,&b.p2, NULL);
+		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL);
 		
 		if (z) {
 		b.p1.x = z->LonToXPixel(b.p1.x);
@@ -68,7 +71,7 @@ static bool	ControlLinkToCurve(
 		b.p2.y = z->LatToYPixel(b.p2.y);
 		b.c2.y = z->LatToYPixel(b.c2.y);
 		}
-		return false;
+		return true;
 	}
 }
 
@@ -104,12 +107,17 @@ WED_HandleToolBase::~WED_HandleToolBase()
 {
 }
 
+void				WED_HandleToolBase::SetCanSelect(int can_select)
+{ 
+	mCanSelect = can_select;
+}
+
 void		WED_HandleToolBase::SetControlProvider(IControlHandles	* provider)
 {
 	mHandles = provider;
 }
 		
-int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
+int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
 	if (inButton > 0) return 0;
 	mDragX = inX;
@@ -140,8 +148,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		c_count = mHandles->CountControlHandles(eid);
 		for (n = 0; n < c_count; ++n)
 		{
+			int active;
 			Point2	cloc;
-			mHandles->GetNthControlHandle(eid,n,cloc);
+			mHandles->GetNthControlHandle(eid, n, &active, NULL, &cloc, NULL);
+			if (!active) continue;
+			
 			cloc.x = GetZoomer()->LonToXPixel(cloc.x);
 			cloc.y = GetZoomer()->LatToYPixel(cloc.y);
 			if ((this_dist=click_pt.squared_distance(cloc)) < best_dist)
@@ -168,6 +179,10 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		l_count = mHandles->GetLinks(eid);
 		for (n = 0; n < l_count; ++n)
 		{
+			int active;
+			mHandles->GetNthLinkInfo(eid,n,&active, NULL);
+			if (!active) continue;
+		
 			Bezier2		b;
 			Segment2	s;
 			if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
@@ -206,6 +221,13 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		mHandles->BeginEdit();								
 		break;
 	}
+
+	//----------------------------------- CREATION DRAG ------------------------------------------------------------
+
+	if (mDragType == drag_None && this->CreationDown(click_pt))
+	{
+		mDragType = drag_Create;
+	}
 	
 	//------------------------------------- SELECTION ------------------------------------------------------------
 
@@ -229,14 +251,22 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton)
 		
 			ProcessSelectionRecursive(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
-			sel->Clear();
+
+			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+			if ((mods & (gui_ShiftFlag + gui_ControlFlag)) == 0)
+				sel->Clear();
+			mSelToggle = (mods & gui_ControlFlag) != 0;
+	
+			sel->GetSelectionVector(mSelSave);
+
 			for (set<IUnknown *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+			if (mSelToggle)
+				sel->Toggle(*i);
+			else	
 				sel->Insert(*i);
+			
 				
 			#if !DEV
-				set-based insertion??
-				start with click then breakout
-				mod keys
 				right vs left select does touch vs include?
 			#endif
 		}
@@ -250,6 +280,12 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 									const Bbox2&		bounds,
 									set<IUnknown *>&	result)
 {
+	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
+	if (thang) {
+		if (thang->GetLocked()) return;
+		if (thang->GetHidden()) return;
+	}
+		
 	EntityHandling_t choice = TraverseEntity(entity);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
@@ -307,7 +343,7 @@ void		WED_HandleToolBase::ProcessSelectionRecursive(
 }
 
 
-void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
+void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
 	if (inButton > 0) return;
 
@@ -327,6 +363,11 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 			}
 		}
 		break;
+	case drag_Create:
+		this->CreationDrag(
+					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
+					GetZoomer()->PixelToLL(Point2(inX, inY)));
+		break;
 	case drag_Sel:
 		{	
 			mSelX = inX;
@@ -343,8 +384,18 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 								GetZoomer()->YPixelToLat(inY));
 			
 				ProcessSelectionRecursive(ent_base, bounds, sel_set);
+
 				sel->Clear();
+				for (vector<IUnknown *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+					sel->Insert(*u);
+				#if OPTIMIZE
+					provide accelerated sel-save-restore ops!
+				#endif
+
 				for (set<IUnknown *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+				if (mSelToggle)
+					sel->Toggle(*i);
+				else	
 					sel->Insert(*i);
 				#if !DEV
 					set-based insertion??
@@ -355,22 +406,36 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton)
 	}
 }
 
-void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton)
+void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
 	if (inButton > 0) return;
 
-	this->HandleClickDrag(inX, inY, inButton);
+	this->HandleClickDrag(inX, inY, inButton, modifiers);
 	if (mDragType == drag_Sel)
 	{
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
 		if(op) op->CommitOperation();
+		mSelSave.clear();
 	} else if ( mDragType == drag_Links || 
 				mDragType == drag_Handles ||
 				mDragType == drag_Move)
 	{
 		mHandles->EndEdit();
-	}
+	} else if ( mDragType == drag_Create )
+		this->CreationUp(
+					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
+					GetZoomer()->PixelToLL(Point2(inX, inY)));
+
 	mDragType = drag_None;
+}
+
+int			WED_HandleToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
+{
+	return 0;
+}
+
+void		WED_HandleToolBase::KillOperation(void)
+{
 }
 
 void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
@@ -386,8 +451,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 			int ch_count = mHandles->CountControlHandles(eid);
 			int ch_links = mHandles->GetLinks(eid);
 			
-			g->SetState(false,false,false, false,false, false,false);
-			glColor3f(0.0f,1.0f,0.0f);
+			g->SetState(false,false,false, false,true, false,false);
 			
 			glBegin(GL_LINES);
 			for (int l = 0; l < ch_links; ++l)
@@ -395,40 +459,73 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				Segment2	s;
 				Bezier2		b;
 				
-				if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
-				{
-					for (int n = 0; n < BEZIER_SEGS; ++n)
+				LinkType_t lt;
+				mHandles->GetNthLinkInfo(eid,l,NULL, &lt);
+				if (lt != link_None)
+				{				
+					switch(lt) {
+					case link_Solid:		glColor4f(0,1,0,1);		break;
+					case link_Ghost:		glColor4f(0,1,0,0.3);	break;
+					case link_BezierCtrl:	glColor4f(1,1,1,0.4);	break;
+					}
+					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
-						float t1 = (float) n / (float) BEZIER_SEGS;
-						float t2 = (float) (n+1) / (float) BEZIER_SEGS;
-						Point2	p1 = b.midpoint(t1);
-						Point2	p2 = b.midpoint(t2);
-						glVertex2d(p1.x,p1.y);
-						glVertex2d(p2.x,p2.y);
-					}					
-				}
-				else
-				{
-					glVertex2d(s.p1.x,s.p1.y);
-					glVertex2d(s.p2.x,s.p2.y);									
+						for (int n = 0; n < BEZIER_SEGS; ++n)
+						{
+							float t1 = (float) n / (float) BEZIER_SEGS;
+							float t2 = (float) (n+1) / (float) BEZIER_SEGS;
+							Point2	p1 = b.midpoint(t1);
+							Point2	p2 = b.midpoint(t2);
+							glVertex2d(p1.x,p1.y);
+							glVertex2d(p2.x,p2.y);
+						}
+					}
+					else
+					{
+						glVertex2d(s.p1.x,s.p1.y);
+						glVertex2d(s.p2.x,s.p2.y);									
+					}
 				}
 			}
 			glEnd();
 			
-			glBegin(GL_QUADS);
 			for (int cp = 0; cp < ch_count; ++cp)
 			{
-				Point2	cpt;
-				mHandles->GetNthControlHandle(eid,cp,cpt);
-				cpt.x = GetZoomer()->LonToXPixel(cpt.x);
-				cpt.y = GetZoomer()->LatToYPixel(cpt.y);
+				Vector2		dir;
+				Point2	cpt, scrpt;
+				HandleType_t	ht;
+				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir);
+				scrpt = GetZoomer()->LLToPixel(cpt);
 				
-				glVertex2d(cpt.x - HANDLE_RAD, cpt.y - HANDLE_RAD);
-				glVertex2d(cpt.x - HANDLE_RAD, cpt.y + HANDLE_RAD);
-				glVertex2d(cpt.x + HANDLE_RAD, cpt.y + HANDLE_RAD);
-				glVertex2d(cpt.x + HANDLE_RAD, cpt.y - HANDLE_RAD);				
-			}
-			glEnd();
+				Vector2	orient;
+
+				if (ht == handle_None) continue;
+				if (ht == handle_ArrowHead || ht == handle_Arrow)
+				{
+					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
+					if (ht == handle_Arrow)
+					{
+						g->SetState(0,0,0,   0, 0, 0, 0);
+						glColor3f(0,1,0);
+						glBegin(GL_LINES);
+						glVertex2d(bscrp.x, bscrp.y);
+						glVertex2d(scrpt.x, scrpt.y);						
+						glEnd();
+					}
+					orient = Vector2(bscrp,scrpt);
+				}
+		
+				switch(ht) {
+				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0);		break;
+				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0);break;
+				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x,scrpt.y,0);break;
+				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,0);	break;
+				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0);	break;
+				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0);		break;
+				case handle_ArrowHead:		
+				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG);	break;
+				}							
+			}						
 		}
 	}
 	if (mDragType == drag_Sel)

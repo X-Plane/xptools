@@ -18,7 +18,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Cut",				'X',	gui_ControlFlag,				0,	gui_Cut			},
 {	"Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
 {	"Paste",			'V',	gui_ControlFlag,				0,	gui_Paste		},
-{	"Clear",			0,		0,								0,	gui_Clear		},
+{	"Clear",			0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
 {	"Select All",		'A',	gui_ControlFlag,				0,	gui_SelectAll	},
 {	"-",				0,  	0,								0,	0				},
 {	"Group",			'G',	gui_ControlFlag,				0,	wed_Group		},

@@ -127,6 +127,31 @@ void	WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel)
 	WED_GetSelectionInOrderRecursive(sel, wrl, out_sel);
 }
 
+static int			WED_GetSelectionRecursiveOne(IUnknown * what, void * container)
+{
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	if (who == NULL) return 0;
+
+	set<WED_Thing *> * sel = (set<WED_Thing *> *) container;
+
+	sel->insert(who);
+	int c = who->CountChildren();
+	for (int n = 0; n < c; ++n)
+		WED_GetSelectionRecursiveOne(who->GetNthChild(n), sel);
+	return 0;
+}
+
+void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel)
+{
+	out_sel.clear();
+	ISelection * sel = WED_GetSelect(resolver);
+	WED_Thing * wrl = WED_GetWorld(resolver);
+
+	sel->IterateSelection(WED_GetSelectionRecursiveOne, &out_sel);
+	out_sel.erase(wrl);
+}
+
+
 bool			WED_IsSelectionNested(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);

@@ -21,7 +21,7 @@ public:
 	// These draw specific entities.  Use these to draw pieces of the data model.  Only visible entities will be passed in!	
 	virtual	void		DrawEntityVisualization	(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { }
 	virtual	void		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { }
-	
+
 protected:
 
 	inline	WED_MapZoomerNew *	GetZoomer(void) const { return mZoomer; }
