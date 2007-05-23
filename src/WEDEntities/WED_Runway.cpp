@@ -34,6 +34,20 @@ WED_Runway::~WED_Runway()
 {
 }
 
+bool			WED_Runway::PtWithin		(const Point2& p	 ) const
+{
+	if (WED_GISLine_Width::PtWithin(p)) return true;
+	
+	Point2	corners[8];
+	
+	if (GetCornersBlas1(corners) && inside_polygon_pt(corners,corners+4,p)) return true;
+	if (GetCornersBlas2(corners) && inside_polygon_pt(corners,corners+4,p)) return true;
+	if (GetCornersShoulders(corners) && 
+		(inside_polygon_pt(corners,corners+4,p) || inside_polygon_pt(corners+4,corners+8,p))) return true;
+		
+	return false;
+}
+
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
 	GetCorners(corners);
@@ -137,6 +151,51 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 
 	return true;
 }
+
+bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
+{
+	GetCorners(corners);
+	GetCorners(corners+4);
+	if (shoulder.value == shoulder_None) return false;
+	Point2	bounds[4];
+	GetCorners(bounds);
+	
+	Point2	p1, p2;
+	GetSource()->GetLocation(p1);
+	GetTarget()->GetLocation(p2);
+
+	double my_len = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	if (my_len == 0.0) return false;
+
+	if (blas1.value != 0.0)
+	{
+		double frac = blas1.value / my_len;	
+		corners[0] = Segment2(bounds[0],bounds[1]).midpoint(-frac);
+		corners[3] = Segment2(bounds[3],bounds[2]).midpoint(-frac);
+	}
+	if (blas2.value != 0.0)
+	{
+		double frac = blas2.value / my_len;	
+		corners[1] = Segment2(bounds[0],bounds[1]).midpoint(1.0 + frac);
+		corners[2] = Segment2(bounds[3],bounds[2]).midpoint(1.0 + frac);
+	}
+	
+	bounds[0] = corners[0];
+	bounds[1] = corners[1];
+	bounds[2] = corners[2];
+	bounds[3] = corners[3];
+	
+	corners[0] = Segment2(bounds[0],bounds[3]).midpoint(-0.25);
+	corners[1] = Segment2(bounds[1],bounds[2]).midpoint(-0.25);
+	corners[2] = bounds[1];
+	corners[3] = bounds[0];
+	corners[4] = bounds[3];
+	corners[5] = bounds[2];
+	corners[6] = Segment2(bounds[1],bounds[2]).midpoint( 1.25);
+	corners[7] = Segment2(bounds[0],bounds[3]).midpoint( 1.25);
+	return true;
+}
+
 
 void		WED_Runway::SetDisp1(double n)
 {

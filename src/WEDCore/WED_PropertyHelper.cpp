@@ -384,9 +384,8 @@ void		WED_PropIntEnum::SetProperty(const PropertyVal_t& val, WED_PropertyHelper 
 	DebugAssert(val.prop_kind == prop_Enum);
 	if (value != val.int_val)
 	{		
+		if (ENUM_Domain(val.int_val) != domain) return;
 		parent->PropEditCallback(1);	
-		if (ENUM_Domain(val.int_val) != domain)
-			AssertPrintf("Error: bad enum domain!");
 		value = val.int_val;
 		parent->PropEditCallback(0);
 	}
@@ -455,10 +454,10 @@ void		WED_PropIntEnumSet::SetProperty(const PropertyVal_t& val, WED_PropertyHelp
 	DebugAssert(val.prop_kind == prop_EnumSet);
 	if (value != val.set_val)
 	{		
-		parent->PropEditCallback(1);
 		for (set<int>::iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
 		if (ENUM_Domain(*e) != domain)
-			AssertPrintf("Error: bad enum domain!");
+			return;
+		parent->PropEditCallback(1);
 		value = val.set_val;
 		parent->PropEditCallback(0);
 	}

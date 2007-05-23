@@ -23,6 +23,13 @@ GISClass_t	WED_GISPoint_HeadingWidthLength::GetGISClass		(void				 ) const
 	return gis_Point_HeadingWidthLength;
 }
 
+bool			WED_GISPoint_HeadingWidthLength::PtWithin		(const Point2& p	 ) const
+{
+	Point2 corners[4];
+	GetCorners(corners);	
+	return inside_polygon_pt(corners,corners+4,p);
+}
+
 double	WED_GISPoint_HeadingWidthLength::GetWidth (void		 ) const
 {
 	return width.value;

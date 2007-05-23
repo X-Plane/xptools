@@ -177,17 +177,8 @@ INSERT INTO WED_things VALUES(1,NULL,NULL,"root",0);
 INSERT INTO WED_things VALUES(2,1,0,"selection",1);
 INSERT INTO WED_things VALUES(3,1,1,"choices",2);
 INSERT INTO WED_things VALUES(4,1,2,"world",5);
-INSERT INTO WED_things VALUES(5,4,0,"test beacon",3);
-INSERT INTO WED_things VALUES(6,4,0,"test 2 beacon",3);
 
 INSERT INTO WED_entities VALUES(4, 0, 0);
-INSERT INTO WED_entities VALUES(5, 0, 0);
-INSERT INTO WED_entities VALUES(6, 0, 0);
 
-INSERT INTO GIS_points VALUES(5, 42.5,-72.1);
-INSERT INTO GIS_points VALUES(6, 42.6,-72.2);
-
-INSERT INTO WED_beacons VALUES(5,"beacon_Airport");
-INSERT INTO WED_beacons VALUES(6,"beacon_Airport");
 
 COMMIT TRANSACTION setup;

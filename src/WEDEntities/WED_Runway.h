@@ -9,6 +9,9 @@ DECLARE_PERSISTENT(WED_Runway)
 
 public:
 
+	virtual	bool			PtWithin		(const Point2& p	 ) const;
+
+
 	// These routines return a rectangle for the given sub-rect of the runway.  Like all rects
 	// they are clockwise, with the first point on the left side of the runway (looking from the low
 	// to high end) at the low end.
@@ -18,6 +21,7 @@ public:
 	bool		GetCornersBlas2(Point2 corners[4]) const;
 	bool		GetCornersDisp1(Point2 corners[4]) const;
 	bool		GetCornersDisp2(Point2 corners[4]) const;
+	bool		GetCornersShoulders(Point2 corners[8]) const;
 
 	void		SetSurface(int);
 	void		SetShoulder(int);

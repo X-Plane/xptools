@@ -9,7 +9,8 @@ DECLARE_PERSISTENT(WED_AirportNode)
 
 public:
 
-			void		SetAttributes(const set<int>& attrs);
+			void		GetAttributes(		set<int>& attrs) const;
+			void		SetAttributes(const set<int>& attrs)	  ;
 
 private:
 

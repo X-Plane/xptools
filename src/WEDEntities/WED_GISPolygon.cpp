@@ -72,7 +72,7 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 	{
 		IGISPointSequence * sq = GetNthHole(n);
 
-		if (!inside_polygon_bez(
+		if (inside_polygon_bez(
 				Bezier_Seq_Iterator(sq,0),
 				Bezier_Seq_Iterator(sq,sq->GetNumPoints()),
 				p))

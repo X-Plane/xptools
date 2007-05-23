@@ -10,6 +10,7 @@ DECLARE_INTERMEDIATE(WED_GISPoint_HeadingWidthLength)
 public:
 
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
+	virtual bool			PtWithin		(const Point2& p	 ) const;
 
 	// IGISPoint_WidthLength
 	virtual	double	GetWidth (void		 ) const;

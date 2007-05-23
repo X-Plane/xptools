@@ -12,7 +12,8 @@ public:
 
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
-
+	virtual	bool			PtWithin		(const Point2& p	 ) const;
+	
 	// IGISLine_Width
 	virtual	double	GetWidth (void		 ) const;
 	virtual	void	SetWidth (double width)      ;

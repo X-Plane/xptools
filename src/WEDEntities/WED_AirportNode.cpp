@@ -16,3 +16,9 @@ void	WED_AirportNode::SetAttributes(const set<int>& in_attrs)
 {
 	attrs = in_attrs;
 }
+
+void		WED_AirportNode::GetAttributes(set<int>& out_attrs) const
+{
+	out_attrs = attrs.value;
+}
+
