@@ -1,7 +1,5 @@
 #include "WED_PropertyPane.h"
 
-const char * filters[] = { "WED_Runway", "WED_Taxiway" };
-
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
 						IResolver *				resolver,

@@ -136,44 +136,71 @@ void	WED_PropertyTable::GetEnumDictionary(
 void	WED_PropertyTable::AcceptEdit(
 						int							cell_x,
 						int							cell_y,
-						const GUI_CellContent&		the_content)
+						const GUI_CellContent&		the_content,
+						int							apply_all)
 {
-	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);	
-	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
-	if (idx == -1) return;
-	PropertyInfo_t	inf;
-	PropertyVal_t	val;
-	t->GetNthPropertyInfo(idx,inf);	
-	switch(inf.prop_kind) {
-	case prop_Int:
-		val.prop_kind = prop_Int;
-		val.int_val = the_content.int_val;
-		break;
-	case prop_Double:
-		val.prop_kind = prop_Double;
-		val.double_val = the_content.double_val;
-		break;
-	case prop_String:
-		val.prop_kind = prop_String;
-		val.string_val = the_content.text_val;
-		break;
-	case prop_Bool:
-		val.prop_kind = prop_Bool;
-		val.int_val = the_content.int_val;
-		break;
-	case prop_Enum:
-		val.prop_kind = prop_Enum;
-		val.int_val = the_content.int_val;
-		break;
-	case prop_EnumSet:	
-		val.prop_kind = prop_EnumSet;
-		val.set_val = the_content.int_set_val;
-		break;			
+	vector<WED_Thing *>	apply_vec;
+	if (apply_all)
+	{
+		ISelection * sel = WED_GetSelect(mResolver);
+		sel->IterateSelection(Iterate_GetSelectThings, &apply_vec);
 	}
-	string foo = string("Change ") + inf.prop_name;
-	t->StartCommand(foo);
-	t->SetNthProperty(idx, val);
-	t->CommitCommand();
+	else 
+	{
+		WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);	
+		if (t != NULL)  apply_vec.push_back(t);
+	}
+
+		WED_Thing * started = NULL;
+
+	for (int iter = 0; iter < apply_vec.size(); ++iter)
+	{
+		WED_Thing * t = apply_vec[iter];
+		
+		int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
+		if (idx == -1) continue;
+		PropertyInfo_t	inf;
+		PropertyVal_t	val;
+		t->GetNthPropertyInfo(idx,inf);	
+		
+		if (inf.prop_kind == prop_Int		&& the_content.content_type != gui_Cell_Integer	)	continue;
+		if (inf.prop_kind == prop_Double	&& the_content.content_type != gui_Cell_Double	)	continue;
+		if (inf.prop_kind == prop_String	&& the_content.content_type != gui_Cell_EditText)	continue;
+		if (inf.prop_kind == prop_Bool		&& the_content.content_type != gui_Cell_CheckBox)	continue;
+		if (inf.prop_kind == prop_Enum		&& the_content.content_type != gui_Cell_Enum	)	continue;
+		if (inf.prop_kind == prop_EnumSet	&& the_content.content_type != gui_Cell_EnumSet	)	continue;
+		
+		switch(inf.prop_kind) {
+		case prop_Int:
+			val.prop_kind = prop_Int;
+			val.int_val = the_content.int_val;
+			break;
+		case prop_Double:
+			val.prop_kind = prop_Double;
+			val.double_val = the_content.double_val;
+			break;
+		case prop_String:
+			val.prop_kind = prop_String;
+			val.string_val = the_content.text_val;
+			break;
+		case prop_Bool:
+			val.prop_kind = prop_Bool;
+			val.int_val = the_content.int_val;
+			break;
+		case prop_Enum:
+			val.prop_kind = prop_Enum;
+			val.int_val = the_content.int_val;
+			break;
+		case prop_EnumSet:	
+			val.prop_kind = prop_EnumSet;
+			val.set_val = the_content.int_set_val;
+			break;			
+		}
+		string foo = string("Change ") + inf.prop_name;
+		if (!started) {	started = t; started->StartCommand(foo); } 
+		t->SetNthProperty(idx, val);
+	}
+	if (started) started->CommitCommand();
 }
 
 void	WED_PropertyTable::ToggleDisclose(
@@ -675,6 +702,10 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	
 	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 	if (e) is_composite = e->GetGISClass() == gis_Composite;
+	#if !DEV
+		this is a hack
+	#endif
+	if (mSelOnly) is_composite = 1;
 
 	if (!mSelOnly || !sel || sel->IsSelected(what))
 	if (mFilter.empty() || mFilter.count(what->GetClass()))
