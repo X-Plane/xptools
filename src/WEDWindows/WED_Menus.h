@@ -23,6 +23,11 @@ enum {
 	wed_PickOverlay,
 	wed_ToggleOverlay,
 	wed_ToggleTerraserver,
+	// Select Menu
+	wed_SelectParent,
+	wed_SelectChild,
+	wed_SelectVertex,
+	wed_SelectPoly,
 	// Airport Menu
 	wed_CreateApt,
 	wed_EditApt

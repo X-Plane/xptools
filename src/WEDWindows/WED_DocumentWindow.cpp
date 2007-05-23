@@ -177,6 +177,15 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:	return 1;
+
+	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;
+	case gui_SelectNone:	WED_DoSelectNone(mDocument);		return 1;
+	case wed_SelectParent:	WED_DoSelectParent(mDocument);		return 1;
+	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
+	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
+	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
+	
+	
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
@@ -200,7 +209,13 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);	
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);	
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);	
-
+	
+	case gui_SelectAll:		return WED_CanSelectAll(mDocument);
+	case gui_SelectNone:	return WED_CanSelectNone(mDocument);
+	case wed_SelectParent:	return WED_CanSelectParent(mDocument);
+	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
+	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
+	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }

@@ -44,6 +44,19 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 int		WED_CanClear(IResolver * resolver);
 void	WED_DoClear(IResolver * resolver);
 
+int		WED_CanSelectAll(IResolver * resolver);
+void	WED_DoSelectAll(IResolver * resolver);
+int		WED_CanSelectNone(IResolver * resolver);
+void	WED_DoSelectNone(IResolver * resolver);
+int		WED_CanSelectParent(IResolver * resolver);
+void	WED_DoSelectParent(IResolver * resolver);
+int		WED_CanSelectChildren(IResolver * resolver);
+void	WED_DoSelectChildren(IResolver * resolver);
+int		WED_CanSelectVertices(IResolver * resolver);
+void	WED_DoSelectVertices(IResolver * resolver);
+int		WED_CanSelectPolygon(IResolver * resolver);
+void	WED_DoSelectPolygon(IResolver * resolver);
+
 // This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);

@@ -130,6 +130,10 @@ void	WED_DoUngroup(IResolver * inResolver)
 	op->CommitOperation();
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 int		WED_CanMakeNewAirport(IResolver * inResolver)
 {
 	return 1;
@@ -195,6 +199,44 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver)
 }
 
 
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+int		WED_CanClear(IResolver * resolver)
+{
+	ISelection * s = WED_GetSelect(resolver);
+	return s->GetSelectionCount() > 0;
+}
+
+void	WED_DoClear(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *> (sel);
+
+	set<WED_Thing *>	who;
+	WED_GetSelectionRecursive(resolver, who);
+	if (who.empty()) return;
+	
+	op->StartOperation("Clear");
+	
+	sel->Clear();
+	
+	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	{
+		(*i)->SetParent(NULL, 0);
+		(*i)->Delete();
+	}
+	
+	op->CommitOperation();
+	
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 int		WED_CanReorder(IResolver * resolver, int direction, int to_end)
 {
 	ISelection * sel = WED_GetSelect(resolver);
@@ -250,37 +292,6 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end)
 	parent->CommitCommand();
 }
 
-int		WED_CanClear(IResolver * resolver)
-{
-	ISelection * s = WED_GetSelect(resolver);
-	return s->GetSelectionCount() > 0;
-}
-
-void	WED_DoClear(IResolver * resolver)
-{
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *> (sel);
-
-	set<WED_Thing *>	who;
-	WED_GetSelectionRecursive(resolver, who);
-	if (who.empty()) return;
-	
-	op->StartOperation("Clear");
-	
-	sel->Clear();
-	
-	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
-	{
-		(*i)->SetParent(NULL, 0);
-		(*i)->Delete();
-	}
-	
-	op->CommitOperation();
-	
-}
-
-
-
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot)
 {
 	ISelection * sel = WED_GetSelect(resolver);
@@ -329,4 +340,163 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 	}
 	
 	dest->CommitCommand();	
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+int		WED_CanSelectAll(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	return wrl->CountChildren() > 0;
+}
+
+void	WED_DoSelectAll(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	wrl->StartOperation("Select All");
+	sel->Clear();
+	int ct = wrl->CountChildren();
+	for (int n = 0; n < ct; ++n)
+		sel->Insert(wrl->GetNthChild(n));
+	wrl->CommitOperation();
+}
+
+int		WED_CanSelectNone(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	return sel->GetSelectionCount() > 0;
+}
+
+void	WED_DoSelectNone(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	if (op) op->StartOperation("Select None");
+	sel->Clear();
+	if (op) op->CommitOperation();
+}
+
+int		WED_CanSelectParent(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	// Can't sel if sel is empty
+	if (sel->GetSelectionCount() == 0) return 0;
+	
+	// IF we don't have at least ONE non-world sel, we can't sel
+	if (!sel->IterateSelection(Iterate_NotMatchesThing,WED_GetWorld(resolver))) return 0;
+	return 1;
+}
+
+void	WED_DoSelectParent(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Parent");
+	sel->Clear();
+	for (vector<WED_Thing *>::iterator i = things.begin(); i != things.end(); ++i)
+	if (*i == wrl)
+		sel->Select(*i);
+	else
+		sel->Select((*i)->GetParent());
+	op->CommitOperation();
+}
+
+int		WED_CanSelectChildren(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	return (sel->IterateSelection(Iterate_IsNonEmptyComposite, NULL));
+}
+
+void	WED_DoSelectChildren(IResolver * resolver)
+{
+	IGISComposite * comp;
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Children");
+	sel->Clear();
+	
+	int ctr;
+	int n;
+	for (vector<WED_Thing *>::iterator i = things.begin(); i != things.end(); ++i)
+	{
+		if ((comp = dynamic_cast<IGISComposite *>(*i)) != NULL && comp->GetGISClass() == gis_Composite && (ctr=comp->GetNumEntities()) > 0)
+		for (n = 0; n < ctr; ++n)
+			sel->Insert(comp->GetNthEntity(n));
+		else
+			sel->Insert(*i);
+	}
+	op->CommitOperation();	
+}
+
+int		WED_CanSelectVertices(IResolver * resolver)
+{
+	// we can select vertices if all sel items are of gis type polygon or point seq
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelection(Iterate_IsNotStructuredObject, NULL)) return 0;
+	return 1;
+}
+
+void	WED_DoSelectVertices(IResolver * resolver)
+{
+	vector<IGISPointSequence *>	seqs;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelection(Iterate_CollectChildPointSequences, &seqs);
+	op->StartOperation("Select Vertices");
+	sel->Clear();
+	for(vector<IGISPointSequence *>::iterator s=  seqs.begin(); s != seqs.end(); ++s)
+	{
+		int pc = (*s)->GetNumPoints();
+		for (int p = 0; p < pc; ++p)
+			sel->Insert((*s)->GetNthPoint(p));
+	}
+	op->CommitOperation();
+}
+
+int		WED_CanSelectPolygon(IResolver * resolver)
+{
+	// we can select our parent poly if everyone's parent is a point seq
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelection(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
+	return 1;
+}
+
+void	WED_DoSelectPolygon(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelection(Iterate_GetSelectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Polygon");
+	sel->Clear();
+	for (vector<WED_Thing *>::iterator i = things.begin(); i != things.end(); ++i)
+	{
+		WED_Thing * parent = (*i)->GetParent();
+		WED_Thing * keeper = NULL;
+		if (parent)
+		{
+			if (Iterate_IsStructuredObject(parent, NULL)) keeper = parent;
+			WED_Thing * grandparent = parent->GetParent();
+			if (grandparent)
+			{
+				if (Iterate_IsStructuredObject(grandparent, NULL)) keeper = grandparent;
+			}
+		}
+		if (keeper) sel->Insert(keeper);
+	}
+
+	op->CommitOperation();
 }

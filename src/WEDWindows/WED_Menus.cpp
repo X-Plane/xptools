@@ -19,7 +19,6 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
 {	"Paste",			'V',	gui_ControlFlag,				0,	gui_Paste		},
 {	"Clear",			0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
-{	"Select All",		'A',	gui_ControlFlag,				0,	gui_SelectAll	},
 {	"-",				0,  	0,								0,	0				},
 {	"Group",			'G',	gui_ControlFlag,				0,	wed_Group		},
 {	"Ungroup",			'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
@@ -38,23 +37,21 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	NULL,						0,	0,							0,	0					},
 };
 
+static const GUI_MenuItem_t kSelectMenu[] = {
+{	"Select All",		'A',			gui_ControlFlag,				0,	gui_SelectAll		},
+{	"Select None",		'D',			gui_ControlFlag,				0,	gui_SelectNone		},
+{	"-",				0,				0,								0,	0					},
+{	"Select Parent",	GUI_KEY_UP,		gui_ControlFlag,				0,	wed_SelectParent	},
+{	"Select Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
+{	"Select Polygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
+{	"Select Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
+{	NULL,				0,				0,								0,	0					},
+};
+
 static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt },
-{	NULL,				0,		0,								0,	0,				}
-};
-
-
-static const GUI_MenuItem_t kTestMenu[] = {
-{	"An Item",			0,		0,								0,	gui_Close		},
-{	"Submenu",			0,		0,								0,	0				},
-{	NULL,				0,		0,								0,	0,				}
-};
-
-static const GUI_MenuItem_t kTestSubMenu[] = {
-{	"Sub 1",			0,		0,								0,	gui_Close		},
-{	"Sub 2",			0,		0,								0,	gui_Close		},
-{	NULL,				0,		0,								0,	0,				}
+{	NULL,						0,		0,										0, 0,				}
 };
 
 
@@ -69,14 +66,10 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"View", kViewMenu, inApp->GetMenuBar(), 0);		
+		
+	GUI_Menu  sel_menu = inApp->CreateMenu(
+		"Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airpor_menu = inApp->CreateMenu(
 		"Airport", kAirportMenu, inApp->GetMenuBar(),0);	
-	
-	test1 = inApp->CreateMenu(
-		"Test", kTestMenu, inApp->GetMenuBar(), 0);
-
-	sub1 = inApp->CreateMenu(
-		"Sub", kTestSubMenu, test1, 1);
-
 }
