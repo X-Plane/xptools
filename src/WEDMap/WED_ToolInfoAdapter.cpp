@@ -93,7 +93,8 @@ void	WED_ToolInfoAdapter::GetEnumDictionary(
 void	WED_ToolInfoAdapter::AcceptEdit(
 			int							cell_x,
 			int							cell_y,
-			const GUI_CellContent&		the_content)
+			const GUI_CellContent&		the_content,
+			int							apply_all)
 {
 	if (mTool == NULL) return;
 	PropertyInfo_t	inf;

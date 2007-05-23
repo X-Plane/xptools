@@ -55,7 +55,7 @@ protected:
 
 private:
 
-			void		ProcessSelectionRecursive(
+			int					ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
 									set<IUnknown *>&	result);

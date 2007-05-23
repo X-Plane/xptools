@@ -48,8 +48,7 @@ WED_CreateLineTool::WED_CreateLineTool(
 	0,								// curve allowed
 	0,								// curve required?
 	0,								// close allowed
-	0,								// close required?
-	1),								// Requires airport?
+	0),								// close required?
 	mType(tool),
 		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",					"","",Surface_Type,	surf_Concrete),
 		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",					"","",Shoulder_Type,shoulder_None),
@@ -145,4 +144,9 @@ const char *	WED_CreateLineTool::GetStatusText(void)
 		return buf;
 	}
 	return NULL;
+}
+
+bool		WED_CreateLineTool::CanCreateNow(void)
+{
+	return WED_GetCurrentAirport(GetResolver()) != NULL;
 }

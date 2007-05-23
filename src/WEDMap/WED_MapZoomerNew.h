@@ -61,6 +61,9 @@ public:
 			
 			Point2	PixelToLL(const Point2& p);
 			Point2	LLToPixel(const Point2& p);
+
+			void	PixelToLLv(Point2 * dst, const Point2 * src, int n);
+			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
 	
 	// This API is called by the map class to set up and modify the zoomer
 	

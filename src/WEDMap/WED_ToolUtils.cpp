@@ -223,18 +223,11 @@ int	Iterate_IsOrChildAirport(IUnknown * what, void * ref)
 	return 0;
 }
 
-
-int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
+int	Iterate_IsStructuredObject(IUnknown * what, void * ref)
 {
-	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
-	if (!who) return 0;
-	
-	WED_Thing * my_parent = who->GetParent();
-	if (!my_parent) return 0;
-	
-	IGISEntity * e = dynamic_cast<IGISEntity *>(my_parent);
+	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	if (!e) return 0;
-	
+
 	switch(e->GetGISClass()) {
 	case gis_PointSequence:	
 	case gis_Line:
@@ -246,11 +239,55 @@ int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
 	}		
 }
 
+int	Iterate_IsNotStructuredObject(IUnknown * what, void * ref)
+{
+	return Iterate_IsStructuredObject(what,ref) ? 0 : 1;
+}
+
+int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
+{
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	if (who == NULL) return 0;
+	WED_Thing * parent = who->GetParent();
+	if (parent == NULL) return 0;
+	return Iterate_IsStructuredObject(parent, NULL);
+}
+
+int	Iterate_IsNotPartOfStructuredObject(IUnknown * what, void * ref)
+{
+	return Iterate_IsPartOfStructuredObject(what, ref) ? 0 : 1;
+}
+
+
 int Iterate_IsNotGroup(IUnknown * what, void * ref)
 {
 	if (dynamic_cast<WED_Group *>(what) == NULL) return 1;
 	return 0;
 }
+
+int Iterate_IsNonEmptyComposite(IUnknown * what, void * ref)
+{
+	IGISComposite * comp = dynamic_cast<IGISComposite *> (what);
+	if (comp == NULL) return 0;
+	if (comp->GetGISClass() != gis_Composite) return 0;
+	return comp->GetNumEntities() > 0;
+}
+
+int Iterate_CollectChildPointSequences(IUnknown * what, void * ref)
+{
+	vector<IGISPointSequence *> * container = (vector<IGISPointSequence *> *) ref;
+	IGISPolygon * poly = dynamic_cast<IGISPolygon *>(what);
+	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(what);
+	if (ps) container->push_back(ps);
+	if (poly) {
+		container->push_back(poly->GetOuterRing());
+		int hc = poly->GetNumHoles();
+		for (int h = 0; h < hc; ++h)
+			container->push_back(poly->GetNthHole(h));
+	}
+	return 0;
+}
+
 
 int Iterate_ParentMismatch(IUnknown * what, void * ref)
 {
@@ -274,6 +311,20 @@ int Iterate_IsParentOf(IUnknown * what, void * ref)					// This object is a pare
 	return 0;	
 }
 
+int	Iterate_MatchesThing(IUnknown * what, void * ref)					// ref is a thing to match
+{
+	WED_Thing * target = (WED_Thing *) ref;
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	return who == target;
+}
+
+int	Iterate_NotMatchesThing(IUnknown * what, void * ref)					// ref is a thing to match
+{
+	WED_Thing * target = (WED_Thing *) ref;
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	return who != target;
+}
+
 int Iterate_HasSelectedParent(IUnknown * what, void * ref)
 {
 	WED_Thing * p = dynamic_cast<WED_Thing *>(what);
@@ -285,6 +336,14 @@ int Iterate_HasSelectedParent(IUnknown * what, void * ref)
 		if (sel->IsSelected(p)) return 1;
 		p = p->GetParent();
 	}
+	return 0;
+}
+
+int Iterate_GetSelectThings(IUnknown * what, void * ref)
+{
+	vector<WED_Thing *> * container = (vector<WED_Thing *> *) ref;
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	if (who) container->push_back(who);
 	return 0;
 }
 

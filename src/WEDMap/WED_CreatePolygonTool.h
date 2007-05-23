@@ -3,11 +3,14 @@
 
 #include "WED_CreateToolBase.h"
 
+class	WED_Thing;
+
 enum CreateTool_t {
 
 	create_Taxi = 0,
 	create_Boundary,
-	create_Marks
+	create_Marks,
+	create_Hole
 
 };
 
@@ -41,7 +44,11 @@ protected:
 							const vector<int>		has_dirs,
 							const vector<int>		has_split,
 							int						closed);
+	virtual	bool		CanCreateNow(void);
 
+
+			WED_Thing *	GetHost(void);
+			
 		CreateTool_t	mType;
 
 };

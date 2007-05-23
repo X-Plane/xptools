@@ -35,6 +35,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_CreatePolygonTool("Taxiway",mMap, mMap, resolver, archive, create_Taxi));
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxi Lines",mMap, mMap, resolver, archive, create_Marks));
+	mTools.push_back(					new WED_CreatePolygonTool("Taxiway Hole",mMap, mMap, resolver, archive, create_Hole));
 	mTools.push_back(					new WED_CreatePointTool("Airport Beacon", mMap, mMap, resolver, archive, create_Beacon));
 	mTools.push_back(					new WED_CreatePointTool("Taxi Sign", mMap, mMap, resolver, archive, create_Sign));
 	mTools.push_back(					new WED_CreatePointTool("Helipad", mMap, mMap, resolver, archive, create_Helipad));

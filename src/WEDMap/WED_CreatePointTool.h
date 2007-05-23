@@ -75,6 +75,7 @@ protected:
 							const vector<int>		has_dirs,
 							const vector<int>		has_split,
 							int						closed);
+	virtual	bool		CanCreateNow(void);
 
 		CreatePoint_t	mType;
 

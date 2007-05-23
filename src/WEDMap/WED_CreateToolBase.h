@@ -25,8 +25,7 @@ public:
 									int					can_curve,
 									int					must_curve,
 									int					can_close,
-									int					must_close,
-									int					requires_airport);
+									int					must_close);
 	virtual				~WED_CreateToolBase();
 
 //	virtual	int			HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
@@ -71,6 +70,7 @@ protected:
 							const vector<int>		has_dirs,
 							const vector<int>		has_split,
 							int						closed)=0;
+	virtual	bool		CanCreateNow(void)=0;
 
 		inline WED_Archive * GetArchive(void) { return mArchive; }
 
@@ -107,8 +107,6 @@ private:
 	int		mCanCurve;
 	int		mMustCurve;
 	
-	int		mMustHaveApt;
-
 };
 
 

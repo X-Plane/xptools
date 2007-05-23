@@ -24,7 +24,8 @@ public:
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
-						const GUI_CellContent&		the_content);
+						const GUI_CellContent&		the_content,
+						int							apply_all);
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y);

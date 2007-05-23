@@ -61,8 +61,7 @@ WED_CreatePointTool::WED_CreatePointTool(
 	kIsToolDirectional[tool],		// curve allowed
 	kIsToolDirectional[tool],		// curve required?
 	0,								// close allowed
-	0,								// close required? 
-	1),								// Requires airport
+	0),								// close required? 
 	mType(tool),
 		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			"","",Airport_Beacon,beacon_Airport),
 		sign_text		(tool==create_Sign			?this:NULL,"Text",			"","","{@L}A"),
@@ -175,4 +174,9 @@ const char *	WED_CreatePointTool::GetStatusText(void)
 		return buf;
 	}
 	return NULL;
+}
+
+bool		WED_CreatePointTool::CanCreateNow(void)
+{
+	return WED_GetCurrentAirport(GetResolver()) != NULL;
 }

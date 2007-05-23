@@ -52,8 +52,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 									int					can_curve,
 									int					must_curve,
 									int					can_close,
-									int					must_close,
-									int					requires_airport) :
+									int					must_close) :
 	WED_HandleToolBase(tool_name, host,zoomer,resolver),
 	mArchive(archive),
 	mLastTime(-9.9e9),
@@ -63,8 +62,7 @@ WED_CreateToolBase::WED_CreateToolBase(
 	mCanClose(can_close),
 	mMustClose(must_close),
 	mCanCurve(can_curve),
-	mMustCurve(must_curve),
-	mMustHaveApt(requires_airport)
+	mMustCurve(must_curve)
 {
 	SetControlProvider(this);
 	SetCanSelect(0);
@@ -262,7 +260,7 @@ void	WED_CreateToolBase::ControlsMoveBy	 (int id,        const Vector2& delta)
 
 int			WED_CreateToolBase::CreationDown(const Point2& start_pt)
 {
-	if (mMustHaveApt && WED_GetCurrentAirport(GetResolver()) == NULL) return 0;
+	if (!CanCreateNow()) return 0;
 	
 	float now = GetHost()->GetTimeNow();	
 	if (now-mLastTime < kDoubleClickTime &&

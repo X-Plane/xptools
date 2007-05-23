@@ -275,71 +275,79 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	return (mDragType != drag_None);
 }
 
-void		WED_HandleToolBase::ProcessSelectionRecursive(
+int		WED_HandleToolBase::ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
 									set<IUnknown *>&	result)
 {
 	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
 	if (thang) {
-		if (thang->GetLocked()) return;
-		if (thang->GetHidden()) return;
+		if (thang->GetLocked()) return 0;
+		if (thang->GetHidden()) return 0;
 	}
-		
+
+	int pt_sel = bounds.is_point();
+	Point2	psel = bounds.p1;
+	
+	double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
+				
 	EntityHandling_t choice = TraverseEntity(entity);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
 	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
 	switch(choice) {	
 	case ent_Atomic:
-		if (entity->WithinBox(bounds)) 
-			result.insert(entity);	
+		if (pt_sel)	{ if (entity->PtWithin(psel) || entity->PtOnFrame(psel, frame_dist))	result.insert(entity); return 1;	}
+		else		{ if (entity->WithinBox(bounds))										result.insert(entity);	}
 		break;
 	case ent_Container:
 		if (com)
 		{
 			int count = com->GetNumEntities();
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result);
+				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (seq) 
 		{
 			int count = seq->GetNumPoints();
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result);
+				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
 		else if(poly) 
 		{
 			int count = poly->GetNumHoles();
-			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result);
+			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result);
+				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
 		}
 		break;
 	case ent_AtomicOrContainer:
-		if (entity->WithinBox(bounds)) 
-			result.insert(entity);	
+		if (!pt_sel && entity->WithinBox(bounds)) result.insert(entity);	
 		else if (com)
 		{
 			int count = com->GetNumEntities();
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result);
+				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (seq) 
 		{
 			int count = seq->GetNumPoints();
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result);
+				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (poly) 
 		{
 			int count = poly->GetNumHoles();
-			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result);
+			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
 			for (int n = 0; n < count; ++n)
-				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result);
-		}		
+				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
+		}	
+		if (pt_sel && entity->PtWithin(psel))				{ result.insert(entity); return 1; }
+		if (pt_sel && entity->PtOnFrame(psel, frame_dist))  { result.insert(entity); return 1; }
+			
 		break;
 	}
+	return 0;
 }
 
 
