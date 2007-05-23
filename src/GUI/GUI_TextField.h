@@ -27,6 +27,7 @@ public:
 
 			void		SetWidth(float width);
 			void		SetKeyAllowed(char key, bool allowed);
+			void		SetVKAllowed(int vk, bool allowed);
 
 	// GUI_Pane
 	virtual	void		Draw(GUI_GraphState * state);
@@ -105,6 +106,7 @@ private:
 		GUI_GraphState * 	mState;
 		string				mText;		
 		bool				mAllowed[256];
+		bool				mAllowedVK[256];
 };
 
 #endif /* GUI_TEXTFIELD_H */

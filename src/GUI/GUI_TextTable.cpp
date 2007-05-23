@@ -203,7 +203,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	
 	if (mTextField)
 	{
-		TerminateEdit(true);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.		
+		TerminateEdit(true, false);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.		
 		mClickCellX = -1;
 		mClickCellY = -1;	
 		mEditInfo.content_type = gui_Cell_None;
@@ -288,6 +288,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		
 	if (!mEditInfo.can_edit)	return 1;
 	
+	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+	
 	char  buf[256];
 	switch(mEditInfo.content_type) {
 	case gui_Cell_CheckBox:
@@ -323,7 +325,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			{
 				mTextField = new GUI_TextField(1,this); 
 				mTextField->SetParent(mParent); 
-				mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
+				mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
+//				mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
 				mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
 				mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
 			}
@@ -361,7 +364,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo);
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
@@ -393,7 +396,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 						mEditInfo.int_set_val.erase(enum_vals[choice]);
 					else
 						mEditInfo.int_set_val.insert(enum_vals[choice]);
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo);
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
@@ -477,7 +480,9 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 			mSelStartY = -1;
 		}
 	}
-	
+
+	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+		
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
 		mInBounds = (mouse_x >= mTrackLeft && mouse_x < mTrackRight &&
@@ -491,7 +496,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		if (mInBounds) 
 		{
 			mEditInfo.int_val = 1 - mEditInfo.int_val;
-			mContent->AcceptEdit(cell_x,cell_y, mEditInfo);
+			mContent->AcceptEdit(cell_x,cell_y, mEditInfo, all_edit);
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 		}	
 		break;
@@ -706,7 +711,7 @@ void		GUI_TextTable::Deactivate(void)
 {
 }
 
-int			GUI_TextTable::TerminateEdit(bool inSave)
+int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 {
 	if (mTextField && mTextField->IsFocused() && 
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
@@ -722,7 +727,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave)
 				mEditInfo.double_val = atof(mEditInfo.text_val.c_str());
 				break;
 			}
-			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo);	
+			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo, in_all);	
 		}
 		this->TakeFocus();
 		mTextField->Hide();
@@ -806,7 +811,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
-		TerminateEdit(true);
+		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag);
 		if (mParent)
 		{
 			if (mContent->TabAdvance(x,y, inFlags & gui_ShiftFlag, mEditInfo))	
@@ -827,9 +832,13 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 				}
 				if (!mTextField) 
 				{
+					#if !DEV
+						this code is repeated - factor!
+					#endif
 					mTextField = new GUI_TextField(1,this); 
 					mTextField->SetParent(mParent); 
-					mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
+//					mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
+					mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
 					mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
 					mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
 				}
@@ -843,15 +852,15 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 		}
 	}
 
-	if(inKey == GUI_KEY_RETURN && mTextField)
+	if(inVK == GUI_VK_RETURN && mTextField)
 	{
-		TerminateEdit(true);
+		TerminateEdit(true, inFlags & gui_OptionAltFlag);
 		return 1;
 	}
 
 	if(inKey == GUI_KEY_ESCAPE && mTextField)
 	{
-		TerminateEdit(false);
+		TerminateEdit(false, false);
 		return 1;
 	}
 	return 0;

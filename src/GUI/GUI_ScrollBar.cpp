@@ -81,7 +81,7 @@ int		GUI_ScrollBar::GetMinorAxis(int vertical)
 
 	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
 
-	
+	return button_len;
 
 }
 

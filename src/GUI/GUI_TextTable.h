@@ -78,7 +78,8 @@ public:
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
-						const GUI_CellContent&		the_content)=0;
+						const GUI_CellContent&		the_content,
+						int							apply_all)=0;
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y)=0;
@@ -214,7 +215,7 @@ private:
 		gui_Insert_Top
 	};
 
-			int				TerminateEdit(bool inSave);			
+			int				TerminateEdit(bool inSave, bool inAll);			
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
 					
 	GUI_TextTableProvider * mContent;

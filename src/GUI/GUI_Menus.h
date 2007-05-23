@@ -11,6 +11,7 @@ enum {
 	gui_Paste,
 	gui_Clear,
 	gui_SelectAll,
+	gui_SelectNone,
 	
 	GUI_APP_MENUS = 2000
 
