@@ -1360,5 +1360,55 @@ bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint)
 	return (cross_counter % 2) == 1;
 }
 
+// Simple ccw test: find the [lower] leftmost corner and make sure it is a left turn.
+// complexity is only added by avoiding a double-scan of the iterated sequence.
+template <class __Iterator>
+bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
+{
+	if (begin == end) return true;			// Degenerate: 0 pts
+	Point2	first(*begin);
+	++begin;
+	if (begin == end) return true;			// Degenerate: 1 pts
+	Point2 second(*begin);
+	++begin;
+	if (begin == end) return true;			// Degenerate: 2 pts
+	
+	Point2	prevprev(first);
+	Point2	prev	(second);
+	
+	lesser_x_then_y	better;
+	
+	Point2	best(first.x + 1, first.y);
+	
+	bool	is_ccw = false;
+	
+	while(begin != end)
+	{
+		if (better(prev, best))
+		{
+			best = prev;
+			is_ccw = left_turn(prevprev,prev,*begin);
+		}
+	
+		prevprev = prev;
+		prev = *begin;
+		++begin;
+	}
+	
+	// prevprev, prev, first
+	if (better(prev,best))
+	{
+		best = prev;
+		is_ccw = left_turn(prevprev, prev, first);
+	}
+	// prev, first, second
+	if (better(first,best))
+	{
+		best = first;
+		is_ccw = left_turn(prev, first, second);
+	}
+	return is_ccw;
+}
+
 
 #endif
