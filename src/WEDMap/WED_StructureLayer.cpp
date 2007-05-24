@@ -1,7 +1,8 @@
 #include "WED_StructureLayer.h"
 #include "IGIS.h"
 #include "GUI_GraphState.h"
-#include "GISUtils.h"GetSel()
+#include "WED_Colors.h"
+#include "GISUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_AirportNode.h"
@@ -13,6 +14,7 @@
 #include "WED_Sealane.h"
 #include "WED_AirportSign.h"
 #include "WED_TowerViewpoint.h"
+#include "WED_Airport.h"
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
@@ -130,11 +132,11 @@ static void glPolygon2(const Point2 * pts, const int * contours, int n)
 	gluDeleteTess(tess);
 }
 
-static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs)
+static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs, WED_Color c)
 {
 	if (attrs.empty())
 	{
-		glColor4f(0,1,0,1);
+		glColor4fv(WED_Color_RGBA(c));
 		glShape2v(GL_LINE_STRIP, pts, count);
 	} 
 	
@@ -470,9 +472,14 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	
 	int locked = 0;
 	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
-	if (thing) locked = thing->GetLocked();
+	while(thing)
+	{
+		if (thing->GetLocked()) { locked=1;break;}
+		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+	}
 	
-	glColor4f(selected ? 1 : (locked ? 0.5 : 0), (locked ? 0.5 : 1), selected ? 1 : (locked ? 0.5 : 0), selected ? 1.0 : 0.75);
+	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
+										(locked ? wed_StructureLocked		 : wed_Structure);
 	
 	GISClass_t kind = entity->GetGISClass();
 
@@ -497,10 +504,30 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	WED_Windsock *					sock;
 	WED_AirportBeacon *				beacon;
 	
+	WED_Airport *					airport;
+
+	float							storage[4];
+
+	glColor4fv(WED_Color_RGBA(struct_color));
+	
 	/******************************************************************************************************************************************************
 	 * RUNWAY DRAWING
 	 ******************************************************************************************************************************************************/	
-	if ((rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
+	if ((airport = SAFE_CAST(WED_Airport, entity)) != NULL)
+	{
+		if (GetZoomer()->GetPPM() < 0.005)
+		{
+			Bbox2	bounds;
+			airport->GetBounds(bounds);
+			Point2 loc = GetZoomer()->LLToPixel(Segment2(bounds.p1,bounds.p2).midpoint());
+			switch(airport->GetAirportType()) {
+			case type_Airport:		GUI_PlotIcon(g,"map_airport.png", loc.x,loc.y,0);	break;
+			case type_Seaport:		GUI_PlotIcon(g,"map_seaport.png", loc.x,loc.y,0);	break;
+			case type_Heliport:		GUI_PlotIcon(g,"map_heliport.png", loc.x,loc.y,0);	break;
+			}
+		}
+	}
+	else if ((rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
 	{
 		Point2 	corners[4], shoulders[8], disp1[4], disp2[4], blas1[4], blas2[4];
 		bool	has_shoulders, has_disp1, has_disp2, has_blas1, has_blas2;
@@ -514,19 +541,33 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		if (has_shoulders = rwy->GetCornersShoulders(shoulders))	GetZoomer()->LLToPixelv(shoulders, shoulders, 8);
 
 		// "Solid" geometry.		
-		glColor4f(0,1,0,0.25);											glShape2v(GL_QUADS, corners, 4);
-		glColor4f(0.5,0.5,0.5,0.25);		if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);		
-		glColor4f(1,1,0,0.5);				if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
-											if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
+		glColor4fv(WED_Color_Surface(rwy->GetSurface(),0.5, storage));
+									glShape2v(GL_QUADS, corners, 4);
+		if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
+		if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
+		glColor4fv(WED_Color_Surface(rwy->GetShoulder(),0.5, storage));
+		if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);		
 
-		//  "Outline" geometry
-	
-		glColor4f(selected ? 1 : (locked ? 0.5 : 0), (locked ? 0.5 : 1), selected ? 1 : (locked ? 0.5 : 0), selected ? 1.0 : 0.75);		
-									glShape2v(GL_LINE_LOOP, corners,4);		
+		//  "Outline" geometry	
+		glColor4fv(WED_Color_RGBA(struct_color));
+		glShape2v(GL_LINE_LOOP, corners, 4);
 		glBegin(GL_LINES);
 		glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
 		glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
 		glEnd();
+
+		if (has_shoulders)
+		{
+			glColor4fv(WED_Color_RGBA(struct_color));
+			glBegin(GL_LINES);
+			glVertex2(shoulders[3]);		glVertex2(shoulders[0]);
+			glVertex2(shoulders[0]);		glVertex2(shoulders[1]);
+			glVertex2(shoulders[1]);		glVertex2(shoulders[2]);
+			glVertex2(shoulders[4]);		glVertex2(shoulders[7]);
+			glVertex2(shoulders[7]);		glVertex2(shoulders[6]);
+			glVertex2(shoulders[6]);		glVertex2(shoulders[5]);
+			glEnd();
+		}
 	
 		glColor4f(1,1,0,1);
 		if (has_blas1)				glShape2v(GL_LINE_LOOP, blas1,4);
@@ -535,19 +576,6 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		glColor4f(1,1,1,1);
 		if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 		if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
-
-		if (has_shoulders)
-			{
-			glColor4f(0.5,0.5,0.5,0.5);
-			glBegin(GL_LINES);
-			glVertex2(shoulders[3]);		glVertex2(shoulders[0]);
-			glVertex2(shoulders[0]);		glVertex2(shoulders[1]);
-			glVertex2(shoulders[1]);		glVertex2(shoulders[2]);
-			glVertex2(shoulders[0]);		glVertex2(shoulders[3]);
-			glVertex2(shoulders[3]);		glVertex2(shoulders[2]);
-			glVertex2(shoulders[2]);		glVertex2(shoulders[1]);
-			glEnd();
-		}
 	
 	}
 	else switch(kind) {
@@ -634,9 +662,9 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 
 			if (helipad)
 			{	
-				glColor4f(0.2,0.2,0.2,0.5);
+				glColor4fv(WED_Color_Surface(helipad->GetSurface(), 0.5, storage));
 				glShape2v(GL_QUADS, corners, 4);
-				glColor4f(0.6, 0.6, 0.6, 1.0);
+				glColor4fv(WED_Color_RGBA(struct_color));
 			}
 
 			glShape2v(GL_LINE_LOOP, corners, 4);
@@ -694,7 +722,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					pts.push_back(GetZoomer()->LLToPixel(s.p2));
 				}
 				
-				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs);				
+				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);				
 			}
 		}
 		break;
@@ -711,9 +739,9 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			
 			if ((sea = SAFE_CAST(WED_Sealane, entity)) != NULL)
 			{
-				glColor4f(0,0,1,0.3);
+				glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,0.5, storage));
 				glShape2v(GL_QUADS, corners, 4);
-				glColor4f(0.3,0.3,1.0, 1.0);
+				glColor4fv(WED_Color_RGBA(struct_color));
 			}
 									
 			glShape2v(GL_LINE_LOOP, corners, 4);
@@ -744,7 +772,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					
 				if (!pts.empty())
 				{
-					glColor4f(0.0, 1.0, 0.0, 0.3);
+					glColor4fv(WED_Color_Surface(taxi->GetSurface(), 0.5, storage));
 					glDisable(GL_CULL_FACE);
 					glPolygon2(&*pts.begin(), &*is_hole_start.begin(), pts.size());
 					glEnable(GL_CULL_FACE);

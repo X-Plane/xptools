@@ -22,6 +22,7 @@
  */
 #include "WED_MapZoomerNew.h"
 #include "GUI_Messages.h"
+#include "XESConstants.h"
 
 inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 {
@@ -85,6 +86,11 @@ void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n)
 {
 	while(n--)
 		*dst++ = LLToPixel(*src++);
+}
+
+double	WED_MapZoomerNew::GetPPM(void)
+{
+	return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
 }
 
 	

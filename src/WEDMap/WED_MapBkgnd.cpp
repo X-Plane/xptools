@@ -1,6 +1,7 @@
 #include "WED_MapBkgnd.h"
 #include "WED_MapZoomerNew.h"
 #include "GUI_GraphState.h"
+#include "WED_Colors.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -21,9 +22,9 @@ void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 	double pl,pr,pb,pt;
 	double ll,lr,lb,lt;
 
-	g->SetState(false,false,false, false,false, false,false);
+	g->SetState(false,false,false, true,true, false,false);
 	
-	glColor3f(0.2f,0.2f,0.2f);
+	glColor4fv(WED_Color_RGBA(wed_Map_Matte));
 	glBegin(GL_QUADS);
 
 	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
@@ -38,7 +39,7 @@ void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-	glColor3f(0.0f,0.0f,0.0f);
+	glColor4fv(WED_Color_RGBA(wed_Map_Bkgnd));
 	glVertex2d(ll,lb);
 	glVertex2d(ll,lt);
 	glVertex2d(lr,lt);

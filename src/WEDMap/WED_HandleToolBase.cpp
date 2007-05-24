@@ -2,6 +2,7 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
 #include "WED_Entity.h"
+#include "WED_Colors.h"
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
@@ -472,9 +473,10 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				if (lt != link_None)
 				{				
 					switch(lt) {
-					case link_Solid:		glColor4f(0,1,0,1);		break;
-					case link_Ghost:		glColor4f(0,1,0,0.3);	break;
-					case link_BezierCtrl:	glColor4f(1,1,1,0.4);	break;
+					case link_Solid:		glColor4fv(WED_Color_RGBA(wed_Link));			break;
+					case link_Ghost:		glColor4fv(WED_Color_RGBA(wed_GhostLink));		break;
+					case link_BezierCtrl:	glColor4fv(WED_Color_RGBA(wed_ControlLink));	break;
+					case link_Marquee:		glColor4fv(WED_Color_RGBA(wed_Marquee));		break;
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
@@ -508,13 +510,16 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				Vector2	orient;
 
 				if (ht == handle_None) continue;
+				
+				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
+
+				
 				if (ht == handle_ArrowHead || ht == handle_Arrow)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
 					if (ht == handle_Arrow)
 					{
 						g->SetState(0,0,0,   0, 0, 0, 0);
-						glColor3f(0,1,0);
 						glBegin(GL_LINES);
 						glVertex2d(bscrp.x, bscrp.y);
 						glVertex2d(scrpt.x, scrpt.y);						
@@ -522,7 +527,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 					}
 					orient = Vector2(bscrp,scrpt);
 				}
-		
+						
 				switch(ht) {
 				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0);		break;
 				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0);break;
@@ -539,7 +544,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 	if (mDragType == drag_Sel)
 	{
 		g->SetState(false,false,false, false,false, false,false);
-		glColor3f(0.0f,1.0f,0.0f);
+		glColor4fv(WED_Color_RGBA(wed_Marquee));
 		glBegin(GL_LINE_LOOP);
 		glVertex2i(min(mDragX, mSelX),min(mDragY,mSelY));
 		glVertex2i(min(mDragX, mSelX),max(mDragY,mSelY));

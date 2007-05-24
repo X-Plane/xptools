@@ -116,7 +116,7 @@ int		WED_MarqueeTool::GetLinks		    (int id) const
 void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
 {
 	if (active) *active=1;
-	if (ltype) *ltype = link_Solid;
+	if (ltype) *ltype = link_Marquee;
 }
 
 int		WED_MarqueeTool::GetNthLinkSource   (int id, int n) const

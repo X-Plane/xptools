@@ -128,6 +128,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
+	
+	char hack[100];
+	sprintf(hack, "%f ppm", GetPPM());
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, hack);
+	
 }
 
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
