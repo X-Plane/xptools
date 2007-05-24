@@ -33,9 +33,13 @@ WED_TerraserverLayer::~WED_TerraserverLayer()
 {
 	delete mPool;
 	for (int z = 0; z < NUM_LEVELS; ++z)
-	for (map<long long, AsyncImage *>::iterator i = mImages[z].begin(); i != mImages[z].end(); ++i)
-		delete i->second;
-	delete mLocator;
+	{
+		for (map<long long, AsyncImage *>::iterator i = mImages[z].begin(); i != mImages[z].end(); ++i)
+		{
+			delete i->second;
+		}
+		delete mLocator[z];
+	}
 }
 
 void		WED_TerraserverLayer::ToggleVis(void) { mVis = !mVis; GetHost()->Refresh(); if (mVis) Start(0.1); else Stop(); }
