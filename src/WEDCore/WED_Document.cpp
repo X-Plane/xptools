@@ -19,7 +19,7 @@ WED_Document::WED_Document(
 								WED_Package * 		inPackage,
 								double				inBounds[4]) :
 	mDB(path.c_str()),
-	mProperties(mDB.get()),
+//	mProperties(mDB.get()),
 	mFilePath(path),
 	mPackage(inPackage),
 	mUndo(&mArchive)
@@ -50,8 +50,11 @@ WED_Document::WED_Document(
 
 WED_Document::~WED_Document()
 {
+	printf("Starting doc dtor.\n");
 	mArchive.SaveToDB(mDB.get());
+	printf("Doc saved, broadcasting.\n");
 	BroadcastMessage(msg_DocumentDestroyed, 0);
+	printf("Ending doc dtor.\n");
 }
 
 string				WED_Document::GetFilePath(void) const

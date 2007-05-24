@@ -70,26 +70,54 @@ void			WED_Thing::FromDB(sqlite3 * db)
 void			WED_Thing::ToDB(sqlite3 * db)
 {
 	int err;
-	sql_command	write_me(db,"UPDATE WED_things set parent=@p WHERE id=@id;",
-								"@p,@id");
-	sql_row2 <int,int>bindings(parent_id,GetID());
-	err = write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
-
-	if (!child_id.empty())
+	
+	int persistent_class_id;
+	
 	{
-		sql_command write_kids(db,"UPDATE WED_things set seq=@n WHERE id=@id;","@n,@id");
-		for (int n = 0; n < child_id.size(); ++n)
+			#if !DEV
+				err check?
+			#endif
+		const char * my_class = this->GetClass();
+		
+		sql_command	find_my_class(db,"SELECT id FROM WED_classes WHERE name=@name;","@name");
+		sql_row1<string>	class_key(my_class);
+		
+		find_my_class.set_params(class_key);
+		sql_row1<int>	found_id;
+		if (find_my_class.get_row(found_id) == SQLITE_ROW)
 		{
-			sql_row2<int,int>	kid_info(n,child_id[n]);
-			err = write_kids.simple_exec(kid_info);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update child info for %d child: %d (%s)",n,err, sqlite3_errmsg(db));	
+			persistent_class_id = found_id.a;		
+		}
+		else
+		{
+			sql_command	find_highest_id(db,"SELECT MAX(id) FROM WED_classes;",NULL);
+			sql_row1<int>	highest_key;
+			err = find_highest_id.simple_exec(sql_row0(), highest_key);
+			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
+			
+			persistent_class_id = highest_key.a + 1;
+			
+			sql_command record_new_class(db,"INSERT INTO WED_classes VALUES(@id,@name);","@id,@name");
+			sql_row2<int,string> new_class_info(persistent_class_id,my_class);
+			err = record_new_class.simple_exec(new_class_info);
+			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
 		}
 	}
 	
+	sql_command write_me(db,"INSERT OR REPLACE INTO WED_things VALUES(@id,@parent,@seq,@name,@class_id);","@id,@parent,@seq,@name,@class_id");
+	sql_row5<int,int,int,string,int>	bindings(
+												GetID(),
+												parent_id,
+												GetMyPosition(),
+												name.value,
+												persistent_class_id);
+	
+	err =  write_me.simple_exec(bindings);
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
+	
 	char id_str[20];
-	sprintf(id_str,"i%d",GetID());	
-	PropsToDB(db,"id",id_str);
+	sprintf(id_str,"%d",GetID());	
+	PropsToDB(db,"id",id_str, "WED_things");
 }
 
 int					WED_Thing::CountChildren(void) const

@@ -66,10 +66,39 @@ void 		WED_PropertyHelper::PropsFromDB(sqlite3 * db, const char * where_clause)
 		mItems[n]->FromDB(db,where_clause);
 }
 
-void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const char * id_val)
+void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table)
 {
+	SQL_Update update;
 	for (int n = 0; n < mItems.size(); ++n)
+	{
 		mItems[n]->ToDB(db,id_col, id_val);
+		mItems[n]->GetUpdate(update);
+	}
+	
+	string skip(skip_table ? skip_table : "");
+	
+	for (SQL_Update::iterator table = update.begin(); table != update.end(); ++table)
+	{
+		if (table->first == skip) continue;
+		string cols = id_col;
+		string vals = id_val;
+		for (SQL_TableUpdate::iterator col = table->second.begin(); col != table->second.end(); ++col)
+		{
+			cols += ",";
+			cols += col->first;
+			vals += ",";
+			vals += col->second;
+		}
+		
+		string cmd = string("INSERT OR REPLACE INTO ") + table->first + 
+					 string("(") + cols +
+					 string(") VALUES(") +
+					 vals + ");";
+		
+		sql_command write_to_table(db, cmd.c_str(), NULL);
+		int err = write_to_table.simple_exec();
+		if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd.c_str(), err, sqlite3_errmsg(db));
+	}
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -135,12 +164,15 @@ void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause)
 
 void		WED_PropIntText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%d WHERE %s=%s;",mTable, mColumn, value, id_col,id_val);
-	sql_command cmd(db,cmd_buf,NULL);
-	int err = cmd.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 }
+
+void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
+{
+	char as_int[1024];
+	sprintf(as_int,"%d", value);
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -202,13 +234,14 @@ void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause)
 
 void		WED_PropBoolText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%d WHERE %s=%s;",mTable, mColumn, value, id_col,id_val);
-	sql_command cmd(db,cmd_buf,NULL);
-	int err = cmd.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 }
 
+void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
+{
+	char as_int[1024];
+	sprintf(as_int,"%d", value);
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
+}
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -271,11 +304,13 @@ void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause)
 
 void		WED_PropDoubleText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%lf WHERE %s=%s;",mTable, mColumn, value, id_col, id_val);
-	sql_command cmd(db,cmd_buf,NULL);
-	int err = cmd.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+}
+
+void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
+{
+	char as_double[1024];
+	sprintf(as_double,"%lf", value);
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_double));
 }
 
 
@@ -347,12 +382,16 @@ void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause)
 
 void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=\"%s\" WHERE %s=%s;",mTable, mColumn, value.c_str(), id_col,id_val);
-	sql_command cmd(db,cmd_buf,NULL);
-	int err = cmd.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 }
+
+void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
+{
+	string quoted("'");
+	quoted += value;
+	quoted += '\'';
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
+}
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -417,12 +456,16 @@ void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause)
 
 void		WED_PropIntEnum::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"UPDATE %s SET %s=%s WHERE %s=%s;",mTable, mColumn, ENUM_Fetch(value), id_col,id_val);
-	sql_command cmd(db,cmd_buf,NULL);
-	int err = cmd.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 }
+
+void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
+{
+	string quoted("'");
+	quoted += ENUM_Fetch(value);
+	quoted += '\'';
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
+}
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -497,9 +540,11 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause)
 	int rc;
 	do {
 		rc = cmd.get_row(v);
-		value.insert(ENUM_Lookup(v.a.c_str()));		
-		DebugAssert(ENUM_Domain(ENUM_Lookup(v.a.c_str()))==domain);
-		
+		if (rc == SQLITE_ROW)
+		{
+			value.insert(ENUM_Lookup(v.a.c_str()));		
+			DebugAssert(ENUM_Domain(ENUM_Lookup(v.a.c_str()))==domain);
+		}
 	} while (rc == SQLITE_ROW); 
 	
 	if (rc != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, rc, sqlite3_errmsg(db));
@@ -518,16 +563,23 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 	
 	if (!value.empty())
 	{
-		sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
-		sql_command cmd2(db,cmd_buf,"@e");
-		
-		sql_row1<string>	p;
-		
+		#if OPTIMIZE
+			Ben says - I could not get an insert to work with variable bindings.  Reparsing the statement is real inefficient.
+		#endif
 		for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
 		{
+			sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
+			sql_command cmd2(db,cmd_buf,"@e");
+			
+			sql_row1<string>	p;
+
 			p.a = ENUM_Fetch(*i);
 			int err = cmd2.simple_exec(p);
 			if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 		}
 	}		
+}
+
+void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
+{
 }

@@ -7,7 +7,8 @@
 #include "AptDefs.h"
 #include "MapDefs.h"
 #include "DEMDefs.h"
-#include "WED_Properties.h"
+//#include "WED_Properties.h"
+#include "SQLUtils.h"
 #include "WED_Archive.h"
 #include "WED_UndoMgr.h"
 
@@ -75,7 +76,7 @@ private:
 	WED_Archive			mArchive;
 	WED_UndoMgr			mUndo;
 
-	WED_Properties	mProperties;
+//	WED_Properties	mProperties;
 
 	WED_Document();
 	WED_Document(const WED_Document&);

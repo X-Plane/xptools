@@ -47,9 +47,9 @@ void			WED_ObjPlacement::ToDB(sqlite3 * db)
 {
 	WED_GISPoint_Heading::ToDB(db);
 	int err;
-	sql_command	write_me(db,"UPDATE WED_objects set model_id=@m WHERE id=@id;",
-								"@m,@id");
-	sql_row2 <int,int>bindings(model_id,GetID());
+	sql_command	write_me(db,"INSERT OR REPLACE INTO WED_objects VALUES(@id,@m);",
+								"@id,@m");
+	sql_row2 <int,int>bindings(GetID(),model_id);
 	err = write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update entity info: %d (%s)",err, sqlite3_errmsg(db));	
 }

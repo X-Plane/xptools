@@ -25,6 +25,10 @@ class	IOWriter;
 class	IOReader;
 struct	sqlite3;
 
+typedef pair<string,string>				SQL_ColumnUpdate;
+typedef vector<SQL_ColumnUpdate>		SQL_TableUpdate;
+typedef map<string, SQL_TableUpdate>	SQL_Update;
+
 class	WED_PropertyItem {
 public:
 	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, const char * table, const char * column);
@@ -38,6 +42,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer)=0;
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause)=0;
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
+	virtual	void		GetUpdate(SQL_Update& io_update)=0;
 
 	const char *			mTitle;
 	const char *			mTable;
@@ -65,7 +70,7 @@ public:
 			void 		ReadPropsFrom(IOReader * reader);
 			void 		WritePropsTo(IOWriter * writer);	
 			void		PropsFromDB(sqlite3 * db, const char * where_clause);
-			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val);
+			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
 	
 private:
 
@@ -95,6 +100,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 
@@ -117,6 +123,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 
@@ -140,6 +147,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 
@@ -162,6 +170,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 
@@ -185,6 +194,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 
@@ -208,6 +218,7 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
 

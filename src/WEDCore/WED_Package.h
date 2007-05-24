@@ -2,6 +2,7 @@
 #define WED_PACKAGE_H
 
 #include "GUI_Broadcaster.h"
+#include "GUI_Listener.h"
 
 class	WED_Document;
 
@@ -16,7 +17,7 @@ enum {
 };
 
 
-class	WED_Package : public GUI_Broadcaster{
+class	WED_Package : public GUI_Broadcaster, public GUI_Listener{
 public:
 
 	WED_Package(const char * inPath, bool inCreate);
@@ -30,7 +31,13 @@ public:
 	
 	void			Rescan(void);
 
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							int						inMsg,
+							int						inParam);
+
 private:
+
 
 				 WED_Package(const WED_Package&);
 	WED_Package& operator=  (const WED_Package&);

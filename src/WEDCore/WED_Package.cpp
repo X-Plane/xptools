@@ -90,11 +90,17 @@ WED_Package::WED_Package(const char * inPath, bool inCreate)
 
 WED_Package::~WED_Package()
 {
+	printf("Start package destroy.\n");
 	for (int n = 0; n < 360 * 180; ++n)
 	if (mTiles[n])
+	{
+		printf("Deleting tile %d\n",n);
+		mTiles[n]->RemoveListener(this);
 		delete mTiles[n];
-
+	}
+	printf("Broadcast package destoryed.\n");
 	BroadcastMessage(msg_PackageDestroyed, 0);
+	printf("End of package dtor.\n");
 }
 
 int				WED_Package::GetTileStatus(int lon, int lat)
@@ -125,6 +131,7 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 	#if !DEV
 	revisit - is opening and creating a tile really different?>?
 	#endif
+	tile->AddListener(this);	
 //	tile->Load();
 	return tile;
 }
@@ -138,6 +145,7 @@ WED_Document *	WED_Package::NewTile(int lon, int lat)
 
 	WED_Document * tile = new WED_Document(path, this, bounds);
 	mTiles[lon_lat_to_idx(lon, lat)] = tile;
+	tile->AddListener(this);
 	return tile;
 }
 
@@ -198,3 +206,21 @@ void			WED_Package::Rescan(void)
 	}
 }
 
+void	WED_Package::ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							int						inMsg,
+							int						inParam)
+{
+	if (inMsg == msg_DocumentDestroyed)
+	{
+		for (int n = 0; n < (360*180);++n)
+		if(mTiles[n])
+		{
+			if ((GUI_Broadcaster*)mTiles[n] == inSrc)
+			{
+				mTiles[n] = NULL;
+				break;
+			}
+		}
+	}
+}

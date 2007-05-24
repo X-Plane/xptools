@@ -97,8 +97,8 @@ void			WED_AirportChain::ToDB(sqlite3 * db)
 	WED_GISChain::ToDB(db);
 
 	int err;
-	sql_command	write_me(db,"UPDATE WED_airportchains set closed=@p WHERE id=@id;","@p,@id");
-	sql_row2 <int,int>bindings(closed,GetID());
+	sql_command	write_me(db,"INSERT OR REPLACE INTO WED_airportchains values(@id,@closed);","@id,@closed");
+	sql_row2 <int,int>bindings(GetID(),closed);
 	err = write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
 }
