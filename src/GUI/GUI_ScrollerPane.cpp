@@ -139,21 +139,41 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 		vis[4] = vis[2] - vis[0];
 		vis[5] = vis[3] - vis[1];
 		
-		float minv = 0;
-		float maxv = max(total[5] - vis[5], 0.0f);
-		float new_v = vis[1] - total[1] + dist;
-		float old_v = vis[1] - total[1];
-		
-		if (maxv == 0.0) return 1;
-		
-		if (new_v < minv) new_v = minv;
-		if (new_v > maxv) new_v = maxv;
+		if (axis == 0)
+		{		
+			float minv = 0;
+			float maxv = max(total[5] - vis[5], 0.0f);
+			float new_v = vis[1] - total[1] + dist;
+			float old_v = vis[1] - total[1];
+			
+			if (maxv == 0.0) return 1;
+			
+			if (new_v < minv) new_v = minv;
+			if (new_v > maxv) new_v = maxv;
 
-		if (old_v != new_v)
-		{
-			mContent->ScrollV(new_v);
-			CalibrateSBs();
-			Refresh();
+			if (old_v != new_v)
+			{
+				mContent->ScrollV(new_v);
+				CalibrateSBs();
+				Refresh();
+			}
+		} else {
+			float minv = 0;
+			float maxv = max(total[4] - vis[4], 0.0f);
+			float new_v = vis[0] - total[0] - dist;
+			float old_v = vis[0] - total[0];
+			
+			if (maxv == 0.0) return 1;
+			
+			if (new_v < minv) new_v = minv;
+			if (new_v > maxv) new_v = maxv;
+
+			if (old_v != new_v)
+			{
+				mContent->ScrollH(new_v);
+				CalibrateSBs();
+				Refresh();
+			}
 		}
 		return 1;
 	}

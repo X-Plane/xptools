@@ -31,6 +31,7 @@ void		GUI_Splitter::Draw(GUI_GraphState * state)
 		GetNthChild(1)->GetBounds(b2);
 
 		
+		glColor3f(1,1,1);
 		if (mDirection == gui_Split_Vertical)
 		{
 			int tile_sel[4] = { 0, mClick ? 1 : 0, 1, 2 };

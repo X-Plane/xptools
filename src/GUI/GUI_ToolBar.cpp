@@ -4,6 +4,12 @@
 #include "GUI_Resources.h"
 #include "MathUtils.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl/gl.h>
+#endif
+
 GUI_ToolBar::GUI_ToolBar(int h, int v, const char * in_resource) :
 	GUI_Control(),
 	mResource(in_resource ? in_resource : string()),
@@ -30,6 +36,8 @@ void		GUI_ToolBar::Draw(GUI_GraphState * state)
 	bounds[5] = bounds[3] - bounds[1];
 	
 	int all_sel[4] = { 0, 0, 2, 1 };
+	
+	glColor3f(1,1,1);
 	
 	GUI_DrawStretched(state, mResource.c_str(), bounds, all_sel);
 	

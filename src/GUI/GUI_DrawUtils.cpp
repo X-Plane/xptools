@@ -98,12 +98,11 @@ void	GUI_DrawCentered(
 
 	GUI_PositionRect(bounds, image_size, just_h, just_v);
 	
-	if (metrics.real_width % 2)		image_size[0]++, image_size[2]++;
-	if (metrics.real_height % 2)	image_size[1]++, image_size[3]++;
+	if ((metrics.real_width  / tile_sel[2]) % 2)		image_size[0]++, image_size[2]++;
+	if ((metrics.real_height / tile_sel[3]) % 2)		image_size[1]++, image_size[3]++;
 	
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
-	glColor3f(1,1,1);
 	
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);
@@ -129,7 +128,6 @@ void	GUI_DrawStretched(
 	
 	state->SetState(0, 1, 0, 1, 1, 0, 0);
 	state->BindTex(tex_id, 0);
-	glColor3f(1,1,1);
 	
 	float	sts[4] = { 0.0, 0.0, metrics.s_rescale, metrics.t_rescale };
 	if (tile_sel) GUI_TileToST(tile_sel, sts, &metrics);

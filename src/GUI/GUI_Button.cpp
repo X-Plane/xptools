@@ -4,6 +4,11 @@
 #include "GUI_DrawUtils.h"
 #include "GUI_Fonts.h"
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl/gl.h>
+#endif
 
 
 GUI_Button::GUI_Button() : mStyle(btn_Push), mHilite(0)
@@ -76,6 +81,7 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	int w;
 	int bounds[4];
 	string desc;
+	glColor3f(1,1,1);
 	GetDescriptor(desc);
 	GetBounds(bounds);
 	switch(mStyle) {

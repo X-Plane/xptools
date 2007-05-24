@@ -63,6 +63,7 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	int	bounds[4];
 	GetBounds(bounds);
 	int tile_line[4] = { 0, 0, 1, 3 };
+	glColor3f(1,1,1);
 	GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_line);
 	
 	int n;
