@@ -29,3 +29,8 @@ void		WED_Taxiway::SetHeading(double h)
 		heading = h;
 }
 
+int			WED_Taxiway::GetSurface(void) const
+{
+	return surface.value;
+}
+

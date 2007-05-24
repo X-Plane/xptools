@@ -196,6 +196,15 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 	return true;
 }
 
+int			WED_Runway::GetSurface(void) const
+{
+	return surface.value;
+}
+
+int			WED_Runway::GetShoulder(void) const
+{
+	return shoulder.value;
+}
 
 void		WED_Runway::SetDisp1(double n)
 {

@@ -41,3 +41,9 @@ void		WED_Helipad::SetEdgeLights(int x)
 {
 	edgelights = x;
 }
+
+int			WED_Helipad::GetSurface(void) const
+{
+	return surface.value;
+}
+

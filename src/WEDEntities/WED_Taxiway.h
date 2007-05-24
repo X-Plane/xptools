@@ -12,6 +12,7 @@ public:
 	void		SetRoughness(double r);
 	void		SetHeading(double h);
 
+	int			GetSurface(void) const;
 private:
 
 	WED_PropIntEnum			surface;

@@ -15,6 +15,7 @@ public:
 		void		SetRoughness(double);
 		void		SetEdgeLights(int);
 
+		int			GetSurface(void) const;
 private:
 
 	WED_PropIntEnum		surface;

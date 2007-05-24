@@ -38,6 +38,8 @@ public:
 	void		SetTDZL2(int);
 	void		SetREIL2(int);
 
+	int			GetSurface(void) const;
+	int			GetShoulder(void) const;
 
 	double		GetDisp1(void) const;
 	double		GetDisp2(void) const;

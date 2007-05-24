@@ -19,3 +19,8 @@ void	WED_Airport::GetICAO(string& i) const
 {
 	i = icao.value;
 }
+
+int		WED_Airport::GetAirportType(void) const
+{
+	return airport_type.value;
+}

@@ -10,6 +10,7 @@ DECLARE_PERSISTENT(WED_Airport)
 public:
 
 	void		GetICAO(string& icao) const;
+	int			GetAirportType(void) const;
 
 private:
 

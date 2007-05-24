@@ -1,0 +1,32 @@
+Time saving WED shortcuts:
+
+- All creation tools feature properties at the bottom of the screen.  New objects are 
+  initialized to these properties.
+  
+Property Table:
+	Tab key - advance to next text
+	Option key (option-return for text): set all
+	Arrow Keys - change selection
+
+Map - Select:
+	Shift, Command: select more, select toggle
+	click once to select by interiors, but marquee to select all
+
+Map - Polygons:
+	Option: create bezier (or split bezier)
+	shift: unsplit bezier (or delete bezier)
+	option-shift: (only for vertex tool)
+	Create one bezier or delete one bezier
+	
+polygon create:
+	command-key lets you edit vertices (option & shift work too)
+	delete kills last
+	return finishes
+	escape kills all
+
+selection:
+	cmd-down and up move through the hierarchy
+	cmd-a + down a lot selects all leafs	
+	cmd-shift down and cmd-shift-up jump in and out of polygons.
+	
+	
