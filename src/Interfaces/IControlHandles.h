@@ -41,7 +41,8 @@ enum LinkType_t {
 	link_None,			// Draw nothing
 	link_Solid,			// Draw solid line...
 	link_BezierCtrl,	// Thin line for bezier handles	
-	link_Ghost			// implicit ghost line
+	link_Ghost,			// implicit ghost line
+	link_Marquee
 };
 
 class	IControlHandles : public virtual IUnknown {
