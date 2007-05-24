@@ -150,6 +150,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 WED_DocumentWindow::~WED_DocumentWindow()
 {
+	printf("Empty doc window dtor.\n");
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
@@ -176,7 +177,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
-	case gui_Close:	return 1;
+	case gui_Close:		mDocument->AsyncDestroy();	return 1;
 
 	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;
 	case gui_SelectNone:	WED_DoSelectNone(mDocument);		return 1;
