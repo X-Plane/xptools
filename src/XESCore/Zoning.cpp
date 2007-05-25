@@ -127,7 +127,7 @@ void	ZoneManMadeAreas(
 		}
 		
 		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
-		if (apt->kind_code == apt_Type_Airport)
+		if (apt->kind_code == apt_airport)
 		if (!apt->pavements.empty())
 		{
 			Point2 midp = apt->pavements.front().ends.midpoint();

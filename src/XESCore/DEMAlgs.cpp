@@ -1147,9 +1147,9 @@ void	DeriveDEMs(
 
 	FindAirports(Bbox2(landuse.mWest, landuse.mSouth, landuse.mEast, landuse.mNorth), ioAptIndex, apts);
 	for (set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
-	if (ioApts[*apt].kind_code == apt_Type_Airport)
+	if (ioApts[*apt].kind_code == apt_airport)
 	for (AptPavementVector::iterator rwy = ioApts[*apt].pavements.begin(); rwy != ioApts[*apt].pavements.end(); ++rwy)
-	if (rwy->surf_code == rwy_Surf_Asphalt || rwy->surf_code == rwy_Surf_Concrete)
+	if (rwy->surf_code == apt_surf_asphalt || rwy->surf_code == apt_surf_concrete)
 	{
 		Point2 p = rwy->ends.midpoint();
 		float e = urbanTrans.xy_nearest(p.x, p.y, x, y);
