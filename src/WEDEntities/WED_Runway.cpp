@@ -1,6 +1,7 @@
 #include "WED_Runway.h"
 #include "WED_EnumSystem.h"
 #include "GISUtils.h"
+#include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_Runway)
 
@@ -12,7 +13,7 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	edge_lites		(this,"Edge Lights",				"WED_runway",	"edge_lites",			Edge_Lights,	edge_MIRL),
 	remaining_signs	(this,"Distance Signs",				"WED_runway",	"distance_signs",		1),
 
-	id1				(this,"Identifier 1",				"WED_runway",	"id1",					"04"),
+//	id1				(this,"Identifier 1",				"WED_runway",	"id1",					"04"),
 	disp1			(this,"Displaced Threshhold 1",		"WED_runway",	"displaced1",			0),
 	blas1			(this,"Blastpad 1",					"WED_runway",	"blastpad1",			0),
 	mark1			(this,"Markings 1",					"WED_runway",	"markings1",			Runway_Markings,	mark_NonPrecis),
@@ -20,7 +21,7 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	tdzl1			(this,"TDZ Lights 1",				"WED_runway",	"TDZL1",				1),
 	reil1			(this,"REIL 1",						"WED_runway",	"REIL1",				REIL_Lights,		reil_None),
 
-	id2				(this,"Identifier 2",				"WED_runway",	"id2",					"22"),
+//	id2				(this,"Identifier 2",				"WED_runway",	"id2",					"22"),
 	disp2			(this,"Displaced Threshhold 2",		"WED_runway",	"displaced2",			0),
 	blas2			(this,"Blastpad 2",					"WED_runway",	"blastpad2",			0),
 	mark2			(this,"Markings 2",					"WED_runway",	"markings2",			Runway_Markings,	mark_NonPrecis),
@@ -246,3 +247,79 @@ double		WED_Runway::GetBlas2(void) const { return blas2.value; }
 	void		WED_Runway::SetAppLights2(int x) { appl2 = x; }
 	void		WED_Runway::SetTDZL2(int x) { tdzl2 = x; }
 	void		WED_Runway::SetREIL2(int x) { reil2 = x; }
+
+
+void		WED_Runway::Import(const AptRunway_t& x)
+{
+	GetSource()->SetLocation(x.ends.p1  );
+	GetTarget()->SetLocation(x.ends.p2  );
+				 SetWidth	(x.width_mtr);
+	
+	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
+	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code			);
+	roughness		=								x.roughness_ratio		 ;
+	center_lites	=								x.has_centerline		 ;
+	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code		);
+	remaining_signs =								x.has_distance_remaining ;
+	
+	string	full = x.id[0] + string("/") + x.id[1];
+	SetName(full);
+
+	disp1 =									x.disp_mtr		[0] ;
+	blas1 =									x.blas_mtr		[0] ;
+	mark1 = ENUM_Import(Runway_Markings,	x.marking_code	[0]);
+	appl1 = ENUM_Import(Light_App,			x.app_light_code[0]);
+	tdzl1 =									x.has_tdzl		[0] ;
+	reil1 = ENUM_Import(REIL_Lights,		x.reil_code		[0]);
+
+	disp2 =									x.disp_mtr		[1] ;
+	blas2 =									x.blas_mtr		[1] ;
+	mark2 = ENUM_Import(Runway_Markings,	x.marking_code	[1]);
+	appl2 = ENUM_Import(Light_App,			x.app_light_code[1]);
+	tdzl2 =									x.has_tdzl		[1] ;
+	reil2 = ENUM_Import(REIL_Lights,		x.reil_code		[1]);
+}
+
+void		WED_Runway::Export(		 AptRunway_t& x) const
+{
+	GetSource()->GetLocation(x.ends.p1  );
+	GetTarget()->GetLocation(x.ends.p2  );
+							 x.width_mtr = GetWidth();
+	
+	x.surf_code				 = ENUM_Export(surface.value   );
+	x.shoulder_code			 = ENUM_Export(shoulder.value  );
+	x.roughness_ratio		 =			   roughness		;
+	x.has_centerline		 =			   center_lites		;
+	x.edge_light_code		 = ENUM_Export(edge_lites.value);
+	x.has_distance_remaining =			   remaining_signs	;
+	
+	string	full;
+	GetName(full);
+	string::size_type p = full.find('/');
+	if (p == full.npos)
+	{
+		x.id[0] = full;
+		x.id[1] = "xxx";
+	}
+	else
+	{
+		x.id[0] = full.substr(0,p);
+		x.id[1] = full.substr(p+1);		
+	}
+	
+	x.disp_mtr		[0] =			  disp1		  ;
+	x.blas_mtr		[0] =			  blas1		  ;
+	x.marking_code	[0] = ENUM_Export(mark1.value);
+	x.app_light_code[0] = ENUM_Export(appl1.value);
+	x.has_tdzl		[0] =			  tdzl1		  ;
+	x.reil_code		[0] = ENUM_Export(reil1.value);
+
+	x.disp_mtr		[1] =			  disp2		  ;
+	x.blas_mtr		[1] =			  blas2		  ;
+	x.marking_code	[1] = ENUM_Export(mark2.value);
+	x.app_light_code[1] = ENUM_Export(appl2.value);
+	x.has_tdzl		[1] =			  tdzl2		  ;
+	x.reil_code		[1] = ENUM_Export(reil2.value);
+
+}
+

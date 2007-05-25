@@ -3,6 +3,8 @@
 
 #include "WED_GISLine_Width.h"
 
+struct	AptRunway_t;
+
 class	WED_Runway : public WED_GISLine_Width {
 
 DECLARE_PERSISTENT(WED_Runway)
@@ -51,6 +53,9 @@ public:
 	void		SetBlas1(double blas1);
 	void		SetBlas2(double blas2);
 
+	void		Import(const AptRunway_t& x);
+	void		Export(		 AptRunway_t& x) const;
+
 private:
 
 	WED_PropIntEnum			surface;
@@ -60,7 +65,7 @@ private:
 	WED_PropIntEnum			edge_lites;
 	WED_PropBoolText		remaining_signs;
 	
-	WED_PropStringText		id1;
+//	WED_PropStringText		id1;
 	WED_PropDoubleText		disp1;
 	WED_PropDoubleText		blas1;
 	WED_PropIntEnum			mark1;
@@ -68,7 +73,7 @@ private:
 	WED_PropBoolText		tdzl1;
 	WED_PropIntEnum			reil1;
 
-	WED_PropStringText		id2;
+//	WED_PropStringText		id2;
 	WED_PropDoubleText		disp2;
 	WED_PropDoubleText		blas2;
 	WED_PropIntEnum			mark2;

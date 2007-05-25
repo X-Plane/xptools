@@ -3,6 +3,8 @@
 
 #include "WED_GISLine_Width.h"
 
+struct	AptSealane_t;
+
 class	WED_Sealane : public WED_GISLine_Width {
 
 DECLARE_PERSISTENT(WED_Sealane)
@@ -10,12 +12,13 @@ DECLARE_PERSISTENT(WED_Sealane)
 public:
 
 	void		SetBuoys(int);
+	
+	void		Import(const AptSealane_t& x);
+	void		Export(		 AptSealane_t& x) const;
 
 private:
 
 	WED_PropBoolText		buoys;
-	WED_PropStringText		id1;
-	WED_PropStringText		id2;
 
 };	
 

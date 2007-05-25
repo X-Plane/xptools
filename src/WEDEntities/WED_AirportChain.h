@@ -3,6 +3,8 @@
 
 #include "WED_GISChain.h"
 
+struct	AptMarking_t;
+
 class	WED_AirportChain : public WED_GISChain {
 
 DECLARE_PERSISTENT(WED_AirportChain)
@@ -19,6 +21,9 @@ public:
 	virtual	void 			WriteTo(IOWriter * writer);
 	virtual void			FromDB(sqlite3 * db);
 	virtual void			ToDB(sqlite3 * db);	
+
+			void			Import(const AptMarking_t& x);
+			void			Export(		 AptMarking_t& x) const;
 
 private:
 

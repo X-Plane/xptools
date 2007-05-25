@@ -3,6 +3,7 @@
 #include "IODefs.h"
 #include "SQLutils.h"
 #include "WED_Errors.h"
+#include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_AirportChain)
 
@@ -103,3 +104,13 @@ void			WED_AirportChain::ToDB(sqlite3 * db)
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
 }
 
+
+void	WED_AirportChain::Import(const AptMarking_t& x)
+{
+	SetName(x.name);
+}
+
+void	WED_AirportChain::Export(		 AptMarking_t& x) const
+{
+	GetName(x.name);
+}

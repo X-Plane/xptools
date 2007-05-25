@@ -1,6 +1,7 @@
 #include "WED_Airport.h"
 #include "WED_EnumSystem.h"
-
+#include "AptDefs.h"
+#include "XESConstants.h"
 DEFINE_PERSISTENT(WED_Airport)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
@@ -24,3 +25,29 @@ int		WED_Airport::GetAirportType(void) const
 {
 	return airport_type.value;
 }
+
+void		WED_Airport::SetAirportType(int x) { airport_type = x; }
+void		WED_Airport::SetElevation(double x) { elevation = x; }
+void		WED_Airport::SetHasATC(int x) { has_atc= x; }
+void		WED_Airport::SetICAO(const string& x) { icao = x; }
+
+
+void		WED_Airport::Import(const AptInfo_t& info)
+{
+	airport_type = ENUM_Import(Airport_Type, info.kind_code);
+	elevation = info.elevation_ft * FT_TO_MTR;
+	has_atc = info.has_atc_twr;
+	icao = info.icao;
+	SetName(info.name);
+}
+
+void		WED_Airport::Export(AptInfo_t& info) const
+{
+	info.kind_code = ENUM_Export(airport_type);
+	info.elevation_ft = elevation.value * MTR_TO_FT;
+	info.has_atc_twr = has_atc;
+	info.icao = icao.value;
+	GetName(info.name);
+	info.default_buildings = 0;	// deprecated field.  Not supported in x-plane so not supported in WED!
+}
+

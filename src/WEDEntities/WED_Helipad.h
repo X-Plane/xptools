@@ -3,6 +3,8 @@
 
 #include "WED_GISPoint_HeadingWidthLength.h"
 
+struct	AptHelipad_t;
+
 class	WED_Helipad : public WED_GISPoint_HeadingWidthLength {
 
 DECLARE_PERSISTENT(WED_Helipad)
@@ -16,6 +18,10 @@ public:
 		void		SetEdgeLights(int);
 
 		int			GetSurface(void) const;
+		
+	void	Import(const AptHelipad_t& x);
+	void	Export(		 AptHelipad_t& x) const;
+			
 private:
 
 	WED_PropIntEnum		surface;

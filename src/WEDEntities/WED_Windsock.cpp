@@ -1,4 +1,5 @@
 #include "WED_Windsock.h"
+#include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_Windsock)
 
@@ -14,4 +15,18 @@ WED_Windsock::~WED_Windsock()
 void	WED_Windsock::SetLit(int l)
 {
 	lit = l;
+}
+
+void	WED_Windsock::Import(const AptWindsock_t& x)
+{
+	SetLocation(x.location);
+	SetName(x.name);
+	lit = x.lit;
+}
+
+void	WED_Windsock::Export(		 AptWindsock_t& x) const
+{
+	GetLocation(x.location);
+	GetName(x.name);
+	x.lit = lit;
 }

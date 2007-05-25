@@ -3,6 +3,8 @@
 
 #include "WED_GISPoint.h"
 
+struct	AptTowerPt_t;
+
 class	WED_TowerViewpoint : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_TowerViewpoint)
@@ -10,6 +12,9 @@ DECLARE_PERSISTENT(WED_TowerViewpoint)
 public:
 
 	void		SetHeight(double);
+	
+	void		Import(const AptTowerPt_t& x);
+	void		Export(		 AptTowerPt_t& x) const;
 
 private:
 
