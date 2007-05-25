@@ -99,7 +99,7 @@ void	WED_BezierTestTool::DrawFeedbackOverlay(
 		
 		int mx,my;
 		XPLMGetMouseLocation(&mx,&my);
-		if (a.near(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)),0.001))
+		if (a.is_near(Point2(GetZoomer()->XPixelToLon(mx),GetZoomer()->YPixelToLat(my)),0.001))
 			glColor3f(1,1,1);
 		
 		glBegin(GL_LINE_STRIP);
