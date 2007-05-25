@@ -135,7 +135,7 @@ void BurnInAirport(
 	faces.clear();
 	
 	for (int rwy = 0; rwy < inAirport->pavements.size(); ++rwy)
-	if (inAirport->pavements[rwy].surf_code != rwy_Surf_Waterway)
+	if (inAirport->pavements[rwy].surf_code != apt_surf_water)
 	{
 		
 		Point2	corners[4];
@@ -310,7 +310,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	PROGRESS_START(prog, 0, 1, "Burning in airports...")
 		
 	for (int n = 0; n < apts.size(); ++n)
-	if (apts[n].kind_code == apt_Type_Airport)
+	if (apts[n].kind_code == apt_airport)
 	{
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Pmwx	foo;
@@ -320,7 +320,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	}
 
 	for (int n = 0; n < apts.size(); ++n)
-	if (apts[n].kind_code == apt_Type_Airport)
+	if (apts[n].kind_code == apt_airport)
 	{
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);	
 		Pmwx	foo;

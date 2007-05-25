@@ -6,7 +6,7 @@ struct XAtomContainer;
 #include "AptDefs.h"
 #include <set>
 
-void	WriteApts(FILE * fi, const AptVector& inApts);
+//void	WriteApts(FILE * fi, const AptVector& inApts);
 bool	ReadApts(XAtomContainer& container, AptVector& outApts);
 
 bool	ReadAptFile(const char * inFileName, AptVector& outApts);
