@@ -88,7 +88,8 @@ void	WED_UndoMgr::Undo(void)
 	mRedo.push_front(redo);
 	delete undo;
 	mUndo.pop_back();
-	mArchive->BroadcastMessage(msg_ArchiveChanged,0);	
+	mArchive->mOpCount--;
+	mArchive->BroadcastMessage(msg_ArchiveChanged,0);		
 }
 
 void	WED_UndoMgr::Redo(void)
@@ -102,6 +103,7 @@ void	WED_UndoMgr::Redo(void)
 	mUndo.push_back(undo);
 	delete redo;
 	mRedo.pop_front();
+	mArchive->mOpCount++;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,0);
 }
 

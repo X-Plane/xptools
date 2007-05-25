@@ -41,6 +41,7 @@ public:
 	// Attach an undo layer - must be attached and detached with NULL in sequence.
 	void			SetUndo(WED_UndoLayer * inUndo);
 
+	void			ClearAll(void);
 	void			LoadFromDB(sqlite3 * db);
 	void			SaveToDB(sqlite3 * db);
 	
@@ -52,6 +53,8 @@ public:
 	
 	int				NewID(void);
 	
+	int				IsDirty(void);
+	
 private:
 
 	void			ChangedObject	(WED_Persistent * inObject);	
@@ -59,7 +62,7 @@ private:
 	void			RemoveObject	(WED_Persistent * inObject);
 
 	friend class	WED_Persistent;
-
+	friend	class	WED_UndoMgr;
 	typedef hash_map<int, WED_Persistent *>	ObjectMap;	
 
 	ObjectMap		mObjects;		// Our objects!
@@ -72,6 +75,7 @@ private:
 	WED_Archive& operator=(const WED_Archive& rhs);
 	
 	int				mID;
+	int				mOpCount;
 
 };
 

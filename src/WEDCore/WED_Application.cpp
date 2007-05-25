@@ -66,7 +66,7 @@ int		WED_Application::HandleCommand(int command)
 		}
 		return 1;
 	default:
-		return 0;
+		return GUI_Application::HandleCommand(command);
 	}
 }
 
@@ -75,6 +75,22 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	switch(command) { 
 	case wed_NewPackage:
 	case wed_OpenPackage:	return 1;
-	default:				return 0;
+	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
 	}
+}
+
+void	WED_Application::AboutBox(void)
+{
+	DoUserAlert("WED 1.0 by Ben Supnik.");
+}
+
+void	WED_Application::Preferences(void)
+{
+	DoUserAlert("WED does not yet have any preferences.");
+}
+
+bool	WED_Application::CanQuit(void)
+{
+//	if (ConfirmMessage("Are you sure you want to quit WED", "Quit", "Cancel"))	return true;	return false;
+	return WED_Package::TryCloseAll();
 }

@@ -8,7 +8,7 @@
 #include "SQLUtils.h"
 #include "WED_Messages.h"
 
-WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1)
+WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0)
 {
 }
 
@@ -19,6 +19,7 @@ WED_Archive::~WED_Archive()
 	mDying = true; // flag to self to realize that we don't care about dead objs.
 
 	for (ObjectMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
+	if (i->second)
 		i->second->Delete();
 }
 
@@ -94,7 +95,17 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 		ob->second->FromDB(db);
 		ob->second->SetDirty(false);
 	}
+	
+	mOpCount = 0;
 }
+
+void	WED_Archive::ClearAll(void)
+{
+	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
+	if (ob->second != NULL)
+		ob->second->Delete();	
+}
+
 
 void	WED_Archive::SaveToDB(sqlite3 * db)
 {
@@ -126,6 +137,8 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 	#if !DEV
 		we need something like DELETE FROM runways where id not in (select id from entities);
 	#endif
+	
+	mOpCount = 0;
 }
 
 void			WED_Archive::SetUndoManager(WED_UndoMgr * mgr)
@@ -144,6 +157,8 @@ void			WED_Archive::CommitCommand(void)
 	DebugAssert(mUndoMgr != NULL);
 	mUndoMgr->CommitCommand();
 	BroadcastMessage(msg_ArchiveChanged,0);
+	
+	++mOpCount;
 }
 
 void			WED_Archive::AbortCommand(void)
@@ -155,4 +170,13 @@ void			WED_Archive::AbortCommand(void)
 int	WED_Archive::NewID(void)
 {
 	return mID++;
+}
+
+int		WED_Archive::IsDirty(void)
+{
+	return mOpCount;
+//	for (ObjectMap::iterator o = mObjects.begin(); o != mObjects.end(); ++o)
+//		 if (o->second == NULL)		return 1;
+//	else if (o->second->GetDirty())	return 1;
+//									return 0;
 }

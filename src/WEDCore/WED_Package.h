@@ -36,6 +36,9 @@ public:
 							int						inMsg,
 							int						inParam);
 
+			bool	TryClose(void);
+	static	bool	TryCloseAll(void);
+
 private:
 
 

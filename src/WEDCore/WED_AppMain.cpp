@@ -305,8 +305,17 @@ int main(int argc, const char * argv[])
 	}*/
 //	test_win->Show();
 
+#if !DEV
+	clean out this file
+#endif
+
+	int bounds[4] = { 50, 50, 100, 100 };
+	GUI_Window * dummy = new GUI_Window("dummy", bounds, &app);
+	dummy->Hide();
 
 	app.Run();
+	
+	delete dummy;
 }
 
 #if 0

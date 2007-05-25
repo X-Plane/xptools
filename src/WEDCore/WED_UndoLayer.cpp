@@ -61,6 +61,7 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 		info.id = inObject->GetID();
 		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
+		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}	
 }
@@ -92,6 +93,7 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		info.id = inObject->GetID();
 		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
+		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
 	}
 	
@@ -99,6 +101,7 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 
 void	WED_UndoLayer::Execute(void)
 {
+	int d;
 	for (ObjInfoMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
 	{
 		WED_Persistent * obj;
@@ -116,6 +119,8 @@ void	WED_UndoLayer::Execute(void)
 			i->second.buffer->ResetRead();
 			obj->StateChanged();
 			obj->ReadFrom(i->second.buffer);
+			i->second.buffer->ReadInt(d);
+			obj->SetDirty(d);
 			break;
 		case op_Destroyed:
 			obj = WED_Persistent::CreateByClass(i->second.the_class, mArchive, i->first);
@@ -123,6 +128,8 @@ void	WED_UndoLayer::Execute(void)
 			DebugAssert(i->second.buffer != NULL);
 			i->second.buffer->ResetRead();
 			obj->ReadFrom(i->second.buffer);
+			i->second.buffer->ReadInt(d);
+			obj->SetDirty(d);
 			break;
 		}
 	}

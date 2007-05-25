@@ -66,8 +66,11 @@ static bool	scan_file_exists(const char * name, bool dir, unsigned long long mod
 	return true;
 }
 
+static set<WED_Package*> sPackages;
+
 WED_Package::WED_Package(const char * inPath, bool inCreate)
 {
+	sPackages.insert(this);
 	Assert(inPath[strlen(inPath)-1] != DIR_CHAR);
 	mPackageBase = inPath;
 	memset(mTiles, 0, sizeof(mTiles));
@@ -90,6 +93,7 @@ WED_Package::WED_Package(const char * inPath, bool inCreate)
 
 WED_Package::~WED_Package()
 {
+	sPackages.erase(this);
 	printf("Start package destroy.\n");
 	for (int n = 0; n < 360 * 180; ++n)
 	if (mTiles[n])
@@ -102,6 +106,30 @@ WED_Package::~WED_Package()
 	BroadcastMessage(msg_PackageDestroyed, 0);
 	printf("End of package dtor.\n");
 }
+
+bool WED_Package::TryClose(void)
+{
+	for (int n = 0; n < 360 * 180; ++n)
+	if (mTiles[n])
+	{
+		if (!mTiles[n]->TryClose()) return false;
+	}
+	
+	delete this;
+	return true;
+}
+
+static	bool	WED_Package::TryCloseAll(void)
+{
+	set<WED_Package *>	packages(sPackages);
+	for (set<WED_Package *>::iterator p = packages.begin(); p != packages.end(); ++p)
+	{
+		if (!(*p)->TryClose()) return false;
+	}
+	return true;
+}
+
+
 
 int				WED_Package::GetTileStatus(int lon, int lat)
 {

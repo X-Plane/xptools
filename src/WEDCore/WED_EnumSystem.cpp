@@ -1,5 +1,6 @@
 #include "WED_EnumSystem.h"
 #include "AssertUtils.h"
+#include "AptDefs.h"
 #include <string>
 using std::string;
 

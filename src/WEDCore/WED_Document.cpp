@@ -51,7 +51,7 @@ WED_Document::WED_Document(
 WED_Document::~WED_Document()
 {
 	printf("Starting doc dtor.\n");
-	mArchive.SaveToDB(mDB.get());
+//	mArchive.SaveToDB(mDB.get());
 	printf("Doc saved, broadcasting.\n");
 	BroadcastMessage(msg_DocumentDestroyed, 0);
 	printf("Ending doc dtor.\n");
@@ -90,6 +90,39 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 {
 	return &mUndo;
 }
+
+void	WED_Document::Save(void)
+{
+	mArchive.SaveToDB(mDB.get());
+}
+
+void	WED_Document::Revert(void)
+{
+	mUndo.StartCommand("Revert from Saved.");
+	mArchive.ClearAll();
+	mArchive.LoadFromDB(mDB.get());
+	mUndo.CommitCommand();
+}
+
+int	WED_Document::IsDirty(void)
+{
+	return mArchive.IsDirty();
+}
+
+bool	WED_Document::TryClose(void)
+{
+	if (IsDirty())
+	{
+		switch(DoSaveDiscardDialog("Save this document.","It needs saving.")) {
+		case close_Save:	Save();	break;
+		case close_Discard:			break;
+		case close_Cancel:	return false;
+		}
+	}
+	AsyncDestroy();
+	return true;
+}
+
 
 IUnknown *	WED_Document::Resolver_Find(const char * in_path)
 {

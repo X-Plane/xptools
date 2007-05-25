@@ -57,6 +57,14 @@ public:
 //	virtual void *		QueryInterface(const char * class_id);
 	virtual	IUnknown *	Resolver_Find(const char * path);
 
+	bool				TryClose(void);
+	void				Save(void);
+	void				Revert(void);
+	int					IsDirty(void);
+	#if !DEV
+		clamp this to bool
+	#endif
+
 	// LEGACY STUFF
 	
 	Pmwx				gMap;

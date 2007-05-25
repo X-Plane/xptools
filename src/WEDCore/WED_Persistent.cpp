@@ -14,20 +14,6 @@ WED_Persistent::WED_Persistent(WED_Archive * parent, int id) :
 	mDirty = true;
 }
 
-WED_Persistent::WED_Persistent(const WED_Persistent& rhs) :
-	mArchive(rhs.mArchive)
-{
-	mDirty = true;
-	mArchive->AddObject(this);
-}
-
-WED_Persistent& WED_Persistent::operator=(const WED_Persistent& rhs)
-{
-	mDirty = true;
-	DebugAssert(mArchive == rhs.mArchive);
-	return *this;
-}
-
 void			WED_Persistent::WED_Persistent::Delete(void)
 {
 	mArchive->RemoveObject(this);
@@ -56,8 +42,8 @@ void		WED_Persistent::AbortCommand(void)
 
 void 			WED_Persistent::StateChanged(void)
 {
-	mDirty = true;
 	mArchive->ChangedObject(this);
+	mDirty = true;
 }
 
 WED_Persistent::~WED_Persistent()

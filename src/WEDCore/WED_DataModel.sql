@@ -124,14 +124,12 @@ CREATE TABLE IF NOT EXISTS WED_runway(
 	center_lites	integer		NOT NULL,
 	edge_lites		string		NOT NULL,
 	distance_signs	integer		NOT NULL,
-	id1				string		NOT NULL,
 	displaced1		double		NOT NULL,
 	blastpad1		double		NOT NULL,
 	markings1		string		NOT NULL,
 	app_lites1		string		NOT NULL,
 	TDZL1			integer		NOT NULL,
 	REIL1			string		NOT NULL,
-	id2				string		NOT NULL,
 	displaced2		double		NOT NULL,
 	blastpad2		double		NOT NULL,
 	markings2		string		NOT NULL,
@@ -142,9 +140,7 @@ CREATE TABLE IF NOT EXISTS WED_runway(
 
 CREATE TABLE IF NOT EXISTS WED_sealane(
 	id				integer		PRIMARY KEY,
-	buoys			integer		NOT NULL,
-	id1				string		NOT NULL,
-	id2				string		NOT NULL
+	buoys			integer		NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS WED_airportchains(

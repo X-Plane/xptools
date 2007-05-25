@@ -9,7 +9,10 @@ public:
 	virtual			~WED_Application();
 
 	virtual	void	OpenFiles(const vector<string>& inFiles);
-
+	virtual	void	AboutBox(void);
+	virtual	void	Preferences(void);
+	virtual	bool	CanQuit(void);
+	
 	virtual	int		HandleCommand(int command);
 	virtual	int		CanHandleCommand(int command, string& ioName, int& ioCheck);
 
