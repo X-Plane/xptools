@@ -244,9 +244,10 @@ pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef
 	if (allowed == kDragActionNothing)	return dragNotAcceptedErr; 
 	else								return noErr;
 }
+
 					
-DragTrackingHandlerUPP	GUI_Window::TrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
-DragReceiveHandlerUPP	GUI_Window::ReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
+DragTrackingHandlerUPP	GUI_Window::sTrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
+DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
 
 #endif
 
@@ -260,11 +261,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * in
 {
 	mInDrag = 0;
 	#if IBM
-		mDND = new GUI_Window_DND(this, mWindoW);
+		mDND = new GUI_Window_DND(this, mWindow);
 	#endif
 	#if APL
-		InstallTrackingHandler(TrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
-		InstallReceiveHandler(ReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));	
+
+		InstallTrackingHandler(sTrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
+		InstallReceiveHandler(sReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));	
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -304,8 +306,8 @@ GUI_Window::~GUI_Window()
 		mDND->Release();
 	#endif
 	#if APL
-		RemoveTrackingHandler(TrackingHandlerUPP, mWindow);
-		RemoveReceiveHandler (ReceiveHandlerUPP , mWindow);
+		RemoveTrackingHandler(sTrackingHandlerUPP, mWindow);
+		RemoveReceiveHandler (sReceiveHandlerUPP , mWindow);
 	#endif
 	sWindows.erase(this);
 }

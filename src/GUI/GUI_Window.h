@@ -77,11 +77,12 @@ private:
 	#endif
 	
 	#if APL
-		static pascal OSErr	TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
-		static pascal OSErr	ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
+		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
+		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
 
-		static DragTrackingHandlerUPP	TrackingHandlerUPP;
-		static DragReceiveHandlerUPP	ReceiveHandlerUPP;
+	
+		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
+		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
 
 	#endif
 	

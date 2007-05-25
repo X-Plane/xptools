@@ -1,5 +1,6 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
+#include "GUI_Menus.h"
 #define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
@@ -87,10 +88,20 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 				status = GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand, NULL, sizeof(cmd), NULL, &cmd);
 				if (status != noErr) return status;
 
-				if (me->DispatchHandleCommand(cmd.commandID))
-					return noErr;
-				else
-					return eventNotHandledErr;
+				switch(cmd.commandID) {
+				case kHICommandQuit:
+					if (me->DispatchHandleCommand(gui_Quit))			return noErr;
+					else												return eventNotHandledErr;					
+				case kHICommandAbout:
+					if (me->DispatchHandleCommand(gui_About))			return noErr;
+					else												return eventNotHandledErr;
+				case kHICommandPreferences:
+					if (me->DispatchHandleCommand(gui_Prefs))			return noErr;
+					else												return eventNotHandledErr;
+				default:
+					if (me->DispatchHandleCommand(cmd.commandID))		return noErr;
+					else												return eventNotHandledErr;
+				}
 			}
 		default:
 			return eventNotHandledErr;
@@ -102,7 +113,8 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 				status = GetEventParameter(inEvent, kEventParamDirectObject, typeMenuRef, NULL, sizeof(amenu), NULL, &amenu);
 				if (status != noErr) return status;
 					
-				if (me->mMenus.count(amenu) == 0) return eventNotHandledErr;
+				if (me->mMenus.count(amenu) == 0) 
+					return eventNotHandledErr;
 			
 				int item_count = ::CountMenuItems(amenu);
 				
@@ -110,6 +122,10 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 				{
 					MenuCommand	id;
 					GetMenuItemCommandID(amenu, n, &id);
+
+					if (id == kHICommandQuit)			id = gui_Quit;
+					if (id == kHICommandAbout)			id = gui_About;
+					if (id == kHICommandPreferences)	id = gui_Prefs;
 					
 					if (id != 0)
 					{
@@ -164,7 +180,14 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	gApplication = this;
 	mDone = false;
 #if APL
-	SetMenuBar(GetNewMBar(128));
+
+		IBNibRef	nib = NULL;
+	OSStatus err = CreateNibReference(CFSTR("GUI"), &nib);
+	if (err == 0)
+		err = SetMenuBarFromNib(nib, CFSTR("MenuBar"));
+	EnableMenuCommand(NULL, kHICommandAbout);
+	EnableMenuCommand(NULL, kHICommandPreferences);
+
 
 	mMacEventHandlerUPP = NewEventHandlerUPP(MacEventHandler);
 	mHandleOpenDocUPP = NewAEEventHandlerUPP(HandleOpenDoc);
@@ -341,3 +364,22 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 	#endif
 }
 
+int			GUI_Application::HandleCommand(int command)
+{
+	switch(command) {
+	case gui_About: this->AboutBox(); return 1;
+	case gui_Prefs: this->Preferences(); return 1;
+	case gui_Quit: if (this->CanQuit()) this->Quit(); return 1;
+	default: return 0;
+	}
+}
+
+int			GUI_Application::CanHandleCommand(int command, string& ioName, int& ioCheck)
+{
+	switch(command) {
+	case gui_About: return 1;
+	case gui_Prefs: return 1;
+	case gui_Quit: return 1;
+	default: return 0;
+	}
+}

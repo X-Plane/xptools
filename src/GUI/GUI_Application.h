@@ -24,11 +24,16 @@ public:
 	
 	GUI_Menu		CreateMenu(const char * inTitle, const GUI_MenuItem_t	items[], GUI_Menu parent, int parent_item);
 	void			RebuildMenu(GUI_Menu menu, const GUI_MenuItem_t	items[]);
-	
+
+	virtual	void	AboutBox(void)=0;
+	virtual	void	Preferences(void)=0;
+	virtual	bool	CanQuit(void)=0;
 	virtual	void	OpenFiles(const vector<string>& inFiles)=0;
 
 	// From GUI_Commander - app never refuses focus!
 	virtual	int				AcceptTakeFocus(void) 	{ return 1; }
+	virtual	int				HandleCommand(int command);
+	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck);
 
 
 private:
