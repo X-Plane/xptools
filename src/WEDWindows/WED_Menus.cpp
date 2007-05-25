@@ -4,10 +4,22 @@
 GUI_Menu	test1 = 0;
 GUI_Menu	sub1 = 0;
 
+static const GUI_MenuItem_t	kAppMenu[] = {
+{ "About WED...",		0,	0,	0,	0 },
+{ "-",					0,	0,	0,	0 },
+{	NULL,				0,		0,					0,	0					},
+};
+
+
 static const GUI_MenuItem_t	kFileMenu[] = {
 {	"New Package...",	'N',	gui_ControlFlag,	0,	wed_NewPackage		},
 {	"Open Package...",	'O',	gui_ControlFlag,	0,	wed_OpenPackage		},
 {	"Close",			'W',	gui_ControlFlag,	0,	gui_Close			},
+{	"Save",				'S',	gui_ControlFlag,	0,	gui_Save			},
+{	"Revert To Saved",	0,		0,					0,	gui_Revert			},
+{	"-",				0,  	0,					0,	0					},
+{	"Import apt.dat...",'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
+{	"Export apt.dat...",'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	NULL,				0,		0,					0,	0					},
 };
 
@@ -58,6 +70,12 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 
 void WED_MakeMenus(GUI_Application * inApp)
 {
+//	SetMenuBar(GetNewMBar(128));
+//	ClearMenuBar();
+	
+//	GUI_Menu app_menu = inApp->CreateMenu(
+//		"hack", kAppMenu, inApp->GetMenuBar(), 0);		
+		
 	GUI_Menu file_menu = inApp->CreateMenu(
 		"File", kFileMenu, inApp->GetMenuBar(), 0);		
 
@@ -72,4 +90,5 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu	airpor_menu = inApp->CreateMenu(
 		"Airport", kAirportMenu, inApp->GetMenuBar(),0);	
+		
 }

@@ -9,6 +9,7 @@
 #include "WED_DocumentWindow.h"
 #include "WED_MapPane.h"
 #include "WED_PropertyPane.h"
+#include "WED_AptIE.h"
 #include "GUI_TabPane.h"
 #include "WED_Thing.h"
 #include "WED_Menus.h"
@@ -100,11 +101,11 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- RUNWAYS ---------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2", "Identifier 2",
-									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1", "Identifier 1",
+	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2"
+									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
 									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
-	static		 int	rwy_w[] = { 100, 100, 100, 100, 100, 100, 100, 
-									100, 100, 100, 100, 100, 100, 100, 
+	static		 int	rwy_w[] = { 100, 100, 100, 100, 100, 100, 
+									100, 100, 100, 100, 100, 100, 
 									100, 100, 100, 100, 100, 100, 100 };
 	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
 	
@@ -177,7 +178,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
-	case gui_Close:		mDocument->AsyncDestroy();	return 1;
+	case gui_Close:		mDocument->TryClose();	return 1;
+	case gui_Save:		mDocument->Save();	return 1;
+	case gui_Revert:	mDocument->Revert();	return 1;
 
 	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;
 	case gui_SelectNone:	WED_DoSelectNone(mDocument);		return 1;
@@ -186,6 +189,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
 	
+	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
+	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
@@ -210,6 +215,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);	
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);	
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);	
+
+	case gui_Save:		return mDocument->IsDirty();
+	case gui_Revert:	return mDocument->IsDirty();
 	
 	case gui_SelectAll:		return WED_CanSelectAll(mDocument);
 	case gui_SelectNone:	return WED_CanSelectNone(mDocument);
@@ -217,6 +225,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
+
+	case wed_ExportApt:		return WED_CanExportApt(mDocument);
+	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }
@@ -232,7 +243,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 
 bool	WED_DocumentWindow::Closed(void)
 {
-	mDocument->AsyncDestroy();
+	mDocument->TryClose();
 	return false;
 }
 

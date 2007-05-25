@@ -51,10 +51,7 @@ int	WED_PackageWindow::HandleCommand(int command)
 {
 	switch(command) {
 	case gui_Close:
-	#if !DEV
-	not safe!
-	#endif
-		delete mPackage;
+		mPackage->TryClose();
 		return 1;
 	default:	
 		return 0;
@@ -83,6 +80,6 @@ void	WED_PackageWindow::ReceiveMessage(
 
 bool	WED_PackageWindow::Closed(void)
 {
-	delete mPackage;
+	mPackage->TryClose();
 	return false;
 }
