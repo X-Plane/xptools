@@ -321,6 +321,8 @@ void	WED_AptImport(
 	
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
+		ConvertForward(*apt);
+		
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt);
