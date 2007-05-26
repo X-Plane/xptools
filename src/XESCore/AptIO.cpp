@@ -67,6 +67,35 @@ void EndsToCenter(const Segment2& ends, Point2& center, double& len, double& hea
 	if (heading < 0.0) heading += 360.0;
 }
 
+void CenterToCorners(Point2 location, double heading, double len, double width, Point2 corners[4])
+{
+	// NOTE: if we were using some kind of cartesian projection scheme wedd have to add
+	// (lon_ref - lon rwy) * sin(lat runway) to this degrees, rotating runways to the right 
+	// of the reference point slightly CCW in the northern hemisphere to reflect the
+	// map getting smaller at the pole.  But...we use a bogus projection, so - F it.
+	double	heading_corrected = (heading) * DEG_TO_RAD;
+	len *= 0.5;
+	width *= 0.5;
+	Vector2	delta;
+	delta.dx = len * sin(heading_corrected);
+	delta.dy = len * cos(heading_corrected);
+	
+	Vector2	lateral;
+	lateral.dx = width *  cos(heading_corrected);
+	lateral.dy = width * -sin(heading_corrected);
+	
+	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / cos(location.y * DEG_TO_RAD);
+	delta.dx *= MTR_TO_DEG_LON;
+	delta.dy *= MTR_TO_DEG_LAT;
+	lateral.dx *= MTR_TO_DEG_LON;
+	lateral.dy *= MTR_TO_DEG_LAT;
+
+	corners[0] = location - lateral - delta;
+	corners[1] = location - lateral + delta;
+	corners[2] = location + lateral + delta;
+	corners[3] = location + lateral - delta;
+}
+
 #if OPENGL_MAP
 void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
 {
@@ -697,4 +726,127 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 	}
 	fprintf(fi, "%d" CRLF, apt_done);
 	return true;
+}
+
+inline int	apt_surf_fwd(int code)
+{
+	switch(code) {
+	case apt_surf_asphalt_heli:		return 	apt_surf_asphalt;
+	case apt_surf_concrete_heli:	return 	apt_surf_concrete;
+	case apt_surf_grass_heli:		return apt_surf_grass;
+	case apt_surf_dirt_heli:		return apt_surf_dirt;
+	case apt_surf_asphalt_line:		return apt_surf_asphalt;
+	case apt_surf_concrete_line:	return apt_surf_concrete;
+	default: return code;
+	}
+}
+
+inline int apt_app_fwd(int code)
+{
+	switch(code) {
+	case apt_app_none_810:		return apt_app_none;
+	case apt_app_SSALS_810:		return apt_app_SALS;
+	case apt_app_SALSF_810:		return apt_app_SSALF;
+	case apt_app_ALSFI_810:		return apt_app_ALSFI;
+	case apt_app_ALSFII_810:	return apt_app_ALSFII;
+	case apt_app_ODALS_810:		return apt_app_ODALS;
+	case apt_app_CALVERTI_810:	return apt_app_CALVERTI;
+	case apt_app_CALVERTII_810:	return apt_app_CALVERTII;
+	default: return code;
+	}
+}
+
+void	ConvertForward(AptInfo_t& io_apt)
+{
+	for (AptPavementVector::iterator pav = io_apt.pavements.begin(); pav != io_apt.pavements.end(); ++pav)
+	{
+				double heading, len;
+				Point2	center;
+			EndsToCenter(pav->ends, center, len, heading);
+			
+		if (pav->name.empty() || pav->name[0] == 'x')
+		{
+			AptTaxiway_t taxi;
+			taxi.surface_code = apt_surf_fwd(pav->surf_code);
+			taxi.roughness_ratio = pav->roughness_ratio;
+			taxi.heading = heading;
+			taxi.name = pav->name;
+			taxi.area.resize(4);
+			taxi.area[0].code = apt_lin_seg;
+			taxi.area[1].code = apt_lin_seg;
+			taxi.area[2].code = apt_lin_seg;
+			taxi.area[3].code = apt_rng_seg;
+			Point2 corners[4];
+			CenterToCorners(center, heading, len, pav->width_ft * FT_TO_MTR, corners);
+			taxi.area[0].pt = corners[0];
+			taxi.area[1].pt = corners[1];
+			taxi.area[2].pt = corners[2];
+			taxi.area[3].pt = corners[3];
+			
+			io_apt.taxiways.push_back(taxi);
+		}
+		else if (apt_surf_fwd(pav->surf_code) == apt_surf_water)
+		{
+			AptSealane_t sea;
+			sea.ends = pav->ends;
+			sea.width_mtr = pav->width_ft * FT_TO_MTR;
+			sea.has_buoys = 0;
+			sea.id[0] = pav->name;
+			sea.id[1] = pav->name;
+			#if !DEV
+			recip names?
+			#endif
+			io_apt.sealanes.push_back(sea);
+		}
+		else if (pav->name[0] == 'H')
+		{
+			AptHelipad_t hel;
+			hel.id = pav->name;
+			hel.location = center;
+			hel.length_mtr = len;
+			hel.width_mtr = pav->width_ft * FT_TO_MTR;
+			hel.heading = heading;
+			hel.surface_code = apt_surf_fwd(pav->surf_code);
+			hel.marking_code = apt_mark_heli_default;
+			hel.shoulder_code = pav->shoulder_code;
+			hel.roughness_ratio = pav->roughness_ratio;
+			hel.edge_light_code = apt_heli_edge_yellow;
+			io_apt.helipads.push_back(hel);
+		}
+		else
+		{
+			AptRunway_t rwy;
+			rwy.ends = pav->ends;
+			rwy.width_mtr = pav->width_ft * FT_TO_MTR;
+			rwy.surf_code = apt_surf_fwd(pav->surf_code);
+			rwy.shoulder_code = pav->shoulder_code;
+			rwy.roughness_ratio = pav->roughness_ratio;
+
+			rwy.has_centerline = (pav->edge_lites_code1 >= apt_edge_CLL_810 || pav->edge_lites_code2 >= apt_edge_CLL_810) ? 1 : 0;
+			rwy.edge_light_code = (pav->edge_lites_code1 >= apt_edge_MIRL_810 || pav->edge_lites_code2 >= apt_edge_MIRL_810) ? apt_edge_MIRL : apt_edge_none;
+			rwy.has_distance_remaining = pav->distance_markings;
+
+			rwy.id[0] = pav->name;
+			rwy.id[1] = pav->name;
+			#if !DEV
+			fix this
+			#endif
+
+			rwy.disp_mtr[0] = pav->disp1_ft * FT_TO_MTR;
+			rwy.disp_mtr[1] = pav->disp2_ft * FT_TO_MTR;
+			rwy.blas_mtr[0] = pav->blast1_ft * FT_TO_MTR;
+			rwy.blas_mtr[1] = pav->blast2_ft * FT_TO_MTR;
+
+			rwy.marking_code[0] = rwy.marking_code[1] = pav->marking_code;
+			rwy.app_light_code[0] = apt_app_fwd(pav->app_lites_code1);
+			rwy.app_light_code[1] = apt_app_fwd(pav->app_lites_code2);
+			
+			rwy.has_tdzl[0] = pav->edge_lites_code1 >= apt_edge_TDZL_810;
+			rwy.has_tdzl[1] = pav->edge_lites_code2 >= apt_edge_TDZL_810;
+			rwy.reil_code[0] = pav->edge_lites_code1 >= apt_edge_REIL_810 ? apt_reil_omni : apt_reil_none;
+			rwy.reil_code[1] = pav->edge_lites_code2 >= apt_edge_REIL_810 ? apt_reil_omni : apt_reil_none;
+			
+			io_apt.runways.push_back(rwy);
+		}		
+	}
 }

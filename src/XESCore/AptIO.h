@@ -17,4 +17,6 @@ bool	WriteAptFileOpen(FILE * inFile, const AptVector& outApts);
 void	IndexAirports(const AptVector& apts, AptIndex& index);
 void	FindAirports(const Bbox2& bounds, const AptIndex& index, set<int>& apts);
 
+void	ConvertForward(AptInfo_t& io_apt);
+
 #endif
