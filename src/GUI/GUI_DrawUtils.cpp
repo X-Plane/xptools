@@ -208,21 +208,25 @@ void	GUI_PlotIcon(
 				const char *				in_resource,
 				int							x,
 				int							y,
-				float						angle)
+				float						angle,
+				float						scale)
 {
 	int bounds[4] = { x - 10, y - 10, x + 10, y + 10 };
 	
 	int tile_sel[4] = { 0, 0, 1, 1 };
 	
-	if (angle)
+	if (angle != 0.0 || scale != 1.0)
 	{
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslatef(x,y,0);
-		glRotatef	(angle,0,0,-1);	// cw rotate
+		if (angle != 0.0)		glRotatef	(angle,0,0,-1);	// cw rotate
+		if (scale != 1.0) 		glScalef(scale,scale,scale);
 		glTranslatef(-x,-y,0);
 	}
 	
 	GUI_DrawCentered(state, in_resource, bounds, 0, 0,  tile_sel, NULL, NULL);
-	if (angle) glPopMatrix();
+	if (angle != 0.0 || scale != 1.0)
+		glPopMatrix();
 }
+

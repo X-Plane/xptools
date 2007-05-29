@@ -48,6 +48,7 @@ void	GUI_PlotIcon(
 				const char *				in_resource,
 				int							x,
 				int							y,
-				float						angle);
+				float						angle,
+				float						scale);
 
 #endif

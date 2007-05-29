@@ -151,13 +151,22 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		{
 			int active;
 			Point2	cloc;
-			mHandles->GetNthControlHandle(eid, n, &active, NULL, &cloc, NULL);
+			HandleType_t ht;
+			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL);
 			if (!active) continue;
+			
+			#if !DEV
+			stdize!
+			#endif
+			float icon_scale = GetZoomer()->GetPPM() * 2.0;
+			if (icon_scale > 1.0) icon_scale = 1.0;
+			float icon_size = icon_scale * 10.0;
+			float icon_rad_sqr = icon_size * icon_size;			
 			
 			cloc.x = GetZoomer()->LonToXPixel(cloc.x);
 			cloc.y = GetZoomer()->LatToYPixel(cloc.y);
 			if ((this_dist=click_pt.squared_distance(cloc)) < best_dist)
-			if (this_dist < HANDLE_RAD_SQR)
+			if (this_dist < (ht == handle_Icon ? icon_rad_sqr : HANDLE_RAD_SQR))
 			{
 				mHandleEntity = eid;
 				mHandleIndex = n;
@@ -267,7 +276,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				sel->Insert(*i);
 			
 				
-			#if !DEV
+			#if BENTODO
 				right vs left select does touch vs include?
 			#endif
 		}
@@ -406,9 +415,6 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 					sel->Toggle(*i);
 				else	
 					sel->Insert(*i);
-				#if !DEV
-					set-based insertion??
-				#endif
 			}			
 		}
 		break;
@@ -509,7 +515,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				
 				Vector2	orient;
 
-				if (ht == handle_None) continue;
+				if (ht == handle_None || ht == handle_Icon) continue;
 				
 				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
@@ -529,14 +535,14 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				}
 						
 				switch(ht) {
-				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0);		break;
-				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0);break;
-				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x,scrpt.y,0);break;
-				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,0);	break;
-				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0);	break;
-				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0);		break;
+				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0,1.0);		break;
+				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0,1.0);break;
+				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x,scrpt.y,0,1.0);break;
+				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,0,1.0);	break;
+				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0,1.0);	break;
+				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0,1.0);		break;
 				case handle_ArrowHead:		
-				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG);	break;
+				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				}							
 			}						
 		}

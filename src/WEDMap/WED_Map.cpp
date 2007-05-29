@@ -130,7 +130,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 	
 	char hack[100];
-	sprintf(hack, "%f ppm", GetPPM());
+	float ppm = GetPPM();
+	float icon_scale = 	ppm * 2.0;
+	if (icon_scale > 1.0) icon_scale = 1.0;
+
+	sprintf(hack, "%f ppm %f icons", GetPPM(), icon_scale);
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, hack);
 	
 }
