@@ -43,8 +43,8 @@
 #include "WED_UIDefs.h"
 #include "PlatformUtils.h"
 
-#if !DEV
-error checking here and in aptio
+#if ERROR_CHECK
+error checking here and in apt-io
 #endif
 
 inline Point2	recip(const Point2& pt, const Point2& ctrl) { return pt + Vector2(ctrl,pt); }
@@ -266,29 +266,43 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 			if (chains) chains->push_back(chain);
 			chain->SetClosed(false);
 		}
-		
+
+		// Ben says: Okay, what is about to happen here??  Well, due to my own stupidity, you can't have "split beziers" in an apt.dat file.  (A split bezier is one that has
+		// bezier control points on one side of a vertex but not the other, or different bezier control points.  So we encode this in an apt.dat by a number of points with the
+		// same location, attributes, but not the same control points.  Typical patterns:
+		// - Split bezier, curve on both sides: curve, segment, curve
+		// - Split bezier, curve on one side: curve, segment
+		// - Split bezier, curve on other side: segment, curve
+		// So what we do here is:
+		// 1. We find our "low-side" control point first.
+		// 2. We scan forward for as many colocated points as possible that form zero-length segments (which we skip).  BUT: two control points on two different points DO
+		//    make a loop even if the points are colocated.
+		// 3. The final point is used for the "high-side" control point.
+				
+		// 1. Low side control point
 		bool has_lo = is_curved(cur->code);
 		Point2	lo_pt;
 		if (has_lo) lo_pt = recip(cur->pt, cur->ctrl);
-		
-		#if !DEV 
-			doc this weirdness
-		#endif
-		
+
+		// 2. Iterate forward: run until our point changes or we hit a span that forms a non-zero-length curve.
 		AptPolygon_t::const_iterator next = cur, orig = cur;
 		++next;
 		while (next != path.end() && next->pt == cur->pt &&
 			(!is_curved(cur->code) || !is_curved(next->code))) ++next;
-		--next;
+		--next;			
 		cur = next;
+		
+		// 3. High side control point.
 		bool has_hi = is_curved(cur->code);
 		Point2 hi_pt;
 		if (has_hi) hi_pt = cur->ctrl;
 		
+		// Convert attributes
 		set<int>	attrs;
 		for (set<int>::const_iterator e = cur->attributes.begin(); e != cur->attributes.end(); ++e)
 			attrs.insert(ENUM_Import(LinearFeature, *e));
-			
+		
+		//	Now we can form a node.
 		WED_AirportNode * n = WED_AirportNode::CreateTyped(archive);
 		n->SetParent(chain, chain->CountChildren());
 		n->SetLocation(cur->pt);
@@ -417,6 +431,7 @@ void	WED_AptImport(
 			new_twr->Import(apt->tower);
 		}
 		
+		if (apt->beacon.color_code != apt_beacon_none)
 		{
 			WED_AirportBeacon * new_bea = WED_AirportBeacon::CreateTyped(archive);
 			new_bea->SetParent(new_apt,new_apt->CountChildren());
@@ -443,7 +458,7 @@ void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive)
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];
 	strcpy(path,"");
-	if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Export", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
+	if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
 	{
 		wrl->StartOperation("Import apt.dat");
 		WED_AptImport(archive, wrl, path);
