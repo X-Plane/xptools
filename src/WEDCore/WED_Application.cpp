@@ -18,12 +18,17 @@ const char * LastPart(const char * s)
 
 
 
-WED_Application::WED_Application()
+WED_Application::WED_Application() : mAboutBox(NULL)
 {
 }
 
 WED_Application::~WED_Application()
 {
+}
+
+void	WED_Application::SetAbout(GUI_Window * about_box)
+{
+	mAboutBox = about_box;
 }
 
 void	WED_Application::OpenFiles(const vector<string>& inFiles)
@@ -45,7 +50,7 @@ int		WED_Application::HandleCommand(int command)
 				WED_PackageWindow * wind = new WED_PackageWindow(LastPart(buf), pack_bounds, this, pack);
 			} catch (...) {
 				DoUserAlert("An error occurred");
-				#if !DEV
+				#if ERROR_HANDLING
 				fix this					
 				#endif
 			}
@@ -59,7 +64,7 @@ int		WED_Application::HandleCommand(int command)
 				WED_PackageWindow * wind = new WED_PackageWindow(LastPart(buf), pack_bounds, this, pack);
 			} catch (...) {
 				DoUserAlert("An error occurred");
-				#if !DEV
+				#if ERROR_HANDLING
 				fix this					
 				#endif
 			}
@@ -81,7 +86,8 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 
 void	WED_Application::AboutBox(void)
 {
-	DoUserAlert("WED 1.0 by Ben Supnik.");
+	if (mAboutBox)	mAboutBox->Show();
+	else			DoUserAlert("WED 1.0 by Ben Supnik.");
 }
 
 void	WED_Application::Preferences(void)
