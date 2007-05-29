@@ -25,7 +25,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	// Visualizatoin layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
-	mLayers.push_back(					new WED_StructureLayer(mMap, mMap, resolver));
+	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 
 	// TOOLS
@@ -140,6 +140,14 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_PickOverlay:	mImageOverlay->PickFile();	return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVis(); return 1;
+
+	case wed_Pavement0:		mStructureLayer->SetPavementTransparency(0.0f);		return 1;
+	case wed_Pavement25:	mStructureLayer->SetPavementTransparency(0.25f);	return 1;
+	case wed_Pavement50:	mStructureLayer->SetPavementTransparency(0.5f);		return 1;
+	case wed_Pavement75:	mStructureLayer->SetPavementTransparency(0.75f);	return 1;
+	case wed_Pavement100:	mStructureLayer->SetPavementTransparency(1.0f);		return 1;
+	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
+
 	default:		return 0;
 	}	
 }
@@ -150,6 +158,12 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_PickOverlay:	return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }
 	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis(); return 1;
+	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
+	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
+	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
+	case wed_Pavement75:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.75f;	return 1;
+	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
+	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
 	default:		return 0;
 	}	
 }

@@ -15,6 +15,7 @@ class WED_ToolInfoAdapter;
 
 class	WED_ImageOverlayTool;
 class	WED_TerraserverLayer;
+class	WED_StructureLayer;
 
 class	IResolver;
 class	WED_Archive;
@@ -55,6 +56,7 @@ private:
 	
 	WED_ImageOverlayTool *	mImageOverlay;
 	WED_TerraserverLayer *	mTerraserver;
+	WED_StructureLayer *	mStructureLayer;
 
 	GUI_ToolBar *			mToolbar;
 	
