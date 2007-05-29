@@ -45,8 +45,8 @@ void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 	glVertex2d(lr,lt);
 	glVertex2d(lr,lb);
 	glEnd();
-	
-	glColor4f(1.0, 1.0, 1.0, 0.1);
+		
+	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));
 	g->SetState(false,false,false, false,true, false,false);
 	
 	pl = min(lr,max(ll,pl));
