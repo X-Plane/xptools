@@ -49,5 +49,12 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.icao = icao.value;
 	GetName(info.name);
 	info.default_buildings = 0;	// deprecated field.  Not supported in x-plane so not supported in WED!
+	
+	Bbox2	bounds;
+	GetBounds(bounds);
+	info.tower.location = info.beacon.location = Segment2(bounds.p1,bounds.p2).midpoint();
+	info.tower.draw_obj = 0;
+	info.tower.height_ft = 50.0;
+	info.beacon.color_code = apt_beacon_none;	
 }
 
