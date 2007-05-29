@@ -26,6 +26,7 @@
 
 enum WED_Color {
 	wed_Map_Matte,	
+	wed_Map_Gridlines,
 	wed_Map_Bkgnd,	
 	
 	wed_Structure,
