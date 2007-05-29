@@ -34,9 +34,9 @@ static int SB_BuildMetrix(
 	metrics.real_width  = metrics.real_height = 11;
 	
 	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
-
-
 	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
+	GUI_GetTextureResource(vertical ? "scrollbar_v.png" : "scrollbar_h.png", 0, &metrics);
+	float	thumb_len =  (vertical ? metrics.real_height : metrics.real_width);
 
 	float sbl = MD - 2.0 * button_len;		// real scroll bar len - buttons
 	minbut = M1 + button_len;				// subtract square buttons from ends
@@ -52,6 +52,7 @@ static int SB_BuildMetrix(
 	if (tp > 1.0) tp = 1.0;			// clamp for sanity - apps shouldn't even let this happen!
 	
 	float tl = sbl * tp;			// thumb len is just percent of track
+	if (tl < thumb_len) tl = thumb_len;
 	
 	float fp = sbl - tl;			// free play in scroll bar - how far it moves.
 	
@@ -61,6 +62,10 @@ static int SB_BuildMetrix(
 	
 	thumb1 = minbut + ts;			// start and end of thumb can now be calculated
 	thumb2 = minbut + ts + tl;
+	
+	if (thumb1 < minbut) thumb1 = minbut;
+	if (thumb2 > maxbut) thumb2 = maxbut;
+	
 	return 1;
 }
 
