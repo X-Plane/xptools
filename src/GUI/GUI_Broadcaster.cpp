@@ -19,6 +19,11 @@ void	GUI_Broadcaster::BroadcastMessage(int inMsg, int inParam)
 {
 	// BEN SEZ: for now - just make sure that a suicidal listener doesn't
 	// @#$#@ us up by editing the list while we're on it!
+	// (A suicidal listener is one that destroys itself from the
+	// receive-message callback.  The result is that our set has
+	// an item removed.  Our "who" ptr is thus possibly invalid.  But
+	// other pointers in the set are (I hope) stable, so we should
+	// be okay.
 	for (set<GUI_Listener*>::iterator next, who = mListeners.begin();
 		who != mListeners.end(); )
 	{
