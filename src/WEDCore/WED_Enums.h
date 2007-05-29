@@ -6,9 +6,9 @@ ENUM_DOMAIN(Airport_Type, "Airport Type")
 ENUM_DOMAIN(Edge_Lights, "Runway Edge Light Types")
 	
 	ENUM(edge_None, "None", apt_edge_none)
-//	ENUM(edge_LIRL, "LIRL", apt_edge_LIRL)
+	ENUM(edge_LIRL, "LIRL", apt_edge_LIRL)
 	ENUM(edge_MIRL,	"MIRL",	apt_edge_MIRL)
-//	ENUM(edge_HIRL,	"HIRL", apt_edge_HIRL)
+	ENUM(edge_HIRL,	"HIRL", apt_edge_HIRL)
 
 ENUM_DOMAIN(REIL_Lights,"Runway End Identifier Lights")
 	ENUM(reil_None,"None",apt_reil_none)
