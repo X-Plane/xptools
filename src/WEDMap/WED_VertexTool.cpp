@@ -179,6 +179,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
+			if (con_type) *con_type = handle_Icon;
 			pt->GetLocation(*p);
 			return;
 		}
@@ -224,7 +225,9 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 				*p = GetZoomer()->PixelToLL(*p);				
 				if (dir) *dir = Vector2(orig, *p);
 				if (con_type) *con_type = handle_Arrow;
-			}
+			} else
+				if (con_type) *con_type = handle_Icon;
+			
 			return;
 		}
 		break;
@@ -242,6 +245,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 				if (dir) *dir = Vector2(c,*p);
 				if (con_type) *con_type = handle_Arrow;
 			}
+			if (n == 2) if (con_type) *con_type = handle_Icon;
 			return;
 		}
 		break;

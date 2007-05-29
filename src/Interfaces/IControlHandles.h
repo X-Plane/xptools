@@ -34,7 +34,8 @@ enum HandleType_t {
 	handle_ClosePt,		// Point to hit to close a loop
 	handle_Cross,		// Cross for precise placement
 	handle_ArrowHead,	// Arrow head, no stem
-	handle_Arrow		// Arrow with stem
+	handle_Arrow,		// Arrow with stem
+	handle_Icon			// Hande is an icon - icon is drawn by someone else!
 };
 
 enum LinkType_t {
