@@ -43,10 +43,22 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
+{	"Show Line Markings",		0,	0,							0,	wed_ToggleLines		},
+{	"Pavement Transparency",	0,	0,							0,	0					},
+{	"-",						0,	0,							0,	0					},
 {	"Pick Overlay Image...",	0,	0,							0,	wed_PickOverlay		},
 {	"Toggle Overlay Image",		0,	0,							0,	wed_ToggleOverlay	},
 {	"Toggle Terraserver",		0,	0,							0,	wed_ToggleTerraserver },
 {	NULL,						0,	0,							0,	0					},
+};
+
+static const GUI_MenuItem_t kPavementMenu[] = { 
+{	"None",						0,	0,							0,	wed_Pavement0		},
+{	"25%",						0,	0,							0,	wed_Pavement25		},
+{	"50%",						0,	0,							0,	wed_Pavement50		},
+{	"75%",						0,	0,							0,	wed_Pavement75		},
+{	"Solid",					0,	0,							0,	wed_Pavement100		},
+{	NULL,						0,	0,							0,	0					}
 };
 
 static const GUI_MenuItem_t kSelectMenu[] = {
@@ -84,6 +96,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"View", kViewMenu, inApp->GetMenuBar(), 0);		
+		
+	GUI_Menu	pave_menu = inApp->CreateMenu(
+		"PAvement",	kPavementMenu, view_menu, 1);
 		
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"Select", kSelectMenu, inApp->GetMenuBar(), 0);

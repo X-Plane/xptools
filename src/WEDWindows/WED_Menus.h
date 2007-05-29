@@ -21,7 +21,14 @@ enum {
 	wed_MovePrev,
 	wed_MoveNext,
 	wed_MoveLast,
-	// View menu
+	// Pavement menu
+	wed_Pavement0,
+	wed_Pavement25,
+	wed_Pavement50,
+	wed_Pavement75,
+	wed_Pavement100,
+	// view menu
+	wed_ToggleLines,	
 	wed_PickOverlay,
 	wed_ToggleOverlay,
 	wed_ToggleTerraserver,
