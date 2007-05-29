@@ -9,8 +9,19 @@ public:
 						 WED_StructureLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_StructureLayer();
 
+
+			bool		GetRealLinesShowing(void) const;
+			void		SetRealLinesShowing(bool show);
+			void		SetPavementTransparency(float alpha);
+			float		GetPavementTransparency(void) const;
+
 	virtual	void		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
-	
+
+private:
+
+	bool	mRealLines;
+	float	mPavementAlpha;
+
 };
 
 #endif

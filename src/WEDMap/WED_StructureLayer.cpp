@@ -34,6 +34,8 @@
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :
 	WED_MapLayer(h, zoomer, resolver)
 {
+	mRealLines = true;
+	mPavementAlpha = 0.5;
 }
 
 WED_StructureLayer::~WED_StructureLayer()
@@ -138,6 +140,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 	{
 		glColor4fv(WED_Color_RGBA(c));
 		glShape2v(GL_LINE_STRIP, pts, count);
+		return;
 	} 
 	
 	// ------------ STANDARD TAXIWAY LINES ------------
@@ -509,6 +512,9 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	float							storage[4];
 
 	glColor4fv(WED_Color_RGBA(struct_color));
+
+	float icon_scale = GetZoomer()->GetPPM() * 2.0;
+	if (icon_scale > 1.0) icon_scale = 1.0;
 	
 	/******************************************************************************************************************************************************
 	 * RUNWAY DRAWING
@@ -521,9 +527,9 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			airport->GetBounds(bounds);
 			Point2 loc = GetZoomer()->LLToPixel(Segment2(bounds.p1,bounds.p2).midpoint());
 			switch(airport->GetAirportType()) {
-			case type_Airport:		GUI_PlotIcon(g,"map_airport.png", loc.x,loc.y,0);	break;
-			case type_Seaport:		GUI_PlotIcon(g,"map_seaport.png", loc.x,loc.y,0);	break;
-			case type_Heliport:		GUI_PlotIcon(g,"map_heliport.png", loc.x,loc.y,0);	break;
+			case type_Airport:		GUI_PlotIcon(g,"map_airport.png", loc.x,loc.y,0,1.0);	break;
+			case type_Seaport:		GUI_PlotIcon(g,"map_seaport.png", loc.x,loc.y,0,1.0);	break;
+			case type_Heliport:		GUI_PlotIcon(g,"map_heliport.png", loc.x,loc.y,0,1.0);	break;
 			}
 		}
 	}
@@ -541,11 +547,11 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		if (has_shoulders = rwy->GetCornersShoulders(shoulders))	GetZoomer()->LLToPixelv(shoulders, shoulders, 8);
 
 		// "Solid" geometry.		
-		glColor4fv(WED_Color_Surface(rwy->GetSurface(),0.5, storage));
+		glColor4fv(WED_Color_Surface(rwy->GetSurface(),mPavementAlpha, storage));
 									glShape2v(GL_QUADS, corners, 4);
 		if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
 		if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
-		glColor4fv(WED_Color_Surface(rwy->GetShoulder(),0.5, storage));
+		glColor4fv(WED_Color_Surface(rwy->GetShoulder(),mPavementAlpha, storage));
 		if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);		
 
 		//  "Outline" geometry	
@@ -569,11 +575,11 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			glEnd();
 		}
 	
-		glColor4f(1,1,0,1);
+		if (mRealLines) glColor4f(1,1,0,1);
 		if (has_blas1)				glShape2v(GL_LINE_LOOP, blas1,4);
 		if (has_blas2)				glShape2v(GL_LINE_LOOP, blas2, 4);
 
-		glColor4f(1,1,1,1);
+		if (mRealLines) glColor4f(1,1,1,1);
 		if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 		if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
 	
@@ -592,15 +598,15 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			
 			if ((tower = SAFE_CAST(WED_TowerViewpoint, pt)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_towerview.png", l.x,l.y,0);
+				GUI_PlotIcon(g,"map_towerview.png", l.x,l.y,0,icon_scale);
 			}
 			else if ((sock = SAFE_CAST(WED_Windsock, pt)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_windsock.png", l.x,l.y,0);
+				GUI_PlotIcon(g,"map_windsock.png", l.x,l.y,0,icon_scale);
 			}
 			else if ((beacon = SAFE_CAST(WED_AirportBeacon, pt)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_beacon.png", l.x,l.y,0);
+				GUI_PlotIcon(g,"map_beacon.png", l.x,l.y,0,icon_scale);
 			}
 			else
 			{
@@ -629,15 +635,15 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			
 			if ((lfix = SAFE_CAST(WED_LightFixture, pth)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_light.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+				GUI_PlotIcon(g,"map_light.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
 			}
 			else if ((sign = SAFE_CAST(WED_AirportSign,pth)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_taxisign.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+				GUI_PlotIcon(g,"map_taxisign.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
 			}
 			else if ((ramp = SAFE_CAST(WED_RampPosition,pth)) != NULL)
 			{
-				GUI_PlotIcon(g,"map_rampstart.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG);
+				GUI_PlotIcon(g,"map_rampstart.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
 			}
 			else
 			{
@@ -662,7 +668,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 
 			if (helipad)
 			{	
-				glColor4fv(WED_Color_Surface(helipad->GetSurface(), 0.5, storage));
+				glColor4fv(WED_Color_Surface(helipad->GetSurface(), mPavementAlpha, storage));
 				glShape2v(GL_QUADS, corners, 4);
 				glColor4fv(WED_Color_RGBA(struct_color));
 			}
@@ -683,7 +689,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				Point2	p;
 				helipad->GetLocation(p);
 				p = GetZoomer()->LLToPixel(p);
-				GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0);
+				GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0,icon_scale);
 			}
 		}
 		break;
@@ -700,9 +706,11 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			for (int i = 0; i < n; ++i)
 			{
 				set<int>		attrs;
-				WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
-				if (apt_node) apt_node->GetAttributes(attrs);
-			
+				if (mRealLines)
+				{
+					WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
+					if (apt_node) apt_node->GetAttributes(attrs);
+				}
 				vector<Point2>	pts;
 				
 				Segment2	s;
@@ -739,7 +747,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			
 			if ((sea = SAFE_CAST(WED_Sealane, entity)) != NULL)
 			{
-				glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,0.5, storage));
+				glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,mPavementAlpha, storage));
 				glShape2v(GL_QUADS, corners, 4);
 				glColor4fv(WED_Color_RGBA(struct_color));
 			}
@@ -772,7 +780,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					
 				if (!pts.empty())
 				{
-					glColor4fv(WED_Color_Surface(taxi->GetSurface(), 0.5, storage));
+					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
 					glDisable(GL_CULL_FACE);
 					glPolygon2(&*pts.begin(), &*is_hole_start.begin(), pts.size());
 					glEnable(GL_CULL_FACE);
@@ -787,4 +795,26 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		break;
 	}
 	
+}
+
+bool		WED_StructureLayer::GetRealLinesShowing(void) const
+{
+	return mRealLines;
+}
+
+void		WED_StructureLayer::SetRealLinesShowing(bool show)
+{
+	mRealLines = show;
+	GetHost()->Refresh();
+}
+
+void		WED_StructureLayer::SetPavementTransparency(float alpha)
+{
+	mPavementAlpha = alpha;
+	GetHost()->Refresh();
+}
+
+float		WED_StructureLayer::GetPavementTransparency(void) const
+{
+	return mPavementAlpha;
 }
