@@ -73,9 +73,6 @@ void	WED_PackageWindow::ReceiveMessage(
 {
 	if (inSrc == mPackage && inMsg == msg_PackageDestroyed)
 		delete this;
-#if !DEV
-	THIS IS NOT SAFE IN THE FUTURE - WE NEED GARBAGE COLLECTION!
-#endif	
 }
 
 bool	WED_PackageWindow::Closed(void)

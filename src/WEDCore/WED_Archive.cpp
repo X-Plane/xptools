@@ -109,10 +109,6 @@ void	WED_Archive::ClearAll(void)
 
 void	WED_Archive::SaveToDB(sqlite3 * db)
 {
-	#if !DEV
-	hello - we need to rebuild the class table!
-	#endif
-
 	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{
@@ -133,11 +129,7 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 			}
 		}
 	}
-	
-	#if !DEV
-		we need something like DELETE FROM runways where id not in (select id from entities);
-	#endif
-	
+
 	mOpCount = 0;
 }
 
@@ -175,8 +167,4 @@ int	WED_Archive::NewID(void)
 int		WED_Archive::IsDirty(void)
 {
 	return mOpCount;
-//	for (ObjectMap::iterator o = mObjects.begin(); o != mObjects.end(); ++o)
-//		 if (o->second == NULL)		return 1;
-//	else if (o->second->GetDirty())	return 1;
-//									return 0;
 }

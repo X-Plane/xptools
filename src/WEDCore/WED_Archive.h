@@ -53,7 +53,7 @@ public:
 	
 	int				NewID(void);
 	
-	int				IsDirty(void);
+	int				IsDirty(void);	// returns operation count since save, 0 if we're saved, or positive if new changes, or negative if saved changes were undone.
 	
 private:
 

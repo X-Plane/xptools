@@ -78,8 +78,8 @@ sql_command::sql_command(sqlite3 * db, const char * cmd,const char * params)
 		const char * e = sqlite3_errmsg(db);
 		DoUserAlert(e);
 		throw result;
-		#if !DEV
-		thsi sucks
+		#if ERROR_CHECK
+		this sucks
 		#endif
 	}
 	

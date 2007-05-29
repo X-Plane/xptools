@@ -43,7 +43,7 @@
 #include "WED_Selection.h"
 #endif
 
-#if !DEV
+#if BENTODO
 	um, we should have a better tool than OPENGL_MAP
 #endif
 

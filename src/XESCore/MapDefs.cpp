@@ -377,7 +377,7 @@ GISHalfedge *	GISVertex::rightmost_rising()
 
 #pragma mark -
 
-#if !DEV
+#if BENTODO
 better mem management for these traits?
 #endif
 
@@ -2885,7 +2885,7 @@ void		Pmwx::Index(void)
 
 #pragma mark -
 
-#if !DEV
+#if OPTIMIZE
 	need better caching scheme for this!  It is called possibly frequently!
 #endif
 void	MapFaceBucketTraits::get_cull(ValueType * v, CullType& c)

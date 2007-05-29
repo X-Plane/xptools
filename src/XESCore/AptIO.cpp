@@ -7,7 +7,32 @@
 
 inline int hash_ll(int lon, int lat) {	return (lon+180) + 360 * (lat+90); }
 
-void	parse_linear_codes(const string& codes, set<int> * attributes)
+inline int recip_num(int n)
+{
+	return n > 18 ? n - 18 : n + 18;
+}
+
+static string recip_name(const string& ident)
+{
+	if (ident.empty()) return "xxx";
+	char buf[20];
+	const char * p = ident.c_str();
+	
+	if (p[0] == 'H')		sprintf(buf,"H%02d",recip_num(atoi(p+1)));
+	else if (p[2] == 'C')	sprintf(buf,"%02C", recip_num(atoi(p)));
+	else if (p[2] == 'L')	sprintf(buf,"%02R", recip_num(atoi(p)));
+	else if (p[2] == 'R')	sprintf(buf,"%02L", recip_num(atoi(p)));
+	else					sprintf(buf,"%02x", recip_num(atoi(p)));
+	return buf;
+}
+
+static void strip_x(string& s)
+{
+	while(!s.empty() && s[s.length()-1] == 'x')
+		s.erase(s.end()-1);
+}
+
+static void	parse_linear_codes(const string& codes, set<int> * attributes)
 {
 	attributes->clear();
 	MFScanner scanner;
@@ -17,7 +42,7 @@ void	parse_linear_codes(const string& codes, set<int> * attributes)
 		attributes->insert(code);
 }
 
-void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
+static void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
 {
 	for (AptPolygon_t::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
@@ -31,7 +56,7 @@ void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
 	}
 }
 
-void CenterToEnds(Point2 location, double heading, double len, Segment2& ends)
+static void CenterToEnds(Point2 location, double heading, double len, Segment2& ends)
 {
 	// NOTE: if we were using some kind of cartesian projection scheme wedd have to add
 	// (lon_ref - lon rwy) * sin(lat runway) to this degrees, rotating runways to the right 
@@ -50,7 +75,7 @@ void CenterToEnds(Point2 location, double heading, double len, Segment2& ends)
 	ends.p2 = location + delta;
 }
 
-void EndsToCenter(const Segment2& ends, Point2& center, double& len, double& heading)
+static void EndsToCenter(const Segment2& ends, Point2& center, double& len, double& heading)
 {
 	center = ends.midpoint();
 	Vector2	dir(ends.p1, ends.p2);
@@ -67,7 +92,7 @@ void EndsToCenter(const Segment2& ends, Point2& center, double& len, double& hea
 	if (heading < 0.0) heading += 360.0;
 }
 
-void CenterToCorners(Point2 location, double heading, double len, double width, Point2 corners[4])
+static void CenterToCorners(Point2 location, double heading, double len, double width, Point2 corners[4])
 {
 	// NOTE: if we were using some kind of cartesian projection scheme wedd have to add
 	// (lon_ref - lon rwy) * sin(lat runway) to this degrees, rotating runways to the right 
@@ -97,7 +122,7 @@ void CenterToCorners(Point2 location, double heading, double len, double width, 
 }
 
 #if OPENGL_MAP
-void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
+static void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
 {
 	double	aspect = cos(rwy->ends.midpoint().y * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
@@ -792,16 +817,16 @@ void	ConvertForward(AptInfo_t& io_apt)
 			sea.width_mtr = pav->width_ft * FT_TO_MTR;
 			sea.has_buoys = 0;
 			sea.id[0] = pav->name;
-			sea.id[1] = pav->name;
-			#if !DEV
-			recip names?
-			#endif
+			sea.id[1] = recip_name(pav->name);
+			strip_x(sea.id[0]);
+			strip_x(sea.id[1]);			
 			io_apt.sealanes.push_back(sea);
 		}
 		else if (pav->name[0] == 'H')
 		{
 			AptHelipad_t hel;
 			hel.id = pav->name;
+			strip_x(hel.id);
 			hel.location = center;
 			hel.length_mtr = len;
 			hel.width_mtr = pav->width_ft * FT_TO_MTR;
@@ -827,11 +852,9 @@ void	ConvertForward(AptInfo_t& io_apt)
 			rwy.has_distance_remaining = pav->distance_markings;
 
 			rwy.id[0] = pav->name;
-			rwy.id[1] = pav->name;
-			#if !DEV
-			fix this
-			#endif
-
+			rwy.id[1] = recip_name(pav->name);
+			strip_x(rwy.id[0]);
+			strip_x(rwy.id[1]);
 			rwy.disp_mtr[0] = pav->disp1_ft * FT_TO_MTR;
 			rwy.disp_mtr[1] = pav->disp2_ft * FT_TO_MTR;
 			rwy.blas_mtr[0] = pav->blast1_ft * FT_TO_MTR;

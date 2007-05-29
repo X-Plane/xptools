@@ -156,7 +156,7 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 
 	WED_Document * tile = new WED_Document(path, this, bounds);
 	mTiles[lon_lat_to_idx(lon, lat)] = tile;
-	#if !DEV
+	#if BENTODO
 	revisit - is opening and creating a tile really different?>?
 	#endif
 	tile->AddListener(this);	

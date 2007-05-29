@@ -205,7 +205,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 	}
 }
 */
-#if !DEV
+#if OPTIMIZE
 	hrm - ths is a case where bulk fetch would be more efficient by a factor of, um, 8??
 	but - this is a special case.  in most cases the data model can produce answers quickly,
 	and having to COPY the handle set sucks.  So probably its better for the  whole app to

@@ -114,9 +114,6 @@ void	WED_PropertyTable::GetCellContent(
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
 	the_content.indent_level = (!mVertical && cell_x == 0) ? GetThingDepth(t) : 0;	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
-	#if !DEV
-		enforce entity locking here?
-	#endif
 }
 
 void	WED_PropertyTable::GetEnumDictionary(
@@ -380,7 +377,7 @@ GUI_DragOperation		WED_PropertyTable::CanDropIntoCell(
 	
 	if (!WED_IsDragSelection(drag)) return gui_Drag_None;
 	
-	#if !DEV
+	#if BENTODO
 		address allow/recommend
 	#endif
 	
@@ -702,9 +699,6 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	
 	IGISEntity * e = SAFE_CAST(IGISEntity, what);
 	if (e) is_composite = e->GetGISClass() == gis_Composite;
-	#if !DEV
-		this is a hack
-	#endif
 	if (mSelOnly) is_composite = 1;
 
 	if (!mSelOnly || !sel || sel->IsSelected(what))

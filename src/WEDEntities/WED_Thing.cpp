@@ -74,9 +74,6 @@ void			WED_Thing::ToDB(sqlite3 * db)
 	int persistent_class_id;
 	
 	{
-			#if !DEV
-				err check?
-			#endif
 		const char * my_class = this->GetClass();
 		
 		sql_command	find_my_class(db,"SELECT id FROM WED_classes WHERE name=@name;","@name");

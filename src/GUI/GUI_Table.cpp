@@ -180,7 +180,7 @@ void		GUI_Table::MouseDrag(int x, int y, int button)
 	if (mContent == NULL) return;
 	if (!mLocked)
 	{
-		#if !DEV
+		#if BENTODO
 			auto scroll?
 			clamp this to keep all hell from breaking loose??
 		#endif

@@ -132,10 +132,6 @@ void				WED_GISPolygon::DeleteHole  (int n)
 
 void				WED_GISPolygon::AddHole		(IGISPointSequence * r)
 {
-#if !DEV
-examine this -- does this make sense?
-#endif
-
 	WED_Thing * t = SAFE_CAST(WED_Thing, r);
 	DebugAssert(t != NULL);	
 	DebugAssert(r->GetGISClass() == gis_Ring);
