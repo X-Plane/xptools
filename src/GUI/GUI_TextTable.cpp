@@ -2,6 +2,7 @@
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
 #include "GUI_Messages.h"
+#include "GUI_DrawUtils.h"
 #include <math.h>
 #include "GUI_TextField.h"
 #include "WED_ToolUtils.h"
@@ -88,11 +89,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		c.text_val.clear();
 		break;
 	case gui_Cell_CheckBox:
-		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_CheckBox && mInBounds)
-			sprintf(buf,"%c",c.int_val ? 'O' : 'o');
-		else		
-			sprintf(buf,"%c",c.int_val ? 'X' : '.');
-		c.text_val = buf;
+		c.text_val = "";
 		break;		
 	case gui_Cell_Integer:
 		sprintf(buf,"%d",c.int_val);
@@ -130,6 +127,13 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	
 	float col[4] = { 0.0,0.0,0.0,1.0 };
 	GUI_FontDraw(inState, font_UI_Basic, col, cell_bounds[0], cell_bounds[1], c.text_val.c_str());	
+
+	if (c.content_type == gui_Cell_CheckBox)
+	{
+		int selector[4] = { c.int_val ? 1 : 0, (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_CheckBox && mInBounds) ? 1 : 0, 2, 2 };
+		glColor3f(1,1,1);
+		GUI_DrawCentered(inState, "check.png", cell_bounds, 0, 0, selector, NULL, NULL);
+	}
 	
 	inState->SetState(false, false, false,	true, true, false, false);
 	switch(mDragDest) {
@@ -241,9 +245,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	
 	if ((!mEditInfo.is_selected || (mModifiers & (gui_ShiftFlag+gui_ControlFlag))) && mEditInfo.can_select)
 	{
-		#if !DEV
-			drag and drop here?
-		#endif
 		mSelStartX = cell_x;
 		mSelStartY = cell_y;
 		want_lock = 0;
@@ -321,18 +322,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				mEditInfo.text_val = buf;
 				break;
 			}
-			if (!mTextField) 
-			{
-				mTextField = new GUI_TextField(1,this); 
-				mTextField->SetParent(mParent); 
-				mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
-//				mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
-				mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
-				mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
-			}
-			mTextField->SetBounds(cell_bounds);
-			mTextField->Show();
-			mTextField->TakeFocus();
+			CreateEdit(cell_bounds);
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
 			mTextField->SetDescriptor(mEditInfo.text_val);
@@ -711,6 +701,21 @@ void		GUI_TextTable::Deactivate(void)
 {
 }
 
+void		GUI_TextTable::CreateEdit(int cell_bounds[4])
+{
+	if (!mTextField) 
+	{
+		mTextField = new GUI_TextField(1,this); 
+		mTextField->SetParent(mParent); 
+		mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
+		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
+		mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
+	}
+	mTextField->SetBounds(cell_bounds);
+	mTextField->Show();
+	mTextField->TakeFocus();
+}
+
 int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 {
 	if (mTextField && mTextField->IsFocused() && 
@@ -830,21 +835,7 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 					mEditInfo.text_val = buf;
 					break;
 				}
-				if (!mTextField) 
-				{
-					#if !DEV
-						this code is repeated - factor!
-					#endif
-					mTextField = new GUI_TextField(1,this); 
-					mTextField->SetParent(mParent); 
-//					mTextField->SetKeyAllowed(GUI_KEY_RETURN, false); 
-					mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
-					mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
-					mTextField->SetKeyAllowed(GUI_KEY_TAB, false); 
-				}
-				mTextField->SetBounds(cell_bounds);
-				mTextField->Show();
-				mTextField->TakeFocus();
+				CreateEdit(cell_bounds);
 				mTextField->SetDescriptor(mEditInfo.text_val);
 				mTextField->SetSelection(0,mEditInfo.text_val.size());
 				mTextField->Refresh();

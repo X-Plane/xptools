@@ -215,6 +215,7 @@ private:
 		gui_Insert_Top
 	};
 
+			void			CreateEdit(int cell_bounds[4]);
 			int				TerminateEdit(bool inSave, bool inAll);			
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
 					
