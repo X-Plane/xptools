@@ -104,9 +104,9 @@ void	WED_Document::Revert(void)
 	mUndo.CommitCommand();
 }
 
-int	WED_Document::IsDirty(void)
+bool	WED_Document::IsDirty(void)
 {
-	return mArchive.IsDirty();
+	return mArchive.IsDirty() != 0;
 }
 
 bool	WED_Document::TryClose(void)

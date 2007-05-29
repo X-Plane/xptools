@@ -60,10 +60,7 @@ public:
 	bool				TryClose(void);
 	void				Save(void);
 	void				Revert(void);
-	int					IsDirty(void);
-	#if !DEV
-		clamp this to bool
-	#endif
+	bool				IsDirty(void);
 
 	// LEGACY STUFF
 	
