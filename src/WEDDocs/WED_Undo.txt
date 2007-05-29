@@ -1,0 +1,48 @@
+UNDO:
+
+Everything is undoable in WED, mostly.
+
+- Undo is tracked for each tile you work on separately.
+- Any operation that changes your data is undoable.
+- You can multiply undo and redo.
+- If you do a NEW operation, previously undone things will NOT be redoable.
+
+WARNING: SELECTION is an undoable operation, so if you undo and select, you can lose work 
+you wanted to redo.
+
+- Text editing is NOT undoable.  (Someday it will be, and when it is it will NOT 
+	interfere with regular application undo - taht is, text will have its own context.)
+
+- CREATING new polygons and other UNFINISHED geometry is NOT undoable.  So if you delete
+	your last vertex in the create poylgon tool with the delete key, you cannot undo it.
+	
+TRICK: undo is available WHILE creating polygons, so if you undo making an airport, your
+	polygon will not be completable.
+	
+SAVE AND LOAD
+
+	Saving or reverting your document does NOT purge undos.  This means you can:
+	
+		save and then undo the last thing before the save.  If you do this,
+		the app will be savable again.
+		
+		save and then do more work.  If you undo, your app will match on disk and
+			not be savable.  undo some more and it will be savable.
+		
+		(In other words, WED knows what version of your doc in the undo history
+		is the one on disk.)
+		
+		revert your document and then undo the revert.  Reverting is an undoable
+		operation, the equivalent of making all edits needed to make your doc match
+		what is on disk.  When you do this, redos are purged.  You can then undo the
+		revert if desired.
+		
+		(Note that reverting is DIFFERENT from hitting undo all the way back to the
+		last undo point.  
+		
+		Hitting undo a lot removes history from the doc, temporarily.
+		
+		Reverting ADDS history by CHANGING your doc to match disk.
+		
+	
+	
