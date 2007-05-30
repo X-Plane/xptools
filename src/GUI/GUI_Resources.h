@@ -3,10 +3,15 @@
 
 #include <string>
 using std::string;
+struct		ImageInfo;
 
-int	GUI_GetResourcePath(
-			const char *		in_resource, 
-			string&				out_path);
+typedef void *	GUI_Resource;
+
+GUI_Resource	GUI_LoadResource(const char * in_resource);
+void			GUI_UnloadResource(GUI_Resource res);
+const char *	GUI_GetResourceBegin(GUI_Resource res);
+const char *	GUI_GetResourceEnd(GUI_Resource res);
+
 
 struct	GUI_TexPosition_t {
 	int		real_width;
@@ -16,6 +21,10 @@ struct	GUI_TexPosition_t {
 	float	s_rescale;
 	float	t_rescale;
 };
+
+int GUI_GetImageResource(
+			const char *		in_resource,
+			ImageInfo *			io_image);
 
 int	GUI_GetTextureResource(
 			const char *		in_resource,

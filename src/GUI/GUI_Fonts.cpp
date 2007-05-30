@@ -40,8 +40,7 @@ static void	EstablishFont(int id)
 	if (sFonts[id] == NULL)
 	{
 		string full_path;
-		if (GUI_GetResourcePath(kFontNames[id],full_path))
-			sFonts[id] = sFontMgr->LoadFont(full_path.c_str(), kFontSizes[id], true);	
+		sFonts[id] = sFontMgr->LoadFont(kFontNames[id], kFontSizes[id], true);	
 	}
 }
 

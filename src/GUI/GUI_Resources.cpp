@@ -1,6 +1,8 @@
 #include "GUI_Resources.h"
 #include "AssertUtils.h"
 #include "TexUtils.h"
+#include "BitmapUtils.h"
+#include "MemFileUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -11,7 +13,8 @@
 	#include <CoreFoundation/CoreFoundation.h>
 #endif
 
-int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
+#if APL
+static int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
 {
 	#if APL
 		int found = 0;
@@ -43,9 +46,53 @@ int 	GUI_GetResourcePath(const char * in_resource, string& out_path)
 	#endif
 }
 
+GUI_Resource	GUI_LoadResource(const char * in_resource)
+{
+	string path;
+	if (!GUI_GetResourcePath(in_resource, path)) return NULL;
+	return MemFile_Open(path.c_str());
+}
+
+void			GUI_UnloadResource(GUI_Resource res)
+{
+	MemFile_Close((MFMemFile *) res);
+}
+
+const char *	GUI_GetResourceBegin(GUI_Resource res)
+{
+	return 	MemFile_GetBegin((MFMemFile *) res);
+}
+
+const char *	GUI_GetResourceEnd(GUI_Resource res)
+{
+	return 	MemFile_GetEnd((MFMemFile *) res);
+}
+
+#elif IBM
+
+#error This needs to be done
+
+#elif LIN
+
+#error NOT implemented
+
+#endif
+
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 // TEXTURES
 //---------------------------------------------------------------------------------------------------------------------------------------------------
+
+int GUI_GetImageResource(
+			const char *		in_resource,
+			ImageInfo *			io_image)
+{
+	GUI_Resource res = GUI_LoadResource(in_resource);
+	if (res == NULL) return -1;
+	int ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);
+	GUI_UnloadResource(res);
+	return ret;
+}
+
 
 struct	TexInfo {
 	GLuint				tex_id;
@@ -72,11 +119,13 @@ int	GUI_GetTextureResource(
 	TexInfo	info;
 	glGenTextures(1,&info.tex_id);
 	string full_path;
+
+	ImageInfo	image;
 	
-	if (!GUI_GetResourcePath(in_resource,full_path))
+	if (GUI_GetImageResource(in_resource,&image) != 0)
 		AssertPrintf("Error: could not find internal bitmap %s\n", in_resource);
 	
-	if (!LoadTextureFromFile(full_path.c_str(), info.tex_id, flags,
+	if (!LoadTextureFromImage(image, info.tex_id, flags, 
 			&info.metrics.tex_width, &info.metrics.tex_height,
 			&info.metrics.s_rescale, &info.metrics.t_rescale))
 		AssertPrintf("Error: could not load internal bitmap %s\n", full_path.c_str());
@@ -87,6 +136,8 @@ int	GUI_GetTextureResource(
 	sTexes[r] = info;
 
 	if (out_metrics)	memcpy(out_metrics, &info.metrics,sizeof(GUI_TexPosition_t));
+	
+	DestroyBitmap(&image);
 	
 	return info.tex_id;
 
