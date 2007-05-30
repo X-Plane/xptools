@@ -2,9 +2,9 @@
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
 #include "PerfUtils.h"
+#include "MeshDefs.h"
 #include "MapAlgs.h"
 #include "XFileTwiddle.h"
-#include "MeshDefs.h"
 #include "AptIO.h"
 #include "DEMDefs.h"
 #include "EnumSystem.h"
@@ -337,3 +337,4 @@ void	RegisterCoreCmds(void)
 {
 	GISTool_RegisterCommands(sCoreCmds);
 }
+
