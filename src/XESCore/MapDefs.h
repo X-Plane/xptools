@@ -194,6 +194,7 @@ class	GISHalfedge {
 		Ccb_halfedge_circulator& operator=(GISHalfedge * he) { ptr = he; return *this; }
 		Ccb_halfedge_circulator& operator=(const Ccb_halfedge_circulator& rhs) { ptr = rhs.ptr; return *this; }
 		bool operator==(const Ccb_halfedge_circulator& rhs) const { return ptr == rhs.ptr; }
+		bool operator==(	  GISHalfedge * rhs) const { return ptr == rhs; }					// This is needed because GCC is frickin' stupid
 		bool operator==(const GISHalfedge * rhs) const { return ptr == rhs; }
 		bool operator!=(const Ccb_halfedge_circulator& rhs) const { return ptr != rhs.ptr; }
 		bool operator<(const Ccb_halfedge_circulator& rhs) const { return ptr < rhs.ptr; }
@@ -214,6 +215,7 @@ class	GISHalfedge {
 		Ccb_halfedge_const_circulator& operator=(const GISHalfedge* rhs) { ptr = rhs; return *this; }
 		Ccb_halfedge_const_circulator& operator=(const Ccb_halfedge_const_circulator& rhs) { ptr = rhs.ptr; return *this; }
 		bool operator==(const Ccb_halfedge_const_circulator& rhs) const { return ptr == rhs.ptr; }
+		bool operator==(	  GISHalfedge * rhs) const { return ptr == rhs; }
 		bool operator==(const GISHalfedge * rhs) const { return ptr == rhs; }
 		bool operator!=(const Ccb_halfedge_const_circulator& rhs) const { return ptr != rhs.ptr; }
 		bool operator<(const Ccb_halfedge_const_circulator& rhs) const { return ptr < rhs.ptr; }
