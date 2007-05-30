@@ -100,7 +100,7 @@ void	WED_DoGroup(IResolver * inResolver)
 void	WED_DoUngroup(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
-	vector<IUnknown *> items;
+	vector<IBase *> items;
 	sel->GetSelectionVector(items);
 	
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -108,7 +108,7 @@ void	WED_DoUngroup(IResolver * inResolver)
 	
 	sel->Clear();
 	
-	for (vector<IUnknown *>::iterator i = items.begin(); i != items.end(); ++i)
+	for (vector<IBase *>::iterator i = items.begin(); i != items.end(); ++i)
 	{
 		WED_Thing * dead_group = dynamic_cast<WED_Thing *>(*i);
 		DebugAssert(dead_group != NULL);
