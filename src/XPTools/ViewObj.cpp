@@ -50,7 +50,7 @@
 	#include <OpenGL/glu.h>
 #else
 	#include <gl/gl.h>
-	#include <glu.h>
+	#include <gl/glu.h>
 #endif
 
 //#include <glut.h>
@@ -118,6 +118,7 @@ public:
 	virtual	void			ClickDown(int inX, int inY, int inButton);
 	virtual	void			ClickUp(int inX, int inY, int inButton);
 	virtual	void			ClickDrag(int inX, int inY, int inButton);
+	virtual void			ClickMove(int inX, int inY) { }
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis);
 	virtual	void			ReceiveFiles(const vector<string>& inFiles, int, int);
 	virtual	int				KeyPressed(char inKey, long, long, long);
