@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="x_app"
+	InheritedPropertySheets=".\common.vsprops;.\x_includes.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		PreprocessorDefinitions="APL=0;IBM=1;LIN=0;USE_JPEG=1;USE_TIF=1;MSC=1"
+		DisableSpecificWarnings="4068"
+		ForcedIncludeFiles="XDefs.h"
+		ForcedUsingFiles=""
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="opengl32.lib glu32.lib user32.lib kernel32.lib shell32.lib comdlg32.lib comctl32.lib ole32.lib gdi32.lib"
+	/>
+</VisualStudioPropertySheet>
