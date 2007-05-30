@@ -404,6 +404,7 @@
 		D67EF9C00B61424600D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D67EF9C20B61424F00D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D682DB260C0E3A7700BBE1A0 /* Vera.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D682DB250C0E3A7700BBE1A0 /* Vera.ttf */; };
 		D69FD7470B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD7480B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D69FD7490B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
@@ -810,7 +811,7 @@
 		D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Destroyable.cpp; sourceTree = "<group>"; };
 		D63681260B8A8D5000091AFC /* IGIS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IGIS.h; sourceTree = "<group>"; };
 		D63681320B8AA1FE00091AFC /* IControlHandles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IControlHandles.h; sourceTree = "<group>"; };
-		D636814D0B8AB87600091AFC /* IUnknown.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IUnknown.h; sourceTree = "<group>"; };
+		D636814D0B8AB87600091AFC /* IBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IBase.h; sourceTree = "<group>"; };
 		D636817A0B8AC62600091AFC /* WED_GISPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint.h; sourceTree = "<group>"; };
 		D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPoint.cpp; sourceTree = "<group>"; };
 		D636817F0B8AC67B00091AFC /* WED_GISPoint_Bezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISPoint_Bezier.h; sourceTree = "<group>"; };
@@ -872,6 +873,7 @@
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9890B6135F400D9190C /* ObjConverter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ObjConverter; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF9930B61367100D9190C /* ConvertObjUI.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ConvertObjUI.cpp; sourceTree = "<group>"; };
+		D682DB250C0E3A7700BBE1A0 /* Vera.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Vera.ttf; sourceTree = "<group>"; };
 		D69FD7430B6CF765008E3AEC /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
 		D69FD7440B6CF765008E3AEC /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
 		D69FD7450B6CF765008E3AEC /* zip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
@@ -2617,6 +2619,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D682DB250C0E3A7700BBE1A0 /* Vera.ttf */,
 				D607B7950C0B831400992876 /* tables */,
 				D607B6F00C0A439900992876 /* about.png */,
 				D607B64B0C0A3F8200992876 /* WED.icns */,
@@ -2724,7 +2727,7 @@
 			isa = PBXGroup;
 			children = (
 				D62FC99F0BCEF3F300ED6CF8 /* IOperation.h */,
-				D636814D0B8AB87600091AFC /* IUnknown.h */,
+				D636814D0B8AB87600091AFC /* IBase.h */,
 				D6FF28570B6E434C00960D5E /* IPropertyObject.h */,
 				D63681260B8A8D5000091AFC /* IGIS.h */,
 				D63681320B8AA1FE00091AFC /* IControlHandles.h */,
@@ -2972,6 +2975,7 @@
 				D607B7980C0B831400992876 /* eye.png in Resources */,
 				D607B7990C0B831400992876 /* lock.png in Resources */,
 				D607B7A10C0B847C00992876 /* check.png in Resources */,
+				D682DB260C0E3A7700BBE1A0 /* Vera.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
