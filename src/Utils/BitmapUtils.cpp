@@ -894,9 +894,9 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 void my_error  (png_structp,png_const_charp err){}
 void my_warning(png_structp,png_const_charp err){}
 
-unsigned char *			png_start_pos 	= NULL;
-unsigned char *			png_end_pos 	= NULL;
-unsigned char *			png_current_pos	= NULL;
+const char *			png_start_pos 	= NULL;
+const char *			png_end_pos 	= NULL;
+const char *			png_current_pos	= NULL;
 
 void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t length)
 {
@@ -906,8 +906,34 @@ void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t leng
    png_current_pos+=length;
 }
 
+int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed)
+{
+	FILE * file = fopen(fname, "rb");
+	if (!file) 
+		return -1;
 
-int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed)
+	fseek(file, 0, SEEK_END);
+	int fileLength = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	char * buffer = new char[fileLength];
+	if (!buffer) 
+	{
+		fclose(file); 
+		return -1;
+	}
+	if (fread(buffer, 1, fileLength, file) != fileLength) 
+	{
+		fclose(file);
+		delete [] buffer;
+		return -1;
+	}
+	fclose(file);
+	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed);
+	delete [] buffer;
+	return result;
+}
+
+int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed)
 {
 	png_uint_32	width, height;
 	int bit_depth,color_type,interlace_type,compression_type,P_filter_type;
@@ -915,9 +941,6 @@ int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInf
 
 	png_structp		pngPtr = NULL;
 	png_infop		infoPtr = NULL;
-	unsigned char *	buffer = NULL;
-	FILE *			file = NULL;
-	int				fileLength = 0;
 	outImageInfo->data = NULL;
 	char** 			rows = NULL;
 
@@ -927,22 +950,11 @@ int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInf
 	infoPtr=png_create_info_struct(pngPtr);
 	if(!infoPtr) goto bail;
 
-	file = fopen(inFilePath, "rb");
-	if (!file) goto bail;
-	fseek(file, 0, SEEK_END);
-	fileLength = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	buffer = new unsigned char[fileLength];
-	if (!buffer) goto bail;
-	if (fread(buffer, 1, fileLength, file) != fileLength) goto bail;
-	fclose(file);
-	file = NULL;
+	png_start_pos = (const char *) inStart;
+	png_current_pos = (const char *) inStart;
+	png_end_pos = (const char *) inStart + inLength;
 
-	png_start_pos = buffer;
-	png_current_pos = buffer;
-	png_end_pos = buffer + fileLength;
-
-	if (png_sig_cmp(png_current_pos,0,8)) goto bail;
+	if (png_sig_cmp((unsigned char *) png_current_pos,0,8)) goto bail;
 
 	png_set_interlace_handling(pngPtr);
 	if(setjmp(pngPtr->jmpbuf))
@@ -1008,9 +1020,6 @@ int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInf
 	free(rows);
 	rows = NULL;
 
-	delete [] buffer;
-	buffer = NULL;
-
 	png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
 	
 	return 0;
@@ -1018,8 +1027,6 @@ bail:
 
 	if (pngPtr && infoPtr)		png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
 	else if (pngPtr)			png_destroy_read_struct(&pngPtr,(png_infopp)NULL,(png_infopp)NULL);
-	if (buffer)					delete [] buffer;
-	if (file)					fclose(file);
 	if (outImageInfo->data)		free(outImageInfo->data);
 	if (rows) 					free(rows);
 

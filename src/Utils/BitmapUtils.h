@@ -105,6 +105,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 
 /* Yada yada yada, libPng. */
 int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed);
+int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed);
 
 #if USE_TIF
 
