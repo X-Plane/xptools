@@ -1,7 +1,7 @@
 #ifndef IRESOLVER_H
 #define IRESOLVER_H
 
-#include "IUnknown.h"
+#include "IBase.h"
 
 /*
 	IRESOLVER - THEORY OF OPERATION
@@ -17,10 +17,10 @@
 
 */
 
-class	IResolver : public virtual IUnknown {
+class	IResolver : public virtual IBase {
 public:
 
-	virtual	IUnknown *	Resolver_Find(const char * path)=0;
+	virtual	IBase *	Resolver_Find(const char * path)=0;
 	
 };
 

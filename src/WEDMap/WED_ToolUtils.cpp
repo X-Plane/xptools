@@ -61,14 +61,14 @@ static WED_Thing *	FindCommonParent(WED_Thing * a, WED_Thing * b)
 
 WED_Thing *	WED_FindParent(ISelection * isel, WED_Thing * require_this, WED_Thing * backup_choice)
 {
-	vector<IUnknown *> sel;
+	vector<IBase *> sel;
 	isel->GetSelectionVector(sel);
 	
 	WED_Thing * common_parent = NULL;
 	
 	if (sel.empty()) return backup_choice;
 	
-	for (vector<IUnknown *>::iterator iter = sel.begin(); iter != sel.end(); ++iter)
+	for (vector<IBase *>::iterator iter = sel.begin(); iter != sel.end(); ++iter)
 	{
 		WED_Thing * obj = SAFE_CAST(WED_Thing, *iter);
 		if (obj)
@@ -127,7 +127,7 @@ void	WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel)
 	WED_GetSelectionInOrderRecursive(sel, wrl, out_sel);
 }
 
-static int			WED_GetSelectionRecursiveOne(IUnknown * what, void * container)
+static int			WED_GetSelectionRecursiveOne(IBase * what, void * container)
 {
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	if (who == NULL) return 0;
@@ -158,7 +158,7 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 	return sel->IterateSelection(Iterate_HasSelectedParent, sel);
 }
 
-int	Iterate_RequiresAirport(IUnknown * what, void * ref)
+int	Iterate_RequiresAirport(IBase * what, void * ref)
 {
 	if (dynamic_cast<WED_AirportBeacon *>(what)) return 1;
 	if (dynamic_cast<WED_AirportBoundary *>(what)) return 1;
@@ -177,7 +177,7 @@ int	Iterate_RequiresAirport(IUnknown * what, void * ref)
 	return 0;
 }
 
-int	Iterate_ChildRequiresAirport(IUnknown * what, void * ref)
+int	Iterate_ChildRequiresAirport(IBase * what, void * ref)
 {
 	if (Iterate_RequiresAirport(what, ref)) return 1;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
@@ -189,13 +189,13 @@ int	Iterate_ChildRequiresAirport(IUnknown * what, void * ref)
 	return 0;
 }
 
-int	Iterate_IsAirport(IUnknown * what, void * ref)
+int	Iterate_IsAirport(IBase * what, void * ref)
 {
 	if (dynamic_cast<WED_Airport *>(what)) return 1;
 	return 0;
 }
 
-int	Iterate_IsOrParentAirport(IUnknown * what, void * ref)
+int	Iterate_IsOrParentAirport(IBase * what, void * ref)
 {
 	if (what == NULL) return 0;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
@@ -208,7 +208,7 @@ int	Iterate_IsOrParentAirport(IUnknown * what, void * ref)
 	return 0;
 }
 
-int	Iterate_IsOrChildAirport(IUnknown * what, void * ref)
+int	Iterate_IsOrChildAirport(IBase * what, void * ref)
 {
 	if (what == NULL) return 0;
 	WED_Thing * o = dynamic_cast<WED_Thing *>(what);
@@ -223,7 +223,7 @@ int	Iterate_IsOrChildAirport(IUnknown * what, void * ref)
 	return 0;
 }
 
-int	Iterate_IsStructuredObject(IUnknown * what, void * ref)
+int	Iterate_IsStructuredObject(IBase * what, void * ref)
 {
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	if (!e) return 0;
@@ -239,12 +239,12 @@ int	Iterate_IsStructuredObject(IUnknown * what, void * ref)
 	}		
 }
 
-int	Iterate_IsNotStructuredObject(IUnknown * what, void * ref)
+int	Iterate_IsNotStructuredObject(IBase * what, void * ref)
 {
 	return Iterate_IsStructuredObject(what,ref) ? 0 : 1;
 }
 
-int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
+int	Iterate_IsPartOfStructuredObject(IBase * what, void * ref)
 {
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	if (who == NULL) return 0;
@@ -253,19 +253,19 @@ int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref)
 	return Iterate_IsStructuredObject(parent, NULL);
 }
 
-int	Iterate_IsNotPartOfStructuredObject(IUnknown * what, void * ref)
+int	Iterate_IsNotPartOfStructuredObject(IBase * what, void * ref)
 {
 	return Iterate_IsPartOfStructuredObject(what, ref) ? 0 : 1;
 }
 
 
-int Iterate_IsNotGroup(IUnknown * what, void * ref)
+int Iterate_IsNotGroup(IBase * what, void * ref)
 {
 	if (dynamic_cast<WED_Group *>(what) == NULL) return 1;
 	return 0;
 }
 
-int Iterate_IsNonEmptyComposite(IUnknown * what, void * ref)
+int Iterate_IsNonEmptyComposite(IBase * what, void * ref)
 {
 	IGISComposite * comp = dynamic_cast<IGISComposite *> (what);
 	if (comp == NULL) return 0;
@@ -273,7 +273,7 @@ int Iterate_IsNonEmptyComposite(IUnknown * what, void * ref)
 	return comp->GetNumEntities() > 0;
 }
 
-int Iterate_CollectChildPointSequences(IUnknown * what, void * ref)
+int Iterate_CollectChildPointSequences(IBase * what, void * ref)
 {
 	vector<IGISPointSequence *> * container = (vector<IGISPointSequence *> *) ref;
 	IGISPolygon * poly = dynamic_cast<IGISPolygon *>(what);
@@ -289,7 +289,7 @@ int Iterate_CollectChildPointSequences(IUnknown * what, void * ref)
 }
 
 
-int Iterate_ParentMismatch(IUnknown * what, void * ref)
+int Iterate_ParentMismatch(IBase * what, void * ref)
 {
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	WED_Thing * parent = (WED_Thing *) ref;
@@ -298,7 +298,7 @@ int Iterate_ParentMismatch(IUnknown * what, void * ref)
 									return 0;
 }
 
-int Iterate_IsParentOf(IUnknown * what, void * ref)					// This object is a parent of (or is) "ref".
+int Iterate_IsParentOf(IBase * what, void * ref)					// This object is a parent of (or is) "ref".
 {
 	WED_Thing * child = dynamic_cast<WED_Thing *>(what);
 	WED_Thing * parent = (WED_Thing *) ref;
@@ -311,21 +311,21 @@ int Iterate_IsParentOf(IUnknown * what, void * ref)					// This object is a pare
 	return 0;	
 }
 
-int	Iterate_MatchesThing(IUnknown * what, void * ref)					// ref is a thing to match
+int	Iterate_MatchesThing(IBase * what, void * ref)					// ref is a thing to match
 {
 	WED_Thing * target = (WED_Thing *) ref;
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	return who == target;
 }
 
-int	Iterate_NotMatchesThing(IUnknown * what, void * ref)					// ref is a thing to match
+int	Iterate_NotMatchesThing(IBase * what, void * ref)					// ref is a thing to match
 {
 	WED_Thing * target = (WED_Thing *) ref;
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
 	return who != target;
 }
 
-int Iterate_HasSelectedParent(IUnknown * what, void * ref)
+int Iterate_HasSelectedParent(IBase * what, void * ref)
 {
 	WED_Thing * p = dynamic_cast<WED_Thing *>(what);
 	if (p == NULL) return 0;
@@ -339,7 +339,7 @@ int Iterate_HasSelectedParent(IUnknown * what, void * ref)
 	return 0;
 }
 
-int Iterate_GetSelectThings(IUnknown * what, void * ref)
+int Iterate_GetSelectThings(IBase * what, void * ref)
 {
 	vector<WED_Thing *> * container = (vector<WED_Thing *> *) ref;
 	WED_Thing * who = dynamic_cast<WED_Thing *>(what);

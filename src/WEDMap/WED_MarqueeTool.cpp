@@ -190,7 +190,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
-	vector<IUnknown *>	iu;
+	vector<IBase *>	iu;
 	vector<IGISEntity *> en;
 	
 	e.clear();
@@ -198,7 +198,7 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;
 	en.reserve(iu.size());
-	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
+	for (vector<IBase *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		if (ent) e.push_back(ent);
@@ -219,12 +219,12 @@ bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
-	vector<IUnknown *>	iu;
+	vector<IBase *>	iu;
 	int ret = false;
 	
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;
-	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
+	for (vector<IBase *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
@@ -249,10 +249,10 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
-	vector<IUnknown *>	iu;
+	vector<IBase *>	iu;
 	
 	sel->GetSelectionVector(iu);
-	for (vector<IUnknown *>::iterator i = iu.begin(); i != iu.end(); ++i)
+	for (vector<IBase *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);

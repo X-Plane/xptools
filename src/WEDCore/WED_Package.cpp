@@ -119,7 +119,7 @@ bool WED_Package::TryClose(void)
 	return true;
 }
 
-static	bool	WED_Package::TryCloseAll(void)
+bool	WED_Package::TryCloseAll(void)
 {
 	set<WED_Package *>	packages(sPackages);
 	for (set<WED_Package *>::iterator p = packages.begin(); p != packages.end(); ++p)

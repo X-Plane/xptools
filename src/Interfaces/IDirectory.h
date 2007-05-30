@@ -7,19 +7,19 @@
 
 */
 
-#include "IUnknown.h"
+#include "IBase.h"
 
-class	IDirectory : public virtual IUnknown {
+class	IDirectory : public virtual IBase {
 public:
 
-	virtual	IUnknown *	Directory_Find(const char * name)=0;
+	virtual	IBase *	Directory_Find(const char * name)=0;
 	
 };
 
-class	IDirectoryEdit : public virtual IUnknown {
+class	IDirectoryEdit : public virtual IBase {
 public:
 
-	virtual	void		Directory_Edit(const char * name, IUnknown * who)=0;
+	virtual	void		Directory_Edit(const char * name, IBase * who)=0;
 	
 };
 

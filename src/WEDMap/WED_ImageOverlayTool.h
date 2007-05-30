@@ -54,7 +54,7 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void) { return mBits ? "Drag corners to reposition overlay." : "Please pick an overlay image from the View menu."; }
 
-	// IUnknown
+	// IBase
 //	virtual void *		QueryInterface(const char * class_id);
 
 private:

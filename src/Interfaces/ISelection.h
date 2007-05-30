@@ -12,29 +12,29 @@
 
 */
 
-#include "IUnknown.h"
+#include "IBase.h"
 #include <set>
 #include <vector>
 
 using std::vector;
 using std::set;
 
-class	ISelection : public virtual IUnknown {
+class	ISelection : public virtual IBase {
 public:
-	virtual		bool			IsSelected(IUnknown * who) const=0;
+	virtual		bool			IsSelected(IBase * who) const=0;
 
-	virtual		void			Select(IUnknown * who)=0;
+	virtual		void			Select(IBase * who)=0;
 	virtual		void			Clear (void			 )=0;
-	virtual		void			Toggle(IUnknown * who)=0;
-	virtual		void			Insert(IUnknown * who)=0;
-	virtual		void			Erase (IUnknown * who)=0;
+	virtual		void			Toggle(IBase * who)=0;
+	virtual		void			Insert(IBase * who)=0;
+	virtual		void			Erase (IBase * who)=0;
 
 	virtual		int				GetSelectionCount(void) const=0;
-	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const=0;
-	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const=0;
-	virtual		IUnknown *		GetNthSelection(int n) const=0;
+	virtual		void			GetSelectionSet(set<IBase *>& sel) const=0;
+	virtual		void			GetSelectionVector(vector<IBase *>& sel) const=0;
+	virtual		IBase *		GetNthSelection(int n) const=0;
 
-	virtual		int				IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const=0;
+	virtual		int				IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const=0;
 
 };
 

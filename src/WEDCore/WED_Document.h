@@ -55,7 +55,7 @@ public:
 	WED_UndoMgr *		GetUndoMgr(void);
 
 //	virtual void *		QueryInterface(const char * class_id);
-	virtual	IUnknown *	Resolver_Find(const char * path);
+	virtual	IBase *		Resolver_Find(const char * path);
 
 	bool				TryClose(void);
 	void				Save(void);

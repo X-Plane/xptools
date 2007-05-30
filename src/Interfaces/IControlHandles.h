@@ -21,7 +21,7 @@
 */
 
 #include "CompGeomDefs2.h"
-#include "IUnknown.h"
+#include "IBase.h"
 
 // Handle types - these specify how they are drawn.
 
@@ -46,7 +46,7 @@ enum LinkType_t {
 	link_Marquee
 };
 
-class	IControlHandles : public virtual IUnknown {
+class	IControlHandles : public virtual IBase {
 public:
 
 	// Operations...all SETS of operations on control handles will

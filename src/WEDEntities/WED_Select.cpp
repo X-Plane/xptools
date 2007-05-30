@@ -85,7 +85,7 @@ void			WED_Select::ToDB(sqlite3 * db)
 
 #pragma mark -
 
-bool		WED_Select::IsSelected(IUnknown * iwho) const
+bool		WED_Select::IsSelected(IBase * iwho) const
 {
 	DebugAssert(iwho != NULL);
 	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
@@ -95,7 +95,7 @@ bool		WED_Select::IsSelected(IUnknown * iwho) const
 	return mSelected.count(who->GetID()) > 0;
 }
 
-void		WED_Select::Select(IUnknown * iwho)
+void		WED_Select::Select(IBase * iwho)
 {
 	DebugAssert(iwho != NULL);
 	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
@@ -121,7 +121,7 @@ void		WED_Select::Clear(void)
 	}
 }
 
-void		WED_Select::Toggle(IUnknown * iwho)
+void		WED_Select::Toggle(IBase * iwho)
 {
 	DebugAssert(iwho != NULL);
 	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
@@ -136,7 +136,7 @@ void		WED_Select::Toggle(IUnknown * iwho)
 	BroadcastMessage(msg_SelectionChanged,0);
 }
 
-void		WED_Select::Insert(IUnknown * iwho)
+void		WED_Select::Insert(IBase * iwho)
 {
 	DebugAssert(iwho != NULL);
 	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
@@ -151,7 +151,7 @@ void		WED_Select::Insert(IUnknown * iwho)
 	}
 }
 
-void		WED_Select::Erase(IUnknown * iwho)
+void		WED_Select::Erase(IBase * iwho)
 {
 	DebugAssert(iwho != NULL);
 	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
@@ -171,14 +171,14 @@ int				WED_Select::GetSelectionCount(void) const
 	return mSelected.size();
 }
 
-void			WED_Select::GetSelectionSet(set<IUnknown *>& sel) const
+void			WED_Select::GetSelectionSet(set<IBase *>& sel) const
 {
 	sel.clear();
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		sel.insert(FetchPeer(*i));
 }
 
-void			WED_Select::GetSelectionVector(vector<IUnknown *>& sel) const
+void			WED_Select::GetSelectionVector(vector<IBase *>& sel) const
 {
 	sel.clear();
 	if (mSelected.empty()) return;
@@ -187,7 +187,7 @@ void			WED_Select::GetSelectionVector(vector<IUnknown *>& sel) const
 		sel.push_back(FetchPeer(*i));
 }
 
-IUnknown *		WED_Select::GetNthSelection(int n) const
+IBase *		WED_Select::GetNthSelection(int n) const
 {
 	DebugAssert(n >= 0 && n < mSelected.size());
 	if (n < 0) return NULL;
@@ -201,7 +201,7 @@ IUnknown *		WED_Select::GetNthSelection(int n) const
 	return FetchPeer(*i);	
 }
 
-int			WED_Select::IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const
+int			WED_Select::IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const
 {
 	int n = 0;
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)

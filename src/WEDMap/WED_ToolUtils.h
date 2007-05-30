@@ -4,7 +4,7 @@
 #include "GUI_Defs.h"
 
 class	GUI_Pane;
-class	IUnknown;
+class	IBase;
 class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
@@ -33,27 +33,27 @@ WED_Thing	*	WED_GetWorld(IResolver * resolver);
 // the selection meets this.
 
 // Basic matching filters
-int Iterate_ParentMismatch(IUnknown * what, void * ref);				// This object's parent is not the "ref" param.
-int Iterate_IsParentOf(IUnknown * what, void * ref);					// This object is a parent of (or is) "ref".
-int	Iterate_MatchesThing(IUnknown * what, void * ref);					// ref is a thing to match
-int	Iterate_NotMatchesThing(IUnknown * what, void * ref);				// ref is a thing to match
+int Iterate_ParentMismatch(IBase * what, void * ref);				// This object's parent is not the "ref" param.
+int Iterate_IsParentOf(IBase * what, void * ref);					// This object is a parent of (or is) "ref".
+int	Iterate_MatchesThing(IBase * what, void * ref);					// ref is a thing to match
+int	Iterate_NotMatchesThing(IBase * what, void * ref);				// ref is a thing to match
 // Airport containment filters
-int	Iterate_RequiresAirport(IUnknown * what, void * ref);				// This object MUST have an airport as part of its ancestors.
-int	Iterate_ChildRequiresAirport(IUnknown * what, void * ref);			// This object MUST have an airport as part of its ancestors.  Or one of our children requires this.
-int	Iterate_IsAirport(IUnknown * what, void * ref);						// This object is an airport.
-int	Iterate_IsOrParentAirport(IUnknown * what, void * ref);				// This object is an airport, or its parent is or something.
-int	Iterate_IsOrChildAirport(IUnknown * what, void * ref);				// This object is an airport, or its child is or something.
+int	Iterate_RequiresAirport(IBase * what, void * ref);				// This object MUST have an airport as part of its ancestors.
+int	Iterate_ChildRequiresAirport(IBase * what, void * ref);			// This object MUST have an airport as part of its ancestors.  Or one of our children requires this.
+int	Iterate_IsAirport(IBase * what, void * ref);						// This object is an airport.
+int	Iterate_IsOrParentAirport(IBase * what, void * ref);				// This object is an airport, or its parent is or something.
+int	Iterate_IsOrChildAirport(IBase * what, void * ref);				// This object is an airport, or its child is or something.
 // Grouping and structured obj filters
-int	Iterate_IsStructuredObject(IUnknown * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
-int	Iterate_IsNotStructuredObject(IUnknown * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
-int	Iterate_IsPartOfStructuredObject(IUnknown * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
-int	Iterate_IsNotPartOfStructuredObject(IUnknown * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
-int Iterate_IsNotGroup(IUnknown * what, void * ref);					// This object is not a group.
-int	Iterate_IsNonEmptyComposite(IUnknown * what, void * ref);			// We are a composite and we have at least one child.
-int Iterate_CollectChildPointSequences(IUnknown * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
+int	Iterate_IsStructuredObject(IBase * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
+int	Iterate_IsNotStructuredObject(IBase * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
+int	Iterate_IsPartOfStructuredObject(IBase * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
+int	Iterate_IsNotPartOfStructuredObject(IBase * what, void * ref);		// This object is part of a polygon or something.  DO NOT reorder it.
+int Iterate_IsNotGroup(IBase * what, void * ref);					// This object is not a group.
+int	Iterate_IsNonEmptyComposite(IBase * what, void * ref);			// We are a composite and we have at least one child.
+int Iterate_CollectChildPointSequences(IBase * what, void * ref);	// ref is a ptr to a vector<IGISPointSequence *>
 // Selection filters
-int Iterate_HasSelectedParent(IUnknown * what, void * ref);				// ref is ISelection.
-int	Iterate_GetSelectThings(IUnknown * what, void * ref);				// ref is ptr to vector<wed_thing>
+int Iterate_HasSelectedParent(IBase * what, void * ref);				// ref is ISelection.
+int	Iterate_GetSelectThings(IBase * what, void * ref);				// ref is ptr to vector<wed_thing>
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP

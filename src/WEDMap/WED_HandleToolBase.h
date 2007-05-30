@@ -7,7 +7,7 @@
 class	GUI_Pane;
 class	WED_MapZoomerNew;
 class	IControlHandles;
-class	IUnknown;
+class	IBase;
 class	IResolver;
 class	IGISEntity;
 
@@ -58,7 +58,7 @@ private:
 			int					ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IUnknown *>&	result);
+									set<IBase *>&		result);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything
@@ -72,8 +72,8 @@ private:
 		IControlHandles *		mHandles;
 		int						mCanSelect;
 		
-		vector<IUnknown *>			mSelSave;		
-		int							mSelToggle;
+		vector<IBase *>			mSelSave;		
+		int						mSelToggle;
 		
 		// Variables for drag tracking
 		DragType_t				mDragType;

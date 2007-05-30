@@ -208,12 +208,12 @@ int				WED_Thing::Array_Count (void )
 	return CountChildren();
 }
 
-IUnknown *		WED_Thing::Array_GetNth(int n)
+IBase *		WED_Thing::Array_GetNth(int n)
 {
 	return GetNthChild(n);
 }
 	
-IUnknown *		WED_Thing::Directory_Find(const char * name)
+IBase *		WED_Thing::Directory_Find(const char * name)
 {
 	return GetNamedChild(name);
 }

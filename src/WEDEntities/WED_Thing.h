@@ -50,10 +50,10 @@ public:
 	
 	// IArray
 	virtual	int				Array_Count (void );
-	virtual IUnknown *		Array_GetNth(int n);
+	virtual IBase *			Array_GetNth(int n);
 	
 	// IDirectory
-	virtual	IUnknown *	Directory_Find(const char * name);
+	virtual	IBase *		Directory_Find(const char * name);
 
 	// IOperation
 	virtual		void			StartOperation(const char * op_name);

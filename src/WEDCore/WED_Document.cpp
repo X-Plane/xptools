@@ -124,12 +124,12 @@ bool	WED_Document::TryClose(void)
 }
 
 
-IUnknown *	WED_Document::Resolver_Find(const char * in_path)
+IBase *	WED_Document::Resolver_Find(const char * in_path)
 {
 	const char * sp = in_path;
 	const char * ep;
 	
-	IUnknown * who = mArchive.Fetch(1);
+	IBase * who = mArchive.Fetch(1);
 	
 	while(*sp != 0)
 	{

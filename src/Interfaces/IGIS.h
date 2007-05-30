@@ -2,7 +2,7 @@
 #define IGIS_H
 
 #include "CompGeomDefs2.h"
-#include "IUnknown.h"
+#include "IBase.h"
 
 //------------------------------------------------------------------------------------------------------------
 // ENTITY INTERFACE
@@ -15,7 +15,7 @@
 // - All GIS entities must support a linear 2-d rescaling operation (described by remapping bounding boxes.
 //
 // Note: these are COM-style interfaces, so they do NOT have an inheritence relationship with each other - 
-// they are just IUnknown derivatives.  You can test for inheritence using  the SafeCast mechanism or use some
+// they are just IBase derivatives.  You can test for inheritence using  the SafeCast mechanism or use some
 // other mechanism.  The idea is that the inheritence hierarchy will be built by the IMPLEMENTATION.
 // 
 // Design note: the GIS interfaces are designe to promote the abstraction of a data model!  That is, they don't 
@@ -41,7 +41,7 @@ enum GISClass_t {
 	gis_Composite
 };
 
-class	IGISEntity : public virtual IUnknown {
+class	IGISEntity : public virtual IBase {
 public:
 
 	virtual	GISClass_t		GetGISClass		(void						 ) const=0;

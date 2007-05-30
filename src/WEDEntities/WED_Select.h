@@ -23,20 +23,20 @@ DECLARE_PERSISTENT(WED_Select)
 public:
 
 	// ISelection
-	virtual		bool			IsSelected(IUnknown * who) const;
+	virtual		bool			IsSelected(IBase * who) const;
 
-	virtual		void			Select(IUnknown * who);
+	virtual		void			Select(IBase * who);
 	virtual		void			Clear (void			 );
-	virtual		void			Toggle(IUnknown * who);
-	virtual		void			Insert(IUnknown * who);
-	virtual		void			Erase (IUnknown * who);
+	virtual		void			Toggle(IBase * who);
+	virtual		void			Insert(IBase * who);
+	virtual		void			Erase (IBase * who);
 
 	virtual		int				GetSelectionCount(void) const;
-	virtual		void			GetSelectionSet(set<IUnknown *>& sel) const;
-	virtual		void			GetSelectionVector(vector<IUnknown *>& sel) const;
-	virtual		IUnknown *		GetNthSelection(int n) const;
+	virtual		void			GetSelectionSet(set<IBase *>& sel) const;
+	virtual		void			GetSelectionVector(vector<IBase *>& sel) const;
+	virtual		IBase *			GetNthSelection(int n) const;
 
-	virtual		int				IterateSelection(int (* func)(IUnknown * who, void * ref), void * ref) const;
+	virtual		int				IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const;
 
 	// WED_Persistent
 	virtual		void 			ReadFrom(IOReader * reader);

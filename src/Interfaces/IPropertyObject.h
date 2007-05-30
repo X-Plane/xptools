@@ -1,7 +1,7 @@
 #ifndef IPROPERTYOBJECT_H
 #define IPROPERTYOBJECT_H
 
-#include "IUnknown.h"
+#include "IBase.h"
 
 /*
 	IPropertyObject - THEORY OF OPERATION
@@ -37,7 +37,7 @@ struct	PropertyVal_t {
 	set<int>	set_val;
 };
 
-class IPropertyObject : public virtual IUnknown {
+class IPropertyObject : public virtual IBase {
 public:
 
 	virtual	int			FindProperty(const char * in_prop)=0;

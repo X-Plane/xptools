@@ -1,7 +1,7 @@
 #ifndef WED_PERSISTENT
 #define WED_PERSISTENT
 
-#include "IUnknown.h"
+#include "IBase.h"
 #include "WED_Archive.h"
 #include "AssertUtils.h"
 
@@ -111,7 +111,7 @@ const char * __Class::GetClass(void) const						\
 }
 
 
-class	WED_Persistent : public virtual IUnknown {
+class	WED_Persistent : public virtual IBase {
 public:
 
 	typedef WED_Persistent * (* CTOR_f)(WED_Archive *, int);

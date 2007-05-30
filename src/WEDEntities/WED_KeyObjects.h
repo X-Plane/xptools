@@ -18,8 +18,8 @@ DECLARE_PERSISTENT(WED_KeyObjects)
 
 public:
 
-	virtual	IUnknown *	Directory_Find(const char * name);
-	virtual	void		Directory_Edit(const char * name, IUnknown * who);
+	virtual	IBase *			Directory_Find(const char * name);
+	virtual	void			Directory_Edit(const char * name, IBase * who);
 
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);

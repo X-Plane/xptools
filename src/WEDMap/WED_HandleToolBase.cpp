@@ -252,7 +252,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if (sel && ent_base)
 		{
-			set<IUnknown *>	sel_set;
+			set<IBase *>	sel_set;
 			Bbox2	bounds(
 							GetZoomer()->XPixelToLon(mDragX),
 							GetZoomer()->YPixelToLat(mDragY),
@@ -269,7 +269,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	
 			sel->GetSelectionVector(mSelSave);
 
-			for (set<IUnknown *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+			for (set<IBase *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 			if (mSelToggle)
 				sel->Toggle(*i);
 			else	
@@ -288,7 +288,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 int		WED_HandleToolBase::ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IUnknown *>&	result)
+									set<IBase *>&	result)
 {
 	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
 	if (thang) {
@@ -394,7 +394,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
 			{
-				set<IUnknown *>	sel_set;
+				set<IBase *>	sel_set;
 				Bbox2	bounds(
 								GetZoomer()->XPixelToLon(mDragX),
 								GetZoomer()->YPixelToLat(mDragY),
@@ -404,13 +404,13 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 				ProcessSelectionRecursive(ent_base, bounds, sel_set);
 
 				sel->Clear();
-				for (vector<IUnknown *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+				for (vector<IBase *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 					sel->Insert(*u);
 				#if OPTIMIZE
 					provide accelerated sel-save-restore ops!
 				#endif
 
-				for (set<IUnknown *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+				for (set<IBase *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 				if (mSelToggle)
 					sel->Toggle(*i);
 				else	

@@ -13,7 +13,7 @@ WED_KeyObjects::~WED_KeyObjects()
 {
 }
 
-IUnknown *	WED_KeyObjects::Directory_Find(const char * name)
+IBase *	WED_KeyObjects::Directory_Find(const char * name)
 {
 	map<string,int>::iterator i = choices.find(name);
 	if (i != choices.end())
@@ -22,7 +22,7 @@ IUnknown *	WED_KeyObjects::Directory_Find(const char * name)
 }
 
 
-void WED_KeyObjects::Directory_Edit(const char * name, IUnknown * who)
+void WED_KeyObjects::Directory_Edit(const char * name, IBase * who)
 {
 	string n(name);
 	WED_Persistent * target = SAFE_CAST(WED_Persistent,who);

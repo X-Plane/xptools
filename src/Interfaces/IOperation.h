@@ -12,9 +12,9 @@
 
 */
 
-#include "IUnknown.h"
+#include "IBase.h"
 
-class	IOperation : public virtual IUnknown {
+class	IOperation : public virtual IBase {
 public:
 
 	virtual	void		StartOperation(const char * op_name)=0;
