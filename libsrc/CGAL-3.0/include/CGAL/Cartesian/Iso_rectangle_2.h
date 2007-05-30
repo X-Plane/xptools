@@ -95,11 +95,11 @@ public:
 
   const Point_2 & min() const
   {
-      return Ptr()->e0;
+      return base::Ptr()->e0;
   }
   const Point_2 & max() const
   {
-      return Ptr()->e1;
+      return base::Ptr()->e1;
   }
   Point_2 vertex(int i) const;
   Point_2 operator[](int i) const;

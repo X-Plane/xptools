@@ -82,19 +82,19 @@ public:
 
   const FT & a() const
   {
-      return Ptr()->e0;
+      return base::Ptr()->e0;
   }
   const FT & b() const
   {
-      return Ptr()->e1;
+      return base::Ptr()->e1;
   }
   const FT & c() const
   {
-      return Ptr()->e2;
+      return base::Ptr()->e2;
   }
   const FT & d() const
   {
-      return Ptr()->e3;
+      return base::Ptr()->e3;
   }
 
   Line_3       perpendicular_line(const Point_3 &p) const;

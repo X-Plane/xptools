@@ -63,11 +63,11 @@ public:
 
   const Point_2 &   source() const
   {
-      return Ptr()->e0;
+      return base::Ptr()->e0;
   }
   const Point_2 &   target() const
   {
-      return Ptr()->e1;
+      return base::Ptr()->e1;
   }
   
   const Point_2 &    start() const;

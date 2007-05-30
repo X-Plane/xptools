@@ -70,11 +70,11 @@ public:
 
   const FT& x() const
   {
-      return Ptr()->e0;
+      return base::Ptr()->e0;
   }
   const FT& y() const
   {
-      return Ptr()->e1;
+      return base::Ptr()->e1;
   }
 
   const FT& hx() const

@@ -115,9 +115,9 @@ TriangleC2<R>::vertex(int i) const
 {
   if (i>2) i = i%3;
   else if (i<0) i = (i%3) + 3;
-  return (i==0) ? Ptr()->e0 :
-         (i==1) ? Ptr()->e1 :
-                  Ptr()->e2;
+  return (i==0) ? base::Ptr()->e0 :
+         (i==1) ? base::Ptr()->e1 :
+                  base::Ptr()->e2;
 }
 
 template < class R >

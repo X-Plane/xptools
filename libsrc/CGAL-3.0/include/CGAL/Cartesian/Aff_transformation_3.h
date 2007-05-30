@@ -58,6 +58,9 @@ CGAL_VC7_BUG_PROTECTED
   typedef typename R_::Direction_3          Direction_3;
   typedef typename R_::Plane_3              Plane_3;
   typedef typename R_::Aff_transformation_3 Aff_transformation_3;
+  
+  typedef Handle_for_virtual<Aff_t_base>	base;
+  
 public:
   typedef R_                               R;
 
@@ -125,7 +128,7 @@ public:
 
   Point_3
   transform(const Point_3 &p) const
-  { return Ptr()->transform(p); }
+  { return base::Ptr()->transform(p); }
 
   Point_3
   operator()(const Point_3 &p) const
@@ -133,7 +136,7 @@ public:
 
   Vector_3
   transform(const Vector_3 &v) const
-  { return Ptr()->transform(v); }
+  { return base::Ptr()->transform(v); }
 
   Vector_3
   operator()(const Vector_3 &v) const
@@ -141,7 +144,7 @@ public:
 
   Direction_3
   transform(const Direction_3 &d) const
-  { return Ptr()->transform(d); }
+  { return base::Ptr()->transform(d); }
 
   Direction_3
   operator()(const Direction_3 &d) const
@@ -155,21 +158,21 @@ public:
   operator()(const Plane_3& p) const
   { return transform(p); } // FIXME : not compiled by the test-suite !
 
-  Aff_transformation_3 inverse() const { return Ptr()->inverse(); }
+  Aff_transformation_3 inverse() const { return base::Ptr()->inverse(); }
   
-  bool is_even() const { return Ptr()->is_even(); }
-  bool is_odd() const { return  ! (Ptr()->is_even()); }
+  bool is_even() const { return base::Ptr()->is_even(); }
+  bool is_odd() const { return  ! (base::Ptr()->is_even()); }
   
-  FT cartesian(int i, int j) const { return Ptr()->cartesian(i,j); }
+  FT cartesian(int i, int j) const { return base::Ptr()->cartesian(i,j); }
   FT homogeneous(int i, int j) const { return cartesian(i,j); }
   FT m(int i, int j) const { return cartesian(i,j); }
   FT hm(int i, int j) const { return cartesian(i,j); }
 
   Aff_transformation_3 operator*(const Aff_transformationC3 &t) const
-  { return (*Ptr()) * (*t.Ptr()); }
+  { return (*base::Ptr()) * (*t.base::Ptr()); }
 
 protected:
-  Aff_transformation_3        transpose() const { return Ptr()->transpose(); }
+  Aff_transformation_3        transpose() const { return base::Ptr()->transpose(); }
 };
 
 

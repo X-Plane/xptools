@@ -97,17 +97,17 @@ public:
 
   const Point_2 & center() const
   {
-   return Ptr()->first;
+   return base::Ptr()->first;
   }
 
   const FT & squared_radius() const
   {
-   return Ptr()->second;
+   return base::Ptr()->second;
   }
 
   Orientation orientation() const
   {
-   return Ptr()->third;
+   return base::Ptr()->third;
   }
 
   Circle_2           opposite() const;
