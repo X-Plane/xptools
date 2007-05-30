@@ -58,7 +58,7 @@ int	FindNextCCW(const DEMGeo& dem, int x, int y, int last_dir)
 	for (n = 0; n < 8; ++n)
 	{
 		int p = (n+last_dir)%8;
-		if (dem.get(x+dir_x[p],y+dir_y[p]) != NO_DATA)
+		if (dem.get(x+dir_x[p],y+dir_y[p]) != DEM_NO_DATA)
 			return p;
 	}
 	return -1;
@@ -71,7 +71,7 @@ int IndexDEM(const DEMGeo& inDEM, vector<int>& outIndex)
 	for (int y = 0; y < inDEM.mHeight; ++y)
 	for (int x = 0; x < inDEM.mWidth; ++x)
 	{
-		if (inDEM.get(x,y) != NO_DATA)
+		if (inDEM.get(x,y) != DEM_NO_DATA)
 			++ctr, outIndex[y]++;
 	}
 	return ctr;
@@ -80,9 +80,9 @@ int IndexDEM(const DEMGeo& inDEM, vector<int>& outIndex)
 void ClearDEMPt(DEMGeo& ioDEM, vector<int>& ioIndex, int x, int y)
 {
 	DebugAssert(ioIndex[y] > 0);
-	DebugAssert(ioDEM.get(x,y) != NO_DATA);
+	DebugAssert(ioDEM.get(x,y) != DEM_NO_DATA);
 	
-	ioDEM(x,y) = NO_DATA;
+	ioDEM(x,y) = DEM_NO_DATA;
 	ioIndex[y]--;
 }
 
@@ -91,7 +91,7 @@ bool FindHighestLeft(const DEMGeo& inDEM, const vector<int>& ioIndex, int& x, in
 	for (y = y_start; y >= 0; --y)
 	if (ioIndex[y] > 0)
 		for (x = 0; x < inDEM.mWidth; ++x)
-		if (inDEM.get(x,y) != NO_DATA)
+		if (inDEM.get(x,y) != DEM_NO_DATA)
 			return true;
 	return false;
 }

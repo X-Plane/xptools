@@ -231,7 +231,7 @@ bool	ReadFeatureProps(const vector<string>& tokens, void * ref)
 	if (TokenizeLine(tokens, " efe", &key, &info.property_value, &info.terrain_type) != 4)
 		return false;
 	if (gFeatures.find(key) != gFeatures.end())
-		printf("WARNING: duplicate key %s", tokens[1]);
+		printf("WARNING: duplicate key %s", tokens[1].c_str());
 	gFeatures[key] = info;
 	return true;
 }

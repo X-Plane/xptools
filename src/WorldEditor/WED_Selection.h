@@ -35,6 +35,7 @@ enum {
 
 typedef	pair<Pmwx::Face_handle, int>	PointFeatureSelection;
 
+namespace std {
 template <>
 struct less<PointFeatureSelection> : binary_function<PointFeatureSelection, PointFeatureSelection, bool> {
 	bool operator()(const PointFeatureSelection& x, const PointFeatureSelection& y) const 
@@ -43,7 +44,7 @@ struct less<PointFeatureSelection> : binary_function<PointFeatureSelection, Poin
 		return &*x.first < &*y.first;
 	}
 };
-
+};
 
 
 extern int							gSelectionMode;

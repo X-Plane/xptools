@@ -1330,7 +1330,7 @@ void	InstantiateGTPolygon(
 
 							density = density_dem.value_linear(l.x,l.y);
 							density = 0.5 + 0.5 * (min(1.0f, max(0.0f, density)));
-							spacing =  10.0 * 2.0 * (pow(0.2, density));	//	was 1.5 insteaed of 10 - way too dense!  and slow!
+							spacing =  10.0 * 2.0 * (pow(0.2f, density));	//	was 1.5 insteaed of 10 - way too dense!  and slow!
 							if (RollDice(density))
 							{
 								result = QueryUsableObjsBySize(			// This is the object selection case along a road for generated objs.

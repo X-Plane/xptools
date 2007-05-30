@@ -51,7 +51,7 @@ void InitEnumSystem()
 
 const char *	FetchTokenString(int x)
 {
-	if (x == NO_DATA) return "NO DATA";
+	if (x == DEM_NO_DATA) return "NO DATA";
 	if (x < 0 || x >= gTokens.size()) return "unknown token";
 	return gTokens[x].c_str();
 }

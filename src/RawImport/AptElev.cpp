@@ -356,13 +356,13 @@ void	AssympApply(DEMGeo& ioDem, int x, int y, float v, float w, bool zap)
 	{
 		if (zap)
 		{
-			if (ioDem.get(dx, dy) != NO_DATA)
+			if (ioDem.get(dx, dy) != DEM_NO_DATA)
 				ioDem(dx, dy) = 0.0;
 		} else {
 			float ww = (dx == x && dy == y) ? (w * 1.0) : (w * 0.5);
 			
 			float h = ioDem.get(dx,dy);
-			if (h != NO_DATA)
+			if (h != DEM_NO_DATA)
 			{
 				ioDem(dx,dy) = h * (1.0 - ww) + v * ww;
 			}		
@@ -428,7 +428,7 @@ void	BuildDifferentialDegree(const char * file, int west, int south, int hres, i
 //	for (int yp = 0; yp < ioDem.mHeight; yp++)
 //	{
 //		float h = ioDem(xp, yp);
-//		if (h != NO_DATA)
+//		if (h != DEM_NO_DATA)
 //		{
 //			h += dem(xp,yp);
 //		}

@@ -641,10 +641,10 @@ inline float SAFE_AVERAGE(float a, float b, float c)
 {
 	int i = 0;
 	float t = 0.0;
-	if (a != NO_DATA) t += a, ++i;
-	if (b != NO_DATA) t += b, ++i;
-	if (c != NO_DATA) t += c, ++i;
-	if (i == 0) return NO_DATA;
+	if (a != DEM_NO_DATA) t += a, ++i;
+	if (b != DEM_NO_DATA) t += b, ++i;
+	if (c != DEM_NO_DATA) t += c, ++i;
+	if (i == 0) return DEM_NO_DATA;
 	return t / i;
 }
 
@@ -811,11 +811,11 @@ int CopyWetPoints(
 					int xp, yp;
 					float e;
 					e = orig.xy_nearest(i->source()->point().x,i->source()->point().y, xp, yp);
-					if (e != NO_DATA)
+					if (e != DEM_NO_DATA)
 						(*corners)(xp,yp) = e;
 					
 					e = orig.xy_nearest(i->target()->point().x,i->target()->point().y, xp, yp);
-					if (e != NO_DATA)
+					if (e != DEM_NO_DATA)
 						(*corners)(xp,yp) = e;
 				}				
 			}
@@ -835,7 +835,7 @@ int CopyWetPoints(
 			// BENTODO
 //				int e = orig.get_lowest(x,y,5);
 				int e = orig.get(x,y);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 				{
 					deriv(x,y) = e;
 					++wet;
@@ -872,23 +872,23 @@ void	BuildSparseWaterMesh(
 	for (x = 0; x < inWet.mWidth; x++)
 	{
 		h = inWet.get(x,y);
-		if (h != NO_DATA)
+		if (h != DEM_NO_DATA)
 		{
 			if ((x % skip) == 0 && (y % skip) == 0)
 			{
 				for (dy = y-search; dy <= y+search; ++dy)
 				for (dx = x-search; dx <= x+search; ++dx)
 				{
-					if (inEdges.get(dx,dy) != NO_DATA)
+					if (inEdges.get(dx,dy) != DEM_NO_DATA)
 						goto foundone;
 				}
 				
 				deriv(x,y) = h;
 				continue;
 foundone:	
-				deriv(x,y) = NO_DATA;
+				deriv(x,y) = DEM_NO_DATA;
 			} else
-				deriv(x,y) = NO_DATA;
+				deriv(x,y) = DEM_NO_DATA;
 		}
 	}
 }
@@ -921,7 +921,7 @@ void AddEdgePoints(
 			deriv(x,dx) = orig(x,dx);
 			deriv(dx,y) = orig(dx,y);
 		}
-		if (orig(x,y) == NO_DATA)
+		if (orig(x,y) == DEM_NO_DATA)
 			AssertPrintf("ERROR: mesh point %d,%d lacks data for cutting and edging!\n", x, y);
 		deriv(x,y) = orig(x,y);
 		
@@ -1002,7 +1002,7 @@ void CollectPointsAlongLine(const Point2& p1, const Point2& p2, vector<Point2>& 
 	for (int x = x1; x <= x2; ++x)
 	{
 		float e = ioDem.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			Point2 test = Point2(ioDem.x_to_lon(x), ioDem.y_to_lat(y));
 			Point2 proj = seg.projection(test);
@@ -1018,7 +1018,7 @@ void CollectPointsAlongLine(const Point2& p1, const Point2& p2, vector<Point2>& 
 					
 					if (LonLatDistMetersWithScale(test.x, test.y, proj.x, proj.y, DEG_TO_MTR_LON, DEG_TO_MTR_LAT) < 10.0)
 					if (x != 0 && x != (ioDem.mWidth-1) && y != 0 && y != (ioDem.mHeight-1))
-						ioDem(x,y) = NO_DATA;
+						ioDem(x,y) = DEM_NO_DATA;
 				}			
 			}
 		}
@@ -1088,29 +1088,29 @@ void	AddWaterMeshPoints(
 			
 			for (int n = 1; n < pts.size(); ++n)
 			{				
-				e1 = NO_DATA;
-				e2 = NO_DATA;
+				e1 = DEM_NO_DATA;
+				e2 = DEM_NO_DATA;
 //				if (f1->mTerrainType == terrain_Water || f2->mTerrainType == terrain_Water)
 //				{
 //					e1 = water.xy_nearest(pts[n-1].x, pts[n-1].y);
 //					e2 = water.xy_nearest(pts[n].x, pts[n].y);
-//					if (e1 == NO_DATA) 
+//					if (e1 == DEM_NO_DATA) 
 //						e1 = water.search_nearest(pts[n-1].x, pts[n-1].y);
-//					if (e2 == NO_DATA) 
+//					if (e2 == DEM_NO_DATA) 
 //						e2 = water.search_nearest(pts[n].x,pts[n].y);
 //					BEN SEZ: this is not really an error!  Remember - water data is only points contained inside a water body; very narrrow ones will contain NO
 //					DEM points and this will fail.
-//					if (e1 == NO_DATA || e2 == NO_DATA)
+//					if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA)
 //						printf("WARNING: FOUND NO FLAT WATER DATA NEARBY.  LOC=%lf,%lf->%lf,%lf\n",pts[n-1].x,pts[n-1].y,pts[n].x,pts[n].y);
 //				}
-				if (e1 == NO_DATA)					e1 = master.value_linear(pts[n-1].x, pts[n-1].y);
-				if (e2 == NO_DATA)					e2 = master.value_linear(pts[n].x, pts[n].y);
-				if (e1 == NO_DATA)					e1 = master.xy_nearest(pts[n-1].x, pts[n-1].y);
-				if (e2 == NO_DATA)					e2 = master.xy_nearest(pts[n].x, pts[n].y);
+				if (e1 == DEM_NO_DATA)					e1 = master.value_linear(pts[n-1].x, pts[n-1].y);
+				if (e2 == DEM_NO_DATA)					e2 = master.value_linear(pts[n].x, pts[n].y);
+				if (e1 == DEM_NO_DATA)					e1 = master.xy_nearest(pts[n-1].x, pts[n-1].y);
+				if (e2 == DEM_NO_DATA)					e2 = master.xy_nearest(pts[n].x, pts[n].y);
 //				slave.zap_linear(pts[n-1].x, pts[n-1].y);
 //				slave.zap_linear(pts[n].x, pts[n].y);
 				
-				if (e1 == NO_DATA || e2 == NO_DATA) AssertPrintf("ERROR: missing elevation data for constraint.\n");
+				if (e1 == DEM_NO_DATA || e2 == DEM_NO_DATA) AssertPrintf("ERROR: missing elevation data for constraint.\n");
 				v1 = outMesh.safe_insert(CDT::Point(pts[n-1].x, pts[n-1].y), local);
 				v1->info().height = e1;
 				local = v1->face();
@@ -1214,7 +1214,7 @@ void	SetWaterBodiesToWet(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines,
 		float e = allPts.xy_nearest(ffi->vertex(vi)->point().x(),ffi->vertex(vi)->point().y(), xw, yw);
 		
 		e = allPts.get_lowest_heuristic(xw, yw, 5);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 			ffi->vertex(vi)->info().height = e;
 	}
 }
@@ -1243,7 +1243,7 @@ void	AddBulkPointsToMesh(
 		{
 			if (inFunc && x == 0 && (y % 20 == 0)) inFunc(1, 3, "Building Triangle Mesh", (double) y / (double) ioDEM.mHeight);
 			float h = ioDEM(x,y);
-			if (h != NO_DATA)
+			if (h != DEM_NO_DATA)
 			{			
 	//			gMeshPoints.push_back(Point_2(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y)));
 				CDT::Point	p(ioDEM.x_to_lon(x),ioDEM.y_to_lat(y));
@@ -1257,7 +1257,7 @@ void	AddBulkPointsToMesh(
 					local = vv->face();	
 					++total;
 				}
-				ioDEM(x,y) = NO_DATA;
+				ioDEM(x,y) = DEM_NO_DATA;
 			}
 		}
 //		if (step == 1) break;
@@ -1331,14 +1331,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	int		x, y;
 	DEMGeo&	orig(inDEMs[dem_Elevation]);
 	
-	Assert(orig.get(0			 ,0				) != NO_DATA);
-	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != NO_DATA);
-	Assert(orig.get(0			 ,orig.mHeight-1) != NO_DATA);
-	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != NO_DATA);
+	Assert(orig.get(0			 ,0				) != DEM_NO_DATA);
+	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
+	Assert(orig.get(0			 ,orig.mHeight-1) != DEM_NO_DATA);
+	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
 	
 	DEMGeo	deriv(orig.mWidth, orig.mHeight);
 	deriv.copy_geo_from(orig);
-	deriv = NO_DATA;
+	deriv = DEM_NO_DATA;
 
 	/*********************************************************************************************************************
 	 * PRECALCULATION OF MASKS
@@ -1357,8 +1357,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		int wet_pts = CopyWetPoints(orig, water, &outline, inMap);
 		for (y = 0; y < deriv.mHeight; ++y)
 		for (x = 0; x < deriv.mWidth; ++x)
-		if (water.get(x,y) != NO_DATA)
-			land(x,y) = NO_DATA;
+		if (water.get(x,y) != DEM_NO_DATA)
+			land(x,y) = DEM_NO_DATA;
 			
 		int total_pts = deriv.mWidth * deriv.mHeight;
 		int dry_pts = total_pts - wet_pts;
@@ -1373,7 +1373,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		for (x = 0; x < temp.mWidth; ++x)
 		{
 			float me = water.get(x,y);
-			if (me != NO_DATA)
+			if (me != DEM_NO_DATA)
 			if (water.get(x-1,y-1) > me &&
 				water.get(x  ,y-1) > me &&
 				water.get(x+1,y  ) > me &&
@@ -1382,7 +1382,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 				water.get(x  ,y+1) > me &&
 				water.get(x+1,y+1) > me)
 			{
-				temp(x,y) = NO_DATA;
+				temp(x,y) = DEM_NO_DATA;
 			}
 		}
 
@@ -1409,7 +1409,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 	for (x = 0; x < deriv.mWidth; ++x)
 	{
 		float h = deriv(x,y);
-		if (h != NO_DATA)
+		if (h != DEM_NO_DATA)
 			++ct;
 	}
 	
@@ -1487,14 +1487,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		if (!gMatchLeft.vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
 		{
-			land(0, y) = NO_DATA;
-			deriv(0, y) = NO_DATA;
+			land(0, y) = DEM_NO_DATA;
+			deriv(0, y) = DEM_NO_DATA;
 		}
 		if (!gMatchBottom.vertices.empty())
 		for (x = 0; x < deriv.mWidth; ++x)
 		{
-			land(x, 0) = NO_DATA;
-			deriv(x, 0) = NO_DATA;
+			land(x, 0) = DEM_NO_DATA;
+			deriv(x, 0) = DEM_NO_DATA;
 		}
 	}
 	
@@ -1625,8 +1625,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 //			e == lu_usgs_URBAN_IRREGULAR || 
 			e == lu_usgs_INLAND_WATER || 
 			e == lu_usgs_SEA_WATER)
-//			e == lu_usgs_NO_DATA)
-			landuse(x,y) = NO_DATA;			
+//			e == lu_usgs_DEM_NO_DATA)
+			landuse(x,y) = DEM_NO_DATA;			
 	}
 	landuse.fill_nearest();	
 
@@ -1657,7 +1657,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float cl3 = inClimate.search_nearest(tri->vertex(2)->point().x(),tri->vertex(2)->point().y());
 
 				// Ben sez: tiny island in the middle of nowhere - do NOT expect LU.  That's okay - Sergio doesn't need it.
-//				if (lu == NO_DATA)
+//				if (lu == DEM_NO_DATA)
 //					fprintf(stderr, "NO data anywhere near %f, %f\n", center_x, center_y);
 				lu = MAJORITY_RULES(lu,lu1,lu2, lu3);
 				cl = MAJORITY_RULES(cl, cl1, cl2, cl3);
@@ -2348,8 +2348,8 @@ void	Calc2ndDerivative(DEMGeo& deriv)
 		ha = deriv(x,y+1);
 		hr = deriv(x+1,y);
 		
-		if (h == NO_DATA || ha == NO_DATA || hr == NO_DATA)
-			deriv(x,y) = NO_DATA;
+		if (h == DEM_NO_DATA || ha == DEM_NO_DATA || hr == DEM_NO_DATA)
+			deriv(x,y) = DEM_NO_DATA;
 		else
 			deriv(x,y) = (ha - h) + (hr - h);
 	}
@@ -2361,21 +2361,21 @@ void	Calc2ndDerivative(DEMGeo& deriv)
 		hb = deriv(x,y-1);
 		hl = deriv(x-1,y);
 		
-		if (h == NO_DATA || hb == NO_DATA || hl == NO_DATA)
-			deriv(x,y) = NO_DATA;
+		if (h == DEM_NO_DATA || hb == DEM_NO_DATA || hl == DEM_NO_DATA)
+			deriv(x,y) = DEM_NO_DATA;
 		else
 			deriv(x,y) = (h - hl) + (h - hb);
 	}
 	
 	for (x = 0; x < deriv.mWidth; ++x)
 	{
-		deriv(x, 0) = NO_DATA;
-		deriv(x, deriv.mHeight-1) = NO_DATA;
+		deriv(x, 0) = DEM_NO_DATA;
+		deriv(x, deriv.mHeight-1) = DEM_NO_DATA;
 	}
 	for (x = y; y < deriv.mHeight; ++y)
 	{
-		deriv(0, y) = NO_DATA;
-		deriv(deriv.mWidth-1, y) = NO_DATA;
+		deriv(0, y) = DEM_NO_DATA;
+		deriv(deriv.mWidth-1, y) = DEM_NO_DATA;
 	}
 }
 
@@ -2407,7 +2407,7 @@ double	HeightWithinTri(CDT& inMesh, CDT::Face_handle f, double inLon, double inL
 
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id)
 {
-	if (inMesh.number_of_faces() < 1) return NO_DATA;
+	if (inMesh.number_of_faces() < 1) return DEM_NO_DATA;
 	CDT::Face_handle	f = NULL;
 	int	n;
 	CDT::Locate_type lt;
@@ -2426,7 +2426,7 @@ double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id)
 		return HeightWithinTri(inMesh, f, inLon, inLat);
 	} else {
 		printf("Requested point was off mesh: %lf, %lf\n", inLon, inLat);
-		return NO_DATA;
+		return DEM_NO_DATA;
 	}
 }
 
@@ -2470,10 +2470,10 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, map<float, int>& err, ProgressFunc in
 		for (int x = 0; x < elev.mWidth ; ++x)
 		{
 			float ideal = elev.get(x,y);
-			if (ideal != NO_DATA)
+			if (ideal != DEM_NO_DATA)
 			{
 				float real = MeshHeightAtPoint(mesh, elev.x_to_lon(x), elev.y_to_lat(y), hint);
-				if (real != NO_DATA)
+				if (real != DEM_NO_DATA)
 				{
 					float derr = real - ideal;
 					err[derr]++;

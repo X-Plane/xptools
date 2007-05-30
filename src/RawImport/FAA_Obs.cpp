@@ -422,7 +422,7 @@ bool	ReadAPTNavAsObs(const char * inFile)
 					obs.kind = kRobinToFeatures[rec_type];
 					obs.lat = lat;
 					obs.lon = lon;
-					obs.agl = obs.msl = NO_DATA;
+					obs.agl = obs.msl = DEM_NO_DATA;
 					gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));					
 				}
 				break;
@@ -433,8 +433,8 @@ bool	ReadAPTNavAsObs(const char * inFile)
 					obs.kind = feat_Windsock;
 					obs.lon = lon;
 					obs.lat = lat;
-					obs.agl = NO_DATA;
-					obs.msl = NO_DATA;
+					obs.agl = DEM_NO_DATA;
+					obs.msl = DEM_NO_DATA;
 					gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 				}
 				break;
@@ -445,8 +445,8 @@ bool	ReadAPTNavAsObs(const char * inFile)
 					obs.kind = feat_RotatingBeacon;
 					obs.lon = lon;
 					obs.lat = lat;
-					obs.agl = NO_DATA;
-					obs.msl = NO_DATA;
+					obs.agl = DEM_NO_DATA;
+					obs.msl = DEM_NO_DATA;
 					gFAAObs.insert(FAAObsTable::value_type(HashLonLat(obs.lon, obs.lat), obs));
 				}
 				break;
@@ -484,7 +484,7 @@ bool	LoadLegacyObjectArchive(const char * inFile)
 		} else {
 			FAAObs_t	obs;
 			obs.agl = ele * FT_TO_MTR;
-			obs.msl = NO_DATA;
+			obs.msl = DEM_NO_DATA;
 			obs.lat = lat;
 			obs.lon = lon;
 			obs.kind = kConvertLegacyObjTypes[kind];
@@ -526,7 +526,7 @@ void ApplyObjects(Pmwx& ioMap)
 				GISPointFeature_t	feat;
 				feat.mFeatType = i->second.kind;
 				feat.mLocation = loc;
-				if (i->second.agl != NO_DATA)
+				if (i->second.agl != DEM_NO_DATA)
 					feat.mParams[pf_Height] = i->second.agl;				
 				feat.mInstantiated = false;			
 				v[0]->mPointFeatures.push_back(feat);		
@@ -547,7 +547,7 @@ void ApplyObjects(Pmwx& ioMap)
 int	GetObjMinMaxHeights(map<int, float>& mins, map<int, float>& maxs)
 {
 	for (FAAObsTable::iterator obs = gFAAObs.begin(); obs != gFAAObs.end(); ++obs)
-	if (obs->second.agl != NO_DATA)
+	if (obs->second.agl != DEM_NO_DATA)
 	{
 		if (mins.count(obs->second.kind) == 0)
 			mins[obs->second.kind] = 999999;

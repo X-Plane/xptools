@@ -162,7 +162,7 @@ void	DoExport(XPWidgetID inWidget, int inResult)
 						{
 							if (enum_layer)
 							if (e == NO_VALUE) 	p[3] = 0;
-							if (e == NO_DATA) 	p[3] = 0;
+							if (e == DEM_NO_DATA) 	p[3] = 0;
 						}
 					} else {
 						if (sExportState.rescale) {
@@ -271,7 +271,7 @@ void	CalculateRescaling(XPWidgetID)
 	if (layer != gDem.end())
 	{
 		float	minv, maxv;
-		minv = maxv = NO_DATA;
+		minv = maxv = DEM_NO_DATA;
 		for (int x = 0; x < layer->second.mWidth; ++x)
 		for (int y = 0; y < layer->second.mHeight; ++y)
 		{
@@ -279,7 +279,7 @@ void	CalculateRescaling(XPWidgetID)
 			minv = MIN_NODATA(minv, e);
 			maxv = MAX_NODATA(maxv, e);
 		}
-		if (minv != NO_DATA && maxv != NO_DATA)
+		if (minv != DEM_NO_DATA && maxv != DEM_NO_DATA)
 		{
 			sExportState.offset = -minv;
 			sExportState.scale = (maxv == minv)  ? 0.0 : (255.0 / (maxv - minv));

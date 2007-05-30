@@ -648,7 +648,7 @@ char *	WED_SelectionTool::GetStatusText(void)
 		{
 			double p1 = gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseX), 	 GetZoomer()->YPixelToLat(mMouseY	  ));
 			double p2 = gDem[dem_Elevation].value_linear(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY));
-			if (p1 != NO_DATA && p2 != NO_DATA)
+			if (p1 != DEM_NO_DATA && p2 != DEM_NO_DATA)
 			{
 				double drop = fabs(p2 - p1);
 				double gradient = 1000.0 * drop / d;

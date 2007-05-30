@@ -233,7 +233,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					float minv = hist.begin()->first;
 					float maxv = hist.begin()->first;
 					float mean = 0.0;
-					float mode = NO_DATA;
+					float mode = DEM_NO_DATA;
 					int mode_count = 0;
 					for (iter = hist.begin(); iter != hist.end(); ++iter)
 					{
@@ -384,7 +384,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					for (int x = 0; x < temp.mWidth ; ++x)
 					{
 						float e = elev(x,y);
-						if (temp(x,y) != NO_DATA && e != NO_DATA)
+						if (temp(x,y) != DEM_NO_DATA && e != DEM_NO_DATA)
 							temp(x,y) -= e * kStdLapseRate;
 					}
 				} else {
@@ -393,7 +393,7 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 					for (int x = 0; x < temp.mWidth ; ++x)
 					{
 						float e = elev.value_linear(temp.x_to_lon(x), temp.y_to_lat(y));
-						if (temp(x,y) != NO_DATA && e != NO_DATA)
+						if (temp(x,y) != DEM_NO_DATA && e != DEM_NO_DATA)
 							temp(x,y) -= e * kStdLapseRate;
 					}
 				}
@@ -411,8 +411,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				msl.filter_self_normalize(5, k);
 				for (int y = 0; y < msl.mHeight; ++y)
 				for (int x = 0; x < msl.mWidth ; ++x)
-				if (msl2.get(x,y) == NO_DATA)
-					msl(x,y) = NO_DATA;				
+				if (msl2.get(x,y) == DEM_NO_DATA)
+					msl(x,y) = DEM_NO_DATA;				
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;
@@ -427,8 +427,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				rain.filter_self_normalize(3, k);
 				for (int y = 0; y < rain.mHeight; ++y)
 				for (int x = 0; x < rain.mWidth ; ++x)
-				if (rain2.get(x,y) == NO_DATA)
-					rain(x,y) = NO_DATA;				
+				if (rain2.get(x,y) == DEM_NO_DATA)
+					rain(x,y) = DEM_NO_DATA;				
 			}
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			break;

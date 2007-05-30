@@ -59,38 +59,38 @@
 
 
 // For continuous floating point data we use this as a flag indicating an absense of information.
-#define NO_DATA	-32768.0
+#define DEM_NO_DATA	-32768.0
 
 // These inline functions do min/max but are not fooled by an absense of data.
 inline	float	MIN_NODATA(float a, float b)
 {
-	if (a == NO_DATA && b == NO_DATA) return NO_DATA;
-	if (a == NO_DATA) return b;
-	if (b == NO_DATA) return a;
+	if (a == DEM_NO_DATA && b == DEM_NO_DATA) return DEM_NO_DATA;
+	if (a == DEM_NO_DATA) return b;
+	if (b == DEM_NO_DATA) return a;
 	return (a < b) ? a : b;
 }
 
 inline	float	MAX_NODATA(float a, float b)
 {
-	if (a == NO_DATA && b == NO_DATA) return NO_DATA;
-	if (a == NO_DATA) return b;
-	if (b == NO_DATA) return a;
+	if (a == DEM_NO_DATA && b == DEM_NO_DATA) return DEM_NO_DATA;
+	if (a == DEM_NO_DATA) return b;
+	if (b == DEM_NO_DATA) return a;
 	return (a > b) ? a : b;
 }
 
 inline float ADD_NODATA(float a, float b)
 {
-	if (a == NO_DATA && b == NO_DATA) return NO_DATA;
-	if (a == NO_DATA) return b;
-	if (b == NO_DATA) return a;
+	if (a == DEM_NO_DATA && b == DEM_NO_DATA) return DEM_NO_DATA;
+	if (a == DEM_NO_DATA) return b;
+	if (b == DEM_NO_DATA) return a;
 	return a + b;
 }
 
 inline	float	MIN_NODATA_XY(float a, float b, int& xo, int& yo, int xn, int yn )
 {
-	if (a == NO_DATA && b == NO_DATA) return NO_DATA;
-	if (a == NO_DATA) { xo = xn; yo = yn; return b; }
-	if (b == NO_DATA) return a;
+	if (a == DEM_NO_DATA && b == DEM_NO_DATA) return DEM_NO_DATA;
+	if (a == DEM_NO_DATA) { xo = xn; yo = yn; return b; }
+	if (b == DEM_NO_DATA) return a;
 	if (a <= b) return a;
 	xo = xn; yo = yn; return b;
 }
@@ -140,7 +140,7 @@ struct	DEMGeo {
 	// Access to the data points by discrete address
 	inline float&	operator()(int, int);
 	inline float	operator()(int, int) const;
-	inline float	get(int x, int y) const;									// Get value at x,y, NO_DATA if out of bonds
+	inline float	get(int x, int y) const;									// Get value at x,y, DEM_NO_DATA if out of bonds
 	inline void		set(int x, int y, float v);									// Safe set - no-op if off
 	inline float	get_clamp(int x, int y) const;								// Get value at x,y, clamped to within the DME
 	inline float	get_dir(int x, int y, int dx, int dy, 						// Get first value in a given direction and dist that doesn't
@@ -154,7 +154,7 @@ struct	DEMGeo {
 	inline float	kernelmaxN(int x, int y, int dim, float * k) const;			// Get value of kernel applied at N, taking max instead of average
 	inline float	kernelN_Normalize(int x, int y, int dim, float * k) const;	// ...
 
-	inline void	zap(int x, int y);												// Set x,y to NO_DATA
+	inline void	zap(int x, int y);												// Set x,y to DEM_NO_DATA
 
 	// Lat/lon access and erasing
 	inline float	value_linear(double lon, double lat) const;					// Get linear interp value of coordinate
@@ -302,13 +302,13 @@ inline float&	DEMGeo::operator()(int x, int y)
 
 inline float	DEMGeo::operator()(int x, int y) const
 {
-	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return NO_DATA;
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
 	return mData[x + y * mWidth];
 }
 
 inline float	DEMGeo::get(int x, int y) const
 {
-	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return NO_DATA;
+	if (x < 0 || x >= mWidth || y < 0 || y >= mHeight) return DEM_NO_DATA;
 	return mData[x + y * mWidth];
 }
 
@@ -340,7 +340,7 @@ inline float	DEMGeo::get_dir(int x, int y, int dx, int dy, int max, float blank,
 		if (h != blank)
 			return h;
 	} 
-	return NO_DATA;
+	return DEM_NO_DATA;
 }
 
 inline float	DEMGeo::get_radial(int x, int y, int max, float blank) const
@@ -394,10 +394,10 @@ inline float	DEMGeo::get_lowest_heuristic(int x, int y, int r) const
 	for (xo = x1; xo <= x2; ++xo)
 	{
 		float e = get(xo,yo);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 			es.push_back(e);
 	}
-	if (es.empty()) return NO_DATA;
+	if (es.empty()) return DEM_NO_DATA;
 	sort(es.begin(), es.end());
 
 	if(es.size() < 9) return es[0];
@@ -445,17 +445,17 @@ inline float	DEMGeo::get_lowest(int x, int y, int r, int& xo, int& yo) const
 inline float	DEMGeo::kernelN(int x, int y, int dim, float * kernel) const 
 {
 	float	sum, e;
-	sum = NO_DATA;
+	sum = DEM_NO_DATA;
 	int i = 0;
 	int hdim = dim / 2;
 	for (int dx = -hdim; dx <= hdim; ++dx)
 	for (int dy = -hdim; dy <= hdim; ++dy)
 	{
 		e = get_clamp(x+dx,y+dy);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			e *= kernel[i];
-			if (sum == NO_DATA) 
+			if (sum == DEM_NO_DATA) 
 				sum = e;
 			else 
 				sum += e;
@@ -468,17 +468,17 @@ inline float	DEMGeo::kernelN(int x, int y, int dim, float * kernel) const
 inline float	DEMGeo::kernelmaxN(int x, int y, int dim, float * kernel) const 
 {
 	float	sum, e;
-	sum = NO_DATA;
+	sum = DEM_NO_DATA;
 	int i = 0;
 	int hdim = dim / 2;
 	for (int dx = -hdim; dx <= hdim; ++dx)
 	for (int dy = -hdim; dy <= hdim; ++dy)
 	{
 		e = get_clamp(x+dx,y+dy);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			e *= kernel[i];
-			if (sum == NO_DATA) 
+			if (sum == DEM_NO_DATA) 
 				sum = e;
 			else 
 				sum = max(sum, e);
@@ -491,7 +491,7 @@ inline float	DEMGeo::kernelmaxN(int x, int y, int dim, float * kernel) const
 inline float	DEMGeo::kernelN_Normalize(int x, int y, int dim, float * kernel) const 
 {
 	float	sum, e;
-	sum = NO_DATA;
+	sum = DEM_NO_DATA;
 	float t = 0.0;
 	int i = 0;
 	int hdim = dim / 2;
@@ -499,29 +499,29 @@ inline float	DEMGeo::kernelN_Normalize(int x, int y, int dim, float * kernel) co
 	for (int dy = -hdim; dy <= hdim; ++dy)
 	{
 		e = get_clamp(x+dx,y+dy);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			e *= kernel[i];
 			t += kernel[i];
-			if (sum == NO_DATA) 
+			if (sum == DEM_NO_DATA) 
 				sum = e;
 			else 
 				sum += e;
 		}		
 		++i;
 	}
-	return (t == 0.0) ? NO_DATA : sum / t;
+	return (t == 0.0) ? DEM_NO_DATA : sum / t;
 }
 
 
 inline void	DEMGeo::zap(int x, int y)
 {
-	mData[x + y * mWidth] = NO_DATA;
+	mData[x + y * mWidth] = DEM_NO_DATA;
 }
 
 inline float	DEMGeo::value_linear(double lon, double lat) const
 {
-	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return NO_DATA;
+	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 	
@@ -543,7 +543,7 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 		} else {
 			v1 = get(x    , y    );
 			v2 = get(x    , y + 1);
-			if (v1 == NO_DATA || v2 == NO_DATA) return NO_DATA;
+			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA) return DEM_NO_DATA;
 			return  v1 * (1.0 - y_fract) +
 					v2 * (      y_fract);
 		}
@@ -552,7 +552,7 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 		{
 			v1 = get(x    , y    );
 			v2 = get(x + 1, y    );
-			if (v1 == NO_DATA || v2 == NO_DATA) return NO_DATA;
+			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA) return DEM_NO_DATA;
 			return  v1 * (1.0 - x_fract) +
 					v2 * (      x_fract);
 		} else {
@@ -560,7 +560,7 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 			v2 = get(x + 1, y    );
 			v3 = get(x    , y + 1);
 			v4 = get(x + 1, y + 1);
-			if (v1 == NO_DATA || v2 == NO_DATA || v3 == NO_DATA || v4 == NO_DATA) return NO_DATA;
+			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA || v3 == DEM_NO_DATA || v4 == DEM_NO_DATA) return DEM_NO_DATA;
 			return  v1 * (1.0 - x_fract) * (1.0 - y_fract) +
 					v2 * (      x_fract) * (1.0 - y_fract) +
 					v3 * (1.0 - x_fract) * (      y_fract) +
@@ -614,7 +614,7 @@ inline float	DEMGeo::xy_nearest(double lon, double lat) const
 
 inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 {
-//	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return NO_DATA;
+//	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 	
@@ -634,39 +634,39 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 	{
 		if (y_fract > 0.5)
 		{	// x+1,y+1
-				 if (e4 != NO_DATA) { xo = x+1; yo = y+1; return e4; }
-			else if (e3 != NO_DATA) { xo = x  ; yo = y+1; return e3; }
-			else if (e2 != NO_DATA) { xo = x+1; yo = y  ; return e2; }
-			else if (e1 != NO_DATA)	{ xo = x  ; yo = y  ; return e1; }
-			else 										  return NO_DATA;
+				 if (e4 != DEM_NO_DATA) { xo = x+1; yo = y+1; return e4; }
+			else if (e3 != DEM_NO_DATA) { xo = x  ; yo = y+1; return e3; }
+			else if (e2 != DEM_NO_DATA) { xo = x+1; yo = y  ; return e2; }
+			else if (e1 != DEM_NO_DATA)	{ xo = x  ; yo = y  ; return e1; }
+			else 										  return DEM_NO_DATA;
 		} else { // x+1,y
-				 if (e2 != NO_DATA) { xo = x+1; yo = y  ; return e2; }
-			else if (e4 != NO_DATA) { xo = x+1; yo = y+1; return e4; }
-			else if (e1 != NO_DATA) { xo = x  ; yo = y  ; return e1; }
-			else if (e3 != NO_DATA) { xo = x  ; yo = y+1; return e3; }
-			else										  return NO_DATA;
+				 if (e2 != DEM_NO_DATA) { xo = x+1; yo = y  ; return e2; }
+			else if (e4 != DEM_NO_DATA) { xo = x+1; yo = y+1; return e4; }
+			else if (e1 != DEM_NO_DATA) { xo = x  ; yo = y  ; return e1; }
+			else if (e3 != DEM_NO_DATA) { xo = x  ; yo = y+1; return e3; }
+			else										  return DEM_NO_DATA;
 		}
 	} else {
 		if (y_fract > 0.5)
 		{	// x,y+1
-				 if (e3 != NO_DATA) { xo = x  ; yo = y+1; return e3; }
-			else if (e4 != NO_DATA) { xo = x+1; yo = y+1; return e4; }
-			else if (e1 != NO_DATA) { xo = x  ; yo = y  ; return e1; }
-			else if (e2 != NO_DATA) { xo = x+1; yo = y  ; return e2; }
-			else										  return NO_DATA;
+				 if (e3 != DEM_NO_DATA) { xo = x  ; yo = y+1; return e3; }
+			else if (e4 != DEM_NO_DATA) { xo = x+1; yo = y+1; return e4; }
+			else if (e1 != DEM_NO_DATA) { xo = x  ; yo = y  ; return e1; }
+			else if (e2 != DEM_NO_DATA) { xo = x+1; yo = y  ; return e2; }
+			else										  return DEM_NO_DATA;
 		} else { // x,y
-				 if (e1 != NO_DATA) { xo = x  ; yo = y  ; return e1; }
-			else if (e2 != NO_DATA) { xo = x+1; yo = y  ; return e2; }
-			else if (e3 != NO_DATA) { xo = x  ; yo = y+1; return e3; }
-			else if (e4 != NO_DATA) { xo = x+1; yo = y+1; return e4; }
-			else										  return NO_DATA;
+				 if (e1 != DEM_NO_DATA) { xo = x  ; yo = y  ; return e1; }
+			else if (e2 != DEM_NO_DATA) { xo = x+1; yo = y  ; return e2; }
+			else if (e3 != DEM_NO_DATA) { xo = x  ; yo = y+1; return e3; }
+			else if (e4 != DEM_NO_DATA) { xo = x+1; yo = y+1; return e4; }
+			else										  return DEM_NO_DATA;
 		}
 	}
 }
 
 inline float	DEMGeo::search_nearest(double lon, double lat) const
 {
-	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return NO_DATA;
+	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
 	
@@ -676,22 +676,22 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 	int y = y_fract;
 	float h;
 
-	h = get_clamp(x,y); if (h != NO_DATA) return h;
+	h = get_clamp(x,y); if (h != DEM_NO_DATA) return h;
 	
 	int r = 1;
 	while (r < mWidth && r < mHeight)
 	{
-		h = get_clamp(x-r,y  );	if (h != NO_DATA) return h;
-		h = get_clamp(x+r,y  );	if (h != NO_DATA) return h;
-		h = get_clamp(x  ,y+r);	if (h != NO_DATA) return h;
-		h = get_clamp(x  ,y-r);	if (h != NO_DATA) return h;
-		h = get_clamp(x-r,y-r);	if (h != NO_DATA) return h;
-		h = get_clamp(x+r,y-r);	if (h != NO_DATA) return h;
-		h = get_clamp(x+r,y+r);	if (h != NO_DATA) return h;
-		h = get_clamp(x-r,y+r);	if (h != NO_DATA) return h;
+		h = get_clamp(x-r,y  );	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x+r,y  );	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x  ,y+r);	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x  ,y-r);	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x-r,y-r);	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x+r,y-r);	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x+r,y+r);	if (h != DEM_NO_DATA) return h;
+		h = get_clamp(x-r,y+r);	if (h != DEM_NO_DATA) return h;
 		++r;
 	}
-	return NO_DATA;
+	return DEM_NO_DATA;
 }
 
 inline double	DEMGeo::x_to_lon(int inX) const

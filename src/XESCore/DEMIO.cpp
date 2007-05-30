@@ -105,7 +105,7 @@ void	RemapEnumDEM(	DEMGeo& ioMap, const TokenConversionMap& inMap)
 
 
 // RAW HEIGHT FILE: N34W072.HGT
-// These files contian big-endian shorts with -32768 as NO_DATA
+// These files contian big-endian shorts with -32768 as DEM_NO_DATA
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 {
 	int	lat, lon;
@@ -371,7 +371,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	{
 		unsigned char v = bp[512+width * (height-y-1) + x];
 		if (v == missing)
-			inMap(x,y) = NO_DATA;
+			inMap(x,y) = DEM_NO_DATA;
 		else
 			inMap(x,y) = m * (double) v + b;
 	}
@@ -707,10 +707,13 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 			short * v = (short *) aline;
 			for (int x = 0; x < w; ++x, ++v)
 			{
+			#if BENTODO
+			Examine this
+			#endif
 				float e = *v;
-				if (*v == 0xFFFF) e = NO_DATA;
-				if (e > 30000) e = NO_DATA;		// SRTM HACK!!!
-				if (e < -30000) e = NO_DATA;		// SRTM HACK!!!
+				if (*v == -1) e = DEM_NO_DATA;		// was 0xFFFF
+				if (e > 30000) e = DEM_NO_DATA;		// SRTM HACK!!!
+				if (e < -30000) e = DEM_NO_DATA;		// SRTM HACK!!!
 				inMap(x,h-y-1) = e;
 				if (y == 0)
 					inMap(x,h) = e;
@@ -720,8 +723,8 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 			for (int x = 0; x < w; ++x, ++v)
 			{
 				float e = *v;
-				if (*v == 0xFF) e = NO_DATA;
-				if (e > 127) e = NO_DATA;		// SRTM HACK!!!
+				if (*v == -1) e = DEM_NO_DATA;		// was 0xFF
+				if (e > 127) e = DEM_NO_DATA;		// SRTM HACK!!!
 				inMap(x,h-y-1) = e;
 				if (y == 0)
 					inMap(x,h) = e;
@@ -876,7 +879,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 			
 			float height = c2 + ((c1 & 0x7F) << 8);
 			if (c1 & 0x80)	height = -height;
-			if (height == -32767.0)	height = NO_DATA;
+			if (height == -32767.0)	height = DEM_NO_DATA;
 			inMap(x,y) = height;			
 		}
 		base_ptr += 4;
@@ -981,8 +984,8 @@ bool	TranslateDEMForward(DEMGeo& ioDem, const vector<int>& inForwardMap)
 	{
 		int v = ioDem(x,y);
 		
-			 if (v < 0					  ){ioDem(x,y)=NO_DATA;					ret = false;	}
-		else if (v >= inForwardMap.size()) {ioDem(x,y)=NO_DATA;					ret = false;	}
+			 if (v < 0					  ){ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
+		else if (v >= inForwardMap.size()) {ioDem(x,y)=DEM_NO_DATA;					ret = false;	}
 		else 							   {ioDem(x,y)=inForwardMap[v];							}
 	}
 	return ret;
@@ -998,7 +1001,7 @@ bool	TranslateDEMReverse(DEMGeo& ioDem, const hash_map<int, int>& inReverseMap)
 		hash_map<int,int>::const_iterator i = inReverseMap.find(v);
 		if (i == inReverseMap.end())
 		{
-			ioDem(x,y)=NO_DATA;
+			ioDem(x,y)=DEM_NO_DATA;
 			ret = false;
 		} else 
 			ioDem(x,y) = i->second;

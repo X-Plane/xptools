@@ -35,7 +35,7 @@ struct	HistoHelper {
 
 			HistoHelper() : choices(0), best(-1) { }
 	bool	HasBest(void) const { return best != -1; }
-	float	GetBest(void) const { return (best == -1) ? NO_DATA : values[best]; }
+	float	GetBest(void) const { return (best == -1) ? DEM_NO_DATA : values[best]; }
 	void	Accum(float v, float ignore) 
 	{
 		if (v == ignore) return;
@@ -161,7 +161,7 @@ DEMGeo& DEMGeo::operator+=(float v)
 	float * p = mData;
 	while (sz--)
 	{
-		if (*p != NO_DATA)
+		if (*p != DEM_NO_DATA)
 			*p += v;
 		++p;
 	}
@@ -177,7 +177,7 @@ DEMGeo& DEMGeo::operator+=(const DEMGeo& rhs)
 	float * dst = mData;
 	while (sz--)
 	{
-		if (*dst != NO_DATA && *src != NO_DATA)
+		if (*dst != DEM_NO_DATA && *src != DEM_NO_DATA)
 			*dst += *src;
 		++dst;
 		++src;
@@ -191,7 +191,7 @@ DEMGeo& DEMGeo::operator*=(float v)
 	float * p = mData;
 	while (sz--)
 	{
-		if (*p != NO_DATA)
+		if (*p != DEM_NO_DATA)
 			*p *= v;
 		++p;
 	}
@@ -207,7 +207,7 @@ DEMGeo& DEMGeo::operator*=(const DEMGeo& rhs)
 	float * dst = mData;
 	while (sz--)
 	{
-		if (*dst != NO_DATA && *src != NO_DATA)
+		if (*dst != DEM_NO_DATA && *src != DEM_NO_DATA)
 			*dst *= *src;
 		++dst;
 		++src;
@@ -252,7 +252,7 @@ void DEMGeo::overlay(const DEMGeo& x)	// Overlay
 		
 	for (int i = 0; i < (mWidth * mHeight); ++i)
 	{
-		if (x.mData[i] != NO_DATA)
+		if (x.mData[i] != DEM_NO_DATA)
 			 mData[i] = x.mData[i];		
 	} 
 }
@@ -268,7 +268,7 @@ void DEMGeo::overlay(const DEMGeo& rhs, int dx, int dy)
 	for (int y = 0; y < rhs.mHeight; ++y)
 	{
 		float e = rhs.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 			(*this)(x+dx,y+dy) = e;
 	}
 }
@@ -302,14 +302,14 @@ void DEMGeo::derez(int r)
 			if ((y * r + dy) < mHeight)
 			{
 				float e = get(x * r + dx,y * r + dy);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 					tot += 1, ct += e;
 			}
 		}
 		if (tot > 0.0)
 			smaller(x,y) = (ct / tot);
 		else
-			smaller(x,y) = NO_DATA;
+			smaller(x,y) = DEM_NO_DATA;
 	}
 	
 	this->swap(smaller);	
@@ -379,40 +379,40 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 			if (inProg) inProg(0, 1, "Calculating Slope", (double) x / (double) mWidth);
 		
 		h = get(x,y);
-		if (h == NO_DATA)
+		if (h == DEM_NO_DATA)
 		{
-			outSlope(x,y) = NO_DATA;
-			outHeading(x,y) = NO_DATA;
+			outSlope(x,y) = DEM_NO_DATA;
+			outHeading(x,y) = DEM_NO_DATA;
 		} else {
 			Point3 me(0,0,h);
-			hl = get_dir(x,y,-1,0,        x,NO_DATA,ld);	Point3 pl(-ld*x_res,0,hl);	
-			hr = get_dir(x,y, 1,0, mWidth-x,NO_DATA,rd);	Point3 pr( rd*x_res,0,hr);
-			hb = get_dir(x,y,0,-1,        y,NO_DATA,bd);	Point3 pb(0,-bd*y_res,hb);
-			ht = get_dir(x,y,0, 1,mHeight-y,NO_DATA,td);	Point3 pt(0, td*y_res,ht);
+			hl = get_dir(x,y,-1,0,        x,DEM_NO_DATA,ld);	Point3 pl(-ld*x_res,0,hl);	
+			hr = get_dir(x,y, 1,0, mWidth-x,DEM_NO_DATA,rd);	Point3 pr( rd*x_res,0,hr);
+			hb = get_dir(x,y,0,-1,        y,DEM_NO_DATA,bd);	Point3 pb(0,-bd*y_res,hb);
+			ht = get_dir(x,y,0, 1,mHeight-y,DEM_NO_DATA,td);	Point3 pt(0, td*y_res,ht);
 			
 			Point3 * ph = NULL, * pv = NULL;
 			
-			if (hl != NO_DATA) 
+			if (hl != DEM_NO_DATA) 
 			{
-				if (hr != NO_DATA)
+				if (hr != DEM_NO_DATA)
 					ph = (ld < rd) ? &pl : &pr;
 				else
 					ph = &pl;
 			} else {
-				if (hr != NO_DATA)
+				if (hr != DEM_NO_DATA)
 					ph = &pr;
 				else
 					fprintf(stderr, "NO H ELEVATION\n");
 			}
 
-			if (hb != NO_DATA) 
+			if (hb != DEM_NO_DATA) 
 			{
-				if (ht != NO_DATA)
+				if (ht != DEM_NO_DATA)
 					pv = (bd < td) ? &pb : &pt;
 				else
 					pv = &pb;
 			} else {
-				if (ht != NO_DATA)
+				if (ht != DEM_NO_DATA)
 					pv = &pt;
 				else
 					fprintf(stderr, "NO V ELEVATION\n");
@@ -420,8 +420,8 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 						
 			if (!ph || !pv) 
 			{
-				outSlope(x,y) = NO_DATA;
-				outHeading(x,y) = NO_DATA;
+				outSlope(x,y) = DEM_NO_DATA;
+				outHeading(x,y) = DEM_NO_DATA;
 				continue;
 			} 
 			Vector3	v1(me,*ph);
@@ -455,18 +455,18 @@ void DEMGeo::fill_nearest(void)
 		for (int y = y1; y < y2; ++y)
 		{
 			float e = (*this)(x,y);
-			if (e == NO_DATA)
+			if (e == DEM_NO_DATA)
 			{
 				HistoHelper	helper;
-				helper.Accum(get(x-1,y-1), NO_DATA);
-				helper.Accum(get(x+1,y-1), NO_DATA);
-				helper.Accum(get(x-1,y+1), NO_DATA);
-				helper.Accum(get(x+1,y+1), NO_DATA);
+				helper.Accum(get(x-1,y-1), DEM_NO_DATA);
+				helper.Accum(get(x+1,y-1), DEM_NO_DATA);
+				helper.Accum(get(x-1,y+1), DEM_NO_DATA);
+				helper.Accum(get(x+1,y+1), DEM_NO_DATA);
 
-				helper.Accum(get(x-1,y  ), NO_DATA);
-				helper.Accum(get(x+1,y  ), NO_DATA);
-				helper.Accum(get(x  ,y+1), NO_DATA);
-				helper.Accum(get(x  ,y-1), NO_DATA);
+				helper.Accum(get(x-1,y  ), DEM_NO_DATA);
+				helper.Accum(get(x+1,y  ), DEM_NO_DATA);
+				helper.Accum(get(x  ,y+1), DEM_NO_DATA);
+				helper.Accum(get(x  ,y-1), DEM_NO_DATA);
 				if (helper.HasBest())
 				{
 					changed = true;
@@ -517,21 +517,21 @@ int	DEMGeo::remove_linear(int iterations, float max_err)
 				float dl, dr, dt, db;
 				c = get(x, y);
 				
-				if (c != NO_DATA)
+				if (c != DEM_NO_DATA)
 				{
-					t = get_dir(x, y, 0, 1, 30, NO_DATA, dt);
-					b = get_dir(x, y, 0, -1, 30, NO_DATA, db);
-					r = get_dir(x, y, 1, 0, 30, NO_DATA, dr);
-					l = get_dir(x, y, -1, 0, 30, NO_DATA, dl);
-					if (t != NO_DATA && b != NO_DATA && l != NO_DATA && r != NO_DATA)
+					t = get_dir(x, y, 0, 1, 30, DEM_NO_DATA, dt);
+					b = get_dir(x, y, 0, -1, 30, DEM_NO_DATA, db);
+					r = get_dir(x, y, 1, 0, 30, DEM_NO_DATA, dr);
+					l = get_dir(x, y, -1, 0, 30, DEM_NO_DATA, dl);
+					if (t != DEM_NO_DATA && b != DEM_NO_DATA && l != DEM_NO_DATA && r != DEM_NO_DATA)
 					{
 						v = (l * dr + r * dl + t * db + b * dt) / (dr + dl + db + dt);
 						if (fabs(v - c) < max_err) { zap(x,y); zap_count++; }
-					} else if (t != NO_DATA && b != NO_DATA)
+					} else if (t != DEM_NO_DATA && b != DEM_NO_DATA)
 					{
 						v = (t * db + b * dt) / (db + dt);
 						if (fabs(v - c) < max_err) { zap(x,y); zap_count++; }
-					} else if (l != NO_DATA && r != NO_DATA)
+					} else if (l != DEM_NO_DATA && r != DEM_NO_DATA)
 					{
 						v = (l * dr + r * dl) / (dr + dl);
 						if (fabs(v - c) < max_err) { zap(x,y); zap_count++; }
@@ -557,25 +557,25 @@ float	DEMGeo::local_minmax(int x1, int y1, int x2, int y2,
 	for (int y = y1; y < y2; ++y)
 	{
 		float h = get(x, y);
-		if (h != NO_DATA && h < minh)
+		if (h != DEM_NO_DATA && h < minh)
 		{
 			minx = x; 
 			miny = y;
 			minh = h;
 		}
-		if (h != NO_DATA && h > maxh)
+		if (h != DEM_NO_DATA && h > maxh)
 		{
 			maxx = x;
 			maxy = y;
 			maxh = h;
 		}
 	}
-	if (minh == NO_DATA && maxh == NO_DATA) return NO_DATA;
+	if (minh == DEM_NO_DATA && maxh == DEM_NO_DATA) return DEM_NO_DATA;
 	float rise = maxh - minh;
 	if (minx == x1 || minx == (x2-1) || miny == y1 || miny == (y2-1))
-		minh = NO_DATA;
+		minh = DEM_NO_DATA;
 	if (maxx == x1 || maxx == (x2-1) || maxy == y1 || maxy == (y2-1))
-		maxh = NO_DATA;
+		maxh = DEM_NO_DATA;
 	
 	return rise;
 }						 
@@ -676,7 +676,7 @@ void	DEMGeo_ReduceMinMaxN(
 	{
 		int rx = x * N;
 		int ry = y * N;
-		e1 = e2 = NO_DATA;
+		e1 = e2 = DEM_NO_DATA;
 		for (dy = 0; dy < N; ++dy)
 		for (dx = 0; dx < N; ++dx)
 		{
@@ -732,7 +732,7 @@ float	DEMGeo_LocalMinOfCacheSquare(
 	
 	float e, e1, e2, e3, e4;
 	e = inMin[level](x,y);
-	if (e == NO_DATA) return NO_DATA;
+	if (e == DEM_NO_DATA) return DEM_NO_DATA;
 	const DEMGeo& reduc = ((level == 0) ? inDEM : inMin[level-1]);
 	e1 = reduc.get(x*2  ,y*2  );
 	e2 = reduc.get(x*2+1,y*2  );
@@ -744,14 +744,14 @@ float	DEMGeo_LocalMinOfCacheSquare(
 		else if (e2 == e) {minx = x*2+1; miny = y*2  ; minh = e2;}
 		else if (e3 == e) {minx = x*2+1; miny = y*2+1; minh = e3;}
 		else if (e4 == e) {minx = x*2  ; miny = y*2+1; minh = e4;}
-		else return NO_DATA;
+		else return DEM_NO_DATA;
 		return e;
 	} else {
 			 if (e == e1) return DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, level-1, x*2  , y*2  , minx, miny, minh);
 		else if (e == e2) return DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, level-1, x*2+1, y*2  , minx, miny, minh);
 		else if (e == e3) return DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, level-1, x*2+1, y*2+1, minx, miny, minh);
 		else if (e == e4) return DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, level-1, x*2  , y*2+1, minx, miny, minh);
-		else return NO_DATA;
+		else return DEM_NO_DATA;
 	}
 }					
 
@@ -769,7 +769,7 @@ float	DEMGeo_LocalMaxOfCacheSquare(
 	
 	float e, e1, e2, e3, e4;
 	e = inMax[level](x,y);
-	if (e == NO_DATA) return NO_DATA;
+	if (e == DEM_NO_DATA) return DEM_NO_DATA;
 	const DEMGeo& reduc = ((level == 0) ? inDEM : inMax[level-1]);
 	e1 = reduc.get(x*2  ,y*2  );
 	e2 = reduc.get(x*2+1,y*2  );
@@ -781,14 +781,14 @@ float	DEMGeo_LocalMaxOfCacheSquare(
 		else if (e2 == e) {maxx = x*2+1; maxy = y*2  ; maxh = e2;}
 		else if (e3 == e) {maxx = x*2+1; maxy = y*2+1; maxh = e3;}
 		else if (e4 == e) {maxx = x*2  ; maxy = y*2+1; maxh = e4;}
-		else return NO_DATA;
+		else return DEM_NO_DATA;
 		return e;
 	} else {
 			 if (e == e1) return DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, level-1, x*2  , y*2  , maxx, maxy, maxh);
 		else if (e == e2) return DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, level-1, x*2+1, y*2  , maxx, maxy, maxh);
 		else if (e == e3) return DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, level-1, x*2+1, y*2+1, maxx, maxy, maxh);
 		else if (e == e4) return DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, level-1, x*2  , y*2+1, maxx, maxy, maxh);
-		else return NO_DATA;
+		else return DEM_NO_DATA;
 	}
 }					
 
@@ -809,7 +809,7 @@ float	DEMGeo_LocalMinMaxWithCache(
 					bool					inAllowEdges)
 {
 	int x, y;
-	minh = maxh = NO_DATA;
+	minh = maxh = DEM_NO_DATA;
 	
 	for (y = y1; y < y2; ++y)
 	for (x = x1; x < x2; ++x)
@@ -820,9 +820,9 @@ float	DEMGeo_LocalMinMaxWithCache(
 		{
 			int lx, ly;
 			float lh;
-			if (DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, bsize-1,x >> bsize, y >> bsize, lx, ly, lh) != NO_DATA)
+			if (DEMGeo_LocalMinOfCacheSquare(inDEM, inMin, bsize-1,x >> bsize, y >> bsize, lx, ly, lh) != DEM_NO_DATA)
 			{
-				if (minh == NO_DATA || lh < minh)
+				if (minh == DEM_NO_DATA || lh < minh)
 				{
 					minh = lh;
 					minx = lx;
@@ -830,9 +830,9 @@ float	DEMGeo_LocalMinMaxWithCache(
 				}
 			}
 
-			if (DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, bsize-1,x >> bsize, y >> bsize, lx, ly, lh) != NO_DATA)
+			if (DEMGeo_LocalMaxOfCacheSquare(inDEM, inMax, bsize-1,x >> bsize, y >> bsize, lx, ly, lh) != DEM_NO_DATA)
 			{
-				if (maxh == NO_DATA || lh > maxh)
+				if (maxh == DEM_NO_DATA || lh > maxh)
 				{
 					maxh = lh;
 					maxx = lx;
@@ -841,14 +841,14 @@ float	DEMGeo_LocalMinMaxWithCache(
 			}
 		}
 	}
-	if (minh == NO_DATA && maxh == NO_DATA) return NO_DATA;
+	if (minh == DEM_NO_DATA && maxh == DEM_NO_DATA) return DEM_NO_DATA;
 	float rise = maxh - minh;
 	if (!inAllowEdges) 
 	{
 		if (minx == x1 || minx == (x2-1) || miny == y1 || miny == (y2-1))
-			minh = NO_DATA;
+			minh = DEM_NO_DATA;
 		if (maxx == x1 || maxx == (x2-1) || maxy == y1 || maxy == (y2-1))
-			maxh = NO_DATA;
+			maxh = DEM_NO_DATA;
 	}	
 	return rise;	
 }
@@ -864,7 +864,7 @@ float	DEMGeo_LocalMinMaxWithCache(
 	int x, y;
 	int xp, yp, bsize;
 	float lh;
-	minh = maxh = NO_DATA;
+	minh = maxh = DEM_NO_DATA;
 	
 	for (y = y1; y < y2; ++y)
 	for (x = x1; x < x2; ++x)

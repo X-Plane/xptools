@@ -61,7 +61,7 @@ struct	MeshVertexInfo {
 };
 
 struct	MeshFaceInfo {
-	MeshFaceInfo() : terrain(NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
+	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
 	MeshFaceInfo(const MeshFaceInfo& rhs) : 
 								terrain(rhs.terrain),
 								feature(rhs.feature), 

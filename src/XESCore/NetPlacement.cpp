@@ -1018,7 +1018,7 @@ void	VerticalBuildBridges(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& io
 		double	biggest_len = 0.0;
 		double	smallest_len = 9.9e9;
 		double	sharpest_turn = 1.0;	// 1.0 == straight!
-		for (int n = 0; n < (*chain)->seg_count(); ++n)
+		for (n = 0; n < (*chain)->seg_count(); ++n)
 		{
 			double local_len = (*chain)->meter_length(n, n+1);
 			total_len += local_len;

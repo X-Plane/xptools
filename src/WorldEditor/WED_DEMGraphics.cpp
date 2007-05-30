@@ -90,7 +90,7 @@ float	kColorBandsRainfallYearly[][4] = {
 	255,0  ,255,4975		,
 	128,0  ,128,7475		,
 	0  ,138,255,10005		,
-	0  ,0  ,0	,NO_DATA    
+	0  ,0  ,0	,DEM_NO_DATA    
 };
 
 float	kColorBandsDrainage[][4] = {
@@ -109,7 +109,7 @@ float	kColorBandsDrainage[][4] = {
 	255,0  ,255,4975		,
 	128,0  ,128,7475		,
 	0  ,138,255,10005		,
-	0  ,0  ,0	,NO_DATA    
+	0  ,0  ,0	,DEM_NO_DATA    
 };
 
 float	kColorBandsBioMass[][4] = {	
@@ -126,7 +126,7 @@ float	kColorBandsBioMass[][4] = {
 	5,	112,94,	1510,
 	0,	250,255,2010,
 	0,	138,255,2510,
-	0,	0,	0,	NO_DATA
+	0,	0,	0,	DEM_NO_DATA
 };	
 
 float	kColorBandsTemperature[][4] = {
@@ -164,7 +164,7 @@ float	kColorBandsTemperature[][4] = {
 255,0,		0,		 20.0,
 255,0,		0,		 60.0,
 */
-0	,0		,0		,NO_DATA    
+0	,0		,0		,DEM_NO_DATA    
 };								
 
 
@@ -183,7 +183,7 @@ float	kColorBandsTemperatureRange[][4] = {
 168,	103,	129,	55.0,
 150,	79 ,	90 ,	60.0,
 130,	50 ,	50 ,	65.0,
-0  ,	0  ,	0  ,	NO_DATA
+0  ,	0  ,	0  ,	DEM_NO_DATA
 };
 
 void	GetColorForTable(float v, ColorBandMap& table, unsigned char col[3])
@@ -376,14 +376,14 @@ int	DEMToBitmap(
 		for (x = 0; x < inDEM.mWidth; ++x)
 		{
 			float h = inDEM(x,y);
-			if (h != NO_DATA && h < smin) smin = h;
-			if (h != NO_DATA && h > smax) smax = h;
+			if (h != DEM_NO_DATA && h < smin) smin = h;
+			if (h != DEM_NO_DATA && h > smax) smax = h;
 		}
 		for (y = 0; y < inDEM.mHeight; ++y)
 		for (x = 0; x < inDEM.mWidth; ++x)
 		{
 			float h = inDEM(x,y);
-			if (h != NO_DATA && smin != smax) h = ((h - smin) * 1000.0 / (smax - smin));
+			if (h != DEM_NO_DATA && smin != smax) h = ((h - smin) * 1000.0 / (smax - smin));
 			unsigned char col[3];
 			GetColorForAlt(h, col);
 			
@@ -410,7 +410,7 @@ int	DEMToBitmap(
 			Vector3	n(to_r.cross(to_a));
 			n.normalize();
 			
-			if (h == NO_DATA || ha == NO_DATA || hr == NO_DATA)
+			if (h == DEM_NO_DATA || ha == DEM_NO_DATA || hr == DEM_NO_DATA)
 			{
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = 0x80;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = 0x80;
@@ -430,7 +430,7 @@ int	DEMToBitmap(
 			h = inDEM(x,y);
 			ha = inDEM(x,y+1);
 			hr = inDEM(x+1, y);
-			if (h == NO_DATA || ha == NO_DATA || hr == NO_DATA) continue;
+			if (h == DEM_NO_DATA || ha == DEM_NO_DATA || hr == DEM_NO_DATA) continue;
 			ha -= h;
 			hr -= h;
 			dh = fabs(ha + hr);
@@ -443,7 +443,7 @@ int	DEMToBitmap(
 			h = inDEM(x,y);
 			ha = inDEM(x,y+1);
 			hr = inDEM(x+1,y);
-			if (h == NO_DATA || ha == NO_DATA || hr == NO_DATA)
+			if (h == DEM_NO_DATA || ha == DEM_NO_DATA || hr == DEM_NO_DATA)
 				dh = 0.0;
 			else {
 				ha -= h;
@@ -453,7 +453,7 @@ int	DEMToBitmap(
 			scaled = (dh_max > 0.0) ? (dh / dh_max) : 0.0;
 			scaled = (scaled * 0.5 + 0.5) * 255.0;
 
-			if (h == NO_DATA)
+			if (h == DEM_NO_DATA)
 			{
 				outImage.data[(x + y * outImage.width) * outImage.channels  ] = scaled;
 				outImage.data[(x + y * outImage.width) * outImage.channels+1] = 0;

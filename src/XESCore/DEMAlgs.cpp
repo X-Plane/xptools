@@ -79,13 +79,13 @@ float	local_deltas_x[9] = { -1, 0, 1, -1, 0, 1, -1, 0, 1 };
 float	local_deltas_y[9] = { -1, -1, -1, 0, 0, 0, 1, 1, 1 };
 
 
-inline	bool	non_integral(float f) { return (f != NO_DATA && f != 0.0 && f != 1.0); }
+inline	bool	non_integral(float f) { return (f != DEM_NO_DATA && f != 0.0 && f != 1.0); }
 
 
 /*
  * SpreadDEMValues
  *
- * Fill every point in the DEM that contains NO_DATA with the nearest valid value from any direction.
+ * Fill every point in the DEM that contains DEM_NO_DATA with the nearest valid value from any direction.
  *
  */
 void	SpreadDEMValues(DEMGeo& ioDem)
@@ -99,22 +99,22 @@ void	SpreadDEMValues(DEMGeo& ioDem)
 	for (int x = 0; x < ioDem.mWidth; ++x)
 	{
 		float	h =  temp(x,y);
-		if (h == NO_DATA)
+		if (h == DEM_NO_DATA)
 		{
 			int n = 1;
 			while (n < ioDem.mWidth || n < ioDem.mHeight)
 			{
-				h = ioDem.get(x-n,y);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y);	if (h != NO_DATA) break;
-				h = ioDem.get(x,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x,y+n);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y+n);	if (h != NO_DATA) break;
-				h = ioDem.get(x-n,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x-n,y+n);	if (h != NO_DATA) break;
+				h = ioDem.get(x-n,y);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x,y+n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y+n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x-n,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x-n,y+n);	if (h != DEM_NO_DATA) break;
 				++n;								
 			}
-			if (h != NO_DATA)
+			if (h != DEM_NO_DATA)
 				temp(x,y) = h;
 		}
 	}
@@ -132,26 +132,26 @@ void	SpreadDEMValuesTotal(DEMGeo& ioDem)
 	for (int x = 0; x < ioDem.mWidth; ++x)
 	{
 		float	h =  temp(x,y);
-		if (h == NO_DATA)	
+		if (h == DEM_NO_DATA)	
 		{
 			for (int r = 1; r <= max(ioDem.mWidth, ioDem.mHeight); ++r)			
 			{
 				for (int rd = 1; rd <= r; ++rd)
 				{
-					h = ioDem.get(x-r,y-rd);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x-r,y+rd);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x+r,y-rd);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x+r,y+rd);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x-rd,y-r);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x+rd,y-r);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x-rd,y-r);	if (h != NO_DATA) goto foo;
-					h = ioDem.get(x+rd,y-r);	if (h != NO_DATA) goto foo;
+					h = ioDem.get(x-r,y-rd);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x-r,y+rd);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x+r,y-rd);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x+r,y+rd);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x-rd,y-r);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x+rd,y-r);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x-rd,y-r);	if (h != DEM_NO_DATA) goto foo;
+					h = ioDem.get(x+rd,y-r);	if (h != DEM_NO_DATA) goto foo;
 				}
 			}
 		}
 
 foo:		
-		if (h != NO_DATA)
+		if (h != DEM_NO_DATA)
 			temp(x,y) = h;
 	}
 	ioDem.swap(temp);
@@ -165,36 +165,36 @@ bool	SpreadDEMValuesIterate(DEMGeo& ioDem)
 	for (int x = 0; x < ioDem.mWidth; ++x)
 	{
 		float	h =  temp(x,y);
-		if (h == NO_DATA)	
+		if (h == DEM_NO_DATA)	
 		{
 			int n = rand() % 4;
 			switch(n) {
 			case 0:
-				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
-				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
-				if (h == NO_DATA) h = ioDem.get(x-1,y  );
-				if (h == NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x+1,y  );
 				break;
 			case 1:
-				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
-				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
-				if (h == NO_DATA) h = ioDem.get(x+1,y  );
-				if (h == NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x-1,y  );
 				break;
 			case 2:
-				if (h == NO_DATA) h = ioDem.get(x+1,y  );
-				if (h == NO_DATA) h = ioDem.get(x-1,y  );
-				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
-				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y+1);
 				break;
 			default:
-				if (h == NO_DATA) h = ioDem.get(x-1,y  );
-				if (h == NO_DATA) h = ioDem.get(x+1,y  );
-				if (h == NO_DATA) h = ioDem.get(x  ,y+1);
-				if (h == NO_DATA) h = ioDem.get(x  ,y-1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x-1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x+1,y  );
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y+1);
+				if (h == DEM_NO_DATA) h = ioDem.get(x  ,y-1);
 				break;
 			}
-			if (h != NO_DATA)
+			if (h != DEM_NO_DATA)
 			{
 				temp(x,y) = h;
 				did_any = true;
@@ -222,22 +222,22 @@ void	SpreadDEMValues(DEMGeo& ioDem, int dist, int x1, int y1, int x2, int y2)
 	for (int x = x1; x < x2; ++x)
 	{
 		float h = ioDem.get(x,y);
-		if (h == NO_DATA)
+		if (h == DEM_NO_DATA)
 		{
 			int n = 1;
 			while (n <= dist)
 			{
-				h = ioDem.get(x-n,y);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y);	if (h != NO_DATA) break;
-				h = ioDem.get(x,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x,y+n);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x+n,y+n);	if (h != NO_DATA) break;
-				h = ioDem.get(x-n,y-n);	if (h != NO_DATA) break;
-				h = ioDem.get(x-n,y+n);	if (h != NO_DATA) break;
+				h = ioDem.get(x-n,y);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x,y+n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x+n,y+n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x-n,y-n);	if (h != DEM_NO_DATA) break;
+				h = ioDem.get(x-n,y+n);	if (h != DEM_NO_DATA) break;
 				++n;								
 			}
-			if (h != NO_DATA)
+			if (h != DEM_NO_DATA)
 				temp(x,y) = h;
 		}
 	}
@@ -311,12 +311,12 @@ void	DownsampleDEM(const DEMGeo& ioDem, DEMGeo& smaller, int ratio)
 		for (int dx = x * ratio - (ratio / 2); dx < (x * ratio + (ratio / 2)); ++dx) 
 		{
 			float lh = ioDem.get(dx, dy);
-			if (lh != NO_DATA) c+=1.0, h += lh;
+			if (lh != DEM_NO_DATA) c+=1.0, h += lh;
 		}
 		if (c > 0) 
 			h /= c; 
 		else 
-			h = NO_DATA;
+			h = DEM_NO_DATA;
 
 		smaller(x,y)=h;
 	}
@@ -361,7 +361,7 @@ void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
 			if ((px%2)==0 && (py%2)== 0)
 			{
 				e = inDEM.get(px/2, py/2);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 				{
 					if (n < 4) has_direct= true;
 					num += 1.0;
@@ -372,7 +372,7 @@ void InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& bigger)
 		if (has_direct || num > 1.0)
 			bigger(x,y) = tot / num;
 		else
-			bigger(x,y) = NO_DATA;
+			bigger(x,y) = DEM_NO_DATA;
 	}
 }
 
@@ -386,16 +386,16 @@ void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM)
 	for (int x = 0; x < inDEM.mWidth; ++x)
 	{
 		float e = inDEM.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			int n;
 			for (n = 0; n < 4; ++n)
 			{
-				if (inDEM.get(x+x_dir[n],y+y_dir[n])==NO_DATA)
+				if (inDEM.get(x+x_dir[n],y+y_dir[n])==DEM_NO_DATA)
 					break;
 			}
 			if (n==4)
-				e = NO_DATA;
+				e = DEM_NO_DATA;
 		}
 		outDEM(x,y) = e;
 	}
@@ -614,7 +614,7 @@ static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point2& whe
 	
 	int x, y;
 	float h = ioValues.xy_nearest(where.x,where.y,x,y);
-	if (h != NO_DATA)
+	if (h != DEM_NO_DATA)
 //		ioValues(x,y) = p;
 //	else
 		ioValues(x,y) = 0.5 * h + 0.5 * p;
@@ -667,7 +667,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 		{
 			for (x = x1; x < x2; ++x)
 			{
-				if (ioTransport.get(x, y) != NO_DATA)
+				if (ioTransport.get(x, y) != DEM_NO_DATA)
 					ioTransport(x,y) = max(ioTransport(x,y), 1.0f);
 			}
 		}
@@ -1153,7 +1153,7 @@ void	DeriveDEMs(
 	{
 		Point2 p = rwy->ends.midpoint();
 		float e = urbanTrans.xy_nearest(p.x, p.y, x, y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 			urbanTrans(x,y) = 1.0;
 		
 	}
@@ -1168,8 +1168,8 @@ void	DeriveDEMs(
 	for (x = 0; x < urbanSquare.mWidth; ++x)
 	{
 		float e = urbanSquare.get(x,y);
-		if (e != NO_DATA && e != lu_usgs_URBAN_SQUARE  && e != lu_usgs_URBAN_IRREGULAR)
-			urbanSquare(x,y) = NO_DATA;
+		if (e != DEM_NO_DATA && e != lu_usgs_URBAN_SQUARE  && e != lu_usgs_URBAN_IRREGULAR)
+			urbanSquare(x,y) = DEM_NO_DATA;
 	}
 
 	SpreadDEMValues(urbanSquare);
@@ -1405,7 +1405,7 @@ void	DeriveDEMs(
 		}
 		
 		// Try 1 -- exact match
-		terrain(x,y) = NO_DATA;
+		terrain(x,y) = DEM_NO_DATA;
 		int hashv = HashTerrainTypes(tt,tc,vt,c);
 		pair<TerrainMappingTable::iterator,TerrainMappingTable::iterator>	range = gTerrainMapping.equal_range(hashv);
 		for (TerrainMappingTable::iterator i = range.first; i != range.second; ++i)
@@ -1423,7 +1423,7 @@ void	DeriveDEMs(
 		
 		// Huh...no match.  Probably we smeared out a landuseBig that can't be matched, e.g.
 		// grass over urban.  Try just the base terrain.
-		if (terrain(x,y) == NO_DATA && density2d(x,y) < 0.5)
+		if (terrain(x,y) == DEM_NO_DATA && density2d(x,y) < 0.5)
 		{
 			hashv = HashTerrainTypes(tt,tc,NO_VALUE,NO_VALUE);
 			range = gTerrainMapping.equal_range(hashv);
@@ -1442,7 +1442,7 @@ void	DeriveDEMs(
 		}
 		
 		// Or the other way, try just the vege
-		if (terrain(x,y) == NO_DATA && density2d(x,y) > 0.5)
+		if (terrain(x,y) == DEM_NO_DATA && density2d(x,y) > 0.5)
 		{
 			hashv = HashTerrainTypes(NO_VALUE,NO_VALUE, vt, c);
 			range = gTerrainMapping.equal_range(hashv);
@@ -1459,7 +1459,7 @@ void	DeriveDEMs(
 				}
 			}		
 		}
-		if (terrain(x,y) == NO_DATA)
+		if (terrain(x,y) == DEM_NO_DATA)
 			fprintf(stderr,"ERROR: Could not find land use for: %s %s %s %s\n", FetchTokenString(tt), FetchTokenString(tc),FetchTokenString(vt),FetchTokenString(c));
 	}
 #endif
@@ -1471,7 +1471,7 @@ void	DeriveDEMs(
 		float e = landuse(x,y);
 		if (e != lu_usgs_INLAND_WATER &&
 			e != lu_usgs_SEA_WATER)
-			landuse(x,y) = NO_DATA;			
+			landuse(x,y) = DEM_NO_DATA;			
 	}
 	landuse.fill_nearest();	
 #endif
@@ -1515,10 +1515,10 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 		x0 = 0;
 		while (x0 < elev.mWidth)
 		{
-			while (x0 < elev.mWidth && elev(x0,y) != NO_DATA)
+			while (x0 < elev.mWidth && elev(x0,y) != DEM_NO_DATA)
 				++x0;
 			x1 = x0;
-			while (x1 < elev.mWidth && elev(x1,y) == NO_DATA)
+			while (x1 < elev.mWidth && elev(x1,y) == DEM_NO_DATA)
 				++x1;
 			
 			if (x0 < 0 && x1 >= elev.mWidth)
@@ -1628,18 +1628,18 @@ static	void	FFTSplit(const DEMGeo& inSrc, DEMGeo& equiv, DEMGeo& reduc, int n)
 	for (x = 0; x < equiv.mWidth; ++x)
 	{
 		et = temp.value_linear(inSrc.x_to_lon(x), inSrc.y_to_lat(y));
-		if (et == NO_DATA) et = temp.xy_nearest(inSrc.x_to_lon(x), inSrc.y_to_lat(y));
-		if (et != NO_DATA)
+		if (et == DEM_NO_DATA) et = temp.xy_nearest(inSrc.x_to_lon(x), inSrc.y_to_lat(y));
+		if (et != DEM_NO_DATA)
 		{
 			reduc(x,y) = et;
 			e = inSrc(x,y);
-			if (e != NO_DATA)
+			if (e != DEM_NO_DATA)
 				equiv(x,y) = e-et;
 			else
-				equiv(x,y) = NO_DATA;
+				equiv(x,y) = DEM_NO_DATA;
 		} else {
-			reduc(x,y) = NO_DATA;
-			equiv(x,y) = NO_DATA;
+			reduc(x,y) = DEM_NO_DATA;
+			equiv(x,y) = DEM_NO_DATA;
 		}
 	}
 }
@@ -1668,7 +1668,7 @@ void	FFTMakeDEM(const vector<DEMGeo>& inFFT, DEMGeo& outDEM)
 	for (int y =  0; y < outDEM.mHeight; ++y)
 	for (int x = 0; x < outDEM.mWidth; ++x)
 	{
-		float e = NO_DATA;
+		float e = DEM_NO_DATA;
 		for (int n = 0; n < inFFT.size(); ++n)
 		{
 			float ex = inFFT[n](x,y);
@@ -1687,7 +1687,7 @@ int		DEMMakeHistogram(const DEMGeo& inDEM, map<float, int>& histo, int x1, int y
 	for (x = x1; x < x2; ++x)
 	{
 		float h = inDEM.get(x,y);
-		if (h != NO_DATA)
+		if (h != DEM_NO_DATA)
 		{
 			histo[h]++;
 			ctr++;
@@ -1705,7 +1705,7 @@ float	HistogramGetPercentile(const map<float, int>& histo, int total_samples, fl
 		if ((float) ctr / (float) total_samples >= percentile)
 			return iter->first;
 	}
-	return NO_DATA;
+	return DEM_NO_DATA;
 }
 
 void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
@@ -1716,7 +1716,7 @@ void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
 	for (int x = 0; x < src.mWidth ; ++x)
 	{
 		int e = src.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		{
 			float en[8];
 			en[0] = src.get(x-1,y-1);
@@ -1729,7 +1729,7 @@ void	DEMMakeDifferential(const DEMGeo& src, DEMGeo& dst)
 			en[7] = src.get(x  ,y-1);			
 			float dif = 0;
 			for (int k = 0; k < 8; ++k)
-			if (en[k] != NO_DATA)
+			if (en[k] != DEM_NO_DATA)
 				dif = max(dif, fabsf(en[k]-e));
 			dst(x,y)=dif;
 		} else

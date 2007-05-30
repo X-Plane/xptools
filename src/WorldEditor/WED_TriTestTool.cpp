@@ -101,12 +101,12 @@ char *	WED_TriTestTool::GetStatusText(void)
 	lat = GetZoomer()->YPixelToLat(y);
 	lon = GetZoomer()->XPixelToLon(x);	
 //	double h = MeshHeightAtPoint(gTriangulation, lon, lat);
-//	if (h == NO_DATA)
+//	if (h == DEM_NO_DATA)
 	if (gDem.find(dem_Elevation) != gDem.end())
 	{
 		int x, y;
 		float h = gDem[dem_Elevation].xy_nearest(lon, lat, x, y);
-		if (h == NO_DATA)
+		if (h == DEM_NO_DATA)
 			sprintf(buf, "Hires: %d  (%d,%d NO DATA)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y);
 		else
 			sprintf(buf, "Hires: %d  (%d, %d h=%f)", gTriangulationHi.number_of_faces(), /*gTriangulationLo.number_of_faces(), */x, y, h);

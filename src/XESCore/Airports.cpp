@@ -330,7 +330,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		SimplifyAirportAreas(ioMap, faces, simple_faces, false);
 		if (dems)
 		{
-			working = NO_DATA;
+			working = DEM_NO_DATA;
 			if (ClipDEMToFaceSet(simple_faces, elevation, working, x1, y1, x2, y2))
 			{
 				working.copy_geo_from(elevation);
@@ -350,7 +350,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 				for (y = y1; y < y2; ++y)
 				for (x = x1; x < x2; ++x)
 				{
-					if (working.get(x,y) != NO_DATA && airport_area(x-x1,y-y1) != NO_DATA)
+					if (working.get(x,y) != DEM_NO_DATA && airport_area(x-x1,y-y1) != DEM_NO_DATA)
 						working(x,y) = airport_area(x-x1,y-y1);
 				}
 			}		

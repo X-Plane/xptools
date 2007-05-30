@@ -221,7 +221,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 				if (sImportState.flip_y) iy = info.width - y - 1;
 				unsigned char * p = info.data + y * (info.width * info.channels + info.pad) + x * info.channels;
 				if (info.channels == 4 && p[3] == 0)
-					(*theDem)(ix, iy) = NO_DATA;
+					(*theDem)(ix, iy) = DEM_NO_DATA;
 				else
 					(*theDem)(ix, iy) = p[0];					
 			}
@@ -347,7 +347,7 @@ void	DoImport(XPWidgetID inWidget, int inResult)
 			for (int y = 0; y < theDem->mHeight; ++y)
 			{
 				float e = theDem->get(x,y);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 				{
 					e = new_offset + e * new_scale;
 					(*theDem)(x,y) = e;

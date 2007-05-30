@@ -1700,7 +1700,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 			for (int x = x1; x < x2; ++x)
 			{
 				e = dem.get(x,y);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 				{
 					if (count == 0) 
 					{
@@ -1725,7 +1725,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 		i = stop = f->outer_ccb();
 		do {
 			e = dem.value_linear(i->source()->point().x,i->source()->point().y);
-			if (e != NO_DATA)
+			if (e != DEM_NO_DATA)
 			{
 				if (count == 0) 
 				{
@@ -1744,7 +1744,7 @@ float	GetParamAverage(const Pmwx::Face_handle f, const DEMGeo& dem, float * outM
 	if (count > 0)
 		return avg / (float) count;
 	else
-		return NO_DATA;	
+		return DEM_NO_DATA;	
 }
 
 int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, int>& outHistogram)
@@ -1762,7 +1762,7 @@ int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, i
 			for (int x = x1; x < x2; ++x)
 			{
 				e = dem.get(x,y);
-				if (e != NO_DATA)
+				if (e != DEM_NO_DATA)
 					count++, outHistogram[e]++;
 			}
 		}
@@ -1776,7 +1776,7 @@ int	GetParamHistogram(const Pmwx::Face_handle f, const DEMGeo& dem, map<float, i
 		i = stop = f->outer_ccb();
 		do {
 			e = dem.xy_nearest(i->source()->point().x,i->source()->point().y);
-			if (e != NO_DATA)
+			if (e != DEM_NO_DATA)
 				count++, outHistogram[e]++;
 			++i;
 		} while (i != stop);
@@ -1822,7 +1822,7 @@ bool	ClipDEMToFaceSet(const set<GISFace *>& inFaces, const DEMGeo& inSrcDEM, DEM
 				outY2 = max(outY2, y+1);
 				ok = true;
 				
-				if (inSrcDEM.get(x,y) != NO_DATA)
+				if (inSrcDEM.get(x,y) != DEM_NO_DATA)
 					inDstDEM(x,y) = inSrcDEM(x,y);
 			}
 		}

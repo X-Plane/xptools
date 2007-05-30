@@ -590,24 +590,24 @@ int	FindNaturalTerrain(
 		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 //		float slope_to_use = slope_tri;
 
-		if (rec.temp_min == rec.temp_max || temp == NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
-		if (rec.slope_min == rec.slope_max || slope_to_use == NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
-		if (rec.rain_min == rec.rain_max || rain == NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
-		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
-		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
+		if (rec.temp_min == rec.temp_max || temp == DEM_NO_DATA || (rec.temp_min <= temp && temp <= rec.temp_max))
+		if (rec.slope_min == rec.slope_max || slope_to_use == DEM_NO_DATA || (rec.slope_min <= slope_to_use && slope_to_use <= rec.slope_max))
+		if (rec.rain_min == rec.rain_max || rain == DEM_NO_DATA || (rec.rain_min <= rain && rain <= rec.rain_max))
+		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == DEM_NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
+		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == DEM_NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
 		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		if (rec.terrain == NO_VALUE || terrain == NO_VALUE || terrain == rec.terrain)
-		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
-		if (rec.elev_range_min == rec.elev_range_max || elevrange == NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
-		if (rec.urban_density_min == rec.urban_density_max || urban_density == NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
-		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
-		if (rec.urban_square == 0 || urban_square == NO_DATA || rec.urban_square == urban_square)
-		if (rec.lat_min == rec.lat_max || lat == NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
+		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == DEM_NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
+		if (rec.elev_range_min == rec.elev_range_max || elevrange == DEM_NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
+		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
+		if (rec.urban_trans_min == rec.urban_trans_max || urban_trans == DEM_NO_DATA || (rec.urban_trans_min <= urban_trans && urban_trans <= rec.urban_trans_max))		
+		if (rec.urban_square == 0 || urban_square == DEM_NO_DATA || rec.urban_square == urban_square)
+		if (rec.lat_min == rec.lat_max || lat == DEM_NO_DATA || (rec.lat_min <= lat && lat <= rec.lat_max))
 		if (!rec.near_water || water)
-		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
+		if (rec.urban_radial_min == rec.urban_radial_max || urban_radial == DEM_NO_DATA || (rec.urban_radial_min <= urban_radial && urban_radial <= rec.urban_radial_max))
 		if (rec.landuse == NO_VALUE || landuse == rec.landuse)	// NOTE: no land use is NOT a free pass to match anything!!
 		if (rec.climate == NO_VALUE || climate == rec.climate)	// Same with  climate
-		if (rec.elev_min == rec.elev_max || elevation == NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
+		if (rec.elev_min == rec.elev_max || elevation == DEM_NO_DATA || (rec.elev_min <= elevation && elevation <= rec.elev_max))
 		{
 			return rec.name;
 		}
