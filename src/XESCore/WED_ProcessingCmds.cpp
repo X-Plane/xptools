@@ -54,7 +54,7 @@
 
 #include "ObjPlacement.h"
 
-extern ProcessingPrefs_t	gProcessingCmdPrefs = {
+ProcessingPrefs_t	gProcessingCmdPrefs = {
 	/*		do_calc_slope			*/			1,
 	/*		do_upsample_environment	*/			1,
 	/*		do_hydro_correct		*/			0,

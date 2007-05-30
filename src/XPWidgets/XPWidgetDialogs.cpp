@@ -1149,8 +1149,8 @@ XPWidgetID		XPCreateWidgetLayout(int dummy, ...)
 			title = va_arg(args, char *);
 			func_ptr = NULL;
 				 if (token == XP_BUTTON_ACTION)			func_ptr = va_arg(args, void *);
-			else if (token == XP_BUTTON_OK)				func_ptr = PBAction_DoneDialogOK;
-			else if (token == XP_BUTTON_CANCEL)			func_ptr = PBAction_DoneDialogCancel;
+			else if (token == XP_BUTTON_OK)				func_ptr = (void*)PBAction_DoneDialogOK;
+			else if (token == XP_BUTTON_CANCEL)			func_ptr = (void*)PBAction_DoneDialogCancel;
 			new_widget = XPCreateCustomWidget(50, 550, 150, 530, 1, title, 0, widget_stack.back(), XPWF_PushButton_Action);
 			XPSetWidgetProperty(new_widget, xpProperty_DataPtr, (int) func_ptr);
 			break;
