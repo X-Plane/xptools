@@ -35,12 +35,9 @@ float *		WED_Color_RGBA(WED_Color c)
 {
 	if (colors.empty())
 	{
-		string path;
-		if (!GUI_GetResourcePath("colors.png", path))	AssertPrintf("Colors not found.");
-
 		struct ImageInfo	im;
-		int result =  CreateBitmapFromPNG(path.c_str(), &im, false);
-		if (result != 0)	AssertPrintf("Unable to open png file: %s (%d)", path.c_str(),result);
+		int result =  GUI_GetImageResource("colors.png", &im);
+		if (result != 0)	AssertPrintf("Unable to open colors.png resource.");
 
 		if (im.channels != 4) AssertPrintf("Error, expected alpha, but we have %d channels.", im.channels);
 		
