@@ -27,13 +27,13 @@ WED_Document::WED_Document(
 	mArchive.SetUndoManager(&mUndo);
 	
 	string buf;
-	if (!GUI_GetResourcePath("WED_DataModel.sql",buf))
+	
+	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
+	if (res == NULL)
 		WED_ThrowPrintf("Unable to open SQL code: %s.", buf.c_str());
 	
-	MFMemFile * f = MemFile_Open(buf.c_str());
-	if (f == NULL) WED_ThrowPrintf("Unable t open %s.\n", buf.c_str());
-	sql_do_bulk_range(mDB.get(), MemFile_GetBegin(f), MemFile_GetEnd(f));
-	MemFile_Close(f);
+	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
+	GUI_UnloadResource(res);
 
 
 	mBounds[0] = inBounds[0];
