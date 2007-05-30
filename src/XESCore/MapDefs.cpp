@@ -2673,7 +2673,7 @@ struct	face_overlap_collector {
 	Bbox2				e;
 	vector<GISFace *> *	c;
 	face_overlap_collector(const Bbox2& ie, vector<GISFace *> * ic) : c(ic), e(ie) { }
-	bool operator()(GISFace * g) const
+	void operator()(GISFace * g) const
 	{
 		for (GISFace * i = g; i; i = i->next_index())
 		if (e.overlap(i->mBoundsCache))
@@ -2685,7 +2685,7 @@ struct	face_contains_collector {
 	Bbox2				e;
 	vector<GISFace *> *	c;
 	face_contains_collector(const Bbox2& ie, vector<GISFace *> * ic) : c(ic), e(ie) { }
-	bool operator()(GISFace * g) const
+	void operator()(GISFace * g) const
 	{
 		for (GISFace * i = g; i; i = i->next_index())
 		if (e.contains(i->mBoundsCache))
@@ -2697,7 +2697,7 @@ struct	face_contains_pt_collector {
 	Point2				p;
 	vector<GISFace *> *	c;
 	face_contains_pt_collector(const Point2& ip, vector<GISFace *> * ic) : c(ic), p(ip) { }
-	bool operator()(GISFace * g) const
+	void operator()(GISFace * g) const
 	{
 		for (GISFace * i = g; i; i = i->next_index())
 		if (i->mBoundsCache.contains(p))
@@ -2742,7 +2742,7 @@ struct	halfedge_overlap_collector {
 	Bbox2					e;
 	vector<GISHalfedge *> *	c;
 	halfedge_overlap_collector(const Bbox2& ie, vector<GISHalfedge *> * ic) : c(ic), e(ie) { }
-	bool operator()(GISHalfedge * g) const
+	void operator()(GISHalfedge * g) const
 	{
 		for (GISHalfedge * i = g; i; i = i->next_index())
 		{
@@ -2757,7 +2757,7 @@ struct	halfedge_contains_collector {
 	Bbox2				e;
 	vector<GISHalfedge *> *	c;
 	halfedge_contains_collector(const Bbox2& ie, vector<GISHalfedge *> * ic) : c(ic), e(ie) { }
-	bool operator()(GISHalfedge * g) const
+	void operator()(GISHalfedge * g) const
 	{
 		for (GISHalfedge * i = g; i; i = i->next_index())
 		{
@@ -2772,7 +2772,7 @@ struct	vertex_contains_collector {
 	Bbox2					e;
 	vector<GISVertex *> *	c;
 	vertex_contains_collector(const Bbox2& ie, vector<GISVertex *> * ic) : c(ic), e(ie) { }
-	bool operator()(GISVertex * g) const
+	void operator()(GISVertex * g) const
 	{
 		for (GISVertex * i = g; i; i = i->next_index())
 		if (e.contains(i->point()))
@@ -2784,7 +2784,7 @@ struct	vertex_contains_pt_collector {
 	Point2				p;
 	vector<GISVertex *> *	c;
 	vertex_contains_pt_collector(const Point2& ip, vector<GISVertex *> * ic) : c(ic), p(ip) { }
-	bool operator()(GISVertex * g) const
+	void operator()(GISVertex * g) const
 	{
 		for (GISVertex * i = g; i; i = i->next_index())
 		if (p == i->point())
