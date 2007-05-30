@@ -39,8 +39,12 @@ static void	EstablishFont(int id)
 	}	
 	if (sFonts[id] == NULL)
 	{
-		string full_path;
-		sFonts[id] = sFontMgr->LoadFont(kFontNames[id], kFontSizes[id], true);	
+		GUI_Resource res = GUI_LoadResource(kFontNames[id]);
+		if (res)
+		{
+			sFonts[id] = sFontMgr->LoadFont(kFontNames[id], GUI_GetResourceBegin(res), GUI_GetResourceEnd(res), kFontSizes[id], true);	
+			GUI_UnloadResource(res);
+		}
 	}
 }
 
