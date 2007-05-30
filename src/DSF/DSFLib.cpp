@@ -123,7 +123,7 @@ int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * 
 	FILE *			fi = NULL;
 	char *			mem = NULL;
 	unsigned int	file_size = 0;
-	bool			result = dsf_ErrOK;
+	int				result = dsf_ErrOK;
 	
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
