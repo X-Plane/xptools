@@ -132,7 +132,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 			if (im.width < rescaleBits.width)
 				CopyBitmapSectionDirect(im, rescaleBits, im.width-1, 0, im.width, 0, 1, im.height);			
 			if (im.height < rescaleBits.height)
-				CopyBitmapSectionDirect(im, rescaleBits, 0, im.height-1, 0, im.height, im.height, 1);			
+				CopyBitmapSectionDirect(im, rescaleBits, 0, im.height-1, 0, im.height, im.width, 1);			
 			if (im.height < rescaleBits.height && im.width < rescaleBits.width)
 				CopyBitmapSectionDirect(im, rescaleBits, im.width-1, im.height-1, im.width, im.height, 1, 1);						
  
