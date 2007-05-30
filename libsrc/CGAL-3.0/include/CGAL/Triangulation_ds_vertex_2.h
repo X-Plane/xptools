@@ -108,10 +108,10 @@ is_valid(bool verbose, int level)
 {
   bool result = Vb::is_valid(verbose, level);
   CGAL_triangulation_assertion(result);
-  if (face() != NULL) { // face==NULL if dim <0
-    result = result && ( &*face()->vertex(0) == this ||
-			 &*face()->vertex(1) == this ||
-			 &*face()->vertex(2) == this );
+  if (Vb::face() != NULL) { // face==NULL if dim <0
+    result = result && ( &*Vb::face()->vertex(0) == this ||
+			 &*Vb::face()->vertex(1) == this ||
+			 &*Vb::face()->vertex(2) == this );
   }
   CGAL_triangulation_assertion(result);
   return result;

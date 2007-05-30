@@ -170,12 +170,12 @@ public:
    int insert(InputIterator first, InputIterator last) 
 #endif
     {
-      int n = number_of_vertices();
+      int n = Ctr::number_of_vertices();
       while(first != last){
 	insert(*first);
 	++first;
       }
-      return number_of_vertices() - n;
+      return Ctr::number_of_vertices() - n;
     }
 
   template <class OutputItFaces, class OutputItBoundaryEdges> 
@@ -184,7 +184,7 @@ public:
 			     OutputItFaces fit, 
 			     OutputItBoundaryEdges eit,
 			     Face_handle start = Face_handle(NULL)) const {
-    CGAL_triangulation_precondition( dimension() == 2);
+    CGAL_triangulation_precondition( Ctr::dimension() == 2);
     int li;
     Locate_type lt;
     Face_handle fh = locate(p,lt,li, start);
@@ -246,8 +246,8 @@ private:
    }
    *fit++ = fn;
    int j = fn->index(fh);
-   pit = propagate_conflicts(p,fn,ccw(j),pit);
-   pit = propagate_conflicts(p,fn,cw(j), pit);
+   pit = propagate_conflicts(p,fn,Ctr::ccw(j),pit);
+   pit = propagate_conflicts(p,fn,Ctr::cw(j), pit);
    return pit;
  }
 };
@@ -275,14 +275,14 @@ flip (Face_handle& f, int i)
   int j = f->mirror_index(i);
 
   // save wings neighbors to be able to restore contraint status
-  Face_handle f1 = f->neighbor(cw(i));
-  int i1 = f->mirror_index(cw(i));
-  Face_handle f2 = f->neighbor(ccw(i));
-  int i2 = f->mirror_index(ccw(i));
-  Face_handle f3 = g->neighbor(cw(j));
-  int i3 = g->mirror_index(cw(j));
-  Face_handle f4 = g->neighbor(ccw(j));
-  int i4 = g->mirror_index(ccw(j));
+  Face_handle f1 = f->neighbor(Ctr::cw(i));
+  int i1 = f->mirror_index(Ctr::cw(i));
+  Face_handle f2 = f->neighbor(Ctr::ccw(i));
+  int i2 = f->mirror_index(Ctr::ccw(i));
+  Face_handle f3 = g->neighbor(Ctr::cw(j));
+  int i3 = g->mirror_index(Ctr::cw(j));
+  Face_handle f4 = g->neighbor(Ctr::ccw(j));
+  int i4 = g->mirror_index(Ctr::ccw(j));
 
   // The following precondition prevents the test suit 
   // of triangulation to work on constrained Delaunay triangulation
@@ -309,14 +309,14 @@ Constrained_Delaunay_triangulation_2<Gt,Tds,Itag>::
 flip_around(Vertex_handle va)
   // makes the triangles incident to vertex va Delaunay using flips
 {
-  if (dimension() <= 1) return;
+  if (Ctr::dimension() <= 1) return;
   Face_handle f=va->face();
   Face_handle next;    
   Face_handle start(f);
   int i;
   do {
     i = f->index(va); // FRAGILE : DIM 1
-    next = f->neighbor(ccw(i));  // turns ccw around a
+    next = f->neighbor(Ctr::ccw(i));  // turns ccw around a
     propagating_flip(f,i);
     f=next;
   } while(next != start);
@@ -393,10 +393,10 @@ propagating_flip(List_edges & edges)
     indn=f->mirror_index(indf);
     ei= Edge(f,indf);
     edge_set.erase(ei);
-    e[0]= Edge(f,cw(indf));
-    e[1]= Edge(f,ccw(indf));
-    e[2]= Edge(ni,cw(indn));
-    e[3]= Edge(ni,ccw(indn));
+    e[0]= Edge(f,Ctr::cw(indf));
+    e[1]= Edge(f,Ctr::ccw(indf));
+    e[2]= Edge(ni,Ctr::cw(indn));
+    e[3]= Edge(ni,Ctr::ccw(indn));
 
     for(i=0;i<4;i++) { 
       ff=e[i].first;
@@ -416,9 +416,9 @@ propagating_flip(List_edges & edges)
     //insert in edge_set the 4 edges of the wing of the edge that
     //have been flipped 
     e[0]= Edge(f,indf);
-    e[1]= Edge(f,cw(indf));
+    e[1]= Edge(f,Ctr::cw(indf));
     e[2]= Edge(ni,indn);
-    e[3]= Edge(ni,cw(indn));
+    e[3]= Edge(ni,Ctr::cw(indn));
 
     for(i=0;i<4;i++) { 
       ff=e[i].first;
@@ -549,7 +549,7 @@ remove(Vertex_handle v)
   CGAL_triangulation_precondition( v != NULL );
   CGAL_triangulation_precondition( ! is_infinite(v));
   CGAL_triangulation_precondition( ! are_there_incident_constraints(v));
-  if  (dimension() <= 1)    Ctr::remove(v);
+  if  (Ctr::dimension() <= 1)    Ctr::remove(v);
   else  remove_2D(v);
   return;
 }
@@ -596,7 +596,7 @@ remove_incident_constraints(Vertex_handle v)
    if (are_there_incident_constraints(v,
 				      std::back_inserter(iconstraints))) {
      Ctr::remove_incident_constraints(v);
-     if (dimension()==2) propagating_flip(iconstraints);
+     if (Ctr::dimension()==2) propagating_flip(iconstraints);
    }
    return;
 }
@@ -607,7 +607,7 @@ Constrained_Delaunay_triangulation_2<Gt,Tds,Itag>::
 remove_constrained_edge(Face_handle f, int i)
 {
   Ctr::remove_constrained_edge(f,i);
-  if(dimension() == 2) {
+  if(Ctr::dimension() == 2) {
     List_edges le;
     le.push_back(Edge(f,i));
     propagating_flip(le);
@@ -624,8 +624,8 @@ is_valid(bool verbose, int level) const
   bool result = Ctr::is_valid(verbose, level);
   CGAL_triangulation_assertion( result );
 
-    Finite_faces_iterator fit= finite_faces_begin();
-    for (; fit != finite_faces_end(); fit++) {
+    Finite_faces_iterator fit= Ctr::finite_faces_begin();
+    for (; fit != Ctr::finite_faces_end(); fit++) {
       for(int i=0;i<3;i++) {
 	result = result && !is_flipable(fit,i);
 	CGAL_triangulation_assertion( result );

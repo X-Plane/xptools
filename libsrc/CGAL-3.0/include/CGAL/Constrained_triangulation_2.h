@@ -224,12 +224,12 @@ public:
    int insert(InputIterator first, InputIterator last) 
 #endif
     {
-      int n = number_of_vertices(); 
+      int n = Triangulation::number_of_vertices(); 
       while(first != last){
 	insert(*first);
 	++first;
       }
-      return number_of_vertices() - n;
+      return Triangulation::number_of_vertices() - n;
     }
 
   //deprecated
@@ -296,8 +296,8 @@ public:
     Face_circulator fc = incident_faces(v), done(fc);
     do {
       vindex = fc->index(v);
-      fc->set_constraint(cw(vindex), false);
-      fc->set_constraint(ccw(vindex), false);
+      fc->set_constraint(Triangulation::cw(vindex), false);
+      fc->set_constraint(Triangulation::ccw(vindex), false);
       fh = fc->neighbor(vindex);
       ih = fc->mirror_index(vindex);
       fc->set_constraint(vindex, fh->is_constrained(ih));
@@ -360,14 +360,14 @@ insert(const Point& a, Locate_type lt, Face_handle loc, int li)
 
   if ( lt == Triangulation::EDGE && loc->is_constrained(li) ){
     insert_in_constrained_edge = true;
-    v1=loc->vertex(ccw(li)); //endpoint of the constraint
-    v2=loc->vertex(cw(li)); // endpoint of the constraint
+    v1=loc->vertex(Triangulation::ccw(li)); //endpoint of the constraint
+    v2=loc->vertex(Triangulation::cw(li)); // endpoint of the constraint
   }
 
   va = Triangulation::insert(a,lt,loc,li);
   if (insert_in_constrained_edge) update_constraints_incident(va, v1,v2);
   else if(lt != Triangulation::VERTEX) clear_constraints_incident(va);
-  if (dimension() == 2) update_constraints_opposite(va);
+  if (Triangulation::dimension() == 2) update_constraints_opposite(va);
   return va;
 }
 
@@ -489,8 +489,8 @@ find_intersected_faces(Vertex_handle vaa,
     return true;
   }
 
-  Face_handle lf= current_face->neighbor(ccw(ind)); 
-  Face_handle rf= current_face->neighbor(cw(ind));
+  Face_handle lf= current_face->neighbor(Triangulation::ccw(ind)); 
+  Face_handle rf= current_face->neighbor(Triangulation::cw(ind));
   Orientation orient;
   Face_handle previous_face;
   Vertex_handle current_vertex;	
@@ -517,12 +517,12 @@ find_intersected_faces(Vertex_handle vaa,
     case LEFT_TURN :
     case RIGHT_TURN :
       if (orient == LEFT_TURN) {
-	i1 = ccw(ind) ; //index of second intersected edge of current_face
-	i2 = cw(ind); //index of non intersected edge of current_face
+	i1 = Triangulation::ccw(ind) ; //index of second intersected edge of current_face
+	i2 = Triangulation::cw(ind); //index of non intersected edge of current_face
       }
       else {
-	i1 = cw(ind) ; //index of second intersected edge of current_face
-	i2 = ccw(ind); //index of non intersected edge of current_face
+	i1 = Triangulation::cw(ind) ; //index of second intersected edge of current_face
+	i2 = Triangulation::ccw(ind); //index of non intersected edge of current_face
       }
       if(current_face->is_constrained(i1)) {
 	vi = intersect(current_face, i1, vaa,vbb);
@@ -547,9 +547,9 @@ find_intersected_faces(Vertex_handle vaa,
   // last triangle 
   vi = current_vertex;
   intersected_faces.push_front(current_face);
-  lf= current_face->neighbor(cw(ind));
+  lf= current_face->neighbor(Triangulation::cw(ind));
   list_ab.push_back(Edge(lf, lf->index(current_face))); 
-  rf= current_face->neighbor(ccw(ind));
+  rf= current_face->neighbor(Triangulation::ccw(ind));
   list_ba.push_front(Edge(rf, rf->index(current_face)));
   return false;
 }
@@ -599,11 +599,11 @@ intersect(Face_handle f, int i,
   std::cerr << " and be much more efficient" << std::endl;
   const Point& pa = vaa->point();
   const Point& pb = vbb->point();
-  const Point& pc = f->vertex(cw(i))->point();
-  const Point& pd = f->vertex(ccw(i))->point();
+  const Point& pc = f->vertex(Triangulation::cw(i))->point();
+  const Point& pd = f->vertex(Triangulation::ccw(i))->point();
   Point pi;
   Itag itag = Itag();
-  bool ok = intersection(geom_traits(), pa, pb, pc, pd, pi, itag );
+  bool ok = intersection(Triangulation::geom_traits(), pa, pb, pc, pd, pi, itag );
   CGAL_triangulation_assertion(ok);
   Vertex_handle vi = virtual_insert(pi, Triangulation::EDGE, f, i);
   return vi; 
@@ -618,8 +618,8 @@ intersect(Face_handle f, int i,
 	  Exact_predicates_tag)
 {
   Vertex_handle  vcc, vdd;
-  vcc = f->vertex(cw(i));
-  vdd = f->vertex(ccw(i));
+  vcc = f->vertex(Triangulation::cw(i));
+  vdd = f->vertex(Triangulation::ccw(i));
 
   const Point& pa = vaa->point();
   const Point& pb = vbb->point();
@@ -628,11 +628,11 @@ intersect(Face_handle f, int i,
 
   Point pi; //creator for point is required here
   Itag itag = Itag();
-  bool ok  = intersection(geom_traits(), pa, pb, pc, pd, pi, itag );
+  bool ok  = intersection(Triangulation::geom_traits(), pa, pb, pc, pd, pi, itag );
 
   Vertex_handle vi;
   if ( !ok) {  //intersection detected but not computed
-    int i = limit_intersection(geom_traits(), pa, pb, pc, pd, itag);
+    int i = limit_intersection(Triangulation::geom_traits(), pa, pb, pc, pd, itag);
     switch(i){
     case 0 : vi = vaa; break;
     case 1 : vi = vbb; break;
@@ -686,8 +686,8 @@ update_constraints_incident(Vertex_handle va,
   // update status of edges incident to a 
   // after insertion in the  constrained edge c1c2
 {
-  if (dimension() == 0) return;
-  if (dimension()== 1) {
+  if (Triangulation::dimension() == 0) return;
+  if (Triangulation::dimension()== 1) {
     Edge_circulator ec=va->incident_edges(), done(ec);
     do {
       ((*ec).first)->set_constraint(2,true);
@@ -700,8 +700,8 @@ update_constraints_incident(Vertex_handle va,
     CGAL_triangulation_assertion(fc != 0);
     do {
       indf = fc->index(va);
-      cwi=cw(indf);
-      ccwi=ccw(indf); 
+      cwi=Triangulation::cw(indf);
+      ccwi=Triangulation::ccw(indf); 
       if ((fc->vertex(cwi) == c1)||(fc->vertex(cwi) == c2)) {
 	  fc->set_constraint(ccwi,true);
 	  fc->set_constraint(cwi,false);
@@ -729,7 +729,7 @@ clear_constraints_incident(Vertex_handle va)
       f = (*ec).first ;
       indf = (*ec).second;
       f->set_constraint(indf,false);
-      if (dimension() == 2) {
+      if (Triangulation::dimension() == 2) {
 	f->neighbor(indf)->set_constraint(f->mirror_index(indf),false);
       }
     } while (++ec != done);
@@ -745,7 +745,7 @@ update_constraints_opposite(Vertex_handle va)
   // update status of edges opposite to a
   // after insertion of a
 {
-  CGAL_triangulation_assertion(dimension()==2); 
+  CGAL_triangulation_assertion(Triangulation::dimension()==2); 
   Face_handle f=va->face(), start=f;
   int indf;
   do {
@@ -756,7 +756,7 @@ update_constraints_opposite(Vertex_handle va)
     else {
       f->set_constraint(indf,false);
     }
-    f= f->neighbor(ccw(indf)); // turns ccw around va 
+    f= f->neighbor(Triangulation::ccw(indf)); // turns ccw around va 
   } while (f != start);
   return;
 }
@@ -784,7 +784,7 @@ inline void
 Constrained_triangulation_2<Gt,Tds,Itag>::
 mark_constraint(Face_handle fr, int i)
 {
-  if (dimension()==1) fr->set_constraint(2, true);
+  if (Triangulation::dimension()==1) fr->set_constraint(2, true);
   else{
     fr->set_constraint(i,true);
     fr->neighbor(i)->set_constraint(fr->mirror_index(i),true);
@@ -856,9 +856,9 @@ remove(Vertex_handle  v)
   CGAL_triangulation_precondition( ! is_infinite(v));
   CGAL_triangulation_precondition( ! are_there_incident_constraints(v));
     
-  if  (number_of_vertices() == 1)     remove_first(v);
-  else if (number_of_vertices() == 2) remove_second(v);
-  else   if ( dimension() == 1) remove_1D(v);
+  if  (Triangulation::number_of_vertices() == 1)     remove_first(v);
+  else if (Triangulation::number_of_vertices() == 2) remove_second(v);
+  else   if ( Triangulation::dimension() == 1) remove_1D(v);
   else  remove_2D(v);
   return;
 }
@@ -900,7 +900,7 @@ Constrained_triangulation_2<Gt,Tds,Itag>::
 remove_constrained_edge(Face_handle f, int i)
 {
   f->set_constraint(i, false);
-  if (dimension() == 2)
+  if (Triangulation::dimension() == 2)
     (f->neighbor(i))->set_constraint(f->mirror_index(i), false);
   return;
 }
@@ -934,8 +934,8 @@ Constrained_triangulation_2<Gt,Tds,Itag>::
 is_valid(bool verbose, int level) const
 {
     bool result = Triangulation::is_valid(verbose,level);
-    for( All_faces_iterator it = all_faces_begin(); 
-	                    it != all_faces_end() ; it++) {
+    for( All_faces_iterator it = Triangulation::all_faces_begin(); 
+	                    it != Triangulation::all_faces_end() ; it++) {
       for(int i=0; i<3; i++) {
 	Face_handle n = it->neighbor(i);
 	result = result && 
@@ -977,8 +977,8 @@ triangulate_half_hole(List_edges & list_edges,  List_edges & new_edges)
   tempo=list_edges.end(); 
   --tempo; 
 
-  va=((*current).first)->vertex(ccw((*current).second));
-  vb=((*tempo).first)->vertex(cw((*tempo).second));
+  va=((*current).first)->vertex(Triangulation::ccw((*current).second));
+  vb=((*tempo).first)->vertex(Triangulation::cw((*tempo).second));
   next=current; 
   ++next;
 
@@ -991,7 +991,7 @@ triangulate_half_hole(List_edges & list_edges,  List_edges & new_edges)
 	n=n1->neighbor(ind1);
 	//ind=n1->mirror_index(ind1); 
 	// mirror_index does not work in this case
-	ind = cw(n->index(n1->vertex(cw(ind1))));
+	ind = cw(n->index(n1->vertex(Triangulation::cw(ind1))));
 	n1=n->neighbor(ind); 
 	ind1= n->mirror_index(ind);
       }
@@ -1002,14 +1002,14 @@ triangulate_half_hole(List_edges & list_edges,  List_edges & new_edges)
 	n=n2->neighbor(ind2); 
 	// ind=n2->mirror_index(ind2);
 	// mirror_index does not work in this case
-	ind = cw(n->index(n2->vertex(cw(ind2))));
+	ind = Triangulation::cw(n->index(n2->vertex(Triangulation::cw(ind2))));
 	n2=n->neighbor(ind); 
 	ind2= n->mirror_index(ind);
       }
 
-      Vertex_handle v0=n1->vertex(ccw(ind1));
-      Vertex_handle v1=n1->vertex(cw(ind1));
-      Vertex_handle v2=n2->vertex(cw(ind2));
+      Vertex_handle v0=n1->vertex(Triangulation::ccw(ind1));
+      Vertex_handle v1=n1->vertex(Triangulation::cw(ind1));
+      Vertex_handle v2=n2->vertex(Triangulation::cw(ind2));
       orient= orientation(v0->point(),v1->point(),v2->point());
       switch (orient) {
       case RIGHT_TURN : 	  		
