@@ -166,6 +166,8 @@ public:
 	 */
 	FontHandle LoadFont(
 				const char*						inFontPath,
+				const char *					inStartMem,		// null if we open file
+				const char *					inEndMem,		// null if we open file
 				unsigned int					inSizePx,
 				bool							inRequireExactSize);
 

@@ -22,6 +22,7 @@
  */
 #include "FontMgr.h"
 #include <math.h>
+#include "GUI_Resources.h"
 #include "AssertUtils.h"
 
 #if APL
@@ -177,7 +178,7 @@ FontMgr::~FontMgr()
 	Assert(!FT_Done_FreeType(mLibrary));
 }
 
-FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool require_exact)
+FontHandle FontMgr::LoadFont(const char* inFontPath, const char * inStartMem, const char * inEndMem, unsigned int inSizePx, bool require_exact)
 {
 	// First see if we've used this font before
 	if(mTexMap.count(inFontPath))
@@ -205,7 +206,8 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 	FontHandle		info = new FontInfo_t;
 	FT_GlyphSlot	glyph;
 
-	Assert(!FT_New_Face(mLibrary, inFontPath, FM_DEFAULT_FACE_INDEX, &face));
+	if (inStartMem)	Assert(!FT_New_Memory_Face(mLibrary, (const FT_Byte*) inStartMem, inEndMem - inStartMem, FM_DEFAULT_FACE_INDEX, &face));
+	else			Assert(!FT_New_Face(mLibrary, inFontPath, FM_DEFAULT_FACE_INDEX, &face));
 	Assert(!FT_Set_Char_Size(face, 0, inSizePx * 64, FM_DEVICE_RES_H, FM_DEVICE_RES_V));
 
 	CalcTexSize(&face, &info->tex_height, &info->tex_width);
@@ -308,6 +310,8 @@ FontHandle FontMgr::LoadFont(const char* inFontPath, unsigned int inSizePx, bool
 	error = glGetError();
 
 	delete[] textureData;
+	
+	FT_Done_Face(face);
 	return info;
 }
 
