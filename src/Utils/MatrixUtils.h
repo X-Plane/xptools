@@ -36,7 +36,7 @@
 #elif LIN
 #include <GL/gl.h>
 #else
-#include <gl.h>
+#include <gl/gl.h>
 #endif
 
 /* Some <math.h> files do not define M_PI... */

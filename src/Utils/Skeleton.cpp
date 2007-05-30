@@ -1254,7 +1254,7 @@ static void SK_CreateReflexEventsForPolygon(SK_Polygon * poly, SK_Polygon * worl
 
 
 
-bool	SK_InsetPolygon(
+int	SK_InsetPolygon(
 					const ComplexPolygon2&		inPolygon,
 					const ComplexPolygonWeight&	inWeight,
 					ComplexPolygonVector&		outHoles,

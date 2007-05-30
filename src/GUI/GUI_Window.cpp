@@ -12,13 +12,19 @@ static set<GUI_Window *>	sWindows;
 
 #if IBM
 
+#define OleStdGetDropEffect(grfKeyState)    \
+    ( (grfKeyState & MK_CONTROL) ?          \
+        ( (grfKeyState & MK_SHIFT) ? DROPEFFECT_LINK : DROPEFFECT_COPY ) :  \
+        ( (grfKeyState & MK_SHIFT) ? DROPEFFECT_MOVE : 0 ) )
+
+
 // GUI_Window_DND is an implementation of the COM IDropTarget interface that passes drop requests through to the window's base class
 // (GUI_Pane).  It handles coordinate conversion, but uses a helper class (GUI_OLE_Adapter) to convert data from the system's native
 // COM interfaces to something we can understand.
 
 class GUI_Window_DND : public IDropTarget {   
 public:    
-    GUI_Window_DND(GUI_Pane * iTarget, HWND inWindow)
+    GUI_Window_DND(GUI_Pane * iTarget, HWND inWindow);
    ~GUI_Window_DND();
 
    // IUnknown methods
@@ -87,14 +93,14 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 	RECT	rect;
 	GUI_OLE_Adapter	adapter(mData);	
 
-	DROPEFFECT allowed = *effect;
+	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
 
-	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+	DWORD recommended = OleStdGetDropEffect(key_state);
 
 	if (::GetWindowRect(mWindow, &rect))
 	{
-		*effect = OP_GUI2WIN(mTarget->InternalDragEnter(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed), OP_WIN2GUI(recommended)));
+		*effect = OP_GUI2Win(mTarget->InternalDragEnter(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed), OP_Win2GUI(recommended)));
 							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
 	}
 	return S_OK;
@@ -105,13 +111,13 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 	RECT	rect;
 	GUI_OLE_Adapter	adapter(mData);	
 
-	DROPEFFECT allowed = *effect;
+	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
-	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+	DWORD recommended = OleStdGetDropEffect(key_state);
 	
 	if (::GetWindowRect(mWindow, &rect))
 	{
-		*effect = OP_GUI2WIN(mTarget->InternalDragOver(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed),OP_WIN2GUI(recommended)));
+		*effect = OP_GUI2Win(mTarget->InternalDragOver(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
 							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
 	}
 	return S_OK;
@@ -119,7 +125,7 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 
 STDMETHODIMP GUI_Window_DND::DragLeave(void)
 {
-	mTarget->InternalDragLeave(void);
+	mTarget->InternalDragLeave();
 	mData->Release();
 	return S_OK;
 }
@@ -127,21 +133,78 @@ STDMETHODIMP GUI_Window_DND::DragLeave(void)
 STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
 	RECT	rect;
-	GUI_OLE_Adapter	adapter(data_oboj);	
+	GUI_OLE_Adapter	adapter(data_obj);	
 
-	DROPEFFECT allowed = *effect;
+	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
-	DROPEFFECT recommended = OleStdGetDropEffect(key_state);
+	DWORD recommended = OleStdGetDropEffect(key_state);
 
 	if (::GetWindowRect(mWindow, &rect))
 	{
-		*effect = OP_GUI2WIN(mTarget->InternalDrop(where.x - rect.left, rect.bottom - where.y, &adapter, OP_WIN2GUI(allowed),OP_WIN2GUI(recommended)));
-		mTarget->InterlDragLeave();
+		*effect = OP_GUI2Win(mTarget->InternalDrop(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
+		mTarget->InternalDragLeave();
 	}
 	return S_OK;
 	
 }
     
+//	From Raymond Chen's blog: 
+//	http://blogs.msdn.com/oldnewthing/archive/2004/12/06/275659.aspx
+
+class GUI_DropSource : public IDropSource {
+public:
+	STDMETHODIMP		 QueryInterface(REFIID riid, void **ppv);
+	STDMETHODIMP_(ULONG) AddRef();
+	STDMETHODIMP_(ULONG) Release();
+
+	STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState);
+	STDMETHODIMP GiveFeedback(DWORD dwEffect);
+
+	GUI_DropSource() : m_cRef(1) { }
+private:
+	ULONG m_cRef;
+};
+
+HRESULT GUI_DropSource::QueryInterface(REFIID riid, void **ppv)
+{
+	IUnknown *punk = NULL;
+			if (riid == IID_IUnknown)		punk = static_cast<IUnknown*>(this);
+	else	if (riid == IID_IDropSource)	punk = static_cast<IDropSource*>(this);
+
+	*ppv = punk;
+	if (punk) 
+	{
+		punk->AddRef();
+		return S_OK;
+	} else
+	return E_NOINTERFACE;
+}
+
+ULONG GUI_DropSource::AddRef()
+{
+	return ++m_cRef;
+}
+
+ULONG GUI_DropSource::Release()
+{
+	ULONG cRef = --m_cRef;
+	if (cRef == 0) delete this;
+	return cRef;
+}
+
+HRESULT GUI_DropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
+{
+	if (fEscapePressed)								return DRAGDROP_S_CANCEL;
+	if (!(grfKeyState & (MK_LBUTTON | MK_RBUTTON)))	return DRAGDROP_S_DROP;
+													return S_OK;
+}
+
+HRESULT GUI_DropSource::GiveFeedback(DWORD dwEffect)
+{
+	return DRAGDROP_S_USEDEFAULTCURSORS;
+}
+
+
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -596,6 +659,13 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	ShiftControlMask = 0x00ff0000;
 	ExtKeyMask = 0x01ff0000;
 
+#if !DEV
+	examine - is this right?
+#endif
+	static int	ShiftToggle=0;
+	static int	ControlToggle=0;
+	static int	OptionKeyToggle=0;
+
 	if (((inParam2 & ExtKeyMask) == numLockKey) || ((inParam2 & ShiftControlMask) == capsLockKey) || ((inParam2 & ShiftControlMask) == scrollLockKey))
 		return 1;
 
@@ -751,7 +821,7 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	int w,h;
 	XWinGL::GetBounds(&w, &h);
-	TrackPopupCommands((MenuRef) menu,x,h-y,-1);
+	TrackPopupCommands((xmenu) menu,x,h-y,-1);
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -764,7 +834,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	
 	int w,h;
 	XWinGL::GetBounds(&w, &h);
-	return TrackPopupCommands((MenuRef) popup_temp,x,h-y, current);	
+	return TrackPopupCommands((xmenu) popup_temp,x,h-y, current);	
 }
 
 bool				GUI_Window::IsDragClick(int x, int y)
@@ -787,11 +857,22 @@ bool				GUI_Window::IsDragClick(int x, int y)
 		return WaitMouseMoved(p);
 
 	#elif IBM
-		#error we need to do
-		DragDetect with our hwnd, and then RESET capture!  Yikes!
+		RECT	rect;
+		if (::GetWindowRect(mWindow, &rect)) {
+			x-= rect.left;
+			y -= rect.top;
+		}
+
+		POINT p;
+		p.x=x;
+		p.y=y;
+
+		int ret = DragDetect(mWindow,p);
+		SetCapture(NULL);
+		return ret;
 			
 	#else
-		#error NOT IMLEMENTEd
+		#error NOT IMLEMENTED
 	#endif
 }
 
@@ -871,10 +952,10 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 	
 	#elif IBM
 		GUI_DropSource	* drop_source = new GUI_DropSource;
-		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, get_data_f, ref);
-		DROPEFFECT effect;
+		GUI_SimpleDataObject * data = new GUI_SimpleDataObject(type_count, inTypes, sizes, ptrs, fetch_func, ref);
+		DWORD effect;
 		
-		if (DoDragDrop(data, drop_source, OP_GUI2Win(operatoins), &effect) != DRAGDROP_S_DROP)
+		if (DoDragDrop(data, drop_source, OP_GUI2Win(operations), &effect) != DRAGDROP_S_DROP)
 			effect = DROPEFFECT_NONE;
 			
 		data->Release();

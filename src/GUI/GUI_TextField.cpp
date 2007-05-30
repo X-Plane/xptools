@@ -9,7 +9,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 
 GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :

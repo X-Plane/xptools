@@ -1,5 +1,6 @@
 #include "GUI_SimpleTableGeometry.h"
 #include "GUI_Messages.h"
+#include <algorithm>
 
 GUI_SimpleTableGeometry::GUI_SimpleTableGeometry(
 			int		num_cols,

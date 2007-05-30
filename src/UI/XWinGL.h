@@ -35,6 +35,10 @@
 #include "XWin.h"
 
 #if IBM
+#include <gl/gl.h>
+#endif
+
+#if IBM
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
    typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC      )(GLenum                );

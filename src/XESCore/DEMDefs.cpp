@@ -23,6 +23,7 @@
 #include "DEMDefs.h"
 #include "CompGeomDefs3.h"
 
+
 #define HIST_MAX	10
 
 struct	HistoHelper {

@@ -31,7 +31,7 @@ int sql_do_bulk(sqlite3 * db, const char * sql)
 int sql_do_bulk_range(sqlite3 * db, const char * sql_begin, const char * sql_end)
 {
 	string buf(sql_begin, sql_end);
-	sql_do_bulk(db,buf.c_str());
+	return sql_do_bulk(db,buf.c_str());
 }
 
 static int strptr_cb(void*ref,int col_count,char** col_data, char** col_names)

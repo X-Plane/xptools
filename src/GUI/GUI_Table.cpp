@@ -6,7 +6,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else	
-	#inclde <gl/gl.h>
+	#include <gl/gl.h>
 #endif
 
 #define	AUTOSCROLL_DIST	15
@@ -22,7 +22,8 @@ static bool ClipTo(int pane[4], int cell[4])
 	int h = clip[3] - clip[1];
 	if (w <= 0 || h <= 0) return false;
 	
-	glScissor(clip[0], clip[1], w, h);					
+	glScissor(clip[0], clip[1], w, h);		
+	return true;
 }
 
 /************************************************************************************************************

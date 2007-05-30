@@ -28,10 +28,12 @@ private:
 		
 	static pascal void TimerCB(EventLoopTimerRef inTimer, void *inUserData);
 	
-	#else
+	#elif IBM	
+		static void CALLBACK	TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	
+	#else
 		#error NOT IMPLEMENTED
-		
+
 	#endif
 	
 };			

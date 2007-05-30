@@ -13,7 +13,7 @@
 #if APL
 	typedef	OSType	GUI_CIT;		// Clipboard Internal Type
 #elif IBM
-	typedef	UINT	GUI_CIT;		// Clipboard Internal Type
+	typedef	CLIPFORMAT	GUI_CIT;		// Clipboard Internal Type
 #else
 	#error not coded for linux
 #endif
@@ -138,7 +138,7 @@ void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 			GUI_CIT raw_type = EnumClipboardFormats(n);
 			GUI_ClipType ct;
 			if (CIT2GUI(raw_type, ct))
-				out_types.push_back(ct);
+				outTypes.push_back(ct);
 		}
 	#else
 		#error not implemented
@@ -159,7 +159,7 @@ struct	StGlobalBlock {
 	HGLOBAL	operator()(void) const { return handle; }
 	void release(void) { handle = NULL; }
 	HGLOBAL handle;
-}
+};
 
 struct	StGlobalLock {
 	 StGlobalLock(HGLOBAL h) { handle = h; ptr = GlobalLock(handle); }
@@ -303,6 +303,7 @@ bool			GUI_GetTextFromClipboard(string& outText)
 	#else
 		#error not coded
 	#endif
+	return true;
 }
 
 bool			GUI_SetTextToClipboard(const string& inText)
@@ -445,7 +446,7 @@ GUI_SimpleDataObject::GUI_SimpleDataObject(
 		if (ptrs[n] == NULL)
 			mData[inTypes[n]] = vector<char>();			
 		else
-			mData[inTypes[n]] = vector<char>(ptrs[n],ptrs[n]+sizes[n]);			
+			mData[inTypes[n]] = vector<char>((const char*)ptrs[n],(const char *)ptrs[n]+sizes[n]);			
 	}
 }
 
@@ -495,14 +496,13 @@ STDMETHODIMP		GUI_SimpleDataObject::GetData				(FORMATETC * format, STGMEDIUM * 
 	{
 		if (mFetchFunc == NULL)						return E_UNEXPECTED;
 	
-		mData[desired_type].resize(mSize[desired_type]);
 		const void * start_p;
 		const void * end_p;
 		
 		GUI_FreeFunc_f free_it = mFetchFunc(desired_type, &start_p, &end_p, mFetchRef);
 		if (start_p == NULL)						return E_OUTOFMEMORY;
 		
-		vector<char>	buf(start_p,end_p);
+		vector<char>	buf((const char*)start_p,(const char*)end_p);
 		mData[desired_type].swap(buf);
 		if (free_it) free_it(start_p, mFetchRef);		
 	}
@@ -513,8 +513,8 @@ STDMETHODIMP		GUI_SimpleDataObject::GetData				(FORMATETC * format, STGMEDIUM * 
 	if (!new_block())								return E_OUTOFMEMORY;
 	
 	{
-		StGlobalLock lock_it(block());
-		if (!lock_it())								return E_OUTOFMEMORY
+		StGlobalLock lock_it(new_block());
+		if (!lock_it())								return E_OUTOFMEMORY;
 		memcpy(lock_it(), &*mData[desired_type].begin(), mData[desired_type].size());
 	}
 
@@ -534,20 +534,19 @@ STDMETHODIMP		GUI_SimpleDataObject::GetDataHere			(FORMATETC * format, STGMEDIUM
 	if (!CIT2GUI(format->cfFormat, desired_type))	return DV_E_FORMATETC;	
 	if (mData.count(desired_type) == 0)				return DV_E_FORMATETC;	
 	if ((format->tymed & TYMED_HGLOBAL) == 0)		return DV_E_TYMED;
-	if (medium->typmed != TYMED_HGLOBAL)			return DV_E_TYMED;
+	if (medium->tymed != TYMED_HGLOBAL)			return DV_E_TYMED;
 
 	if (mData[desired_type].empty())
 	{
 		if (mFetchFunc == NULL)						return E_UNEXPECTED;
 	
-		mData[desired_type].resize(mSize[desired_type]);
 		const void * start_p;
 		const void * end_p;
 		
 		GUI_FreeFunc_f free_it = mFetchFunc(desired_type, &start_p, &end_p, mFetchRef);
 		if (start_p == NULL)						return E_OUTOFMEMORY;
 		
-		vector<char>	buf(start_p,end_p);
+		vector<char>	buf((const char *)start_p,(const char *)end_p);
 		mData[desired_type].swap(buf);
 		if (free_it) free_it(start_p, mFetchRef);		
 	}
@@ -557,7 +556,7 @@ STDMETHODIMP		GUI_SimpleDataObject::GetDataHere			(FORMATETC * format, STGMEDIUM
 
 	{
 		StGlobalLock lock_it(medium->hGlobal);
-		if (!lock_it())												return E_OUTOFMEMORY
+		if (!lock_it())												return E_OUTOFMEMORY;
 		memcpy(lock_it(), &*mData[desired_type].begin(), mData[desired_type].size());
 	}
 
@@ -580,11 +579,11 @@ STDMETHODIMP		GUI_SimpleDataObject::QueryGetData			(FORMATETC * format)
 // I still can't say I fully understand what this is for ... somehow it is used by calling code to analyze the
 // various conversion options.  Bottom line is returning what we got with no ptd is fair game per the MS docs
 // for trivial clients.  (Of course we provide exactly one rendering per clipboard-type.)
-STDMETHODIMP		GUI_SimpleDataObject::GetCanonicalFormatEtc	(FORMATETC *format_in, FORMATETC  *foramt_out)
+STDMETHODIMP		GUI_SimpleDataObject::GetCanonicalFormatEtc	(FORMATETC *format_in, FORMATETC  *format_out)
 {	
 	GUI_ClipType	desired_type;
-	if (!CIT2GUI(format->cfFormat, desired_type))	return DV_E_FORMATETC;	
-	if (mData.count(desired_type) == 0)				return DV_E_FORMATETC;	
+	if (!CIT2GUI(format_in->cfFormat, desired_type))	return DV_E_FORMATETC;	
+	if (mData.count(desired_type) == 0)					return DV_E_FORMATETC;	
 
 	memcpy(format_out, format_in, sizeof(FORMATETC));
 	format_out->ptd = NULL;
@@ -672,7 +671,7 @@ STDMETHODIMP		GUI_SimpleEnumFORMATETC::Next			(ULONG count, FORMATETC * formats,
 	{
 		GUI2CIT(mTypes[n+mIndex],formats[n].cfFormat);
 		formats[n].ptd			= NULL;
-		formats[n].dwAspect		= DVASPECT_CONTENT
+		formats[n].dwAspect		= DVASPECT_CONTENT;
 		formats[n].lindex		= -1;
 		formats[n].tymed		= TYMED_HGLOBAL;
 	}

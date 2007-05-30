@@ -4,10 +4,6 @@
 EventLoopTimerUPP GUI_Timer::sTimerCB = NewEventLoopTimerUPP(GUI_Timer::TimerCB);
 #endif
 
-#if !APL
-#error not coded
-#endif
-
 
 GUI_Timer::GUI_Timer(void)
 {
@@ -37,6 +33,9 @@ void GUI_Timer::Start(float seconds)
 				reinterpret_cast<void*>(this),
 				&mTimer);
 	#endif
+	#if IBM
+		SetTimer(NULL,reinterpret_cast<UINT_PTR>(this),seconds * 1000.0f, TimerCB);
+	#endif	
 }
 
 void GUI_Timer::Stop(void)
@@ -48,10 +47,22 @@ void GUI_Timer::Stop(void)
 			mTimer = NULL;
 		}
 	#endif
+	#if IBM
+		KillTimer(NULL,reinterpret_cast<UINT_PTR>(this));
+	#endif
 }
 
+#if APL
 pascal void GUI_Timer::TimerCB(EventLoopTimerRef inTimer, void *inUserData)
 {
 	GUI_Timer * me = reinterpret_cast<GUI_Timer *>(inUserData);
 	me->TimerFired();
 }
+#endif
+#if IBM
+void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	GUI_Timer * me = (GUI_Timer *) idEvent;
+	me->TimerFired();
+}
+#endif

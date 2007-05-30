@@ -130,7 +130,7 @@ bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName)
 	
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
-	long dim = sqrt(words);
+	long dim = sqrt((float) words);
 	
 	inMap.resize(dim, dim);
 	if (inMap.mData)
@@ -199,7 +199,7 @@ bool	ReadFloatHGT(DEMGeo& inMap, const char * inFileName)
 	
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(float);
-	long dim = sqrt(words);
+	long dim = sqrt((float)words);
 	
 	inMap.resize(dim, dim);
 	int dummy1;
@@ -247,7 +247,7 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
 	
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
-	long dim = sqrt(words);
+	long dim = sqrt((float) words);
 	
 	inMap.resize(dim, dim);
 	{
@@ -433,9 +433,9 @@ double	parse_field_float(const char ** s, const char * e)
 	*s = p;
 	int	rshift = digits - exponent;
 	if (rshift > 0)
-		return sign * (mantissa / pow(10, rshift));
+		return sign * (mantissa / pow(10.0f, rshift));
 	else
-		return sign * (mantissa * pow(10, rshift));
+		return sign * (mantissa * pow(10.0f, rshift));
 bail:	
 	*s = p;
 	return 0;
@@ -469,7 +469,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	s=b+528;	e=b+534;	int hunits = parse_field_int(&s, e);
 	s=b+534;	e=b+540;	int vunits = parse_field_int(&s, e);
 	s=b+546;	e=b+738;	double	west = parse_field_float(&s, e) / 3600.0; double	south = parse_field_float(&s, e)  / 3600.0;
-							parse_field_float(&s, e)  / 3600.0;	parse_field_float(&s, e)  / 3600.0;
+							parse_field_float(&s, e);	parse_field_float(&s, e);
 							double	east = parse_field_float(&s, e) / 3600.0; double	north = parse_field_float(&s, e)  / 3600.0;
 	s=b+852;	e=b+864;	int k = parse_field_int(&s, e); int profiles = parse_field_int(&s, e);
 		
@@ -518,10 +518,10 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 			int	max_per_record = is_first_record ? 146 : 170;
 			int num_read = (max_per_record < count) ? max_per_record : count;
 //			printf("       Will read %d starting at %d, first rec = %s\n", num_read, o-p, is_first_record ? "true" : "false");
-			for (int n = 0; n < num_read; ++n)
+			for (int nn = 0; nn < num_read; ++nn)
 			{
 				int elev = parse_field_int(&o, e);
-				if (o >= e) {printf("ERROR: overrun, n = %d\n", n); goto bail; }
+				if (o >= e) {printf("ERROR: overrun, n = %d\n", nn); goto bail; }
 				inMap(ox, oy) = elev;
 				++oy;
 			}

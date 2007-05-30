@@ -4,8 +4,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
 #else
-	#include <gl.h>
-	#include <glext.h>
+	#include <gl/gl.h>
+	#include <gl/glext.h>
 #endif
 
 #include "XWinGL.h"

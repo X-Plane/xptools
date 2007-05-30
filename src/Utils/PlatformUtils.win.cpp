@@ -54,11 +54,14 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {	
+		BROWSEINFO	bif = { 0 };
+		OPENFILENAME	ofn = { 0 };
+
+
 	BOOL result;
 	switch(inType) {
 	case getFile_Open:
 	case getFile_Save:	
-		OPENFILENAME	ofn = { 0 };
 		ofn.lStructSize = sizeof(ofn);
 		ofn.lpstrFilter = "All Files\000*.*\000";
 		ofn.nFilterIndex = 1;	// Start with .acf files
@@ -71,7 +74,6 @@ int		GetFilePathFromUser(
 		result = (inType == getFile_Open) ? GetOpenFileName(&ofn) : GetSaveFileName(&ofn);
 		return (result) ? 1 : 0;
 	case getFile_PickFolder:
-		BROWSEINFO	bif = { 0 };
 		bif.hwndOwner = NULL;
 		bif.pidlRoot = NULL;
 		bif.pszDisplayName = NULL;

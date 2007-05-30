@@ -32,7 +32,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 #include "BitmapUtils.h"
 #include "TexUtils.h"

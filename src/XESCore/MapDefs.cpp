@@ -463,9 +463,15 @@ Pmwx& Pmwx::operator=(const Pmwx& rhs)
 	clear();
 		
 	// OPTIMIZE - we should examine the quality of the hash table that's being bulit off memory pointers.
+#if IBM
+	hash_map<const GISHalfedge *, GISHalfedge *>	halfedges;
+	hash_map<const GISVertex   *, GISVertex   *>	vertices;
+	hash_map<const GISFace     *, GISFace     *>	faces;
+#else
 	hash_map<const GISHalfedge *, GISHalfedge *, HashPtr>	halfedges;
 	hash_map<const GISVertex   *, GISVertex   *, HashPtr>	vertices;
 	hash_map<const GISFace     *, GISFace     *, HashPtr>	faces;
+#endif
 	
 		  GISHalfedge 	* en;
 		  GISVertex		* vn;
@@ -508,8 +514,10 @@ Pmwx& Pmwx::operator=(const Pmwx& rhs)
 			DebugAssert(fn->is_unbounded());
 		else
 			fn->set_outer_ccb(halfedges[fi->outer_ccb()]);
-		for (Holes_iterator h = fi->holes_begin(); h != fi->holes_end(); ++h)
+		for (Holes_const_iterator h = fi->holes_begin(); h != fi->holes_end(); ++h)
+		{
 			fn->add_hole(halfedges[*h]);
+		}
 	}
 	for (vn = mFirstVertex, vi = rhs.mFirstVertex; vn; vn = vn->mLinkNext, vi = vi->mLinkNext)
 	{
@@ -581,7 +589,7 @@ Pmwx& Pmwx::operator=(const GISFace& rhs)
 		} while (iter != stop);
 	}
 	
-	for (Holes_iterator h = rhs.holes_begin(); h != rhs.holes_end(); ++h)
+	for (Holes_const_iterator h = rhs.holes_begin(); h != rhs.holes_end(); ++h)
 	{
 		iter = stop = *h;
 		do {

@@ -26,8 +26,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <gl.h>
-	#include <glu.h>
+	#include <gl/gl.h>
+	#include <gl/glu.h>
 #endif
 
 /*****************************************************************************************

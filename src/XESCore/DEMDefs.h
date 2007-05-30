@@ -24,6 +24,7 @@
 #define DEMDEFS_H
 
 #include <math.h>
+#include <algorithm>
 
 #include "XESConstants.h"
 #include "ProgressUtils.h"

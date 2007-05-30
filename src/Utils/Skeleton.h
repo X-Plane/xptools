@@ -19,7 +19,7 @@ enum {
 	skeleton_Exception			// An exception was thrown during processing.
 };
 
-bool	SK_InsetPolygon(
+int	SK_InsetPolygon(
 					const ComplexPolygon2&		inPolygon,
 					const ComplexPolygonWeight&	inWeight,
 					ComplexPolygonVector&		outHoles,

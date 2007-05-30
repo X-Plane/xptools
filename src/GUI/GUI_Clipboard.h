@@ -66,13 +66,13 @@ public:
 
 // Convenience routines to convert our drop-actions to native and back.
 
-inline DROPEFFECT	OP_GUI2Win(GUI_DragOperation fx)
+inline DWORD	OP_GUI2Win(GUI_DragOperation fx)
 {
 	return (fx & gui_Drag_Move ? DROPEFFECT_MOVE : DROPEFFECT_NONE) + 
 		   (fx & gui_Drag_Copy ? DROPEFFECT_COPY : DROPEFFECT_NONE);
 }
 
-inline GUI_DragOperation	OP_Win2GUI(DROPEFFECT fx)
+inline GUI_DragOperation	OP_Win2GUI(DWORD fx)
 {
 	return (fx & DROPEFFECT_MOVE ?  gui_Drag_Move: gui_Drag_None) + 
 		   (fx & DROPEFFECT_COPY ?  gui_Drag_Copy: gui_Drag_None);
@@ -95,7 +95,7 @@ public:
 	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr);
 private:
 	IDataObject *	mObject;
-}
+};
 
 // GUI_SimpleDataObject is a COM object that implements IDataObject, the interface
 // for stuff you can drag around on Windows.  It does this by taking an explicit pile

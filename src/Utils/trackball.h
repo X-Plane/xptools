@@ -40,6 +40,10 @@
  * Written by Gavin Bell for Silicon Graphics, November 1988.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Pass the x and y coordinates of the last and current positions of
  * the mouse, scaled so they are from (-1.0 ... 1.0).
@@ -76,3 +80,6 @@ build_rotmatrix(float m[4][4], float q[4]);
 void
 axis_to_quat(float a[3], float phi, float q[4]);
 
+#ifdef __cplusplus
+}; 
+#endif

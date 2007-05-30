@@ -6,7 +6,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 
 static const char * kFontNames[font_Max] = {
@@ -23,7 +23,7 @@ static FontMgr *	sFontMgr = NULL;
 
 static const int	kAlign[3] = { ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT };
 
-static void MyGenerateTextures(int n,	int* textures) { glGenTextures (n, (unsigned long *) textures); }
+static void MyGenerateTextures(int n,	int* textures) { glGenTextures (n, (GLuint *) textures); }
 static void MyBindTexture(int target,	int texture)   
 {	 
 	glBindTexture(target, texture);

@@ -1,6 +1,7 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Menus.h"
+#include "XWin.h"
 #define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
@@ -207,7 +208,11 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 
 	XWin::RegisterClass(GetModuleHandle(NULL));
 	if(OleInitialize(NULL) != S_OK)
-		return FALSE;
+	{
+#if ERROR_CHECK
+		uh oh
+#endif
+	}
 
 #endif
 }
@@ -297,29 +302,35 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 
 #if IBM
-	#error check this!
+
 	GUI_Menu parent = (inParentMenu) ? 
 		(((MenuInfo_t *) inParentMenu)->menu) :
 		(gWidgetWin->GetMenuBar());
 
+	if (parent == GetPopupContainer())
+	pMenu->menu = CreatePopupMenu();
+	else
 	pMenu->menu = CreateMenu();
+
+	
 
 	MENUITEMINFO	mif = { 0 };
 	mif.cbSize = sizeof(mif);
 	mif.hSubMenu = pMenu->menu;
 	mif.fType = MFT_STRING;
 	mif.dwTypeData = const_cast<char *>(inName);
-	mif.fMask = (inParentMenu) ? MIIM_SUBMENU : (MIIM_TYPE | MIIM_SUBMENU);
+	mif.fMask = (inParentMenu && parent != GetPopupContainer()) ? MIIM_SUBMENU : (MIIM_TYPE | MIIM_SUBMENU);
 
 	if (inParentMenu == NULL)
 	{
 		InsertMenuItem(parent, -1, true, &mif);
 	} else {
-		SetMenuItemInfo(parent, inParentItem, true, &mif);
-		
+		SetMenuItemInfo(parent, inParentItem, true, &mif);	
 	}		
 	
 #endif
+
+	RebuildMenu(new_menu, items);
 
 	mMenus.insert(new_menu);
 	return new_menu;	

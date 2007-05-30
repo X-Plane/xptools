@@ -21,7 +21,7 @@
  *
  */
 #include "XWinGL.h"
-#include <gl.h>
+#include <gl/gl.h>
 
 PFNGLMULTITEXCOORD2FARBPROC  		glMultiTexCoord2fARB	;
 PFNGLMULTITEXCOORD2FVARBPROC 		glMultiTexCoord2fvARB;
@@ -68,7 +68,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 }	
 
 	
-XWinGL::XWinGL(default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
 	XWin(default_dnd, inTitle, inX, inY, inWidth, inHeight)
 {
 	mDC = ::GetDC(mWindow);

@@ -6,7 +6,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 
 //const int	gui_SplitSize = 5;

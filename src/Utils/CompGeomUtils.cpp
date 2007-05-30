@@ -1411,7 +1411,7 @@ void	SafeMakeMoreConvex(Polygon2& ioPolygon, double max_area)
 }
 
 struct sort_by_ymin {
-	int operator()(const Bbox2& lhs, const Bbox2& rhs) const { return lhs.ymin() < rhs.ymin(); }
+	bool operator()(const Bbox2& lhs, const Bbox2& rhs) const { return lhs.ymin() < rhs.ymin(); }
 };
 
 // Simple self-intersection check.

@@ -1,5 +1,6 @@
 #include "GUI_Commander.h"
 #include "AssertUtils.h"
+#include <algorithm>
 
 GUI_Commander * GUI_Commander::mCmdRoot = NULL;
 

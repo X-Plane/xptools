@@ -221,7 +221,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	
 	cell_bounds[0] += (mEditInfo.indent_level * 10);
 	
-	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type == gui_Cell_None; return 1; }
+	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 	
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
@@ -493,7 +493,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 	}
 	if (!mTextField)
 	{
-		mEditInfo.content_type == gui_Cell_None;
+		mEditInfo.content_type = gui_Cell_None;
 		mClickCellX = -1;
 		mClickCellY = -1;	
 	}
@@ -904,18 +904,19 @@ int			GUI_TextTableHeader::HeadMouseDown(int cell_bounds[4], int cell_x, int mou
 {	
 	want_lock = 1;
 	mCellResize = -1;
-	if (mGeometry && fabs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
+	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
 	{
 		mLastX = mouse_x;
 		mCellResize = cell_x -1;
 		return 1;
 	}
-	if (mGeometry && fabs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
+	if (mGeometry && abs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
 	{
 		mLastX = mouse_x;
 		mCellResize = cell_x;
 		return 1;
 	}
+	return 1;
 }
 
 void		GUI_TextTableHeader::HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button)
@@ -984,18 +985,19 @@ int			GUI_TextTableSide::SideMouseDown(int cell_bounds[4], int cell_y, int mouse
 {
 	want_lock = 1;
 	mCellResize = -1;
-	if (mGeometry && fabs(mouse_y - cell_bounds[1]) < RESIZE_MARGIN && cell_y > 0)
+	if (mGeometry && abs(mouse_y - cell_bounds[1]) < RESIZE_MARGIN && cell_y > 0)
 	{
 		mLastY = mouse_y;
 		mCellResize = cell_y -1;
 		return 1;
 	}
-	if (mGeometry && fabs(mouse_y - cell_bounds[2]) < RESIZE_MARGIN && cell_y < mGeometry->GetRowCount())
+	if (mGeometry && abs(mouse_y - cell_bounds[2]) < RESIZE_MARGIN && cell_y < mGeometry->GetRowCount())
 	{
 		mLastY = mouse_y;
 		mCellResize = cell_y;
 		return 1;
 	}
+	return 1;
 }
 
 void		GUI_TextTableSide::SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button)

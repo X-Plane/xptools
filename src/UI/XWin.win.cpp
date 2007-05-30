@@ -122,17 +122,10 @@ XWin::~XWin()
 		KillTimer(mWindow, IDT_TIMER1);
 	}
 
-	#if !DEV
-		Ben says: I think this is a double-delete.  If destroying the window kills off the drag handler,
-		then mDropTarget will zero its ref count and self-die.
-		But...if we are not freeing it off, then we have been leaking it.
-		
-		-- hrm - making obj makes ref of 1 ... perhaps we shoud be calling release
-	#endif
 
 	if (mWindow)
 		DestroyWindow(mWindow);
-	delete mDropTarget;	
+	mDropTarget->Release();	
 }
 
 void			XWin::SetTitle(const char * inTitle)
@@ -459,9 +452,21 @@ void			XWin::DrawMenuBar(void)
 	::DrawMenuBar(mWindow);
 }
 
-int				XWin::TrackPopup(vector<string>& choices, int mouse_x, int mouse_y)
+int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
 {
-	#error DO THIS
-	TrackPopupMenuEx
+		RECT	rect;
+	if (::GetWindowRect(mWindow, &rect)) {
+		mouse_x -= rect.left;
+		mouse_y -= rect.top;
+	}
+
+	int result = TrackPopupMenuEx(
+			in_menu,
+			TPM_RETURNCMD + TPM_NONOTIFY,
+			mouse_x,
+			mouse_y,
+			mWindow,
+			NULL);
+	return result;
 }
 

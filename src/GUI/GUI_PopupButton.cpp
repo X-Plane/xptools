@@ -6,7 +6,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <GL/gl.h>
+	#include <gl/gl.h>
 #endif
 
 GUI_PopupButton::GUI_PopupButton()
@@ -23,7 +23,7 @@ void		GUI_PopupButton::SetDescriptor(const string& inDesc)
 
 	mItems.clear();
 
-	string::iterator b, e;
+	string::const_iterator b, e;
 	b = inDesc.begin();
 	while (b != inDesc.end())
 	{

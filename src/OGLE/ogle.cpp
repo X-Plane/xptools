@@ -2,6 +2,7 @@
 #include <vector>
 #include <ctype.h>
 #include <math.h>
+#include <algorithm>
 using std::vector;
 
 

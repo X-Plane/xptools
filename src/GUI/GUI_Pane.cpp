@@ -13,8 +13,12 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
+
+#include <time.h>
+#include <algorithm>
+using std::find;
 
 
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
@@ -543,65 +547,6 @@ GUI_DragOperation		GUI_Pane::InternalDrop		(int x, int y, GUI_DragData * drag, G
 	else		return gui_Drag_None;
 }
 
-#if IBM
-
-//	From Raymond Chen's blog: 
-//	http://blogs.msdn.com/oldnewthing/archive/2004/12/06/275659.aspx
-
-class GUI_DropSource : public IDropSource {
-public:
-	STDMETHODIMP		 QueryInterface(REFIID riid, void **ppv);
-	STDMETHODIMP_(ULONG) AddRef();
-	STDMETHODIMP_(ULONG) Release();
-
-	STDMETHODIMP QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState);
-	STDMETHODIMP GiveFeedback(DWORD dwEffect);
-
-	GUI_DropSource() : m_cRef(1) { }
-private:
-	ULONG m_cRef;
-};
-
-HRESULT GUI_DropSource::QueryInterface(REFIID riid, void **ppv)
-{
-	IUnknown *punk = NULL;
-			if (riid == IID_IUnknown)		punk = static_cast<IUnknown*>(this);
-	else	if (riid == IID_IDropSource)	punk = static_cast<IDropSource*>(this);
-
-	*ppv = punk;
-	if (punk) 
-	{
-		punk->AddRef();
-		return S_OK;
-	} else
-	return E_NOINTERFACE;
-}
-
-ULONG GUI_DropSource::AddRef()
-{
-	return ++m_cRef;
-}
-
-ULONG GUI_DropSource::Release()
-{
-	ULONG cRef = --m_cRef;
-	if (cRef == 0) delete this;
-	return cRef;
-}
-
-HRESULT GUI_DropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
-{
-	if (fEscapePressed)								return DRAGDROP_S_CANCEL;
-	if (!(grfKeyState & (MK_LBUTTON | MK_RBUTTON)))	return DRAGDROP_S_DROP;
-													return S_OK;
-}
-
-HRESULT GUI_DropSource::GiveFeedback(DWORD dwEffect)
-{
-	return DRAGDROP_S_USEDEFAULTCURSORS;
-}
-
-#endif
 
 bool				GUI_Pane::IsDragClick(int x, int y)
 {
