@@ -10,12 +10,12 @@
 #endif
 
 static const char * kFontNames[font_Max] = {
-	"Courier.ttf"
+	"Vera.ttf"
 //	"Arial"
 };
 
 static const int	kFontSizes[font_Max] = { 
-	12
+	10
 };
 
 static FontHandle	sFonts[font_Max] = { 0 };
