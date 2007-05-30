@@ -287,7 +287,7 @@ void	WED_PropertyTable::SelectRange(
 	ISelection * s = WED_GetSelect(mResolver);
 	
 	s->Clear();
-	for (vector<IUnknown *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+	for (vector<IBase *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 		s->Insert(*u);
 	#if OPTIMIZE
 		provide accelerated sel-save-restore ops!
