@@ -34,7 +34,7 @@ void	AddEuroRoads(
 		{
 			matches(x,y) = 1.0;
 		} else {
-			matches(x,y) = NO_DATA;
+			matches(x,y) = DEM_NO_DATA;
 		}
 	}
 	
@@ -60,7 +60,7 @@ void	AddEuroRoads(
 	for (x = 0; x < inSlope.mWidth ; ++x)
 	if (matches.get(x,y) == 1.0)
 	if (inSlope.get(x,y) > 0.06)
-		matches(x,y) = NO_DATA;
+		matches(x,y) = DEM_NO_DATA;
 
 	DEMGeo	foo;
 	InterpDoubleDEM(matches, foo);

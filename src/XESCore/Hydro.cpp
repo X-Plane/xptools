@@ -164,7 +164,7 @@ inline int	GetFlowDir(float e[DIRS_COUNT+1])
 	for (n = 0; n < DIRS_COUNT; ++n)
 	{
 		dif[n] = e[DIRS_COUNT] - e[n];
-		if (e[n] == NO_DATA) dif[n] = NO_DATA;
+		if (e[n] == DEM_NO_DATA) dif[n] = DEM_NO_DATA;
 	}
 	
 	float best = dif[0];
@@ -187,13 +187,13 @@ inline bool GetNext(int& x, int& y, const DEMGeo& dem)
 
 inline float LowestInRange(const DEMGeo& inDEM, int x1, int y1, int x2, int y2, int& outX, int& outY)
 {
-	float e = NO_DATA;
+	float e = DEM_NO_DATA;
 	for (int y = y1; y < y2; ++y)
 	for (int x = x1; x < x2; ++x)
 	{
 		float ee = inDEM.get(x,y);
-		if (ee != NO_DATA)
-		if (e == NO_DATA || ee < e)
+		if (ee != DEM_NO_DATA)
+		if (e == DEM_NO_DATA || ee < e)
 		{
 			e = ee;
 			outX = x;
@@ -209,7 +209,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	if (lon == elev.mWest)
 	{
 		y = elev.lat_to_y(lat);
-		if (LowestInRange(elev, 0, y - DEM_EXIT_SEARCH_RANGE, 1, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != NO_DATA)
+		if (LowestInRange(elev, 0, y - DEM_EXIT_SEARCH_RANGE, 1, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != DEM_NO_DATA)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -218,7 +218,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	if (lon == elev.mEast)
 	{
 		y = elev.lat_to_y(lat);
-		if (LowestInRange(elev, elev.mWidth-1, y - DEM_EXIT_SEARCH_RANGE, elev.mWidth, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != NO_DATA)
+		if (LowestInRange(elev, elev.mWidth-1, y - DEM_EXIT_SEARCH_RANGE, elev.mWidth, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != DEM_NO_DATA)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -227,7 +227,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	if (lat == elev.mSouth)
 	{
 		x = elev.lon_to_x(lon);
-		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, 0, x + DEM_EXIT_SEARCH_RANGE + 1, 1, xo, yo) != NO_DATA)
+		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, 0, x + DEM_EXIT_SEARCH_RANGE + 1, 1, xo, yo) != DEM_NO_DATA)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -236,7 +236,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	if (lat == elev.mNorth)
 	{
 		x = elev.lon_to_x(lon);
-		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, elev.mHeight-1, x + DEM_EXIT_SEARCH_RANGE + 1, elev.mHeight, xo, yo) != NO_DATA)
+		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, elev.mHeight-1, x + DEM_EXIT_SEARCH_RANGE + 1, elev.mHeight, xo, yo) != DEM_NO_DATA)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -350,17 +350,17 @@ inline int HydroFlowToPt(int x, int y, DEMGeo * elev, DEMGeo * dirs, DEMGeo * fl
 {
 	(*ctr)++;
 	float sum = 1.0;
-	float slp = NO_DATA;
+	float slp = DEM_NO_DATA;
 	float me_elev = elev->get(x,y);
 	for (int n = 0; n < DIRS_COUNT; ++n)
 	{
 		if (dirs->get(x-dirs_x[n],y-dirs_y[n]) == (n+drain_Dir0))
 		{			
 			sum += HydroFlowToPt(x-dirs_x[n],y-dirs_y[n], elev, dirs, flows, slope, ctr);
-			if (me_elev != NO_DATA)
+			if (me_elev != DEM_NO_DATA)
 			{
 				float other_elev = elev->get(x-dirs_x[n],y-dirs_y[n]);
-				if (other_elev != NO_DATA)
+				if (other_elev != DEM_NO_DATA)
 				{	
 					float grad = other_elev - me_elev;
 					if (grad >= 0.0)
@@ -370,7 +370,7 @@ inline int HydroFlowToPt(int x, int y, DEMGeo * elev, DEMGeo * dirs, DEMGeo * fl
 		}
 	}
 	(*flows)(x,y) = sum;
-	if (slp == NO_DATA) slp = 0.0;
+	if (slp == DEM_NO_DATA) slp = 0.0;
 	(*slope)(x,y) = slp;
 	return sum;
 }
@@ -406,8 +406,8 @@ static void BurnRiver(DEMGeo& dem, const Point2& p1, const Point2& p2, float v)
 
 bool	RiverPtsConnected(int x1, int y1, int x2, int y2, const DEMGeo& hydro_dir, const DEMGeo& hydro_flw, const DEMGeo& hydro_elev, const DEMGeo& is_river)
 {
-	if (hydro_elev.get(x1,y1) == NO_DATA) return false;
-	if (hydro_elev.get(x2,y2) == NO_DATA) return false;
+	if (hydro_elev.get(x1,y1) == DEM_NO_DATA) return false;
+	if (hydro_elev.get(x2,y2) == DEM_NO_DATA) return false;
 	
 	int flow1 = hydro_dir.get(x1,y1);
 	if (flow1 >= drain_Dir0 && 
@@ -543,7 +543,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	
 	for (y = 0; y < hydro_elev.mHeight;++y)
 	for (x = 0; x < hydro_elev.mWidth; ++x)
-	if (hydro_elev.get(x,y) != NO_DATA)
+	if (hydro_elev.get(x,y) != DEM_NO_DATA)
 		hydro_dir(x,y) = sink_Known;
 
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
@@ -682,18 +682,18 @@ inline bool	IsCoastal(const DEMGeo& dem, int x, int y)
 	if (x == 0 || y == 0 ||
 		x == (dem.mWidth-1) ||
 		y == (dem.mHeight-1))			return false;
-	if (dem.get(x-1,y  ) == NO_DATA)	return true;
-	if (dem.get(x+1,y  ) == NO_DATA)	return true;
-	if (dem.get(x  ,y-1) == NO_DATA)	return true;
-	if (dem.get(x  ,y+1) == NO_DATA)	return true;
+	if (dem.get(x-1,y  ) == DEM_NO_DATA)	return true;
+	if (dem.get(x+1,y  ) == DEM_NO_DATA)	return true;
+	if (dem.get(x  ,y-1) == DEM_NO_DATA)	return true;
+	if (dem.get(x  ,y+1) == DEM_NO_DATA)	return true;
 	
 // Hrm...diagonals let the algorithm hop all over the place and trace
 // out discontinuous stuff.  Not good to do.	
 
-//	if (dem.get(x-1,y-1) == NO_DATA)	return true;
-//	if (dem.get(x+1,y-1) == NO_DATA)	return true;
-//	if (dem.get(x-1,y+1) == NO_DATA)	return true;
-//	if (dem.get(x+1,y+1) == NO_DATA)	return true;
+//	if (dem.get(x-1,y-1) == DEM_NO_DATA)	return true;
+//	if (dem.get(x+1,y-1) == DEM_NO_DATA)	return true;
+//	if (dem.get(x-1,y+1) == DEM_NO_DATA)	return true;
+//	if (dem.get(x+1,y+1) == DEM_NO_DATA)	return true;
 	return false;
 }
 
@@ -719,7 +719,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 	/* STEP 1. BURN THE DEM INTO THE WORKING MAP AND DETERMINE SEALEVEL. */
 
 	workingElev.copy_geo_from(origElev);
-	workingElev = NO_DATA;	
+	workingElev = DEM_NO_DATA;	
 	FindEdgesForFaceSet(wetFaces, bounds);
 
 	y = SetupRasterizerForDEM(bounds, origElev, raster);
@@ -738,8 +738,8 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 			for (x = rx1; x < rx2; ++x)
 			{
 				e = origElev.get(x,y);
-				DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
-				if (e != NO_DATA)
+				DebugAssert(e != DEM_NO_DATA);	// We expect the DEM to be filled in.
+				if (e != DEM_NO_DATA)
 					count++, histogram[e]++;
 				workingElev(x,y) = e;
 			}
@@ -800,7 +800,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 	for (x = x1; x < x2; ++x)
 	{
 		e = workingElev.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 		if (IsCoastal(workingElev, x, y))
 		{
 			hit(x,y) = 1;
@@ -816,11 +816,11 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 			if (e < minv_lim || e > maxv_lim)
 			{
 				++total;
-				workingElev(pt->x,pt->y) = NO_DATA;
-				e = workingElev.get(pt->x-1,pt->y  ); if (e != NO_DATA && IsCoastal(workingElev, pt->x-1,pt->y  ) && hit.get(pt->x-1,pt->y  )==0) { newer.push_back(DemPt(pt->x-1,pt->y  )); hit(pt->x-1,pt->y  )=1; }
-				e = workingElev.get(pt->x+1,pt->y  ); if (e != NO_DATA && IsCoastal(workingElev, pt->x+1,pt->y  ) && hit.get(pt->x+1,pt->y  )==0) { newer.push_back(DemPt(pt->x+1,pt->y  )); hit(pt->x+1,pt->y  )=1; }
-				e = workingElev.get(pt->x  ,pt->y-1); if (e != NO_DATA && IsCoastal(workingElev, pt->x  ,pt->y-1) && hit.get(pt->x  ,pt->y-1)==0) { newer.push_back(DemPt(pt->x  ,pt->y-1)); hit(pt->x  ,pt->y-1)=1; }
-				e = workingElev.get(pt->x  ,pt->y+1); if (e != NO_DATA && IsCoastal(workingElev, pt->x  ,pt->y+1) && hit.get(pt->x  ,pt->y+1)==0) { newer.push_back(DemPt(pt->x  ,pt->y+1)); hit(pt->x  ,pt->y+1)=1; }
+				workingElev(pt->x,pt->y) = DEM_NO_DATA;
+				e = workingElev.get(pt->x-1,pt->y  ); if (e != DEM_NO_DATA && IsCoastal(workingElev, pt->x-1,pt->y  ) && hit.get(pt->x-1,pt->y  )==0) { newer.push_back(DemPt(pt->x-1,pt->y  )); hit(pt->x-1,pt->y  )=1; }
+				e = workingElev.get(pt->x+1,pt->y  ); if (e != DEM_NO_DATA && IsCoastal(workingElev, pt->x+1,pt->y  ) && hit.get(pt->x+1,pt->y  )==0) { newer.push_back(DemPt(pt->x+1,pt->y  )); hit(pt->x+1,pt->y  )=1; }
+				e = workingElev.get(pt->x  ,pt->y-1); if (e != DEM_NO_DATA && IsCoastal(workingElev, pt->x  ,pt->y-1) && hit.get(pt->x  ,pt->y-1)==0) { newer.push_back(DemPt(pt->x  ,pt->y-1)); hit(pt->x  ,pt->y-1)=1; }
+				e = workingElev.get(pt->x  ,pt->y+1); if (e != DEM_NO_DATA && IsCoastal(workingElev, pt->x  ,pt->y+1) && hit.get(pt->x  ,pt->y+1)==0) { newer.push_back(DemPt(pt->x  ,pt->y+1)); hit(pt->x  ,pt->y+1)=1; }
 			}
 		}
 		coastal.swap(newer);
@@ -830,7 +830,7 @@ void	BuildCorrectedWaterBody(const DEMGeo& origElev, DEMGeo& wetElev, const set<
 	for (x = x1; x < x2; ++x)
 	{
 		e = workingElev.get(x,y);
-		if (e != NO_DATA)
+		if (e != DEM_NO_DATA)
 			wetElev(x,y) = e;
 	}	
 }
@@ -847,7 +847,7 @@ void	CorrectWaterBodies(Pmwx& inMap, DEMGeoMap& dems, ProgressFunc inProg)
 
 	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
 	new_wet.copy_geo_from(elev);
-	new_wet = NO_DATA;
+	new_wet = DEM_NO_DATA;
 	
 	int ctr = 0;
 //	StElapsedTime	oceans("oceans");
@@ -880,11 +880,11 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 
 	DEMGeo	new_wet(elev.mWidth, elev.mHeight);
 	new_wet.copy_geo_from(elev);
-	new_wet = NO_DATA;
+	new_wet = DEM_NO_DATA;
 
 	DEMGeo	old_wet(elev.mWidth, elev.mHeight);
 	old_wet.copy_geo_from(elev);
-	old_wet = NO_DATA;
+	old_wet = DEM_NO_DATA;
 
 	DEMGeo	wetness(elev.mWidth, elev.mHeight);
 	wetness.copy_geo_from(elev);
@@ -947,7 +947,7 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 			for (x = rx1; x < rx2; ++x)
 			{
 				e = elev.get(x,y);
-				DebugAssert(e != NO_DATA);	// We expect the DEM to be filled in.
+				DebugAssert(e != DEM_NO_DATA);	// We expect the DEM to be filled in.
 				old_wet(x,y) = e;
 			}
 		}
@@ -967,8 +967,8 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 	float e;
 	for (y = 0; y < elev.mHeight ; y++)
 	for (x = 0; x < elev.mWidth  ; x++)
-	if (new_wet.get(x,y) == NO_DATA && 
-		old_wet.get(x,y) != NO_DATA)
+	if (new_wet.get(x,y) == DEM_NO_DATA && 
+		old_wet.get(x,y) != DEM_NO_DATA)
 	{
 		double	bmin, bmax;
 		bmin = bmax = elev.get(x,y);
@@ -982,9 +982,9 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 			// for a point P that its surroundings go down.  (If P has a lot of stuff above it, so what - it can still be water - it is surrounded by cliffs!)
 //			bmax = MAX_NODATA(bmax, e);
 		}
-		if ((bmax-bmin) > VMAP_TOO_STEEP && old_wet.get(x,y) != NO_DATA)
+		if ((bmax-bmin) > VMAP_TOO_STEEP && old_wet.get(x,y) != DEM_NO_DATA)
 		{
-			old_wet(x,y) = NO_DATA;
+			old_wet(x,y) = DEM_NO_DATA;
 			wetness(x,y) = 1.0;
 			continue;
 		}
@@ -994,8 +994,8 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 		for (dy = -SRTM_CHOICE_BLOCK_SIZE; dy <= SRTM_CHOICE_BLOCK_SIZE; ++dy)
 		for (dx = -SRTM_CHOICE_BLOCK_SIZE; dx <= SRTM_CHOICE_BLOCK_SIZE; ++dx)
 		{
-			if (old_wet.get(x+dx,y+dy) != NO_DATA) ++c_old;
-			if (new_wet.get(x+dx,y+dy) != NO_DATA) ++c_new;
+			if (old_wet.get(x+dx,y+dy) != DEM_NO_DATA) ++c_old;
+			if (new_wet.get(x+dx,y+dy) != DEM_NO_DATA) ++c_new;
 		}
 		double rat = (double) c_new   / (double) ((SRTM_CHOICE_BLOCK_SIZE*2+1) * (SRTM_CHOICE_BLOCK_SIZE*2+1));
 		wetness(x,y) = rat;
@@ -1004,7 +1004,7 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 
 	for (y = 0; y < elev.mHeight ; ++y)
 	for (x = 0; x < elev.mWidth  ; ++x)
-	if (wetness(x,y) < SRTM_TRUSTED_WETNESS && new_wet.get(x,y) == NO_DATA)
+	if (wetness(x,y) < SRTM_TRUSTED_WETNESS && new_wet.get(x,y) == DEM_NO_DATA)
 	{
 		new_wet(x,y) = old_wet(x,y);
 	}

@@ -87,7 +87,7 @@ inline float ScanlineMaxError(
 	{
 //		gMeshPoints.push_back(pair<Point2, Point3>(Point2(inDEM->x_to_lon(x), inDEM->y_to_lat(y)), Point3(0, 1, 0.5)));
 		float want = *row;
-		if (want != NO_DATA)
+		if (want != DEM_NO_DATA)
 		{
 			float got = a * x + partial;
 			float diff = want - got;
@@ -297,9 +297,9 @@ void	GreedyMeshBuild(CDT& inCDT, DEMGeo& inAvail, DEMGeo& outUsed, double err_li
 					  
 		double h = inAvail.get(the_face->info().insert_x, the_face->info().insert_y);
 //		printf("Inserting: 0x%08lx, %d,%d - %lf, %lf, h = %lf\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, p.x(), p.y(), h);
-		DebugAssert(h != NO_DATA);
+		DebugAssert(h != DEM_NO_DATA);
 		outUsed(the_face->info().insert_x, the_face->info().insert_y) = h;
-		inAvail(the_face->info().insert_x, the_face->info().insert_y) = NO_DATA;
+		inAvail(the_face->info().insert_x, the_face->info().insert_y) = DEM_NO_DATA;
 
 /*
 		CDT::Locate_type lt;
