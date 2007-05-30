@@ -58,16 +58,20 @@
 	#error NO PLATFORM!
 #endif
 
+#ifdef __cplusplus 
 
 #include <vector>
 #include <string>
 #include <map>
 #include <set>
 
+using namespace std;
+
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-using namespace std;
 
 #define SUPPORT_STL
 
@@ -121,6 +125,39 @@ using namespace std;
 	#define HASH_MAP_NAMESPACE_END }
 	#define HASH_PARENT(x,y)
 	#define _MSL_THROW throw()
+#endif
+
+#if defined(_MSC_VER) && !defined(__MWERKS__)
+	
+	#ifdef __cplusplus
+	
+		#include <hash_map>
+		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
+		using namespace std;
+
+#define HASH_MAP_NAMESPACE_START namespace stdext {
+#define HASH_MAP_NAMESPACE_END }
+#define HASH_PARENT(x,y)
+#define _MSL_THROW throw()
+
+	#endif
+
+	#define strcasecmp _stricmp
+	#define strncasecmp _strnicmp
+
+	#define __func__ __FUNCTION__
+
+	#define ENOERR 0
+
+	#define round(X) floor(X + 0.5f)
+
+#endif
+
+
+
+#if IBM
+#include <winsock2.h>
+#include <windows.h>
 #endif
 
 

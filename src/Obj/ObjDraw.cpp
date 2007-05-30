@@ -25,9 +25,10 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 #include <math.h>
+#include <algorithm>
 
 #define	CHECK_GL_ERR		GL_ERR(glGetError());
 

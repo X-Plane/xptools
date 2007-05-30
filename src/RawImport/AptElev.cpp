@@ -392,7 +392,7 @@ void	BuildDifferentialDegree(const char * file, int west, int south, int hres, i
 		}
 	}
 	fclose(fi);
-	float rad_fac = sqrt(RADIUS*RADIUS);
+	float rad_fac = sqrt((float)RADIUS*RADIUS);
 	for (int n = 0; n < infos.size(); ++n)
 	{
 		int x1 = ioDem.lon_to_x(infos[n].lo_lon);
@@ -407,7 +407,7 @@ void	BuildDifferentialDegree(const char * file, int west, int south, int hres, i
 			
 			AssympApply(ioDem,x2,y2,infos[n].hi_elev, infos[n].weight, zap);
 			
-			int steps = sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1))+1;
+			int steps = sqrt((float)(x2-x1)*(x2-x1)+(y2-y1)*(y2-y1))+1;
 			
 			for (int t = 0; t <= steps; ++t)
 			{
