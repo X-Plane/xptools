@@ -589,8 +589,6 @@
 		D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
-		D6ED3E200B6A636C00D5484E /* Courier.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3E1F0B6A636C00D5484E /* Courier.ttf */; };
-		D6ED3E210B6A63C900D5484E /* Courier.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3E1F0B6A636C00D5484E /* Courier.ttf */; };
 		D6ED3E4F0B6A674000D5484E /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */; };
 		D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */; };
@@ -1421,7 +1419,6 @@
 		D6ED3D100B6A369900D5484E /* WED_DataModel.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel.sql; sourceTree = "<group>"; };
 		D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Resources.cpp; sourceTree = "<group>"; };
 		D6ED3E040B6A61A700D5484E /* GUI_Resources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Resources.h; sourceTree = "<group>"; };
-		D6ED3E1F0B6A636C00D5484E /* Courier.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Courier.ttf; sourceTree = "<group>"; };
 		D6ED3E4D0B6A674000D5484E /* GUI_TextTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TextTable.h; sourceTree = "<group>"; };
 		D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TextTable.cpp; sourceTree = "<group>"; };
 		D6ED3EC80B6A753300D5484E /* WED_PropertyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_PropertyTable.h; sourceTree = "<group>"; };
@@ -2638,7 +2635,6 @@
 				D6A185AC0BA878B100BBCD0C /* checkbutton.png */,
 				D6A185AD0BA878B100BBCD0C /* pushbutton.png */,
 				D6A185AE0BA878B100BBCD0C /* radiobutton.png */,
-				D6ED3E1F0B6A636C00D5484E /* Courier.ttf */,
 				D607B6320C09FE5F00992876 /* WED_Info.plist */,
 			);
 			path = WEDResources;
@@ -2940,7 +2936,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */,
-				D6ED3E200B6A636C00D5484E /* Courier.ttf in Resources */,
 				D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */,
 				D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */,
 				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
@@ -2985,7 +2980,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */,
-				D6ED3E210B6A63C900D5484E /* Courier.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
