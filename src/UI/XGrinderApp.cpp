@@ -52,6 +52,7 @@ public:
 	virtual	void			ClickDown(int inX, int inY, int inButton) { }
 	virtual	void			ClickUp(int inX, int inY, int inButton) { }
 	virtual	void			ClickDrag(int inX, int inY, int inButton) { }
+	virtual	void			ClickMove(int inX, int inY) { }
 	virtual	void			MouseWheel(int inX, int inY, int inDelta, int inAxis) { }
 	virtual	void			DragEnter(int inX, int inY) { }
 	virtual	void			DragOver(int inX, int inY) { }
