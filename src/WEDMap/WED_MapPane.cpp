@@ -29,22 +29,22 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 
 	// TOOLS
-	mTools.push_back(					new WED_MarqueeTool("Select",mMap, mMap, resolver));
-	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
-	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Ref Image",mMap, mMap, resolver));
-	mTools.push_back(					new WED_CreatePolygonTool("Taxiway",mMap, mMap, resolver, archive, create_Taxi));
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
+	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
+	mTools.push_back(					new WED_CreatePointTool("Airport Beacon", mMap, mMap, resolver, archive, create_Beacon));
+	mTools.push_back(					new WED_CreatePointTool("Tower Viewpoint", mMap, mMap, resolver, archive, create_TowerViewpoint));
+	mTools.push_back(					new WED_CreatePointTool("Ramp Start", mMap, mMap, resolver, archive, create_RampStart));
+	mTools.push_back(					new WED_CreatePointTool("Light Fixture", mMap, mMap, resolver, archive, create_Lights));
+	mTools.push_back(					new WED_CreatePointTool("Taxi Sign", mMap, mMap, resolver, archive, create_Sign));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxi Lines",mMap, mMap, resolver, archive, create_Marks));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxiway Hole",mMap, mMap, resolver, archive, create_Hole));
-	mTools.push_back(					new WED_CreatePointTool("Airport Beacon", mMap, mMap, resolver, archive, create_Beacon));
-	mTools.push_back(					new WED_CreatePointTool("Taxi Sign", mMap, mMap, resolver, archive, create_Sign));
+	mTools.push_back(					new WED_CreatePolygonTool("Taxiway",mMap, mMap, resolver, archive, create_Taxi));
 	mTools.push_back(					new WED_CreatePointTool("Helipad", mMap, mMap, resolver, archive, create_Helipad));
-	mTools.push_back(					new WED_CreatePointTool("Light Fixture", mMap, mMap, resolver, archive, create_Lights));
-	mTools.push_back(					new WED_CreatePointTool("Ramp Start", mMap, mMap, resolver, archive, create_RampStart));
-	mTools.push_back(					new WED_CreatePointTool("Tower Viewpoint", mMap, mMap, resolver, archive, create_TowerViewpoint));
-	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
-	mTools.push_back(					new WED_CreateLineTool("Runway", mMap, mMap, resolver, archive, create_Runway));
 	mTools.push_back(					new WED_CreateLineTool("Sealane", mMap, mMap, resolver, archive, create_Sealane));
+	mTools.push_back(					new WED_CreateLineTool("Runway", mMap, mMap, resolver, archive, create_Runway));
+	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Ref Image",mMap, mMap, resolver));
+	mTools.push_back(					new WED_MarqueeTool("Select",mMap, mMap, resolver));
+	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
 	mInfoAdapter = new WED_ToolInfoAdapter;
 	mTextTable = new GUI_TextTable(cmdr);
@@ -63,7 +63,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mInfoAdapter->AddListener(mTable);
 
 
-	mToolbar = new GUI_ToolBar(2,8,"map_tools.png");
+	mToolbar = new GUI_ToolBar(1,16,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
