@@ -84,7 +84,7 @@ int		GUI_ScrollBar::GetMinorAxis(int vertical)
 	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
 
 
-	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
+	float	button_len = (vertical ? metrics.real_width : metrics.real_height) / 2;
 
 	return button_len;
 
