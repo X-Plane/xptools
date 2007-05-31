@@ -1,7 +1,51 @@
-100 ICON WED.ico
+/* exe icon */
+100 					ICON 		WED.ico
 
-about.png GUI_RES about.png
+/* core UI resources */
+Vera.ttf				GUI_RES		Vera.ttf
 
-map_airbase.png GUI_RES icons\map_airbase.png
+pushbutton.png			GUI_RES		pushbutton.png	
+checkbutton.png			GUI_RES		checkbutton.png	
+radiobutton.png			GUI_RES		radiobutton.png	
+tabs.png				GUI_RES		tabs.png		
+splitter_h.png			GUI_RES		splitter_h.png	
+splitter_v.png			GUI_RES		splitter_v.png	
+scrollbar_h.png			GUI_RES		scrollbar_h.png	
+scrollbar_v.png			GUI_RES		scrollbar_v.png	
+scroll_btn_h.png		GUI_RES		scroll_btn_h.png
+scroll_btn_v.png		GUI_RES		scroll_btn_v.png
 
-Vera.ttf GUI_RES Vera.ttf
+/* app UI elements */
+about.png				GUI_RES		about.png		
+colors.png				GUI_RES		colors.png		
+map_tools.png			GUI_RES		map_tools.png	
+
+/* control handle artwork */
+handle_vertexsharp.png	GUI_RES		handles\handle_vertexsharp.png	
+handle_cross.png		GUI_RES		handles\handle_cross.png		
+handle_square.png		GUI_RES		handles\handle_square.png		
+handle_vertexround.png	GUI_RES		handles\handle_vertexround.png	
+handle_arrowhead.png	GUI_RES		handles\handle_arrowhead.png	
+handle_closeloop.png	GUI_RES		handles\handle_closeloop.png	
+handle_control.png		GUI_RES		handles\handle_control.png		
+
+/* map symbols */
+map_heliport.png		GUI_RES		icons\map_heliport.png	
+map_light.png			GUI_RES		icons\map_light.png		
+map_rampstart.png		GUI_RES		icons\map_rampstart.png	
+map_airport.png			GUI_RES		icons\map_airport.png		
+map_beacon.png			GUI_RES		icons\map_beacon.png		
+map_helipad.png			GUI_RES		icons\map_helipad.png		
+map_airbase.png			GUI_RES		icons\map_airbase.png		
+map_windsock.png		GUI_RES		icons\map_windsock.png	
+map_seaport.png			GUI_RES		icons\map_seaport.png		
+map_taxisign.png		GUI_RES		icons\map_taxisign.png	
+map_towerview.png		GUI_RES		icons\map_towerview.png	
+
+/* table artwork */
+eye.png					GUI_RES		tables\eye.png		
+lock.png				GUI_RES		tables\lock.png	
+check.png				GUI_RES		tables\check.png	
+
+/* app code */
+WED_DataModel.sql		GUI_RES		..\WEDCore\WED_DataModel.sql
