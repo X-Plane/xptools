@@ -199,7 +199,9 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 
 
 
-XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here", 50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
+XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here", 
+	xwin_style_resizable | xwin_style_visible | xwin_style_centered,
+	50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
 	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false)
 {
 	mPts.push_back(Point2(-10.0,  10.0));

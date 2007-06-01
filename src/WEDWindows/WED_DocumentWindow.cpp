@@ -17,13 +17,13 @@
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
 
+int kDefaultDocSize[4] = { 0, 0, 512,384 };
 
 WED_DocumentWindow::WED_DocumentWindow(
 	 		const char * 	inTitle, 
-	 		int 			inBounds[4],
 	 		GUI_Commander * inCommander,
 	 		WED_Document *	inDocument) :
-	GUI_Window(inTitle, inBounds, inCommander),
+	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_fullscreen, kDefaultDocSize, inCommander),
 	mDocument(inDocument)
 {
 	
@@ -144,7 +144,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
-	main_splitter->AlignContentsAt((inBounds[2]-inBounds[0]>inBounds[3]-inBounds[1]) ? (inBounds[3]-inBounds[1]) : ((inBounds[2]-inBounds[0])/2));
+	main_splitter->AlignContentsAt(512);
 	prop_splitter->AlignContentsAt(300);	
 	mMapPane->ZoomShowAll();
 }

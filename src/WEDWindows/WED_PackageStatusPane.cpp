@@ -2,6 +2,7 @@
 #include "WED_Package.h"
 #include "GUI_GraphState.h"
 #include "WED_DocumentWindow.h"
+#include "GUI_DrawUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Menus.h"
 
@@ -112,11 +113,8 @@ int			WED_PackageStatusPane::MouseDown(int x, int y, int button)
 		else
 			doc = mPackage->NewTile(xp, yp);
 	
-		int doc_bounds[4] = { 50, 50, 800, 700 };
-			
 		WED_DocumentWindow * doc_win = new WED_DocumentWindow(
 				"new document",
-				doc_bounds,
 				mSuper,
 				doc);
 	}	

@@ -20,7 +20,6 @@ public:
 
 				 WED_DocumentWindow(
 				 		const char * 	inTitle, 
-				 		int 			inBounds[4],
 				 		GUI_Commander * inCommander,
 				 		WED_Document *	inDocument);
 	virtual		~WED_DocumentWindow();

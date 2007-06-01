@@ -12,7 +12,7 @@ WED_PackageWindow::WED_PackageWindow(
 				 		int 			inBounds[4],
 				 		GUI_Commander * inCommander,
 				 		WED_Package *	inPackage) :
-	GUI_Window(inTitle, inBounds, inCommander),
+	GUI_Window(inTitle, xwin_style_resizable|xwin_style_visible|xwin_style_centered, inBounds, inCommander),
 	mPackage(inPackage)
 {
 	inPackage->AddListener(this);

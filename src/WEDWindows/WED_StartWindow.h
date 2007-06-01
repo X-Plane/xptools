@@ -21,63 +21,32 @@
  *
  */
 
-#include "WED_AboutBox.h"
-#include "GUI_DrawUtils.h"
-#include "GUI_Resources.h"
-#include "BitmapUtils.h"
+#ifndef WED_StartWindow_H
+#define WED_StartWindow_H
 
-static int *	SizeOfPng(const char * png)
-{
-	static int bounds[4];
-	ImageInfo	im;
-	GUI_GetImageResource(png, &im);
-	bounds[0] = 0; bounds[1] = 0;
-	bounds[2] = im.width;
-	bounds[3] = im.height;
-	DestroyBitmap(&im);
-	return bounds;	
-}
+#include "GUI_Window.h"
+#include "GUI_Listener.h"
 
-WED_AboutBox::WED_AboutBox(GUI_Commander * cmdr) : GUI_Window("About WED", xwin_style_movable | xwin_style_centered, SizeOfPng("about.png"), cmdr)
-{
-}
+class	GUI_Button;
 
-WED_AboutBox::~WED_AboutBox()
-{
-}
+class WED_StartWindow : public GUI_Window, public GUI_Listener  {
+public:
 
-bool	WED_AboutBox::Closed(void)
-{
-	Hide();
-	Stop();
-	return false;
-}
+					 WED_StartWindow(GUI_Commander * cmder);
+	virtual			~WED_StartWindow();
 	
-void		WED_AboutBox::Draw(GUI_GraphState * state)
-{
-	int bounds[4];
-	int tile_sel[4] = { 0, 0, 1, 1 };
-	GUI_Pane::GetBounds(bounds);
-	GUI_DrawCentered(state, "about.png", bounds, 0, 0, tile_sel, NULL, NULL);
-}
+	virtual	int		MouseMove(int x, int y			  );
+	virtual	void	Draw(GUI_GraphState * state);
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							int						inMsg,
+							int						inParam);
 
-int			WED_AboutBox::MouseDown(int x, int y, int button)
-{
-	return 1;
-}
+private:
 
-void		WED_AboutBox::MouseUp  (int x, int y, int button)
-{
-	Stop();
-#if !IBM
-	Hide();
-#endif
-}
+	GUI_Button *		mNew;
+	GUI_Button *		mOpen;
+	
+};
 
-void		WED_AboutBox::TimerFired(void)
-{
-	Stop();
-#if !IBM
-	Hide();
-#endif
-}
+#endif /* WED_StartWindow_H */
