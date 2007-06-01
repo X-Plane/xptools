@@ -55,6 +55,10 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	if (!mContext)
 		throw "can't make context";
 
+   if (inShare)
+	   if (!wglShareLists(inShare->mContext,mContext))
+		   throw "Can't share lists";
+
 	if (!wglMakeCurrent(mDC, mContext))
 		throw "can't set context";
 
@@ -94,6 +98,10 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inX, int inY, int inWi
 	mContext = wglCreateContext(mDC);
 	if (!mContext)
 		throw "can't make context";
+
+   if (inShare)
+	   if (!wglShareLists(inShare->mContext,mContext))
+		   throw "Can't share lists";
 
 	if (!wglMakeCurrent(mDC, mContext))
 		throw "can't set context";
