@@ -12,6 +12,46 @@ static set<GUI_Window *>	sWindows;
 
 #if IBM
 
+inline int Client2OGL_X(int x, HWND w) { return x; }
+inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
+inline int Screen2Client_X(int x, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return x - wif.rcClient.left;
+}
+inline int Screen2Client_Y(int y, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return y - wif.rcClient.top;
+}
+inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
+inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
+
+inline int Client2Screen_X(int x, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return x + wif.rcClient.left;
+}
+inline int Client2Screen_Y(int y, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return y + wif.rcClient.top;
+}
+inline int OGL2Client_X(int x, HWND w) { return x; }
+inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
+inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
+ 
+
+
 #define OleStdGetDropEffect(grfKeyState)    \
     ( (grfKeyState & MK_CONTROL) ?          \
         ( (grfKeyState & MK_SHIFT) ? DROPEFFECT_LINK : DROPEFFECT_COPY ) :  \
@@ -49,6 +89,7 @@ private:
 GUI_Window_DND::GUI_Window_DND(GUI_Pane * inTarget, HWND inWindow) :
 	mRefCount(1), mWindow(inWindow), mTarget(inTarget)
 {
+	RegisterDragDrop(inWindow, this);
 }
 
 GUI_Window_DND::~GUI_Window_DND()
@@ -87,10 +128,10 @@ STDMETHODIMP_(ULONG) GUI_Window_DND::Release(void)
 
 STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
+	OutputDebugString("GUI_Window drag enter.\n");
 	mData = data_obj;
 	mData->AddRef();
 	
-	RECT	rect;
 	GUI_OLE_Adapter	adapter(mData);	
 
 	DWORD allowed = *effect;
@@ -98,33 +139,39 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 
 	DWORD recommended = OleStdGetDropEffect(key_state);
 
-	if (::GetWindowRect(mWindow, &rect))
-	{
-		*effect = OP_GUI2Win(mTarget->InternalDragEnter(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed), OP_Win2GUI(recommended)));
-							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
-	}
+	*effect = OP_GUI2Win(mTarget->InternalDragEnter(
+				Screen2OGL_X(where.x, mWindow), 
+				Screen2OGL_Y(where.y, mWindow), 
+				&adapter, OP_Win2GUI(allowed), OP_Win2GUI(recommended)));
+	mTarget->InternalDragScroll(
+				Screen2OGL_X(where.x, mWindow), 
+				Screen2OGL_Y(where.y, mWindow));
 	return S_OK;
 }
 
 STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD effect)
 {
-	RECT	rect;
+	OutputDebugString("GUI_Window drag over.\n");
 	GUI_OLE_Adapter	adapter(mData);	
 
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
 	DWORD recommended = OleStdGetDropEffect(key_state);
 	
-	if (::GetWindowRect(mWindow, &rect))
-	{
-		*effect = OP_GUI2Win(mTarget->InternalDragOver(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
-							 mTarget->InternalDragScroll(where.x - rect.left, rect.bottom - where.y);
-	}
+		*effect = OP_GUI2Win(mTarget->InternalDragOver(
+				Screen2OGL_X(where.x, mWindow), 
+				Screen2OGL_Y(where.y, mWindow), 
+			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
+							 mTarget->InternalDragScroll(
+				Screen2OGL_X(where.x, mWindow), 
+				Screen2OGL_Y(where.y, mWindow));
 	return S_OK;
 }
 
 STDMETHODIMP GUI_Window_DND::DragLeave(void)
 {
+	OutputDebugString("GUI_Window drag leave.\n");
+
 	mTarget->InternalDragLeave();
 	mData->Release();
 	return S_OK;
@@ -132,18 +179,20 @@ STDMETHODIMP GUI_Window_DND::DragLeave(void)
 
 STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
-	RECT	rect;
+	OutputDebugString("GUI_Window drag drop.\n");
+
 	GUI_OLE_Adapter	adapter(data_obj);	
 
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
 	DWORD recommended = OleStdGetDropEffect(key_state);
 
-	if (::GetWindowRect(mWindow, &rect))
-	{
-		*effect = OP_GUI2Win(mTarget->InternalDrop(where.x - rect.left, rect.bottom - where.y, &adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
+		*effect = OP_GUI2Win(mTarget->InternalDrop(
+				Screen2OGL_X(where.x, mWindow), 
+				Screen2OGL_Y(where.y, mWindow), 
+			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
 		mTarget->InternalDragLeave();
-	}
+	
 	return S_OK;
 	
 }
@@ -318,6 +367,28 @@ DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(
 // COMMON CODE
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+#if IBM
+void CopyMenusRecursive(HMENU src, HMENU dst)
+{
+	char buf[1024];
+	int num_items = ::GetMenuItemCount(src);
+	for (int i = 0; i < num_items; ++i)
+	{
+		MENUITEMINFO mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.fMask = MIIM_TYPE | MIIM_SUBMENU | MIIM_STATE | MIIM_ID;
+		mif.cch = sizeof(buf);
+		mif.dwTypeData = buf;
+		GetMenuItemInfo(src, i, true, &mif);
+		HMENU orig_submenu = mif.hSubMenu;
+		if (mif.hSubMenu != NULL)
+			mif.hSubMenu = CreateMenu();
+		InsertMenuItem(dst,-1,true,&mif);
+		if (mif.hSubMenu)
+			CopyMenusRecursive(orig_submenu, mif.hSubMenu);
+	}
+}
+#endif
 
 GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(0, inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
@@ -325,6 +396,17 @@ GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * in
 	mInDrag = 0;
 	#if IBM
 		mDND = new GUI_Window_DND(this, mWindow);
+		mBaseProc = (WNDPROC) GetWindowLongPtr(mWindow,GWLP_WNDPROC);
+		SetWindowLongPtr(mWindow,GWLP_USERDATA,(LONG_PTR)this);
+		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
+
+		if (!sWindows.empty())
+		{
+			HMENU new_mbar = ::CreateMenu();
+			::SetMenu(mWindow,new_mbar);
+			CopyMenusRecursive(::GetMenu((*sWindows.begin())->mWindow),new_mbar);
+			::DrawMenuBar(mWindow);
+		}
 	#endif
 	#if APL
 
@@ -366,6 +448,7 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 GUI_Window::~GUI_Window()
 {
 	#if IBM
+//		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
 	#endif
 	#if APL
@@ -377,10 +460,7 @@ GUI_Window::~GUI_Window()
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
-	int	w, h;
-	XWinGL::GetBounds(&w, &h);
-
-	mMouseFocusPane = InternalMouseDown(inX, h-inY, inButton);
+	mMouseFocusPane = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 	mMouseFocusButton = inButton;
 	
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
@@ -392,12 +472,9 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 {
-	int	w, h;
-	XWinGL::GetBounds(&w, &h);
-
 	if (mMouseFocusPane)
 	{
-		mMouseFocusPane->MouseUp(inX, h-inY, inButton);
+		mMouseFocusPane->MouseUp(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 		SetTimerInterval(0.0);
 	}
 	mMouseFocusPane = NULL;
@@ -405,27 +482,18 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
 {
-	int	w, h;
-	XWinGL::GetBounds(&w, &h);
-
 	if (mMouseFocusPane)
-		mMouseFocusPane->MouseDrag(inX, h-inY, inButton);
+		mMouseFocusPane->MouseDrag(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 }
 
 void		GUI_Window::ClickMove(int inX, int inY)
 {
-	int	w, h;
-	XWinGL::GetBounds(&w, &h);
-
-	this->InternalMouseMove(inX, h-inY);
+	this->InternalMouseMove(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 }
 
 void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 {
-	int	w, h;
-	XWinGL::GetBounds(&w, &h);
-
-	InternalMouseWheel(inX, h-inY, inDelta, inAxis);
+	InternalMouseWheel(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inDelta, inAxis);
 }
 	
 void			GUI_Window::GLReshaped(int inWidth, int inHeight)
@@ -662,9 +730,9 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 #if !DEV
 	examine - is this right?
 #endif
-	static int	ShiftToggle=0;
-	static int	ControlToggle=0;
-	static int	OptionKeyToggle=0;
+	int	ShiftToggle=0;
+	int	ControlToggle=0;
+	int	OptionKeyToggle=0;
 
 	if (((inParam2 & ExtKeyMask) == numLockKey) || ((inParam2 & ShiftControlMask) == capsLockKey) || ((inParam2 & ShiftControlMask) == scrollLockKey))
 		return 1;
@@ -721,13 +789,17 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		virtualCode = inParam1 & keyCodeMask;
 	}
 
-	if (ShiftToggle)
-		flags |= gui_ShiftFlag;
-	if (ControlToggle)
-		flags |= gui_ControlFlag;
+//	if (ShiftToggle)
+//		flags |= gui_ShiftFlag;
+//	if (ControlToggle)
+//		flags |= gui_ControlFlag;
 ///	SB if ((inParam2 & ShiftControlMask) == optionKey)
-	if (OptionKeyToggle)
-		flags |= gui_OptionAltFlag;
+//	if (OptionKeyToggle)
+//		flags |= gui_OptionAltFlag;
+	if(::GetKeyState(VK_SHIFT) & ~1) flags |= gui_ShiftFlag;
+	if(::GetKeyState(VK_CONTROL) & ~1) flags |= gui_ControlFlag;
+	if(::GetKeyState(VK_MENU) & ~1) flags |= gui_OptionAltFlag;
+
 	if (inMsg == keyDown)
 		flags |= gui_DownFlag;
 	if (inMsg == keyUp)
@@ -787,13 +859,12 @@ void		GUI_Window::Activate(int active)
 
 void		GUI_Window::Timer(void)
 {
-		int	w, h, x, y;
+		int	x, y;
 
 	if (mMouseFocusPane)
 	{
-		XWinGL::GetBounds(&w, &h);
 		XWinGL::GetMouseLoc(&x, &y);
-		mMouseFocusPane->MouseDrag(x, h-y, mMouseFocusButton);
+		mMouseFocusPane->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), mMouseFocusButton);
 	}
 
 	// BEN SAYS: Mac D&D mgr does not call us back during drag if the mouse is still.  So use a timer to tell us
@@ -809,19 +880,16 @@ void		GUI_Window::Timer(void)
 
 void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 {
-	int w,  h, x, y;
-	XWinGL::GetBounds(&w, &h);
+	int x, y;
 	XWinGL::GetMouseLoc(&x, &y);
-	if (out_x) *out_x = x;
-	if (out_y) *out_y = h-y;
+	if (out_x) *out_x = Client2OGL_X(x, mWindow);
+	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
 }
 
 
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
-	int w,h;
-	XWinGL::GetBounds(&w, &h);
-	TrackPopupCommands((xmenu) menu,x,h-y,-1);
+	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -832,9 +900,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	if (popup_temp)				gApplication->RebuildMenu(popup_temp, items);
 	else			popup_temp =gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 	
-	int w,h;
-	XWinGL::GetBounds(&w, &h);
-	return TrackPopupCommands((xmenu) popup_temp,x,h-y, current);	
+	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);	
 }
 
 bool				GUI_Window::IsDragClick(int x, int y)
@@ -857,18 +923,17 @@ bool				GUI_Window::IsDragClick(int x, int y)
 		return WaitMouseMoved(p);
 
 	#elif IBM
-		RECT	rect;
-		if (::GetWindowRect(mWindow, &rect)) {
-			x-= rect.left;
-			y -= rect.top;
-		}
-
 		POINT p;
-		p.x=x;
-		p.y=y;
+		p.x=OGL2Screen_X(x, mWindow);
+		p.y=OGL2Screen_Y(y, mWindow);
 
 		int ret = DragDetect(mWindow,p);
 		SetCapture(NULL);
+		OutputDebugString(ret ? "Drag detect true\n" : "drag detect false\n");
+		if (!ret)
+			PostMessage(mWindow,WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
+		if (!ret) 
+			OutputDebugString("Message posted.\n");
 		return ret;
 			
 	#else
@@ -968,3 +1033,26 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		#error not implemented
 	#endif
 }
+
+#if IBM
+HWND GUI_Window::AnyHWND(void)
+{
+	if (sWindows.empty()) return NULL;
+	return (*(sWindows.begin()))->mWindow;
+}
+
+LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	GUI_Window * me = (GUI_Window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	switch(message) {
+		case WM_DESTROY:
+			return 0;
+		case WM_COMMAND:
+			me->DispatchHandleCommand(LOWORD(wParam));
+			return 0;
+		default:
+			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
+	}
+}
+
+#endif

@@ -30,6 +30,7 @@ private:
 	
 	#elif IBM	
 		static void CALLBACK	TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+		UINT_PTR	mID;
 	
 	#else
 		#error NOT IMPLEMENTED

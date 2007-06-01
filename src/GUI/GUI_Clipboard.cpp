@@ -664,7 +664,7 @@ STDMETHODIMP_(ULONG) GUI_SimpleEnumFORMATETC::Release()
 STDMETHODIMP		GUI_SimpleEnumFORMATETC::Next			(ULONG count, FORMATETC * formats, ULONG * out_count)
 {
 	if (mIndex >= mTypes.size()) { if (out_count) *out_count = NULL; return S_FALSE; }
-	int remaining = mTypes.size() - mIndex;	
+	ULONG remaining = mTypes.size() - mIndex;	
 	int to_fetch = min(count, remaining);
 	
 	for (int n = 0; n < to_fetch; ++n)
@@ -684,7 +684,7 @@ STDMETHODIMP		GUI_SimpleEnumFORMATETC::Next			(ULONG count, FORMATETC * formats,
 STDMETHODIMP		GUI_SimpleEnumFORMATETC::Skip			(ULONG count)
 {
 	if (mIndex >= mTypes.size()) { return S_FALSE; }
-	int remaining = mTypes.size() - mIndex;	
+	ULONG remaining = mTypes.size() - mIndex;	
 	int to_fetch = min(count, remaining);	
 	mIndex += to_fetch;
 	return (count == to_fetch) ? S_OK : S_FALSE;

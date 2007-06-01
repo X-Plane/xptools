@@ -72,15 +72,20 @@ public:
 
 private:
 
+	friend class GUI_Application;
 	#if IBM
+		static HWND AnyHWND(void);
 		GUI_Window_DND *	mDND;
+		WNDPROC				mBaseProc;
+
+		static LRESULT CALLBACK SubclassFunc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	#endif
 	
 	#if APL
 		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
 		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
 
-	
 		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
 		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
 

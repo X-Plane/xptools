@@ -70,7 +70,46 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 
 #elif IBM
 
-#error This needs to be done
+struct res_struct {
+	const char * start_p;
+	const char * end_p;
+};
+typedef map<string, res_struct>	res_map;
+static res_map sResMap;
+
+GUI_Resource	GUI_LoadResource(const char * in_resource)
+{
+	string path(in_resource);
+	res_map::iterator i = sResMap.find(path);
+	if (i != sResMap.end()) return &(i->second);
+
+	HRSRC	res_info = FindResource(NULL,in_resource,"GUI_RES");
+	if (res_info==NULL) return NULL;
+	HGLOBAL res = LoadResource(NULL, res_info);
+	if (res == NULL) return NULL;
+	DWORD sz = SizeofResource(NULL,res_info);
+	if (sz == 0) return NULL;
+	LPVOID ptr = LockResource(res);
+	if (ptr == NULL) return NULL;
+
+	res_struct info = { (const char *) ptr, (const char *) ptr + sz };
+	pair<res_map::iterator,bool> ins = sResMap.insert(res_map::value_type(path,info));
+	return &ins.first->second;
+}
+
+void			GUI_UnloadResource(GUI_Resource res)
+{
+}
+
+const char *	GUI_GetResourceBegin(GUI_Resource res)
+{
+	return ((res_struct*)res)->start_p;
+}
+
+const char *	GUI_GetResourceEnd(GUI_Resource res)
+{
+		return ((res_struct*)res)->end_p;
+}
 
 #elif LIN
 

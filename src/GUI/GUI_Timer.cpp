@@ -1,14 +1,21 @@
-#include "GUI_TImer.h"
+#include "GUI_Timer.h"
 
 #if APL
 EventLoopTimerUPP GUI_Timer::sTimerCB = NewEventLoopTimerUPP(GUI_Timer::TimerCB);
 #endif
 
+#if IBM
+typedef map<UINT_PTR,GUI_Timer *>	TimerMap;
+static TimerMap						sTimerMap;
+#endif
 
 GUI_Timer::GUI_Timer(void)
 {
 	#if APL
 		mTimer = NULL;	
+	#endif
+	#if IBM	
+		mID = 0;
 	#endif
 }
 
@@ -18,6 +25,13 @@ GUI_Timer::~GUI_Timer(void)
 		if (mTimer != NULL)
 			RemoveEventLoopTimer(mTimer);
 	#endif
+#if IBM
+		if (mID != 0)
+		{
+			KillTimer(NULL, mID);
+			sTimerMap.erase(mID);
+		}
+#endif
 }
 
 void GUI_Timer::Start(float seconds)
@@ -34,8 +48,16 @@ void GUI_Timer::Start(float seconds)
 				&mTimer);
 	#endif
 	#if IBM
-		SetTimer(NULL,reinterpret_cast<UINT_PTR>(this),seconds * 1000.0f, TimerCB);
-	#endif	
+		if (mID)
+		{
+			SetTimer(NULL, mID, seconds * 1000.0f, TimerCB);
+		}
+		else
+		{
+			mID = SetTimer(NULL,0,seconds * 1000.0f, TimerCB);
+			sTimerMap.insert(TimerMap::value_type(mID, this));
+		}	
+#endif	
 }
 
 void GUI_Timer::Stop(void)
@@ -48,7 +70,12 @@ void GUI_Timer::Stop(void)
 		}
 	#endif
 	#if IBM
-		KillTimer(NULL,reinterpret_cast<UINT_PTR>(this));
+		if (mID)
+		{
+			sTimerMap.erase(mID);
+			KillTimer(NULL, mID);
+			mID = 0;
+		}
 	#endif
 }
 
@@ -62,7 +89,7 @@ pascal void GUI_Timer::TimerCB(EventLoopTimerRef inTimer, void *inUserData)
 #if IBM
 void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-	GUI_Timer * me = (GUI_Timer *) idEvent;
+	GUI_Timer * me = sTimerMap[idEvent];
 	me->TimerFired();
 }
 #endif

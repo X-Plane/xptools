@@ -275,7 +275,10 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		{
 			mContent->SelectionEnd();
 			mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
-			return 0;
+			return 1;
+#if !DEV
+			address this - we sohuld return 0, but windows passes it on with no close click lqter
+#endif
 		}
 		
 		return 1;

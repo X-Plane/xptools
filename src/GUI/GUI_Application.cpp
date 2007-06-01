@@ -2,6 +2,7 @@
 #include "AssertUtils.h"
 #include "GUI_Menus.h"
 #include "XWin.h"
+#include "GUI_Window.h"
 #define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
@@ -241,7 +242,7 @@ void			GUI_Application::Run(void)
 			DispatchMessage(&msg);
 		}
 	}
-	
+	printf("Done with loop.\n");
 #endif
 }
 
@@ -257,6 +258,14 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 {
 	#if APL
 		return NULL;
+	#elif IBM
+		HWND hwnd = GUI_Window::AnyHWND();
+		if (hwnd == NULL) return NULL;
+		HMENU mbar = ::GetMenu(hwnd);
+		if (mbar != NULL) return mbar;
+		mbar = ::CreateMenu();
+		::SetMenu(hwnd, mbar);
+		return mbar;
 	#else
 		#error not impl
 	#endif
@@ -266,6 +275,8 @@ GUI_Menu		GUI_Application::GetPopupContainer(void)
 {
 	#if APL
 		return (GUI_Menu) -1;
+	#elif IBM
+		return NULL;
 	#else
 		#error not iml
 	#endif
@@ -303,36 +314,35 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 
 #if IBM
 
-	GUI_Menu parent = (inParentMenu) ? 
-		(((MenuInfo_t *) inParentMenu)->menu) :
-		(gWidgetWin->GetMenuBar());
+	HMENU	new_menu;
 
-	if (parent == GetPopupContainer())
-	pMenu->menu = CreatePopupMenu();
-	else
-	pMenu->menu = CreateMenu();
-
+	if (parent == GetPopupContainer())	new_menu = CreatePopupMenu();
+	else								new_menu = ::CreateMenu();
 	
-
-	MENUITEMINFO	mif = { 0 };
-	mif.cbSize = sizeof(mif);
-	mif.hSubMenu = pMenu->menu;
-	mif.fType = MFT_STRING;
-	mif.dwTypeData = const_cast<char *>(inName);
-	mif.fMask = (inParentMenu && parent != GetPopupContainer()) ? MIIM_SUBMENU : (MIIM_TYPE | MIIM_SUBMENU);
-
-	if (inParentMenu == NULL)
+	if (parent)
 	{
-		InsertMenuItem(parent, -1, true, &mif);
-	} else {
-		SetMenuItemInfo(parent, inParentItem, true, &mif);	
-	}		
-	
+		MENUITEMINFO	mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.hSubMenu = (HMENU) new_menu;
+		mif.fType = MFT_STRING;
+		mif.dwTypeData = const_cast<char *>(inTitle);
+		mif.fMask = (parent == GetPopupContainer()) ? MIIM_TYPE : (MIIM_TYPE | MIIM_SUBMENU);
+
+		if (parent == GetMenuBar())
+		{
+			InsertMenuItem((HMENU) parent, -1, true, &mif);
+		} else {
+			SetMenuItemInfo((HMENU) parent, parentItem, true, &mif);	
+		}		
+	}
 #endif
 
 	RebuildMenu(new_menu, items);
 
 	mMenus.insert(new_menu);
+
+	if (parent)
+		DrawMenuBar(GUI_Window::AnyHWND());
 	return new_menu;	
 }                                    	
 
@@ -369,7 +379,30 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			::CheckMenuItem((MenuRef) new_menu,n+1,items[n].checked);
 					
 			++n;
-		}	
+		}		
+	#elif IBM
+		while (GetMenuItemCount((HMENU) new_menu) > 0)
+			if (RemoveMenu((HMENU) new_menu, 0, MF_BYPOSITION) == 0) break;
+
+
+		int n = 0;
+		while (items[n].name)
+		{
+			string	itemname(items[n].name);
+
+			MENUITEMINFO mif = { 0 };
+			mif.cbSize = sizeof(mif);
+			mif.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
+			mif.fType = (itemname=="-") ? MFT_SEPARATOR : MFT_STRING;
+			mif.fState = (items[n].checked) ? (MFS_CHECKED | MFS_ENABLED) : MFS_ENABLED;
+			mif.wID = items[n].cmd;
+			mif.dwItemData = items[n].cmd;
+			mif.dwTypeData = const_cast<char*>(itemname.c_str());
+			int err = InsertMenuItem((HMENU) new_menu, -1, true, &mif);
+
+			++n;
+		}		
+
 	#else
 		#error not impl
 	#endif
