@@ -68,13 +68,13 @@ bool	WED_UndoMgr::HasRedo(void) const
 string	WED_UndoMgr::GetUndoName(void) const
 {
 	DebugAssert(!mUndo.empty());
-	return "Undo " + mUndo.back()->GetName();
+	return "&Undo " + mUndo.back()->GetName();
 }
 
 string	WED_UndoMgr::GetRedoName(void) const
 {
 	DebugAssert(!mRedo.empty());
-	return "Redo " + mRedo.front()->GetName();
+	return "&Redo " + mRedo.front()->GetName();
 }
 
 void	WED_UndoMgr::Undo(void)
