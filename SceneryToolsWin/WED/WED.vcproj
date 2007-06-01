@@ -37,6 +37,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="WED=1"
 				ForcedIncludeFiles="XDefs.h"
 			/>
 			<Tool
@@ -50,6 +51,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="freetype221ST_D.lib"
+				AdditionalLibraryDirectories="&quot;..\..\libsrc\freetype-2.2.1\objs\&quot;"
+				IgnoreAllDefaultLibraries="false"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -100,6 +104,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="WED=1"
 				ForcedIncludeFiles="XDefs.h"
 			/>
 			<Tool
@@ -325,10 +330,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\XESCore\MeshAlgs.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\XESCore\MeshAlgs_old.cpp"
 					>
 				</File>
 				<File
@@ -1312,18 +1313,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\Utils\XFileTwiddle.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\XFileTwiddle.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\XFileTwiddle.win.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\Utils\XUtils.cpp"
 					>
 				</File>
@@ -1443,6 +1432,18 @@
 			<Filter
 				Name="Network"
 				>
+				<File
+					RelativePath="..\..\src\Network\b64.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath="..\..\src\Network\HTTPClient.cpp"
 					>
@@ -1871,6 +1872,14 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="sqlite"
+					>
+					<File
+						RelativePath="..\..\libsrc\sqlitedll-3_3_17\sqlite3.c"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1884,6 +1893,14 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<Filter
+				Name="WEDResources"
+				>
+				<File
+					RelativePath="..\..\src\WEDResources\WED.rc"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
