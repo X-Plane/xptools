@@ -30,6 +30,7 @@
 #include "WED_Assert.h"
 #include "DEMTables.h"
 #include "WED_AboutBox.h"
+#include "WED_StartWindow.h"
 #include "ObjTables.h"
 #include <CGAL/assertions.h>
 #include "GUI_Clipboard.h"
@@ -110,9 +111,8 @@ int main(int argc, const char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
-	about->Start(1.0);
-	about->Refresh();
-	about->UpdateNow();
+	WED_StartWindow * start = new WED_StartWindow(&app);
+	start->Show();
 
 	WED_MakeMenus(&app);
 	
