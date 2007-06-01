@@ -181,9 +181,12 @@ WED_Document *	WED_Package::NewTile(int lon, int lat)
 	
 void			WED_Package::Rescan(void)
 {
-	unsigned long long 		dsf[360*180] = { 0 };
-	unsigned long long 		xes[360*180] = { 0 };
+	static unsigned long long 		dsf[360*180];
+	static unsigned long long 		xes[360*180];
 	
+memset(dsf,0,sizeof(dsf));
+memset(xes,0,sizeof(xes));
+
 	char					dsf_dir[36*18] = { 0 };
 	char					xes_dir[36*18] = { 0 };
 	
