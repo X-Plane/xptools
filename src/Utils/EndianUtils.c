@@ -1,6 +1,5 @@
 #include "EndianUtils.h"
 
-
 /*
  * These are the actual swapping macros.
  *
@@ -128,3 +127,4 @@ void	EndianSwapArray(
 		}
 	}
 }				
+

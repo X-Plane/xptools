@@ -87,7 +87,7 @@ int		GetFilePathFromUser(
         if (SHGetPathFromIDList (items, outFileName))
         {
         	result = 1;
-			strcat(outFileName, "\\");
+//			strcat(outFileName, "\\");
 		}
         IMalloc * imalloc = 0;
         if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
@@ -228,4 +228,20 @@ int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * ca
 						MB_DEFBUTTON1);
 						
 	return (result == IDOK || result == IDYES) ? 1 : 0;
+}
+
+int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
+{
+	int result = MessageBox(
+			NULL,
+			inMessage2,
+			inMessage1,
+			MB_YESNOCANCEL +
+			MB_ICONEXCLAMATION);
+	switch(result) {
+	case IDCANCEL:	return close_Cancel;
+	case IDYES:		return close_Save;
+	case IDNO:		return close_Discard;
+	default:		return close_Cancel;
+	}
 }

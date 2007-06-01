@@ -1,19 +1,14 @@
 #include "FileUtils.h"
 #include "PlatformUtils.h"
-#if APL || LIN
-	#include <errno.h>
-	#include <sys/stat.h>
-#endif
+
+#include <errno.h>
+#include <sys/stat.h>
 
 int FILE_exists(const char * path)
 {
-	#if LIN || APL
-		struct stat ss;
-		if (stat(path,&ss) < 0) return 0;
-		return (S_ISDIR(ss.st_mode))? 1 : 0;
-	#else
-		#error NOT YET CODED FOR PC
-	#endif
+	struct stat ss;
+	if (stat(path,&ss) < 0) return 0;
+	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 
 int FILE_delete_file(const char * nuke_path, int is_dir)

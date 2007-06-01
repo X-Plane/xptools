@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <math.h>
 #if APL
 #if defined(__MWERKS__)
 #include <CFURL.h>
@@ -1068,7 +1069,8 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	struct stat ss;
 	if (stat(path, &ss) < 0)
 		return mf_BadFile;
-	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
+//	if (ss.st_mode & S_IFDIR) return mf_Directory;
+	if (S_ISDIR(ss.st_mode) != 0) 
 	file_size = ss.st_size;
 
 #else
@@ -1183,6 +1185,43 @@ MF_GetDirectoryBulk(
 	FSCloseIterator(iter);
 	return total;
 			
+#elif IBM
+
+	char				searchPath[MAX_PATH];
+	char				filePath[MAX_PATH];
+	WIN32_FIND_DATA		findData;
+	HANDLE				hFind;
+	int					total = 0;
+	unsigned long long	when;
+
+	strcpy(searchPath,path);
+	strcat(searchPath,"\\*.*");
+
+	hFind = FindFirstFile(searchPath,&findData);
+	if (hFind == INVALID_HANDLE_VALUE) return 0;
+
+	++total;
+	strcpy(filePath,path);
+	strcat(filePath,"\\");
+	strcat(filePath,findData.cFileName);
+	when = ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
+
+	if (cbFunc(filePath, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon))
+	{
+		while(FindNextFile(hFind,&findData) != 0)
+		{
+			++total;
+			strcpy(filePath,path);
+			strcat(filePath,"\\");
+			strcat(filePath,findData.cFileName);
+			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
+			if (!cbFunc(filePath, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
+		}
+	}
+
+	FindClose(hFind);
+	return total;
+
 #else
 #error not implemented
 #endif

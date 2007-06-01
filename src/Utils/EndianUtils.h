@@ -23,6 +23,10 @@
 #ifndef _EndianUtils_h_
 #define _EndianUtils_h_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
 	platform_Native,		/* This is whatever your native code is compiled to. */
 	platform_BigEndian,		
@@ -59,4 +63,9 @@ void	EndianSwapArray(
 
 PlatformType	GetNativePlatformType(void);
 
+#ifdef __cplusplus
+};
 #endif
+
+#endif
+

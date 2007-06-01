@@ -35,7 +35,6 @@
 
 #if !INLINING_BW
 
-
 BWImage::BWImage() : mData(NULL), mBackup(NULL), mWidth(0), mHeight(0)
 {
 }
@@ -96,7 +95,6 @@ BWImage& BWImage::operator=(const BWImage& rhs)
 
 
 #if INLINING_BW || DEV
-
 
 BWINLINE void	BWImage::ClearBand(int y1, int y2)
 {
