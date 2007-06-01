@@ -1,7 +1,12 @@
 #include "GUI_ScrollerPane.h"
 #include "GUI_ScrollBar.h"
 #include "GUI_Messages.h"
-
+#include "GUI_DrawUtils.h"
+#if APL
+#include <OpenGL/gl.h>
+#else
+#include <gl/gl.h>
+#endif
 const int	kSBSIZE = 16;
 
 GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
@@ -45,6 +50,19 @@ GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 
 GUI_ScrollerPane::~GUI_ScrollerPane()
 {
+}
+
+
+void	GUI_ScrollerPane::Draw(GUI_GraphState * g)
+{
+	int bounds[4];
+	int tile[4] = { 0, 0, 1, 1 };
+	if (mScrollV && mScrollH)
+	{
+		glColor3f(1,1,1);
+		GetBounds(bounds);
+		GUI_DrawCentered(g, "scrollbar_corner.png", bounds, 1, -1, tile, NULL, NULL);
+	}
 }
 
 void	GUI_ScrollerPane::AttachSlaveH(GUI_ScrollerPane *inSlaveH)

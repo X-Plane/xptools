@@ -22,7 +22,7 @@ inline int OGL2Client_Y(int y, WindowRef w) { Rect c; GetWindowBounds(w,kWindowC
 
 inline int Client2OGL_X(int x, HWND w) { return x; }
 inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
-inline int Screen2Client_X(int x, HWND w)
+/*inline int Screen2Client_X(int x, HWND w)
 {
 	WINDOWINFO wif = { 0 };
 	wif.cbSize = sizeof(wif);
@@ -38,7 +38,8 @@ inline int Screen2Client_Y(int y, HWND w)
 }
 inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
 inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
-
+*/
+/*
 inline int Client2Screen_X(int x, HWND w)
 {
 	WINDOWINFO wif = { 0 };
@@ -55,8 +56,9 @@ inline int Client2Screen_Y(int y, HWND w)
 }
 inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
-inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
-inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
+*/
+//inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
+//inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
  
 
 
@@ -146,13 +148,18 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 
 	DWORD recommended = OleStdGetDropEffect(key_state);
 
+	POINT p;
+	p.x = where.x;
+	p.y = where.y;
+	ScreenToClient(mWindow, &p);
+
 	*effect = OP_GUI2Win(mTarget->InternalDragEnter(
-				Screen2OGL_X(where.x, mWindow), 
-				Screen2OGL_Y(where.y, mWindow), 
+				Client2OGL_X(p.x, mWindow), 
+				Client2OGL_Y(p.y, mWindow), 
 				&adapter, OP_Win2GUI(allowed), OP_Win2GUI(recommended)));
 	mTarget->InternalDragScroll(
-				Screen2OGL_X(where.x, mWindow), 
-				Screen2OGL_Y(where.y, mWindow));
+				Client2OGL_X(p.x, mWindow), 
+				Client2OGL_Y(p.y, mWindow));
 	return S_OK;
 }
 
@@ -163,14 +170,19 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 	DWORD allowed = *effect;
 	*effect = DROPEFFECT_NONE;
 	DWORD recommended = OleStdGetDropEffect(key_state);
+
+	POINT p;
+	p.x = where.x;
+	p.y = where.y;
+	ScreenToClient(mWindow, &p);
 	
-		*effect = OP_GUI2Win(mTarget->InternalDragOver(
-				Screen2OGL_X(where.x, mWindow), 
-				Screen2OGL_Y(where.y, mWindow), 
+	*effect = OP_GUI2Win(mTarget->InternalDragOver(
+			Client2OGL_X(p.x, mWindow), 
+			Client2OGL_Y(p.y, mWindow), 
 			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
-							 mTarget->InternalDragScroll(
-				Screen2OGL_X(where.x, mWindow), 
-				Screen2OGL_Y(where.y, mWindow));
+	 mTarget->InternalDragScroll(
+			Client2OGL_X(p.x, mWindow), 
+			Client2OGL_Y(p.y, mWindow));
 	return S_OK;
 }
 
@@ -190,11 +202,16 @@ STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL
 	*effect = DROPEFFECT_NONE;
 	DWORD recommended = OleStdGetDropEffect(key_state);
 
-		*effect = OP_GUI2Win(mTarget->InternalDrop(
-				Screen2OGL_X(where.x, mWindow), 
-				Screen2OGL_Y(where.y, mWindow), 
+	POINT p;
+	p.x = where.x;
+	p.y = where.y;
+	ScreenToClient(mWindow, &p);
+
+	*effect = OP_GUI2Win(mTarget->InternalDrop(
+			Client2OGL_X(p.x, mWindow), 
+			Client2OGL_Y(p.y, mWindow), 
 			&adapter, OP_Win2GUI(allowed),OP_Win2GUI(recommended)));
-		mTarget->InternalDragLeave();
+	mTarget->InternalDragLeave();
 	
 	return S_OK;
 	
@@ -393,8 +410,8 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
-GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(0, inTitle, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
+	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM
@@ -419,10 +436,9 @@ GUI_Window::GUI_Window(const char * inTitle, int inBounds[4], GUI_Commander * in
 	sWindows.insert(this);
 	mBounds[0] = 0;
 	mBounds[1] = 0;
-	mBounds[2] = inBounds[2] - inBounds[0];
-	mBounds[3] = inBounds[3] - inBounds[1];
+	XWinGL::GetBounds(mBounds+2,mBounds+3);
 	mMouseFocusPane = NULL;
-	mVisible = true;
+	mVisible = inAttributes & xwin_style_visible;
 	mClearColorRGBA[0] = 1.0;
 	mClearColorRGBA[1] = 1.0;
 	mClearColorRGBA[2] = 1.0;
@@ -907,8 +923,9 @@ bool				GUI_Window::IsDragClick(int x, int y)
 
 	#elif IBM
 		POINT p;
-		p.x=OGL2Screen_X(x, mWindow);
-		p.y=OGL2Screen_Y(y, mWindow);
+		p.x = OGL2Client_X(x,mWindow);
+		p.y = OGL2Client_Y(y,mWindow);
+		ClientToScreen(mWindow,&p);
 
 		int ret = DragDetect(mWindow,p);
 		SetCapture(NULL);

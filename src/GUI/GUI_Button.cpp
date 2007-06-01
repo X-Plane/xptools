@@ -11,24 +11,44 @@
 #endif
 
 
-GUI_Button::GUI_Button() : mStyle(btn_Push), mHilite(0)
+GUI_Button::GUI_Button(
+		const char *		in_res_name,
+		GUI_ButtonType		behavior,
+		int					off_regular[4],
+		int					off_hilite[4],
+		int					on_regular[4],
+		int					on_hilite[4]) :
+	mBehavior(behavior),
+	mResource(in_res_name),
+	mHilite(0)
 {
+	for (int n = 0; n < 4; ++n)
+	{
+		mCellOffReg[n] = off_regular[n];
+		mCellOffHilite[n] = off_hilite[n];
+		mCellOnReg[n] = on_regular[n];
+		mCellOnHilite[n] = on_hilite[n];
+	}
 }
 
 GUI_Button::~GUI_Button()
 {
 }
 
-void		GUI_Button::SetStyle(int style)
-{
-	mStyle = style; 
-	Refresh();
-}
-
 void		GUI_Button::SetValue(float inValue)
 {
 	GUI_Control::SetValue(inValue);
 	Refresh();
+}
+
+int		GUI_Button::MouseMove(int x, int y)
+{
+	if (mBehavior == btn_Web)
+	{
+		mHilite = 1;
+		Refresh();
+	}
+	return 1;
 }
 
 int			GUI_Button::MouseDown(int x, int y, int button)
@@ -57,8 +77,9 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 	int new_hilite = (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
 	if (new_hilite)
 	{
-		switch(mStyle) {
+		switch(mBehavior) {
 		case btn_Push:
+		case btn_Web:
 			SetValue(0.0);
 			break;
 		case btn_Check:
@@ -68,7 +89,6 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 			SetValue(1.0);
 			break;
 		}
-		BroadcastMessage(GUI_CONTROL_VALUE_CHANGED, 0);
 	}
 	
 	mHilite = 0;
@@ -84,11 +104,14 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	glColor3f(1,1,1);
 	GetDescriptor(desc);
 	GetBounds(bounds);
-	switch(mStyle) {
+	int * tile_p = GetValue() > 0 ? 
+					(mHilite ? mCellOnHilite : mCellOnReg ) :
+					(mHilite ? mCellOffHilite : mCellOffReg );
+	switch(mBehavior) {
 	case btn_Push:
+	case btn_Web:
 		{
-			int tile_p[4] = { 0, mHilite ? 0 : 1, 1, 2 };
-			GUI_DrawStretched(state,"pushbutton.png",bounds,tile_p);
+			GUI_DrawStretched(state,mResource.c_str(),bounds,tile_p);
 			
 			if (!desc.empty())
 			{
@@ -101,12 +124,20 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	case btn_Check:
 	case btn_Radio:
 		{
-			int tile_c[4] = { mHilite ? 1 : 0, GetValue() > 0 ? 1 : 0, 2, 2 };
-			GUI_DrawCentered(state,(mStyle == btn_Check) ? "checkbutton.png" : "radiobutton.png", bounds, -1, 0, tile_c, &w, NULL);
+			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, NULL);
 			
 			if (!desc.empty())
 				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1], desc.c_str());
 		}
 		break;
+	}
+}
+
+void		GUI_Button::SetHilite(int hilite)
+{
+	if (mHilite != hilite)
+	{
+		mHilite = hilite;
+		Refresh();
 	}
 }

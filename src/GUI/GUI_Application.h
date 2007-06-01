@@ -8,6 +8,9 @@
 
 #include "GUI_Commander.h"
 
+#if !DEV
+document limitations of menus on windows
+#endif
 
 class	GUI_Application : public GUI_Commander {
 public:
