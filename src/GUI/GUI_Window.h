@@ -74,7 +74,9 @@ private:
 
 	friend class GUI_Application;
 	#if IBM
-		static HWND AnyHWND(void);
+		static	HWND	AnyHWND(void);		// Used by app - we need to get SOME window to build the FIRST menubar.
+		static	void	EnableMenusWin(void);
+
 		GUI_Window_DND *	mDND;
 		WNDPROC				mBaseProc;
 

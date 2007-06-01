@@ -136,7 +136,6 @@ STDMETHODIMP_(ULONG) GUI_Window_DND::Release(void)
 
 STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
-	OutputDebugString("GUI_Window drag enter.\n");
 	mData = data_obj;
 	mData->AddRef();
 	
@@ -159,7 +158,6 @@ STDMETHODIMP GUI_Window_DND::DragEnter(LPDATAOBJECT data_obj, DWORD key_state, P
 
 STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD effect)
 {
-	OutputDebugString("GUI_Window drag over.\n");
 	GUI_OLE_Adapter	adapter(mData);	
 
 	DWORD allowed = *effect;
@@ -178,7 +176,6 @@ STDMETHODIMP GUI_Window_DND::DragOver(DWORD key_state, POINTL where, LPDWORD eff
 
 STDMETHODIMP GUI_Window_DND::DragLeave(void)
 {
-	OutputDebugString("GUI_Window drag leave.\n");
 
 	mTarget->InternalDragLeave();
 	mData->Release();
@@ -187,8 +184,6 @@ STDMETHODIMP GUI_Window_DND::DragLeave(void)
 
 STDMETHODIMP GUI_Window_DND::Drop(LPDATAOBJECT data_obj, DWORD key_state, POINTL where, LPDWORD effect)
 {
-	OutputDebugString("GUI_Window drag drop.\n");
-
 	GUI_OLE_Adapter	adapter(data_obj);	
 
 	DWORD allowed = *effect;
@@ -470,7 +465,7 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
 	mMouseFocusPane = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 	mMouseFocusButton = inButton;
-	
+
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
 //					until we find out what the hell needed this!
 //	if (mMouseFocusPane)
@@ -480,6 +475,13 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 {
+	// Ben says: note that if we don't have a mouse focus paine we just "eat" the up-click.
+	// This deals with a Win32 design problem: Windows D&D _eats_ the up-click events.  So we
+	// post synthetic ones later.
+	// But this is NOT 100% correct - on windows we can quit a D&D event with the escape key - in
+	// this case the mouse up hasn't happened, so it isn't eaten.  When we hit escape we post a
+	// synthetic mouse up (which is probably good) and then the real one later hits.  But it no-ops
+	// because there is no focus pain.
 	if (mMouseFocusPane)
 	{
 		mMouseFocusPane->MouseUp(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
@@ -738,41 +740,14 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 #if !DEV
 	examine - is this right?
 #endif
-	int	ShiftToggle=0;
-	int	ControlToggle=0;
-	int	OptionKeyToggle=0;
 
 	if (((inParam2 & ExtKeyMask) == numLockKey) || ((inParam2 & ShiftControlMask) == capsLockKey) || ((inParam2 & ShiftControlMask) == scrollLockKey))
 		return 1;
 
-	if (((inParam2 & ShiftControlMask) == shiftKey) || (inParam1 == VK_SHIFT))
+	if (inParam1 == VK_SHIFT || 
+		inParam1 == VK_CONTROL ||
+		inParam1 == VK_MENU)
 	{
-		if (inMsg == keyDown)
-			ShiftToggle = 1;
-		else
-			ShiftToggle = 0;
-
-		return 1;
-	}
-
-	if ((inParam2 & ShiftControlMask) == controlKey)
-	{
-		if (inMsg == keyDown)
-			ControlToggle = 1;
-		else
-			ControlToggle = 0;
-
-		return 1;
-	}
-
-	/// SB
-	if ((inParam2 & ShiftControlMask) == optionKey)
-	{
-		if (inMsg == keyDown)
-			OptionKeyToggle = 1;
-		else
-			OptionKeyToggle = 0;
-
 		return 1;
 	}
 
@@ -937,11 +912,11 @@ bool				GUI_Window::IsDragClick(int x, int y)
 
 		int ret = DragDetect(mWindow,p);
 		SetCapture(NULL);
-		OutputDebugString(ret ? "Drag detect true\n" : "drag detect false\n");
+		// Ben says: if we are NOT detecting a drag, it means the user either let go of the mouse or hit
+		// escape.  Good enough for me - pretend it's an up-click (if it was, DragDetect ate it.)
 		if (!ret)
-			PostMessage(mWindow,WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
-		if (!ret) 
-			OutputDebugString("Message posted.\n");
+			PostMessage(mWindow, mMouseFocusButton ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
+
 		return ret;
 			
 	#else
@@ -1036,6 +1011,9 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		
 		GUI_DragOperation result = OP_Win2GUI(effect);
 		
+		// Repost a fake up click - if we were dragging, the drag probably ate the up-click
+		PostMessage(mWindow, mMouseFocusButton ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
+
 		return result;
 	#else
 		#error not implemented
@@ -1053,7 +1031,11 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 {
 	GUI_Window * me = (GUI_Window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch(message) {
+		case WM_INITMENU:
+			EnableMenusWin();
+			return 0;
 		case WM_DESTROY:
+			// Default behavior of xwin is quit-on-close - this stops that.
 			return 0;
 		case WM_COMMAND:
 			me->DispatchHandleCommand(LOWORD(wParam));
@@ -1062,5 +1044,95 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
 	}
 }
+
+	struct CmdEval_t {
+		string	new_name;
+		int		enabled;
+		int		checked;
+	};
+	typedef map<int, CmdEval_t>	CmdMap_t;
+
+static void FindCmdsRecursive(HMENU menu, CmdMap_t& io_map)
+{
+	int ct = GetMenuItemCount(menu);
+	CmdEval_t blank;
+	blank.enabled = 0;
+	blank.checked = 0;
+	for (int n = 0; n < ct; ++n)
+	{
+		MENUITEMINFO mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.fMask = MIIM_ID | MIIM_SUBMENU;
+		GetMenuItemInfo(menu, n, true, &mif);
+		if (mif.wID != 0)
+		if (io_map.count(mif.wID) == 0)
+			io_map.insert(CmdMap_t::value_type(mif.wID,blank));
+		if (mif.hSubMenu != NULL)
+			FindCmdsRecursive(mif.hSubMenu, io_map);
+	}
+}
+
+static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
+{
+	char buf[256];
+	int ct = GetMenuItemCount(menu);
+	for (int n = 0; n < ct; ++n)
+	{
+		MENUITEMINFO mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.fMask = MIIM_ID | MIIM_SUBMENU | MIIM_TYPE;
+		mif.cch = sizeof(buf);
+		mif.dwTypeData = buf;
+		GetMenuItemInfo(menu, n, true, &mif);
+		string suffix;
+		if (mif.fType == MFT_STRING)
+		{
+			string old_name(buf);
+			string::size_type tab = old_name.find('\t');
+			if (tab != old_name.npos)
+				suffix = old_name.substr(tab);
+		}
+		if (mif.hSubMenu != NULL)
+			ApplyCmdsRecursive(mif.hSubMenu,io_map);
+		if (mif.wID != 0)
+		{
+			CmdMap_t::const_iterator iter = io_map.find(mif.wID);
+			if (iter != io_map.end())
+			{
+				mif.fMask = iter->second.new_name.empty() ? MIIM_STATE : (MIIM_TYPE | MIIM_STATE);
+				mif.fType = MFT_STRING;
+				string total_name;
+				if (!iter->second.new_name.empty())
+				{
+					total_name = iter->second.new_name + suffix;
+					mif.dwTypeData = (char *) total_name.c_str();
+				}
+				mif.fState = (iter->second.enabled ? MFS_ENABLED : MFS_DISABLED) | (iter->second.checked ? MFS_CHECKED : MFS_UNCHECKED);
+				SetMenuItemInfo(menu, n, true, &mif);
+			}
+		}
+	}
+}
+
+void GUI_Window::EnableMenusWin(void)
+{
+	if (sWindows.empty()) return;
+	GUI_Window * me = *sWindows.begin();
+
+	CmdMap_t cmds;
+
+	FindCmdsRecursive(GetMenu(me->mWindow),cmds);
+
+	for(CmdMap_t::iterator cmd = cmds.begin(); cmd != cmds.end(); ++cmd)
+		cmd->second.enabled = GUI_Commander::GetCommanderRoot()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
+
+	for (set<GUI_Window *>::iterator iter = sWindows.begin(); iter != sWindows.end(); ++iter)
+	{
+		GUI_Window * who = *iter;
+		ApplyCmdsRecursive(GetMenu(who->mWindow),cmds);
+	}
+}
+
+
 
 #endif

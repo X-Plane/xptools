@@ -234,6 +234,7 @@ void			GUI_Application::Run(void)
 
 	MSG msg;
 
+	BuildAccels();
 	while (!mDone && GetMessage(&msg, NULL, 0, 0)) 
 	{
 		if (!TranslateAccelerator(msg.hwnd, gAccel, &msg)) 
@@ -242,7 +243,6 @@ void			GUI_Application::Run(void)
 			DispatchMessage(&msg);
 		}
 	}
-	printf("Done with loop.\n");
 #endif
 }
 
@@ -391,6 +391,28 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		while (items[n].name)
 		{
 			string	itemname(items[n].name);
+			if(items[n].key != 0)
+			{
+				ACCEL accel = { 0 };
+				accel.fVirt = FVIRTKEY;
+				accel.cmd = items[n].cmd;				
+				itemname += "\t";
+				if (items[n].flags & gui_ControlFlag)	{itemname += "Ctrl+";	accel.fVirt |= FCONTROL;	}
+				if (items[n].flags & gui_ShiftFlag)		{itemname += "Shift+";	accel.fVirt |= FSHIFT;		}
+				if (items[n].flags & gui_OptionAltFlag) {itemname += "Alt+";	accel.fVirt |= FALT;		}
+				char key_cstr[2] = { items[n].key, 0 };
+				switch(items[n].key)
+				{
+					case GUI_KEY_UP:		itemname += "Up";		accel.key = VK_UP;		break;
+					case GUI_KEY_DOWN:		itemname += "Down";		accel.key = VK_DOWN;	break;
+					case GUI_KEY_RIGHT:		itemname += "Right";	accel.key = VK_RIGHT;	break;
+					case GUI_KEY_LEFT:		itemname += "Left";		accel.key = VK_LEFT;	break;
+					case GUI_KEY_DELETE:	itemname += "Del";		accel.key = VK_DELETE;	break;
+					case GUI_KEY_RETURN:	itemname += "Return";	accel.key = VK_RETURN;	break;
+					default:				itemname += key_cstr;	accel.key = VkKeyScan(items[n].key) & 0xFF;	break;
+				}
+				RegisterAccel(accel);
+			}
 
 			MENUITEMINFO mif = { 0 };
 			mif.cbSize = sizeof(mif);
