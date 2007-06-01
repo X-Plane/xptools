@@ -27,7 +27,7 @@ static void	NukeAmpersand(string& ioString)
 	string::size_type loc;
 	while ((loc = ioString.find('&')) != ioString.npos)
 	{
-		ioString.erase(loc);
+		ioString.erase(loc,1);
 	}
 }
 
