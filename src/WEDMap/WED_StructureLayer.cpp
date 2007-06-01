@@ -108,6 +108,10 @@ static void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, 
 	}
 }
 
+#if !IBM
+#define CALLBACK
+#endif
+
 static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);		 }
 static void CALLBACK TessEnd(void)				{ glEnd();				 }
 static void CALLBACK TessVertex(const Point2 * p){ glVertex2d(p->x,p->y); }

@@ -10,6 +10,14 @@ static set<GUI_Window *>	sWindows;
 // WINDOWS DND
 //---------------------------------------------------------------------------------------------------------------------------------------
 
+#if APL
+inline int Client2OGL_X(int x, WindowRef w) { return x; }
+inline int Client2OGL_Y(int y, WindowRef w) { Rect r; GetWindowBounds(w,kWindowContentRgn,&r); return r.bottom-r.top-y; }
+inline int OGL2Client_X(int x, WindowRef w) { return x; }
+inline int OGL2Client_Y(int y, WindowRef w) { Rect c; GetWindowBounds(w,kWindowContentRgn,&c); return c.bottom-c.top-y; }
+
+#endif
+
 #if IBM
 
 inline int Client2OGL_X(int x, HWND w) { return x; }

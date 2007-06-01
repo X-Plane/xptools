@@ -341,8 +341,10 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 
 	mMenus.insert(new_menu);
 
+#if IBM
 	if (parent)
 		DrawMenuBar(GUI_Window::AnyHWND());
+#endif
 	return new_menu;	
 }                                    	
 
