@@ -133,4 +133,5 @@ int main(int argc, const char * argv[])
 	app.Run();
 	
 	delete about;
+	return 0;
 }
