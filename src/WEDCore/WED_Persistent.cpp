@@ -14,7 +14,7 @@ WED_Persistent::WED_Persistent(WED_Archive * parent, int id) :
 	mDirty = true;
 }
 
-void			WED_Persistent::WED_Persistent::Delete(void)
+void			WED_Persistent::Delete(void)
 {
 	mArchive->RemoveObject(this);
 	delete this;
