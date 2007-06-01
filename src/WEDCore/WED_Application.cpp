@@ -77,7 +77,9 @@ int		WED_Application::HandleCommand(int command)
 
 int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
-	switch(command) { 
+	switch(command) {
+	case gui_Undo:		ioName = "&Undo"; return 0;
+	case gui_Redo:		ioName = "&Redo"; return 0;
 	case wed_NewPackage:
 	case wed_OpenPackage:	return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
