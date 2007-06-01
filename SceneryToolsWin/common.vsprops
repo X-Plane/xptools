@@ -6,6 +6,6 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;_POSIX_=1;_CRT_NONSTDC_NO_DEPRECATE=1;NOMINMAX=1;__INTEL__=1"
+		PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE=1;_POSIX_=1;_CRT_NONSTDC_NO_DEPRECATE=1;NOMINMAX=1;__INTEL__=1;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 	/>
 </VisualStudioPropertySheet>
