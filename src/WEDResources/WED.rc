@@ -14,11 +14,17 @@ scrollbar_h.png			GUI_RES		scrollbar_h.png
 scrollbar_v.png			GUI_RES		scrollbar_v.png	
 scroll_btn_h.png		GUI_RES		scroll_btn_h.png
 scroll_btn_v.png		GUI_RES		scroll_btn_v.png
+scrollbar_corner.png	GUI_RES		scrollbar_corner.png
 
 /* app UI elements */
 about.png				GUI_RES		about.png		
 colors.png				GUI_RES		colors.png		
 map_tools.png			GUI_RES		map_tools.png	
+
+/* Start window */
+startup_bar.png			GUI_RES		startup_bar.png			
+startup_btns.png		GUI_RES		startup_btns.png		
+startup_bkgnd.png		GUI_RES		startup_bkgnd.png		
 
 /* control handle artwork */
 handle_vertexsharp.png	GUI_RES		handles\handle_vertexsharp.png	
