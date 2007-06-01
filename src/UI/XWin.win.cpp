@@ -37,6 +37,46 @@
 #define WHEEL_DELTA                     120
 
 
+inline int Client2OGL_X(int x, HWND w) { return x; }
+inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
+inline int Screen2Client_X(int x, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return x - wif.rcClient.left;
+}
+inline int Screen2Client_Y(int y, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return y - wif.rcClient.top;
+}
+inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
+inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
+
+inline int Client2Screen_X(int x, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return x + wif.rcClient.left;
+}
+inline int Client2Screen_Y(int y, HWND w)
+{
+	WINDOWINFO wif = { 0 };
+	wif.cbSize = sizeof(wif);
+	GetWindowInfo(w,&wif);
+	return y + wif.rcClient.top;
+}
+inline int OGL2Client_X(int x, HWND w) { return x; }
+inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
+inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
+ 
+
+
 typedef	map<int, pair<xmenu, int> >	MenuMap;
 MenuMap	gMenuMap;
 
@@ -88,10 +128,13 @@ XWin::XWin(
 	int				inWidth,
 	int				inHeight)
 {
+	RECT	bounds = { inX, inY, inX + inWidth, inY + inHeight };
+	AdjustWindowRect(&bounds, WS_OVERLAPPEDWINDOW, true);
+
 	sIniting = true;
 	mWindow = CreateWindow(sWindowClass, inTitle, 
 		WS_OVERLAPPEDWINDOW,	// Style,
-		inX, inY, inWidth, inHeight,
+		bounds.left,bounds.top,bounds.right-bounds.left,bounds.bottom-bounds.top,
 		NULL,	// Parent
 		NULL,	// Menu
 		gInstance,	// (app)
@@ -125,7 +168,8 @@ XWin::~XWin()
 
 	if (mWindow)
 		DestroyWindow(mWindow);
-	mDropTarget->Release();	
+	if (mDropTarget)
+		mDropTarget->Release();	
 }
 
 void			XWin::SetTitle(const char * inTitle)
@@ -152,6 +196,21 @@ void			XWin::ForceRefresh(void)
 void			XWin::UpdateNow(void)
 {
 	UpdateWindow(mWindow);					// This does a sync refresh
+}
+
+void			XWin::SetVisible(bool visible)
+{
+	ShowWindow(mWindow, visible ? SW_SHOW : SW_HIDE);
+}
+
+bool			XWin::GetVisible(void) const 
+{
+	return ::IsWindowVisible(mWindow);
+}
+
+bool			XWin::GetActive(void) const
+{
+	return ::GetForegroundWindow() == mWindow;
 }
 
 
@@ -255,12 +314,9 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj)
 		{
 			RECT	rect;
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			if (::GetWindowRect(obj->mWindow, &rect)) {
-				x -= rect.left;
-				y -= rect.top;
-			}
+			int x = Screen2Client_X(LOWORD(lParam),obj->mWindow);
+			int y = Screen2Client_Y(HIWORD(lParam),obj->mWindow);
+
 			obj->MouseWheel(x, y, (short) HIWORD(wParam) / WHEEL_DELTA, 0);
 		}
 		break;
@@ -277,9 +333,15 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_WINDOWPOSCHANGED:
 		if (obj && !sIniting)
 		{
-			LPWINDOWPOS	p = (LPWINDOWPOS) lParam;
-			if ((p->flags & SWP_NOSIZE) == 0)			
+			LPWINDOWPOS p = (LPWINDOWPOS) lParam;
+			if ((p->flags & SWP_NOSIZE) == 0)
+			{
+				RECT	rect;
+				if (::GetClientRect(hWnd, &rect))
+				obj->Resized(rect.right-rect.left,rect.bottom-rect.top);
+				else
 				obj->Resized(p->cx, p->cy);
+			}
 		}	
 		result = DefWindowProc(hWnd, message, wParam, lParam);
 		break;
@@ -454,19 +516,38 @@ void			XWin::DrawMenuBar(void)
 
 int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
 {
-		RECT	rect;
-	if (::GetWindowRect(mWindow, &rect)) {
-		mouse_x -= rect.left;
-		mouse_y -= rect.top;
+	mouse_x = Client2Screen_X(mouse_x,mWindow);
+	mouse_y = Client2Screen_Y(mouse_y,mWindow);
+
+	vector<int> cmds(GetMenuItemCount(in_menu));
+	for (int i = 0; i < cmds.size(); ++i)
+	{
+		MENUITEMINFO mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.fMask = MIIM_ID;
+		GetMenuItemInfo(in_menu, i, true, &mif);
+		cmds[i] = mif.wID;
+		mif.wID = i+1;
+		SetMenuItemInfo(in_menu, i, true, &mif);
 	}
 
 	int result = TrackPopupMenuEx(
 			in_menu,
-			TPM_RETURNCMD + TPM_NONOTIFY,
+			TPM_RETURNCMD + TPM_NONOTIFY + TPM_LEFTALIGN + TPM_TOPALIGN,
 			mouse_x,
 			mouse_y,
 			mWindow,
 			NULL);
-	return result;
+
+	for (int i = 0; i < cmds.size(); ++i)
+	{
+		MENUITEMINFO mif = { 0 };
+		mif.cbSize = sizeof(mif);
+		mif.fMask = MIIM_ID;
+		mif.wID = cmds[i];
+		SetMenuItemInfo(in_menu, i, true, &mif);
+	}
+
+	return result-1;
 }
 
