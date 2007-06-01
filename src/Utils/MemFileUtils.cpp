@@ -1188,7 +1188,6 @@ MF_GetDirectoryBulk(
 #elif IBM
 
 	char				searchPath[MAX_PATH];
-	char				filePath[MAX_PATH];
 	WIN32_FIND_DATA		findData;
 	HANDLE				hFind;
 	int					total = 0;
@@ -1201,21 +1200,15 @@ MF_GetDirectoryBulk(
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
-	strcpy(filePath,path);
-	strcat(filePath,"\\");
-	strcat(filePath,findData.cFileName);
 	when = ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
 
-	if (cbFunc(filePath, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon))
+	if (cbFunc(findData.cFileName, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
 		while(FindNextFile(hFind,&findData) != 0)
 		{
 			++total;
-			strcpy(filePath,path);
-			strcat(filePath,"\\");
-			strcat(filePath,findData.cFileName);
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
-			if (!cbFunc(filePath, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
+			if (!cbFunc(findData.cFileName, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
 		}
 	}
 
