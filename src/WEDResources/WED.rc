@@ -48,4 +48,4 @@ lock.png				GUI_RES		tables\lock.png
 check.png				GUI_RES		tables\check.png	
 
 /* app code */
-WED_DataModel.sql		GUI_RES		..\WEDCore\WED_DataModel.sql
+WED_DataModel.sql		GUI_RES		"..\WEDCore\WED_DataModel.sql"
