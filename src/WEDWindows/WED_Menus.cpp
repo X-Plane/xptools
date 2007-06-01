@@ -12,68 +12,72 @@ static const GUI_MenuItem_t	kAppMenu[] = {
 
 
 static const GUI_MenuItem_t	kFileMenu[] = {
-{	"New Package...",	'N',	gui_ControlFlag,	0,	wed_NewPackage		},
-{	"Open Package...",	'O',	gui_ControlFlag,	0,	wed_OpenPackage		},
-{	"Close",			'W',	gui_ControlFlag,	0,	gui_Close			},
-{	"Save",				'S',	gui_ControlFlag,	0,	gui_Save			},
-{	"Revert To Saved",	0,		0,					0,	gui_Revert			},
+{	"&New Package...",	'N',	gui_ControlFlag,	0,	wed_NewPackage		},
+{	"&Open Package...",	'O',	gui_ControlFlag,	0,	wed_OpenPackage		},
+{	"&Close",			'W',	gui_ControlFlag,	0,	gui_Close			},
+{	"&Save",				'S',	gui_ControlFlag,	0,	gui_Save			},
+{	"&Revert To Saved",	0,		0,					0,	gui_Revert			},
 {	"-",				0,  	0,					0,	0					},
-{	"Import apt.dat...",'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
-{	"Export apt.dat...",'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
+{	"&Import apt.dat...",'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
+{	"&Export apt.dat...",'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
+#if IBM
+{	"-",				0,		0,					0,	0					},
+{	"E&xit",				0,		0,					0,	gui_Quit			},
+#endif
 {	NULL,				0,		0,					0,	0					},
 };
 
 static const GUI_MenuItem_t	kEditMenu[] = {
-{	"Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
-{	"Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Redo		},
+{	"&Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
+{	"&Redo",				'Z',	gui_ControlFlag+gui_ShiftFlag,	0,	gui_Redo		},
 {	"-",				0,  	0,								0,	0				},
-{	"Cut",				'X',	gui_ControlFlag,				0,	gui_Cut			},
-{	"Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
-{	"Paste",			'V',	gui_ControlFlag,				0,	gui_Paste		},
-{	"Clear",			0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
+{	"Cu&t",				'X',	gui_ControlFlag,				0,	gui_Cut			},
+{	"&Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
+{	"&Paste",			'V',	gui_ControlFlag,				0,	gui_Paste		},
+{	"Cl&ear",			0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
 {	"-",				0,  	0,								0,	0				},
-{	"Group",			'G',	gui_ControlFlag,				0,	wed_Group		},
-{	"Ungroup",			'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
+{	"&Group",			'G',	gui_ControlFlag,				0,	wed_Group		},
+{	"U&ngroup",			'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",				0,  	0,								0,	0				},
-{	"Move First",		'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
-{	"Move Up",			'[',	gui_ControlFlag,				0,	wed_MovePrev	},
-{	"Move Down",		']',	gui_ControlFlag,				0,	wed_MoveNext	},
-{	"Move Last",		']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
+{	"Move &First",		'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
+{	"&Move Up",			'[',	gui_ControlFlag,				0,	wed_MovePrev	},
+{	"Move &Down",		']',	gui_ControlFlag,				0,	wed_MoveNext	},
+{	"Move &Last",		']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
 {	NULL,				0,		0,								0,	0				},
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
-{	"Show Line Markings",		0,	0,							0,	wed_ToggleLines		},
-{	"Pavement Transparency",	0,	0,							0,	0					},
+{	"Show &Line Markings",		0,	0,							0,	wed_ToggleLines		},
+{	"Pavement T&ransparency",	0,	0,							0,	0					},
 {	"-",						0,	0,							0,	0					},
-{	"Pick Overlay Image...",	0,	0,							0,	wed_PickOverlay		},
-{	"Toggle Overlay Image",		0,	0,							0,	wed_ToggleOverlay	},
-{	"Toggle Terraserver",		0,	0,							0,	wed_ToggleTerraserver },
+{	"&Pick Overlay Image...",	0,	0,							0,	wed_PickOverlay		},
+{	"Toggle &Overlay Image",		0,	0,							0,	wed_ToggleOverlay	},
+{	"Toggle &Terraserver",		0,	0,							0,	wed_ToggleTerraserver },
 {	NULL,						0,	0,							0,	0					},
 };
 
 static const GUI_MenuItem_t kPavementMenu[] = { 
-{	"None",						0,	0,							0,	wed_Pavement0		},
-{	"25%",						0,	0,							0,	wed_Pavement25		},
-{	"50%",						0,	0,							0,	wed_Pavement50		},
-{	"75%",						0,	0,							0,	wed_Pavement75		},
-{	"Solid",					0,	0,							0,	wed_Pavement100		},
+{	"&None",						0,	0,							0,	wed_Pavement0		},
+{	"&25%",						0,	0,							0,	wed_Pavement25		},
+{	"&50%",						0,	0,							0,	wed_Pavement50		},
+{	"&75%",						0,	0,							0,	wed_Pavement75		},
+{	"&Solid",					0,	0,							0,	wed_Pavement100		},
 {	NULL,						0,	0,							0,	0					}
 };
 
 static const GUI_MenuItem_t kSelectMenu[] = {
-{	"Select All",		'A',			gui_ControlFlag,				0,	gui_SelectAll		},
-{	"Select None",		'D',			gui_ControlFlag,				0,	gui_SelectNone		},
+{	"Select &All",		'A',			gui_ControlFlag,				0,	gui_SelectAll		},
+{	"Select &None",		'D',			gui_ControlFlag,				0,	gui_SelectNone		},
 {	"-",				0,				0,								0,	0					},
-{	"Select Parent",	GUI_KEY_UP,		gui_ControlFlag,				0,	wed_SelectParent	},
-{	"Select Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
-{	"Select Polygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
-{	"Select Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
+{	"Select &Parent",	GUI_KEY_UP,		gui_ControlFlag,				0,	wed_SelectParent	},
+{	"Select &Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
+{	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
+{	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
 {	NULL,				0,				0,								0,	0					},
 };
 
 static const GUI_MenuItem_t kAirportMenu[] = {
-{	"Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
+{	"&Create Airport",			'A',	gui_ControlFlag+gui_ShiftFlag,			0, wed_CreateApt },
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt },
 {	NULL,						0,		0,										0, 0,				}
 };
@@ -89,21 +93,21 @@ void WED_MakeMenus(GUI_Application * inApp)
 //		"hack", kAppMenu, inApp->GetMenuBar(), 0);		
 		
 	GUI_Menu file_menu = inApp->CreateMenu(
-		"File", kFileMenu, inApp->GetMenuBar(), 0);		
+		"&File", kFileMenu, inApp->GetMenuBar(), 0);		
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
-		"Edit", kEditMenu, inApp->GetMenuBar(), 0);		
+		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);		
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
-		"View", kViewMenu, inApp->GetMenuBar(), 0);		
+		"&View", kViewMenu, inApp->GetMenuBar(), 0);		
 		
 	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"PAvement",	kPavementMenu, view_menu, 1);
+		"Pavement T&ransparency",	kPavementMenu, view_menu, 1);
 		
 	GUI_Menu  sel_menu = inApp->CreateMenu(
-		"Select", kSelectMenu, inApp->GetMenuBar(), 0);
+		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airpor_menu = inApp->CreateMenu(
-		"Airport", kAirportMenu, inApp->GetMenuBar(),0);	
+		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);	
 		
 }
