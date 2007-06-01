@@ -348,7 +348,21 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	
 	case WM_ERASEBKGND:
 		break;
-		
+
+	case WM_KEYUP:
+		if (obj)
+		{
+			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
+			{
+				if (obj && dragging > -1)
+					obj->ClickDrag(obj->mMouseX,obj->mMouseY, dragging);
+				else
+					obj->ClickMove(obj->mMouseX,obj->mMouseY);
+			}
+		}
+		result = DefWindowProc(hWnd, message, wParam, lParam);
+		break;
+
 	case WM_KEYDOWN:		
 		if (obj)
 		{
@@ -370,6 +384,14 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 					break;
 				}
 			}
+			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
+			{
+				if (obj && dragging > -1)
+					obj->ClickDrag(obj->mMouseX,obj->mMouseY, dragging);
+				else
+					obj->ClickMove(obj->mMouseX,obj->mMouseY);
+			}
+			else
 			obj->KeyPressed(c, message, wParam, lParam);
 		}
       break;
