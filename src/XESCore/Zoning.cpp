@@ -145,7 +145,7 @@ void	ZoneManMadeAreas(
 				double dot = azi_rwy.dot(azi_me);
 				
 				double gs_elev = dist / 18.0;
-				if (dot > 0.8 < dist < 700.0)
+				if (dot > 0.8 && dist < 700.0)
 					max_agl = min(max_agl, gs_elev);
 			}
 		}

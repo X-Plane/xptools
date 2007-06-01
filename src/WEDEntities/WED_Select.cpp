@@ -174,7 +174,7 @@ int				WED_Select::GetSelectionCount(void) const
 void			WED_Select::GetSelectionSet(set<IBase *>& sel) const
 {
 	sel.clear();
-	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		sel.insert(FetchPeer(*i));
 }
 
@@ -183,7 +183,7 @@ void			WED_Select::GetSelectionVector(vector<IBase *>& sel) const
 	sel.clear();
 	if (mSelected.empty()) return;
 	sel.reserve(mSelected.size());
-	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		sel.push_back(FetchPeer(*i));
 }
 
@@ -191,7 +191,7 @@ IBase *		WED_Select::GetNthSelection(int n) const
 {
 	DebugAssert(n >= 0 && n < mSelected.size());
 	if (n < 0) return NULL;
-	set<int>::iterator i = mSelected.begin();
+	set<int>::const_iterator i = mSelected.begin();
 	while (n > 0 && i != mSelected.end())
 	{
 		--n;
@@ -204,7 +204,7 @@ IBase *		WED_Select::GetNthSelection(int n) const
 int			WED_Select::IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const
 {
 	int n = 0;
-	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		if ((n=func(FetchPeer(*i), ref)) != 0) 
 			return n;
 	return 0;

@@ -73,6 +73,7 @@ void				WED_GISLine::DeletePoint (int n)
 IGISPoint *	WED_GISLine::SplitSide   (int n)
 {
 	Assert(!"You cannot split a line.");
+	return NULL;
 }
 
 IGISPoint *	WED_GISLine::GetNthPoint (int n) const

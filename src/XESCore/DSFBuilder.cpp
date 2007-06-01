@@ -83,13 +83,21 @@ struct	edge_wrapper {
 	CDT::Edge	edge;
 };
 
+HASH_MAP_NAMESPACE_START
+#if MSC
+template<> inline
+size_t hash_value<edge_wrapper>(const edge_wrapper& key)
+{
+	return (size_t) &*key.edge.first + (size_t) key.edge.second; 
+}
+#else
 struct hash_edge {
 	typedef edge_wrapper		KeyType;
 	// Trick: we think most ptrs are 4-byte aligned - reuse lower 2 bits.
 	size_t operator()(const KeyType& key) const { return (size_t) &*key.edge.first + (size_t) key.edge.second; }
 };
-
-
+#endif
+HASH_MAP_NAMESPACE_END
 
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
@@ -422,7 +430,18 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	return true;
 }
 
-void FixBeachContinuity(hash_map<edge_wrapper, edge_wrapper, hash_edge>& linkNext, const edge_wrapper& this_start, hash_map<edge_wrapper, int, hash_edge>& typedata)
+#if MSC
+typedef hash_map<edge_wrapper,edge_wrapper>	edge_hash_map;
+typedef hash_map<edge_wrapper, int>			edge_info_map;
+#else
+typedef hash_map<edge_wrapper, edge_wrapper, hash_edge> edge_hash_map;
+typedef hash_map<edge_wrapper, int, hash_edge> edge_info_map;
+#endif
+
+void FixBeachContinuity(
+						edge_hash_map&								linkNext, 
+						const edge_wrapper&							this_start, 
+						edge_info_map&								typedata)
 {
 	edge_wrapper circ, discon, stop, iter;
 	bool retry;
@@ -1084,9 +1103,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	// When a beach is not a ring, we need to find the start link
 	// We also need to identify rings somehow.
 
-	typedef hash_map<edge_wrapper, edge_wrapper, hash_edge>						LinkMap;
+	typedef edge_hash_map														LinkMap;
 	typedef set<edge_wrapper>													LinkSet;
-	typedef hash_map<edge_wrapper, int, hash_edge>								LinkInfo;
+	typedef edge_info_map														LinkInfo;
 	
 	LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
 	LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.

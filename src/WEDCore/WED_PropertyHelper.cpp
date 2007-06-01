@@ -497,7 +497,7 @@ void		WED_PropIntEnumSet::SetProperty(const PropertyVal_t& val, WED_PropertyHelp
 	DebugAssert(val.prop_kind == prop_EnumSet);
 	if (value != val.set_val)
 	{		
-		for (set<int>::iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
+		for (set<int>::const_iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
 		if (ENUM_Domain(*e) != domain)
 			return;
 		parent->PropEditCallback(1);

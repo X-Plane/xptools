@@ -87,6 +87,6 @@ float *		WED_Color_Surface	(int surface, float alpha, float storage[4])
 	case shoulder_Concrete:		return WED_Color_RGBA_Alpha(wed_Surface_Concrete, alpha, storage);
 	case shoulder_None:			return WED_Color_RGBA_Alpha(wed_Surface_Transparent, alpha, storage);
 	default:
-		AssertPrintf("Unknown surface %d\n", surface);
+		AssertPrintf("Unknown surface %d\n", surface); return NULL;
 	}
 }	

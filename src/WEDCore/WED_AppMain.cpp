@@ -79,6 +79,10 @@ REGISTER_LIST
 
 #include "WED_EnumSystem.h"
 
+#if IBM
+HINSTANCE gInstance = NULL;
+#endif
+
 CGAL::Failure_function	gFailure = NULL;
 void	cgal_failure(const char* a, const char* b, const char* c, int d, const char* e)
 {
@@ -87,8 +91,15 @@ void	cgal_failure(const char* a, const char* b, const char* c, int d, const char
 	throw a;
 }
 
+#if IBM
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+#else
 int main(int argc, const char * argv[])
+#endif
 {
+#if IBM
+	gInstance = hInstance;
+#endif
 	GUI_InitClipboard();
 	WED_Application	app;
 	

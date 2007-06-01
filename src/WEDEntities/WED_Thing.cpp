@@ -2,6 +2,7 @@
 #include "IODefs.h"
 #include "SQLUtils.h"
 #include "WED_Errors.h"
+#include <algorithm>
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),

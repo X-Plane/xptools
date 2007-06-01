@@ -92,15 +92,24 @@ struct DemPt {
 	}
 };
 
+#if 0
 HASH_MAP_NAMESPACE_START
+#if MSC
+template<> inline
+size_t hash_value<DemPt>(const DemPt& key)
+{
+ return key.x + (key.y << 16);
+}
+#else
 template <>
 struct hash<DemPt>
 	HASH_PARENT(DemPt, std::size_t)
 {
 	std::size_t operator()(const DemPt& key) const { return key.x + (key.y << 16); }
 };
+#endif
 HASH_MAP_NAMESPACE_END
-
+#endif
 
 typedef set<DemPt>				DemPtSet;
 typedef multimap<float, DemPt>	DemPtMap;

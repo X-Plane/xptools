@@ -201,7 +201,7 @@ void	FaceToComplexPolygon(const GISFace * face, vector<Polygon2>& outPolygon, ve
 		CCBToPolygon(face->outer_ccb(), outPolygon.back(), road_types ? &road_types->back() : NULL, weight_func, outBounds);
 	}
 	
-	for (Pmwx::Holes_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
+	for (Pmwx::Holes_const_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)	
 	{
 		outPolygon.push_back(Polygon2());
 		if (road_types) road_types->push_back(vector<double>());
@@ -882,10 +882,12 @@ void MergeMaps(Pmwx& ioDstMap, Pmwx& ioSrcMap, bool inForceProps, set<GISFace *>
 
 // Vertex hasher - to be honest I forget why this was necessary, but without it the 
 // STL couldn't build the hash table.  Foo.
+#if !MSC
 struct hash_vertex {
 	typedef GISVertex * KeyType;
 	size_t operator()(const KeyType& key) const { return (size_t) key; }
 };
+#endif
 
 // Map swap - Basically we build up mapping between the two maps and flood fill to
 // find the insides.
@@ -899,8 +901,13 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 	set<GISFace *>		moveFaceFromA, moveFaceFromB;
 	set<GISHalfedge *>	moveEdgeFromA, moveEdgeFromB;
 	set<GISVertex * >	moveVertFromA, moveVertFromB;
+#if MSC
+	hash_map<GISVertex *, GISVertex *>	keepVertFromA, keepVertFromB;
+	hash_map<GISVertex *, GISVertex *>::iterator findVert;
+#else
 	hash_map<GISVertex *, GISVertex *, hash_vertex>	keepVertFromA, keepVertFromB;
 	hash_map<GISVertex *, GISVertex *, hash_vertex>::iterator findVert;
+#endif
 	set<GISFace *>::iterator		faceIter;
 	set<GISHalfedge *>::iterator	edgeIter;	
 	set<GISVertex *>::iterator		vertIter;	
@@ -946,8 +953,13 @@ void	SwapMaps(	Pmwx& 							ioMapA,
 		// Vertices on the CCB do NOT move since they are used by exterior stuff.
 		// We need to know the correspondence for later!  So build a map
 		// of how they relate for quick access.
+#if MSC
+		keepVertFromA.insert(hash_map<GISVertex *, GISVertex *>::value_type(inBoundsA[n]->target(), inBoundsB[n]->target()));
+		keepVertFromB.insert(hash_map<GISVertex *, GISVertex *>::value_type(inBoundsB[n]->target(), inBoundsA[n]->target()));
+#else
 		keepVertFromA.insert(hash_map<GISVertex *, GISVertex *, hash_vertex>::value_type(inBoundsA[n]->target(), inBoundsB[n]->target()));
 		keepVertFromB.insert(hash_map<GISVertex *, GISVertex *, hash_vertex>::value_type(inBoundsB[n]->target(), inBoundsA[n]->target()));
+#endif
 	}
 	
 	// Accume all non-saved vertices as moving.

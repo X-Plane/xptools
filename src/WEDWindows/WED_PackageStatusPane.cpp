@@ -8,7 +8,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include  <gl.h>
+	#include  <gl/gl.h>
 #endif
 
 WED_PackageStatusPane::WED_PackageStatusPane(WED_Package * inPackage,GUI_Commander * doc_super) :

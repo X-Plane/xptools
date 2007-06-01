@@ -240,7 +240,7 @@ void BurnInAirport(
 
 void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<GISFace *>& outDstFaces, bool inFillWater)
 {
-	for (set<GISFace *>::iterator i = inSrcFaces.begin(); i != inSrcFaces.end(); ++i)
+	for (set<GISFace *>::const_iterator i = inSrcFaces.begin(); i != inSrcFaces.end(); ++i)
 	{
 		Assert(!(*i)->is_unbounded());
 		Assert((*i)->holes_begin() == (*i)->holes_end());

@@ -256,13 +256,13 @@ void	CalculateFilter(int dim, float * k, int kind, bool normalize)
 {
 	int hdim = dim / 2;
 	int x, y;
-	double max_dist = sqrt(hdim * hdim * 2);
+	double max_dist = sqrt((float)hdim * hdim * 2);
 	for (y = 0; y < dim; ++y)
 	for (x = 0; x < dim; ++x)
 	{
-		float dx = fabs(hdim - x);
-		float dy = fabs(hdim - y);
-		float d = sqrt(dx * dx + dy * dy);
+		float dx = abs(hdim - x);
+		float dy = abs(hdim - y);
+		float d = sqrt((float)dx * dx + dy * dy);
 		switch(kind) {
 		case demFilter_Linear:
 			d = (max_dist - d) / max_dist;
@@ -1510,7 +1510,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 	
 	// This fills in missing datapoints with a simple, fast, scanline fill.
 	// this is needed to clean up raw SRTM data.
-	for (int y = 0; y < elev.mHeight; ++y)
+	for (y = 0; y < elev.mHeight; ++y)
 	{
 		x0 = 0;
 		while (x0 < elev.mWidth)

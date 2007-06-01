@@ -46,7 +46,7 @@ void WriteMesh(FILE * fi, CDT& mesh, int inAtomID, ProgressFunc func)
 		V[mesh.infinite_vertex()] = vnum++;
 		
 		for (vit = mesh.tds().vertices_begin(); vit != mesh.tds().vertices_end(); ++vit, ++ctr)
-		if (!(vit == mesh.infinite_vertex()))
+		if (!(&*vit == &*mesh.infinite_vertex()))
 		{
 			PROGRESS_CHECK(func, 0, 1, "Writing terrain mesh...", ctr, tot, step)
 			V[vit] = vnum++;

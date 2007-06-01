@@ -7,7 +7,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl.h>
+	#include <gl/gl.h>
 #endif
 
 inline long long hash_xy(int x, int y) { return ((long long) x << 32) + (long long) y; }

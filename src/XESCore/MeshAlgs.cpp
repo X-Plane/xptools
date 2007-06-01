@@ -675,8 +675,8 @@ return base_dist * y_normal;
 
 	if (!rec1.xon_hack ||
 		!rec2.xon_hack ||
-		!rec1.terrain == terrain_Airport ||
-		!rec2.terrain == terrain_Airport
+		rec1.terrain == terrain_Airport ||
+		rec2.terrain == terrain_Airport
 		) return base_dist * y_normal;
 
 #if 0	
@@ -2545,7 +2545,9 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 	CDT::Line_face_circulator circ(inMesh.line_walk(march_info.locate_pt, goal, march_info.locate_face));
 	CDT::Line_face_circulator stop(circ);
 
-	if (circ == CDT::Face_handle(NULL))
+	// Ben says: CGAL allows this, believe it or not - see special "null-type" comparator.
+	// The REAL handle comparator is zapped out of MSC for templating reasons.
+	if (circ == NULL)
 	{
 		CDT::Locate_type	goal_type;
 		int					goal_index;

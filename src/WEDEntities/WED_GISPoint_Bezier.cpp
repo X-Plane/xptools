@@ -145,7 +145,7 @@ void	WED_GISPoint_Bezier::DeleteHandleHi	   (void)
 
 void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 {
-	if (split != is_split.value)
+	if (split != (is_split.value != 0))
 	{
 		StateChanged();
 		is_split.value = split;

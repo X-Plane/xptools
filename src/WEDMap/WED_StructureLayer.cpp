@@ -108,17 +108,17 @@ static void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, 
 	}
 }
 
-static void TessBegin(GLenum mode)		{ glBegin(mode);		 }
-static void TessEnd(void)				{ glEnd();				 }
-static void TessVertex(const Point2 * p){ glVertex2d(p->x,p->y); }
+static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);		 }
+static void CALLBACK TessEnd(void)				{ glEnd();				 }
+static void CALLBACK TessVertex(const Point2 * p){ glVertex2d(p->x,p->y); }
 
 static void glPolygon2(const Point2 * pts, const int * contours, int n)
 {
 	GLUtesselator * tess = gluNewTess();
 
-	gluTessCallback(tess, GLU_TESS_BEGIN,	TessBegin);
-	gluTessCallback(tess, GLU_TESS_END,		TessEnd);
-	gluTessCallback(tess, GLU_TESS_VERTEX,	TessVertex);
+	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))TessBegin);
+	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))TessEnd);
+	gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))TessVertex);
 
 	gluBeginPolygon(tess);
 	

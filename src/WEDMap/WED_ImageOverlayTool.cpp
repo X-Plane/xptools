@@ -43,7 +43,7 @@ void		WED_ImageOverlayTool::PickFile(void)
 	if (GetFilePathFromUser(getFile_Open, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
 	{
 		if (mTexID == 0)
-			glGenTextures(1, &mTexID);
+			glGenTextures(1, (GLuint *) &mTexID);
 	
 //		XPLMBindTexture2d(mTexID, 0);
 		if (LoadTextureFromFile(buf, mTexID, tex_Rescale + tex_Linear + tex_Mipmap, NULL, NULL, NULL, NULL))

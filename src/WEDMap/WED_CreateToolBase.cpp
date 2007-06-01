@@ -191,6 +191,7 @@ int		WED_CreateToolBase::GetNthLinkTarget   (int id, int n) const
 	case 1: return idx*3+1;
 	case 2: return idx*3+2;
 	}
+	return 0;
 }
 
 int		WED_CreateToolBase::GetNthLinkTargetCtl(int id, int n) const

@@ -1072,8 +1072,8 @@ void	InstantiateGTPolygon(
 
 		Point2	trial, l;
 
-	for (GISPointFeatureVector::iterator i = inFace->mPointFeatures.begin(); i != inFace->mPointFeatures.end(); ++i)
-	if (IsWellKnownFeature(i->mFeatType))
+	for (GISPointFeatureVector::iterator iter = inFace->mPointFeatures.begin(); iter != inFace->mPointFeatures.end(); ++iter)
+	if (IsWellKnownFeature(iter->mFeatType))
 	{
 
 		int	terrain = NO_VALUE;
@@ -1081,7 +1081,7 @@ void	InstantiateGTPolygon(
 		CDT::Locate_type lt;
 		int side;
 		CDT::Face_handle recent = NULL;
-		recent = mesh.locate_cache(CDT::Point(i->mLocation.x,i->mLocation.y), lt, side, hint_id);
+		recent = mesh.locate_cache(CDT::Point(iter->mLocation.x,iter->mLocation.y), lt, side, hint_id);
 		if (lt == CDT::FACE || lt == CDT::EDGE || lt == CDT::VERTEX)
 		{
 			terrain = highest_prio_tri(recent);
@@ -1089,9 +1089,9 @@ void	InstantiateGTPolygon(
 			DebugAssert(!"Hrm....object not found on terrain mesh...");
 		}
 
-		int		require_feat = i->mFeatType;
+		int		require_feat = iter->mFeatType;
 		int		height_max = 0.0;
-			 if (i->mParams.count(pf_Height))		height_max = i->mParams[pf_Height];
+			 if (iter->mParams.count(pf_Height))		height_max = iter->mParams[pf_Height];
 		else if (inFace->mParams.count(af_Height))	height_max = inFace->mParams[af_Height];
 
 		result = no_poly_gen ? 0 : QueryUsableFacsBySize(					// This is facade placement for specific point features in the
@@ -1120,8 +1120,8 @@ void	InstantiateGTPolygon(
 					{
 						rep.mShape.back().push_back(mapping.Reverse(polyObjLocalV[0][n]));
 					}
-					if (i->mParams.find(pf_Height) != i->mParams.end())						
-						rep.mHeight = i->mParams[pf_Height];
+					if (iter->mParams.find(pf_Height) != iter->mParams.end())						
+						rep.mHeight = iter->mParams[pf_Height];
 					else
 						rep.mHeight = RandRange(info.height_min,info.height_max);
 					rep.mDerived = true;
@@ -1164,7 +1164,7 @@ void	InstantiateGTPolygon(
 			polyObjLocalV[0][3].x =  info.width_min * 0.5 / scale;		polyObjLocalV[0][3].y = -info.depth_min * 0.5 / scale;
 				
 			++feat_raster_try;
-			trial = i->mLocation;
+			trial = iter->mLocation;
 			trial = mapping.Forward(trial);
 			Vector2 facing(longest_local.p1, longest_local.p2);
 			facing.normalize();
@@ -1176,7 +1176,7 @@ void	InstantiateGTPolygon(
 				++feat_raster_ok;
 				GISObjPlacement_t	rep;
 				rep.mRepType = info.obj_name;
-				rep.mLocation = i->mLocation;
+				rep.mLocation = iter->mLocation;
 				rep.mHeading = heading;
 				rep.mDerived = true;
 				inFace->mObjs.push_back(rep);
@@ -1189,7 +1189,7 @@ void	InstantiateGTPolygon(
 		
 		if (!got_it)
 		{
-			trial = mapping.Forward(i->mLocation);
+			trial = mapping.Forward(iter->mLocation);
 			
 			Vector2 move_it(trial, mapping.Forward(centroid));
 			double to_centroid = sqrt(move_it.squared_length());
