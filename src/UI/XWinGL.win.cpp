@@ -72,8 +72,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 }	
 
 	
-XWinGL::XWinGL(int default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
-	XWin(default_dnd, inTitle, inX, inY, inWidth, inHeight)
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
+	XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
 {
 	mDC = ::GetDC(mWindow);
 	

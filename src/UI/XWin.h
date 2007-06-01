@@ -42,6 +42,15 @@
 #define xmenu HMENU
 #endif
 
+enum {
+	xwin_style_thin				= 0,			// Thin window - just a rectangle
+	xwin_style_movable			= 1,			// Movable - but no machinery to resize
+	xwin_style_resizable		= 2,			// The works: resize, maximize, minimize, zoom, etc.
+	xwin_style_visible			= 4,			// Start visible?
+	xwin_style_centered			= 8,			// Center on screen
+	xwin_style_fullscreen		= 16			// Maximize to fill a screen
+};
+
 class	XWin 
 #if IBM
 : public XWinFileReceiver
@@ -60,6 +69,7 @@ public:
 							XWin(
 								int				default_dnd,
 								const char * 	inTitle,
+								int				inAttributes,
 								int				inX,
 								int				inY,
 								int				inWidth,
@@ -133,8 +143,9 @@ public:
 
 		HWND			mWindow;
 		CDropTarget *	mDropTarget;
-		int				mMouseX;
-		int				mMouseY;		
+		POINT			mMouse;
+		POINT			mSizeMin;
+		int				mDragging;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

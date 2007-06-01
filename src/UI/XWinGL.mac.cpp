@@ -52,8 +52,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	aglDestroyPixelFormat(aglpixformat);
 }		
 	
-XWinGL::XWinGL(int default_dnd, const char * inTitle, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
-	XWin(default_dnd, inTitle, inX, inY, inWidth, inHeight)
+XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
+	XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight)
 {
 	GLint wind_attribs[]={						// windowed hardware renderer
 		AGL_RGBA,

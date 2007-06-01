@@ -94,6 +94,7 @@ XWin::XWin(int default_dnd)
 XWin::XWin(
 	int				default_dnd,
 	const char * 	inTitle,
+	int				inAttributes,
 	int				inX,
 	int				inY,
 	int				inWidth,
@@ -109,8 +110,23 @@ XWin::XWin(
 	bounds.top = inY;
 	bounds.bottom = inY + inHeight;
 	
-	OSStatus	err = CreateNewWindow(kDocumentWindowClass,
-						kWindowStandardDocumentAttributes + kWindowStandardHandlerAttribute,
+	if (inAttributes & xwin_style_fullscreen)
+	{
+		GetAvailableWindowPositioningBounds(GetMainDevice(), &bounds);
+		#if BENTODO
+			massive hack - this gives us the STRUCTURE region, but we want the content region so
+			we just inset for now - yuck.
+		#endif
+		InsetRect(&bounds, 20, 20);
+	}
+		
+	OSStatus	err = CreateNewWindow(
+						(inAttributes & xwin_style_movable) ?			kDocumentWindowClass:
+						((inAttributes & xwin_style_resizable)  ?		kDocumentWindowClass : 
+																		kPlainWindowClass),
+						(inAttributes & xwin_style_movable) ?			(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute) :
+						((inAttributes & xwin_style_resizable) ?		(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute | kWindowFullZoomAttribute | kWindowCollapseBoxAttribute | kWindowResizableAttribute | kWindowLiveResizeAttribute) : 
+																		kWindowStandardHandlerAttribute),
 						&bounds,
 						&mWindow);
 	if (err != noErr) throw err;
@@ -134,7 +150,15 @@ XWin::XWin(
 			kEventClassKeyboard,kEventRawKeyModifiersChanged,
 			kEventClassCommand,	kEventCommandProcess
 		};			
-		
+
+
+	if (inAttributes & xwin_style_fullscreen)
+	{
+		HISize	min_lim;
+		min_lim.width = inWidth;
+		min_lim.height = inHeight;
+		SetWindowResizeLimits(mWindow, &min_lim, NULL);
+	}		
 	
 	err = InstallEventHandler(GetWindowEventTarget(mWindow),
 		mEventHandler, GetEventTypeCount(events), events, 
@@ -151,7 +175,11 @@ XWin::XWin(
 		if (err != noErr) throw err;
 	}
 	
-	ShowWindow(mWindow);	
+	if (inAttributes & (xwin_style_centered | xwin_style_fullscreen))
+		RepositionWindow(mWindow, NULL, kWindowCenterOnMainScreen);
+	
+	if (inAttributes & xwin_style_visible)
+		ShowWindow(mWindow);
 	sIniting = false;
 	
 	SetTitle(inTitle);
@@ -185,9 +213,10 @@ void			XWin::SetTitle(const char * inTitle)
 
 void	XWin::SetVisible(bool visible)
 {
-	if (visible)
+	if (visible) {
 		::ShowWindow(mWindow);
-	else
+		::SelectWindow(mWindow);
+	} else
 		::HideWindow(mWindow);
 }
 

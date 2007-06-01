@@ -36,10 +36,13 @@
 #define WM_MOUSEWHEEL                   0x020A
 #define WHEEL_DELTA                     120
 
+#if !DEV
+nuke all this
+#endif
 
-inline int Client2OGL_X(int x, HWND w) { return x; }
-inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
-inline int Screen2Client_X(int x, HWND w)
+//inline int Client2OGL_X(int x, HWND w) { return x; }
+//inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
+/*inline int Screen2Client_X(int x, HWND w)
 {
 	WINDOWINFO wif = { 0 };
 	wif.cbSize = sizeof(wif);
@@ -52,10 +55,11 @@ inline int Screen2Client_Y(int y, HWND w)
 	wif.cbSize = sizeof(wif);
 	GetWindowInfo(w,&wif);
 	return y - wif.rcClient.top;
-}
-inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
-inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
+}*/
+//inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
+//inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
 
+/*
 inline int Client2Screen_X(int x, HWND w)
 {
 	WINDOWINFO wif = { 0 };
@@ -70,10 +74,11 @@ inline int Client2Screen_Y(int y, HWND w)
 	GetWindowInfo(w,&wif);
 	return y + wif.rcClient.top;
 }
-inline int OGL2Client_X(int x, HWND w) { return x; }
-inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
-inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
-inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
+*/
+//inline int OGL2Client_X(int x, HWND w) { return x; }
+//inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+//inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
+//inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
  
 
 
@@ -117,12 +122,18 @@ XWin::XWin(int default_dnd)
 		mDropTarget = NULL;
 		
 	ShowWindow(mWindow, SW_SHOWMAXIMIZED);
+	mDragging = -1;
+	mMouse.x = 0;
+	mMouse.y = 0;
+	mSizeMin.x = 0;
+	mSizeMin.y = 0;
 	sIniting = false;
 }	
 
 XWin::XWin(
 	int				default_dnd,
 	const char * 	inTitle,
+	int				inAttributes,
 	int				inX,
 	int				inY,
 	int				inWidth,
@@ -133,8 +144,12 @@ XWin::XWin(
 
 	sIniting = true;
 	mWindow = CreateWindow(sWindowClass, inTitle, 
-		WS_OVERLAPPEDWINDOW,	// Style,
-		bounds.left,bounds.top,bounds.right-bounds.left,bounds.bottom-bounds.top,
+		(inAttributes & xwin_style_movable) ? WS_CAPTION : 
+		((inAttributes & xwin_style_resizable) ? WS_OVERLAPPEDWINDOW : WS_BORDER),
+		(inAttributues & (xwin_style_fullscreen|xwin_style_centered ) ? CW_USEDEFAULT : bounds.left,
+		(inAttributues & (xwin_style_fullscreen|xwin_style_centered ) ? CW_USEDEFAULT : bounds.top,
+		(inAttributues & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.right-bounds.left,
+		(inAttributues & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.bottom-bounds.top,
 		NULL,	// Parent
 		NULL,	// Menu
 		gInstance,	// (app)
@@ -142,6 +157,15 @@ XWin::XWin(
 
 	if (mWindow == NULL)
 		throw mWindow;
+		
+	mSizeMin.x = 0;
+	mSizeMin.y = 0;
+	
+	if (inAttributes & xwin_style_fullscreen)
+	{
+		mSizeMin.x = inWidth;
+		mSizeMin.y = inHeight;
+	}
 		
 	sWindows[mWindow] = this;
 
@@ -153,7 +177,11 @@ XWin::XWin(
 	} else
 		mDropTarget = NULL;
 		
-	ShowWindow(mWindow, SW_SHOW);
+	if (inAttributes & xwin_style_visible)
+		ShowWindow(mWindow, SW_SHOW);
+	mDragging = -1;
+	mMouse.x = 0;
+	mMouse.y = 0;
 	sIniting = false;
 }	
 
@@ -234,13 +262,12 @@ void			XWin::GetBounds(int * outX, int * outY)
 
 void			XWin::GetMouseLoc(int * outX, int * outY)
 {
-	if (outX) *outX = mMouseX;
-	if (outY) *outY = mMouseY;
+	if (outX) *outX = mMouse.x;
+	if (outY) *outY = mMouse.y;
 }
 
 LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static int	dragging = -1;
 	XWin * obj = sWindows[hWnd];
 	LRESULT result = 0;
 	
@@ -275,59 +302,56 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		break; 
 		
 	case WM_LBUTTONDOWN:
-		if (obj)
-			obj->ClickDown(LOWORD(lParam), HIWORD(lParam), 0);
-		if (obj) obj->mMouseX = LOWORD(lParam);
-		if (obj) obj->mMouseY = HIWORD(lParam);		
-		dragging = 0;
-		SetCapture(hWnd);
-		break;
-
 	case WM_RBUTTONDOWN:
 		if (obj)
-			obj->ClickDown(LOWORD(lParam), HIWORD(lParam), 1);
-		if (obj) obj->mMouseX = LOWORD(lParam);
-		if (obj) obj->mMouseY = HIWORD(lParam);		
-		dragging = 1;
-		SetCapture(hWnd);
+		{
+			POINTSTOPOINT(obj->mMouse, lParam);
+			obj->ClickDown(obj->mMouse.x, obj->mMouse.y, 0);
+			switch(message) {
+			case WM_LBUTTONDOWN:	obj->mDragging = 0;	break;
+			case WM_RBUTTONDOWN:	obj->mDragging = 1;	break;
+			SetCapture(hWnd);
+		}
 		break;
 
 	case WM_LBUTTONUP:
-		if (obj)
-			obj->ClickUp(LOWORD(lParam), HIWORD(lParam), 0);
-		if (obj) obj->mMouseX = LOWORD(lParam);
-		if (obj) obj->mMouseY = HIWORD(lParam);		
-		dragging = -1;
-		ReleaseCapture();
-		break;
-
 	case WM_RBUTTONUP:
 		if (obj)
-			obj->ClickUp(LOWORD(lParam), HIWORD(lParam), 1);
-		if (obj) obj->mMouseX = LOWORD(lParam);
-		if (obj) obj->mMouseY = HIWORD(lParam);		
-		dragging = -1;
+		{
+			POINTSTOPOINT(obj->mMouse, lParam);
+			obj->ClickUp(obj->mMouse.x, obj->mMouse.y, 0);
+			obj->mDragging = -1;
+		}
 		ReleaseCapture();
 		break;
 
 	case WM_MOUSEWHEEL:
 		if (obj)
 		{
-			RECT	rect;
-			int x = Screen2Client_X(LOWORD(lParam),obj->mWindow);
-			int y = Screen2Client_Y(HIWORD(lParam),obj->mWindow);
+	#if !DEV
+	clean this up
+	#endif
+//			RECT	rect;
+			POINT	p;
+			POINTSTOPOINT(p,lParam);
+			ScreenToClient(mWindow,&p);
+//			int x = Screen2Client_X(LOWORD(lParam),obj->mWindow);
+//			int y = Screen2Client_Y(HIWORD(lParam),obj->mWindow);
 
-			obj->MouseWheel(x, y, (short) HIWORD(wParam) / WHEEL_DELTA, 0);
+			obj->MouseWheel(p.x, p.y, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA, 0);
 		}
 		break;
 
 	case WM_MOUSEMOVE:
-		if (obj) obj->mMouseX = LOWORD(lParam);
-		if (obj) obj->mMouseY = HIWORD(lParam);		
-		if (obj && dragging > -1)
-			obj->ClickDrag(LOWORD(lParam), HIWORD(lParam), dragging);
-		else
-			obj->ClickMove(LOWORD(lParam), HIWORD(lParam));
+		if (obj) 
+		{
+			POINTSTOPOINT(obj->mMouse, lParam);
+			if (obj->mDragging > -1)
+				obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
+			else
+				obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
+			}
+		}
 		break;
 
 	case WM_WINDOWPOSCHANGED:
@@ -349,6 +373,14 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_ERASEBKGND:
 		break;
 
+	case WM_GETMINMAXINFO:
+		{
+			MINMAXINFO * mmi = (MINMAXINFO *) lParam;
+			if (obj->mSizeMin.x != 0 && obj->mSizeMin.y != 0)
+				mmi->ptMinTrackSize = obj->mSizeMin;			
+		}
+		break;
+		
 	case WM_KEYUP:
 		if (obj)
 		{
@@ -538,8 +570,10 @@ void			XWin::DrawMenuBar(void)
 
 int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
 {
-	mouse_x = Client2Screen_X(mouse_x,mWindow);
-	mouse_y = Client2Screen_Y(mouse_y,mWindow);
+	POINT	p;
+	p.x = mouse_x;
+	p.y = mouse_y;
+	ClientoToScreen(mWindow, &p);
 
 	vector<int> cmds(GetMenuItemCount(in_menu));
 	for (int i = 0; i < cmds.size(); ++i)
