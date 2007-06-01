@@ -636,7 +636,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 			delete mFetchImage;
 			mFetchImage = NULL;
 			#if WED
-				glGenTextures(1,&mTexNum);
+				glGenTextures(1,(GLuint*) &mTexNum);
 			#else
 				XPLMGenerateTextureNumbers(&mTexNum, 1);
 			#endif

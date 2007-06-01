@@ -148,8 +148,10 @@ using namespace std;
 	#define __func__ __FUNCTION__
 
 	#define ENOERR 0
-
 	#define round(X) floor(X + 0.5f)
+	#define snprintf _snprintf
+	
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 
 #endif
 
