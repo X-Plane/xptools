@@ -7,7 +7,7 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		PreprocessorDefinitions="APL=0;IBM=1;LIN=0;USE_JPEG=1;USE_TIF=1;MSC=1"
+		PreprocessorDefinitions="APL=0;IBM=1;LIN=0;USE_JPEG=1;USE_TIF=1;MSC=1;_WIN32_WINNT=0x0500"
 		DisableSpecificWarnings="4068;4355;4503"
 		ForcedIncludeFiles="XDefs.h"
 		ForcedUsingFiles=""
