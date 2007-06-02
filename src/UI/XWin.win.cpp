@@ -33,8 +33,8 @@
 	closing
 */	
 
-#define WM_MOUSEWHEEL                   0x020A
-#define WHEEL_DELTA                     120
+//#define WM_MOUSEWHEEL                   0x020A
+//#define WHEEL_DELTA                     120
 
 #if !DEV
 nuke all this
@@ -146,10 +146,10 @@ XWin::XWin(
 	mWindow = CreateWindow(sWindowClass, inTitle, 
 		(inAttributes & xwin_style_movable) ? WS_CAPTION : 
 		((inAttributes & xwin_style_resizable) ? WS_OVERLAPPEDWINDOW : WS_BORDER),
-		(inAttributues & (xwin_style_fullscreen|xwin_style_centered ) ? CW_USEDEFAULT : bounds.left,
-		(inAttributues & (xwin_style_fullscreen|xwin_style_centered ) ? CW_USEDEFAULT : bounds.top,
-		(inAttributues & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.right-bounds.left,
-		(inAttributues & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.bottom-bounds.top,
+		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.left,
+		(inAttributes & (xwin_style_fullscreen|xwin_style_centered)) ? CW_USEDEFAULT : bounds.top,
+		(inAttributes & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.right-bounds.left,
+		(inAttributes & xwin_style_fullscreen						) ? CW_USEDEFAULT : bounds.bottom-bounds.top,
 		NULL,	// Parent
 		NULL,	// Menu
 		gInstance,	// (app)
@@ -334,7 +334,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 //			RECT	rect;
 			POINT	p;
 			POINTSTOPOINT(p,lParam);
-			ScreenToClient(mWindow,&p);
+			ScreenToClient(obj->mWindow,&p);
 //			int x = Screen2Client_X(LOWORD(lParam),obj->mWindow);
 //			int y = Screen2Client_Y(HIWORD(lParam),obj->mWindow);
 
@@ -374,6 +374,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		break;
 
 	case WM_GETMINMAXINFO:
+		if (obj)
 		{
 			MINMAXINFO * mmi = (MINMAXINFO *) lParam;
 			if (obj->mSizeMin.x != 0 && obj->mSizeMin.y != 0)
@@ -386,10 +387,10 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		{
 			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
 			{
-				if (obj && dragging > -1)
-					obj->ClickDrag(obj->mMouseX,obj->mMouseY, dragging);
+				if (obj->mDragging > -1)
+					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
 				else
-					obj->ClickMove(obj->mMouseX,obj->mMouseY);
+					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 		}
 		result = DefWindowProc(hWnd, message, wParam, lParam);
@@ -418,10 +419,10 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			}
 			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
 			{
-				if (obj && dragging > -1)
-					obj->ClickDrag(obj->mMouseX,obj->mMouseY, dragging);
+				if (obj->mDragging> -1)
+					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
 				else
-					obj->ClickMove(obj->mMouseX,obj->mMouseY);
+					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 			else
 			obj->KeyPressed(c, message, wParam, lParam);
@@ -573,7 +574,7 @@ int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int cur
 	POINT	p;
 	p.x = mouse_x;
 	p.y = mouse_y;
-	ClientoToScreen(mWindow, &p);
+	ClientToScreen(mWindow, &p);
 
 	vector<int> cmds(GetMenuItemCount(in_menu));
 	for (int i = 0; i < cmds.size(); ++i)
