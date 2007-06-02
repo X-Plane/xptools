@@ -113,4 +113,5 @@ int		WED_StartWindow::MouseMove(int x, int y)
 {
 	mNew->SetHilite(0);
 	mOpen->SetHilite(0);
+	return 1;
 }
