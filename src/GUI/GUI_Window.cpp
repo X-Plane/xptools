@@ -54,9 +54,10 @@ inline int Client2Screen_Y(int y, HWND w)
 	GetWindowInfo(w,&wif);
 	return y + wif.rcClient.top;
 }
+*/
 inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
-*/
+
 //inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
 //inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
  
