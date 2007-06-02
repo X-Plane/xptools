@@ -24,62 +24,6 @@
 
 #define 	IDT_TIMER1	0x01
 
-/*
- TODO:
- 	Timers
- 	mouse drag, click, wheel
- 	keyboard
- 	resizing notifications
-	closing
-*/	
-
-//#define WM_MOUSEWHEEL                   0x020A
-//#define WHEEL_DELTA                     120
-
-#if !DEV
-nuke all this
-#endif
-
-//inline int Client2OGL_X(int x, HWND w) { return x; }
-//inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
-/*inline int Screen2Client_X(int x, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return x - wif.rcClient.left;
-}
-inline int Screen2Client_Y(int y, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return y - wif.rcClient.top;
-}*/
-//inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
-//inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
-
-/*
-inline int Client2Screen_X(int x, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return x + wif.rcClient.left;
-}
-inline int Client2Screen_Y(int y, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return y + wif.rcClient.top;
-}
-*/
-//inline int OGL2Client_X(int x, HWND w) { return x; }
-//inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
-//inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
-//inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
- 
 
 
 typedef	map<int, pair<xmenu, int> >	MenuMap;
@@ -217,7 +161,6 @@ void			XWin::Resize(int inWidth, int inHeight)
 
 void			XWin::ForceRefresh(void)
 {
-//	UpdateWindow(mWindow);					// This does a sync refresh
 	::InvalidateRect(mWindow, NULL, false);	// Invalidate whole window, no erase, async
 }
 
@@ -303,6 +246,8 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, lParam);
@@ -310,12 +255,17 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			switch(message) {
 			case WM_LBUTTONDOWN:	obj->mDragging = 0;	break;
 			case WM_RBUTTONDOWN:	obj->mDragging = 1;	break;
+			case WM_MBUTTONDOWN:	obj->mDragging = 2;	break;
+			case WM_XBUTTONDOWN:	obj->mDragging = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
+			}			
 			SetCapture(hWnd);
 		}
 		break;
 
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, lParam);
@@ -326,19 +276,13 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		break;
 
 	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
 		if (obj)
 		{
-	#if !DEV
-	clean this up
-	#endif
-//			RECT	rect;
 			POINT	p;
 			POINTSTOPOINT(p,lParam);
 			ScreenToClient(obj->mWindow,&p);
-//			int x = Screen2Client_X(LOWORD(lParam),obj->mWindow);
-//			int y = Screen2Client_Y(HIWORD(lParam),obj->mWindow);
-
-			obj->MouseWheel(p.x, p.y, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA, 0);
+			obj->MouseWheel(p.x, p.y, GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA, (message == WM_MOUSEWHEEL) ? 0 : 1);
 		}
 		break;
 

@@ -6,62 +6,25 @@
 
 static set<GUI_Window *>	sWindows;
 
-//---------------------------------------------------------------------------------------------------------------------------------------
-// WINDOWS DND
-//---------------------------------------------------------------------------------------------------------------------------------------
-
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }
 inline int Client2OGL_Y(int y, WindowRef w) { Rect r; GetWindowBounds(w,kWindowContentRgn,&r); return r.bottom-r.top-y; }
 inline int OGL2Client_X(int x, WindowRef w) { return x; }
 inline int OGL2Client_Y(int y, WindowRef w) { Rect c; GetWindowBounds(w,kWindowContentRgn,&c); return c.bottom-c.top-y; }
-
 #endif
 
 #if IBM
-
 inline int Client2OGL_X(int x, HWND w) { return x; }
 inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
-/*inline int Screen2Client_X(int x, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return x - wif.rcClient.left;
-}
-inline int Screen2Client_Y(int y, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return y - wif.rcClient.top;
-}
-inline int Screen2OGL_X(int x, HWND w) { return	Client2OGL_X(Screen2Client_X(x,w),w); }
-inline int Screen2OGL_Y(int y, HWND w) { return Client2OGL_Y(Screen2Client_Y(y,w),w); }
-*/
-/*
-inline int Client2Screen_X(int x, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return x + wif.rcClient.left;
-}
-inline int Client2Screen_Y(int y, HWND w)
-{
-	WINDOWINFO wif = { 0 };
-	wif.cbSize = sizeof(wif);
-	GetWindowInfo(w,&wif);
-	return y + wif.rcClient.top;
-}
-*/
 inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
+#endif
 
-//inline int OGL2Screen_X(int x, HWND w) { return Client2Screen_X(OGL2Client_X(x,w),w); }
-//inline int OGL2Screen_Y(int y, HWND w) { return Client2Screen_Y(OGL2Client_Y(y,w),w); }
- 
+//---------------------------------------------------------------------------------------------------------------------------------------
+// WINDOWS DND
+//---------------------------------------------------------------------------------------------------------------------------------------
 
+#if IBM
 
 #define OleStdGetDropEffect(grfKeyState)    \
     ( (grfKeyState & MK_CONTROL) ?          \
@@ -525,9 +488,6 @@ void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 	
 void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 {
-//	int bounds[4] = { 0, 0, inWidth, inHeight };
-//	SetBounds(bounds);
-
 	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] }; 
 
 	mBounds[0] = 0;
@@ -616,24 +576,6 @@ bool		GUI_Window::IsVisibleNow(void) const
 {
 	return XWin::GetVisible();
 }
-
-
-/*
-int			GUI_Window::InternalSetFocus(GUI_Pane * who)
-{
-	mKeyFocus = who;
-	return 1;
-}
-
-GUI_Pane *	GUI_Window::GetFocus(void)
-{
-	return mKeyFocus;
-}
-
-int			GUI_Window::AcceptTakeFocus(void)
-{
-	return 1;		// Window is the focuser of last resort -- like the federal reserve.
-}*/
 
 #if APL
 
@@ -789,13 +731,6 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		virtualCode = inParam1 & keyCodeMask;
 	}
 
-//	if (ShiftToggle)
-//		flags |= gui_ShiftFlag;
-//	if (ControlToggle)
-//		flags |= gui_ControlFlag;
-///	SB if ((inParam2 & ShiftControlMask) == optionKey)
-//	if (OptionKeyToggle)
-//		flags |= gui_OptionAltFlag;
 	if(::GetKeyState(VK_SHIFT) & ~1) flags |= gui_ShiftFlag;
 	if(::GetKeyState(VK_CONTROL) & ~1) flags |= gui_ControlFlag;
 	if(::GetKeyState(VK_MENU) & ~1) flags |= gui_OptionAltFlag;

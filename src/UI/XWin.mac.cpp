@@ -47,7 +47,6 @@ XWin::XWin(int default_dnd)
 	if (err != noErr) throw err;
 	
 		EventTypeSpec	events[] = { 
-//			kEventClassMouse,	kEventMouseDown,
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
 			kEventClassMouse,	kEventMouseMoved,
@@ -132,7 +131,6 @@ XWin::XWin(
 	if (err != noErr) throw err;
 	
 		EventTypeSpec	events[] = { 
-//			kEventClassMouse,	kEventMouseDown,
 			kEventClassMouse,	kEventMouseUp,
 			kEventClassMouse,	kEventMouseDragged,
 			kEventClassMouse,	kEventMouseMoved,
@@ -334,13 +332,6 @@ pascal OSStatus	XWin::MacEventHandler(
 	case kEventClassMouse:
 		if ((btn == 1) && (modifiers & controlKey))	btn = 2;
 		switch(kind) {
-		case kEventMouseDown:
-			me->mInDrag = true;
-			me->mLastMouseX = pt.v;
-			me->mLastMouseY = pt.v;
-			me->mLastMouseButton = btn-1;
-			me->ClickDown(pt.h, pt.v, btn - 1);
-			return noErr;
 		case kEventMouseUp:
 			if (me->mInDrag)
 				me->ClickUp(pt.h, pt.v, btn - 1);
