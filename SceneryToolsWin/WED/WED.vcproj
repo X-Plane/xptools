@@ -521,6 +521,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDWindows\WED_StartWindow.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDWindows\WED_StartWindow.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDWindows\WED_UIDefs.h"
 					>
 				</File>
