@@ -251,32 +251,32 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, lParam);
-			obj->ClickDown(obj->mMouse.x, obj->mMouse.y, 0);
 			switch(message) {
 			case WM_LBUTTONDOWN:	obj->mDragging = 0;	break;
 			case WM_RBUTTONDOWN:	obj->mDragging = 1;	break;
 			case WM_MBUTTONDOWN:	obj->mDragging = 2;	break;
 			case WM_XBUTTONDOWN:	obj->mDragging = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
 			}			
+			obj->ClickDown(obj->mMouse.x, obj->mMouse.y, obj->mDragging);
 			SetCapture(hWnd);
 		}
 		break;
 
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
-	case WM_MBUTTONDOWN:
-	case WM_XBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, lParam);
-			obj->ClickUp(obj->mMouse.x, obj->mMouse.y, 0);
+			obj->ClickUp(obj->mMouse.x, obj->mMouse.y, obj->mDragging);
 			obj->mDragging = -1;
 		}
 		ReleaseCapture();
 		break;
 
 	case WM_MOUSEWHEEL:
-	case WM_MOUSEHWHEEL:
+//	case WM_MOUSEHWHEEL:
 		if (obj)
 		{
 			POINT	p;
@@ -294,7 +294,6 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 				obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
 			else
 				obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
-			}
 		}
 		break;
 
