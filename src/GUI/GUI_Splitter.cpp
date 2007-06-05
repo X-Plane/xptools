@@ -27,13 +27,26 @@ void		GUI_Splitter::SetImage(const char * image_res)
 	mImage = image_res;
 }
 
+void		GUI_Splitter::SetImage1(const char * image_res)
+{
+	mImage1 = image_res;
+}
+
+void		GUI_Splitter::SetImage2(const char * image_res)
+{
+	mImage2 = image_res;
+}
+
+
 void		GUI_Splitter::Draw(GUI_GraphState * state)
 {
+		int tile[4] = { 0, 0, 1, 1 };
+
+		glColor3f(1,1,1);
+
 	if (!mImage.empty())
 	{
 		int		bounds[4];
-		glColor3f(1,1,1);
-		int tile[4] = { 0, 0, 1, 1 };
 		GetBounds(bounds);
 		GUI_DrawStretched(state, mImage.c_str(), bounds, tile);		
 	}
@@ -45,10 +58,12 @@ void		GUI_Splitter::Draw(GUI_GraphState * state)
 		GetNthChild(0)->GetBounds(b1);
 		GetNthChild(1)->GetBounds(b2);
 
+		if (!mImage1.empty())	GUI_DrawStretched(state,mImage1.c_str(),b1,tile);
+		if (!mImage2.empty())	GUI_DrawStretched(state,mImage2.c_str(),b2,tile);
 		
-		glColor3f(1,1,1);
 		if (mDirection == gui_Split_Vertical)
 		{
+		
 			int tile_sel[4] = { 0, mClick ? 1 : 0, 1, 2 };
 			b[1] = b1[3];
 			b[3] = b2[1];

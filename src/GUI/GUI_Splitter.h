@@ -17,6 +17,8 @@ public:
 			void		AlignContents();
 			void		AlignContentsAt(int split);
 			void		SetImage(const char * image_res);
+			void		SetImage1(const char * image_res);
+			void		SetImage2(const char * image_res);
 	
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);
@@ -33,6 +35,8 @@ private:
 	int		mClick;
 	
 	string	mImage;
+	string	mImage1;
+	string	mImage2;
 	
 };
 
