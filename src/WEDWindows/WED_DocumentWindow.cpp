@@ -12,6 +12,7 @@
 #include "WED_AptIE.h"
 #include "GUI_TabPane.h"
 #include "WED_Thing.h"
+#include "WED_UIMeasurements.h"
 #include "WED_Menus.h"
 #include "WED_Select.h"
 #include "WED_Colors.h"
@@ -42,7 +43,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	int		splitter_b[4];	
 	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
-	main_splitter->SetImage("gradient.png");
+	if (WED_UIMeasurement("one_big_gradient"))		main_splitter->SetImage ("gradient.png");
+	else											main_splitter->SetImage1("gradient.png");
 	main_splitter->SetParent(this);
 	main_splitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
@@ -63,7 +65,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Splitter and tabs ---------------
 	
 	GUI_Splitter * prop_splitter = new GUI_Splitter(gui_Split_Vertical);
-	prop_splitter->SetImage("gradient.png");
+	if (!WED_UIMeasurement("one_big_gradient")) {
+		prop_splitter->SetImage1("gradient.png");
+		prop_splitter->SetImage2("gradient.png");
+	}
 	prop_splitter->SetParent(main_splitter);
 	prop_splitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
