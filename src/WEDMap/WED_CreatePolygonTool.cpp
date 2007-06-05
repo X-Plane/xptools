@@ -60,6 +60,10 @@ void	WED_CreatePolygonTool::AcceptPath(
 	case create_Hole:		GetArchive()->StartCommand("Create Hole");	break;
 	}
 
+	ISelection *	sel = WED_GetSelect(GetResolver());
+	if (mType != create_Hole)
+	sel->Clear();
+
 	WED_AirportChain *	outer_ring = WED_AirportChain::CreateTyped(GetArchive());
 	
 	
@@ -84,7 +88,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 			tway->SetRoughness(mRoughness.value);
 			tway->SetHeading(mHeading.value);
 			tway->SetSurface(mPavement.value);
-			
+
+			sel->Select(tway);
 		}
 		break;
 	case create_Boundary:
@@ -97,6 +102,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 			bwy->SetName(buf);
 			sprintf(buf,"Airport Boundary %d Outer Ring",n);
 			outer_ring->SetName(buf);
+
+			sel->Select(bwy);
 			
 		}
 		break;
@@ -106,6 +113,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(host, host->CountChildren());
 			sprintf(buf,"Linear Feature %d",n);
 			outer_ring->SetName(buf);
+			
+			if (mType != create_Hole)
+				sel->Select(outer_ring);			
 		}
 		break;
 	}
@@ -139,7 +149,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 		sprintf(buf,"Node %d",n+1);
 		node->SetName(buf);
 	}
-
 
 	GetArchive()->CommitCommand();
 

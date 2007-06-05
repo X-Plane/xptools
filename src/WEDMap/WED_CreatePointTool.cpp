@@ -33,6 +33,7 @@
 #include "WED_TowerViewpoint.h"
 #include "WED_ToolUtils.h"
 #include "WED_Windsock.h"
+#include "ISelection.h"
 #include "GISUtils.h"
 #include "WED_ToolUtils.h"
 #include "IResolver.h"
@@ -160,6 +161,10 @@ void	WED_CreatePointTool::AcceptPath(
 	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
 	if (mType != create_Sign)
 		new_pt_obj->SetName(buf);
+		
+	ISelection * sel = WED_GetSelect(GetResolver());
+	sel->Clear();
+	sel->Select(new_pt_obj);
 			
 	GetArchive()->CommitCommand();
 

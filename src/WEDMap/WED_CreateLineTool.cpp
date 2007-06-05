@@ -26,6 +26,7 @@
 #include "WED_Airport.h"
 #include "WED_ToolUtils.h"
 #include "WED_Runway.h"
+#include "ISelection.h"
 #include "WED_EnumSystem.h"
 #include "WED_RunwayNode.h"
 #include "WED_Sealane.h"
@@ -129,6 +130,10 @@ void	WED_CreateLineTool::AcceptPath(
 	obj->SetParent(host, host->CountChildren());
 	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
 	obj->SetName(buf);
+
+	ISelection * sel = WED_GetSelect(GetResolver());
+	sel->Clear();
+	sel->Select(obj);
 			
 	GetArchive()->CommitCommand();
 

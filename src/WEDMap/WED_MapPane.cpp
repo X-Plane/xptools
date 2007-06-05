@@ -18,6 +18,13 @@
 #include "WED_ToolInfoAdapter.h"
 #include "WED_UIMeasurements.h"
 
+char	kToolKeys[] = { 
+	'b', 'w', 'e', 'o',
+	'a', 'f', 'g', 'l',
+	'k', 't', 'h', 's',
+	'r', 'p', 'm', 'v' 
+};
+
 
 WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive)
 {
@@ -35,15 +42,15 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_CreatePointTool("Tower Viewpoint", mMap, mMap, resolver, archive, create_TowerViewpoint));
 	mTools.push_back(					new WED_CreatePointTool("Ramp Start", mMap, mMap, resolver, archive, create_RampStart));
 	mTools.push_back(					new WED_CreatePointTool("Light Fixture", mMap, mMap, resolver, archive, create_Lights));
-	mTools.push_back(					new WED_CreatePointTool("Taxi Sign", mMap, mMap, resolver, archive, create_Sign));
-	mTools.push_back(					new WED_CreatePolygonTool("Taxi Lines",mMap, mMap, resolver, archive, create_Marks));
-	mTools.push_back(					new WED_CreatePolygonTool("Taxiway Hole",mMap, mMap, resolver, archive, create_Hole));
+	mTools.push_back(					new WED_CreatePointTool("Sign", mMap, mMap, resolver, archive, create_Sign));
+	mTools.push_back(					new WED_CreatePolygonTool("Taxilines",mMap, mMap, resolver, archive, create_Marks));
+	mTools.push_back(					new WED_CreatePolygonTool("Hole",mMap, mMap, resolver, archive, create_Hole));
 	mTools.push_back(					new WED_CreatePolygonTool("Taxiway",mMap, mMap, resolver, archive, create_Taxi));
 	mTools.push_back(					new WED_CreatePointTool("Helipad", mMap, mMap, resolver, archive, create_Helipad));
 	mTools.push_back(					new WED_CreateLineTool("Sealane", mMap, mMap, resolver, archive, create_Sealane));
 	mTools.push_back(					new WED_CreateLineTool("Runway", mMap, mMap, resolver, archive, create_Runway));
-	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Ref Image",mMap, mMap, resolver));
-	mTools.push_back(					new WED_MarqueeTool("Select",mMap, mMap, resolver));
+	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Overlay Picture",mMap, mMap, resolver));
+	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
 	mInfoAdapter = new WED_ToolInfoAdapter;
@@ -62,7 +69,6 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTextTable->AddListener(mTable);
 	mInfoAdapter->AddListener(mTable);
 
-
 	mToolbar = new GUI_ToolBar(1,16,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
@@ -70,7 +76,20 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mToolbar->SetSticky(1,0,0,1);
 	this->PackPane(mToolbar,gui_Pack_Left);
 	mToolbar->SizeToBitmap();
-	mToolbar->AddListener(this);
+	mToolbar->AddListener(this);	
+	vector<string>	tips;
+	for (int n = 0; n < mTools.size(); ++n)
+	{
+		string tip(mTools[n]->GetToolName());
+		if (kToolKeys[n])
+		{
+			char buf[5] = { " [x]" };
+			buf[2] = toupper(kToolKeys[n]);
+			tip += buf;
+		}
+		tips.push_back(tip);
+	}
+	mToolbar->SetToolTips(tips);	
 	
 
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
@@ -132,7 +151,15 @@ void	WED_MapPane::ZoomShowAll(void)
 
 int		WED_MapPane::Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	return mMap->KeyPress(inKey, inVK, inFlags);
+	if (mMap->KeyPress(inKey, inVK, inFlags)) return 1;
+	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
+	if (kToolKeys[n])
+	if (kToolKeys[n]==inKey)
+	{
+		mToolbar->SetValue(n);
+		return 1;
+	}
+	return 0;
 }
 
 int		WED_MapPane::Map_HandleCommand(int command)
