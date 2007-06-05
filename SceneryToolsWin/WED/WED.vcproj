@@ -681,6 +681,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDMap\WED_UIMeasurements.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDMap\WED_UIMeasurements.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDMap\WED_VertexTool.cpp"
 					>
 				</File>
