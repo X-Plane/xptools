@@ -100,6 +100,12 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 	GUI_DrawStretched(state, "startup_bar.png", child, kTileAll);
 }
 
+bool	WED_StartWindow::Closed(void)
+{
+	GetCommanderRoot()->DispatchHandleCommand(gui_Quit);
+	return false;
+}
+
 void	WED_StartWindow::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							int						inMsg,

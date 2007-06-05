@@ -34,6 +34,8 @@ public:
 
 					 WED_StartWindow(GUI_Commander * cmder);
 	virtual			~WED_StartWindow();
+
+	virtual	bool	Closed(void);
 	
 	virtual	int		MouseMove(int x, int y			  );
 	virtual	void	Draw(GUI_GraphState * state);
