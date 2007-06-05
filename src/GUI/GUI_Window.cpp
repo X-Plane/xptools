@@ -348,6 +348,58 @@ DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+// MAC TOOL TIPS
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+#if APL
+
+pascal OSStatus	GUI_Window::TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent)
+{	
+	GUI_Window * me = (GUI_Window * ) GetWRefCon(inWindow);
+	int has_tip;
+	string tip_str;
+	int tip_bounds[4];
+	
+	switch(inRequest) {
+	case kHMSupplyContent:
+        ioHelpContent->version = kMacHelpVersion;
+        ioHelpContent->tagSide = kHMDefaultSide;// 2
+
+		SetPortWindowPort(inWindow);
+		GlobalToLocal(&inGlobalMouse);
+		has_tip = me->InternalGetHelpTip(
+			Client2OGL_X(inGlobalMouse.h, inWindow),
+			Client2OGL_Y(inGlobalMouse.v, inWindow),
+			tip_bounds, tip_str);
+		
+		if (has_tip && !tip_str.empty())
+		{
+			ioHelpContent->absHotRect.top    = OGL2Client_Y(tip_bounds[3],inWindow);
+			ioHelpContent->absHotRect.bottom = OGL2Client_Y(tip_bounds[1],inWindow);
+			ioHelpContent->absHotRect.right  = OGL2Client_X(tip_bounds[2],inWindow);
+			ioHelpContent->absHotRect.left   = OGL2Client_X(tip_bounds[0],inWindow);
+			LocalToGlobal((Point*)&ioHelpContent->absHotRect.top);
+			LocalToGlobal((Point*)&ioHelpContent->absHotRect.bottom);
+			ioHelpContent->content[kHMMinimumContentIndex].contentType = kHMCFStringContent;
+			ioHelpContent->content[kHMMinimumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);
+			ioHelpContent->content[kHMMaximumContentIndex].contentType = kHMCFStringContent;
+			ioHelpContent->content[kHMMaximumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);			
+		}
+        *outContentProvided = has_tip ? kHMContentProvided : kHMContentNotProvidedDontPropagate;	
+		break;
+	case kHMDisposeContent:
+		break;
+	}
+	return noErr;
+}
+
+HMWindowContentUPP	GUI_Window::sTooltipUPP = NewHMWindowContentUPP(TooltipCB);
+
+#endif
+
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 // COMMON CODE
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -423,6 +475,11 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 		InstallTrackingHandler(sTrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
 		InstallReceiveHandler(sReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));	
+		
+		HMInstallWindowContentCallback(mWindow,sTooltipUPP);
+		
+		SetWRefCon(mWindow, (long) this);
+		
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -506,6 +563,17 @@ void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
 void		GUI_Window::ClickMove(int inX, int inY)
 {
 	this->InternalMouseMove(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
+	#if APL
+		// Windows handles this separately...to avoid thrash with WM_SETCURSOR
+		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
+		switch(cursor) {
+		case gui_Cursor_Resize_H:	SetThemeCursor(kThemeResizeLeftRightCursor);	break;
+		case gui_Cursor_Resize_V:	SetThemeCursor(kThemeResizeUpDownCursor);		break;
+		case gui_Cursor_None:		
+		case gui_Cursor_Arrow:		
+		default:					SetThemeCursor(kThemeArrowCursor);	break;
+		}
+	#endif
 }
 
 void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
@@ -1077,11 +1145,12 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 				int x, y;
 				me->GetMouseLoc(&x,&y);
 				int curs = me->InternalGetCursor(Client2OGL_X(x,me->mWindow),Client2OGL_Y(y,me->mWindow));
-				switch(curs) {
-				case gui_Cursor_None:		
-				case gui_Cursor_Arrow:		SetCursor(LoadCursor(NULL,IDC_ARROW));	break;
+				switch(curs) {				
 				case gui_Cursor_Resize_H:	SetCursor(LoadCursor(NULL,IDC_SIZEWE));	break;
 				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	break;
+				case gui_Cursor_None:		
+				case gui_Cursor_Arrow:
+				default:					SetCursor(LoadCursor(NULL,IDC_ARROW));	break;
 				}
 			}
 			return 0;

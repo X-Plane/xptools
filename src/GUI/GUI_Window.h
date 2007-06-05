@@ -90,10 +90,11 @@ private:
 	#if APL
 		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
 		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
+		static pascal OSStatus	TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent);
 
 		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
 		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
-
+		static HMWindowContentUPP		sTooltipUPP;
 	#endif
 	
 	GUI_GraphState	mState;
