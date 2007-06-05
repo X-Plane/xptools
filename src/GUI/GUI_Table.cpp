@@ -503,6 +503,9 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 	bounds[2] = mGeometry->GetCellRight (x) + b[0] - mScrollH;
 	bounds[3] = mGeometry->GetCellTop   (y) + b[1] - mScrollV;
 
+	if (x == mGeometry->GetColCount()-1 && bounds[2] < b[2])
+		bounds[2] = b[2];
+
 	return 1;
 }
 
@@ -669,6 +672,9 @@ int		GUI_Header::CalcCellBounds(int x, int bounds[4])
 	bounds[1] = b[1];
 	bounds[2] = mGeometry->GetCellRight (x) + b[0] - mTable->GetScrollH();
 	bounds[3] = b[3];
+	
+	if (x == mGeometry->GetColCount()-1 && bounds[2] < b[2])
+		bounds[2] = b[2];
 
 	return 1;
 }
