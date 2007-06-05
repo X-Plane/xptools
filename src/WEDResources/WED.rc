@@ -18,7 +18,8 @@ scrollbar_corner.png	GUI_RES		scrollbar_corner.png
 
 /* app UI elements */
 about.png				GUI_RES		about.png		
-colors.png				GUI_RES		colors.png		
+colors.png				GUI_RES		colors.png
+ui_measurements.txt		GUI_RES		ui_measurements.txt
 map_tools.png			GUI_RES		map_tools.png	
 
 /* Start window */
