@@ -2,4 +2,10 @@
 
 # Height of individual table rows
 table_row_height 20
+
+# Number of pixels we indent the hierarchy.
 table_indent_width 25
+
+# Set this to 1 to use a single gradient for the entire WED window.
+# Set this to 0 to apply the gradient seperately for the three panes within the window.
+one_big_gradient 0
