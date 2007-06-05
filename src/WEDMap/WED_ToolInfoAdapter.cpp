@@ -35,7 +35,8 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	the_content.is_selected = 0;
 	the_content.can_drag = 0;
 	the_content.indent_level = 0;
-
+	the_content.bool_val = gui_Bool_Check;
+	the_content.bool_partial = 0;
 	if (!mTool) return;
 	
 	if (cell_x % 2)
