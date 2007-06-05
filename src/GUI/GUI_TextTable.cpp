@@ -36,7 +36,8 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mDragY(-1),
 	mDragDest(gui_Table_None),
 	mDragPart(drag_WholeCell),
-	mCellIndent(indent)
+	mCellIndent(indent),
+	mGeometry(NULL)
 {
 	mEditInfo.content_type = gui_Cell_None;
 	mColorGridlines[0] = 0.5f;
@@ -100,6 +101,11 @@ void	GUI_TextTable::SetColors(
 void		GUI_TextTable::SetParentTable(GUI_Table * parent)
 {
 	mParent = parent;
+}
+
+void		GUI_TextTable::SetGeometry(GUI_TableGeometry * geometry)
+{
+	mGeometry = geometry;
 }
 	
 void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
@@ -242,6 +248,22 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	want_lock = 1;
 	mModifiers = flags;
 	mSelStartX = mSelStartY = -1;
+
+
+	mCellResize = -1;
+	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
+	{
+		mLastX = mouse_x;
+		mCellResize = cell_x -1;
+		return 1;
+	}
+	if (mGeometry && abs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
+	{
+		mLastX = mouse_x;
+		mCellResize = cell_x;
+		return 1;
+	}
+
 	
 	if (!mContent) 
 	{
@@ -449,6 +471,14 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
+	if (mCellResize >= 0 && mGeometry)
+	{
+		mGeometry->SetCellWidth(mCellResize,mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
+		mLastX = mouse_x;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
+		return;
+	}
+
 	int new_in;
 	
 	if (mSelStartX != -1 && mSelStartY != -1)
@@ -496,6 +526,14 @@ void		GUI_TextTable::CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, i
 
 void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button)
 {
+	if (mCellResize >= 0 && mGeometry)
+	{
+		mGeometry->SetCellWidth(mCellResize,mouse_x - mLastX + mGeometry->GetCellWidth(mCellResize));
+		mCellResize = -1;
+		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
+		return;
+	}
+
 	int new_in;
 
 	if (mSelStartX != -1 && mSelStartY != -1)

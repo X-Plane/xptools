@@ -186,6 +186,7 @@ public:
 	virtual				~GUI_TextTable();
 	
 			void		SetProvider(GUI_TextTableProvider * content);
+			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);
 
 			void		SetColors(
@@ -243,6 +244,10 @@ private:
 	int						mTrackRight;
 	GUI_Table *				mParent;
 	GUI_TextField *			mTextField;
+	GUI_TableGeometry *		mGeometry;
+
+	int						mCellResize;
+	int						mLastX;
 	
 	GUI_KeyFlags			mModifiers;
 	int						mSelStartX;
