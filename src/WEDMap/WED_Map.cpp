@@ -129,12 +129,20 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (status)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 	
+	#if !DEV
+	nuke this
+	#endif
 	char hack[100];
+	WED_Archive * a = WED_GetWorld(mResolver)->GetArchive();
+	sprintf(hack, "Dirty: %s (%d)", a->IsDirty() ? "yes" : "no", a->IsDirty());
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 45, hack);
+
 	float ppm = GetPPM();
 	float icon_scale = 	ppm * 2.0;
 	if (icon_scale > 1.0) icon_scale = 1.0;
 
 	sprintf(hack, "%f ppm %f icons", GetPPM(), icon_scale);
+
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, hack);
 	
 }

@@ -112,6 +112,8 @@ void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, Handle
 	
 	if (con_type) *con_type = (mods & (gui_ControlFlag+gui_OptionAltFlag+gui_ShiftFlag)) ? (kind == 0 ? (mHasDirs[idx] ? handle_Vertex : handle_VertexSharp) : handle_Bezier) : handle_None;
 	if (direction) *direction = Vector2();
+	if (direction && con_type && *con_type == handle_Bezier)
+		*direction = Vector2((kind == 1) ? mControlLo[idx] : mControlHi[idx], mPts[idx]);
 
 	// If we can, make the first point have the hollow circle to show it.
 	if (con_type && *con_type == handle_None && idx == 0 && mCanClose  && kind == 0)					*con_type = handle_ClosePt;

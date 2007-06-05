@@ -198,8 +198,8 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 							*con_type = handle_Vertex;
 					}
 					break;
-			case 1:	if (pt_b->GetControlHandleLo(*p) && active) *active=1;	if (con_type) *con_type = handle_Bezier;	break;
-			case 2: if (pt_b->GetControlHandleHi(*p) && active)	*active=1;	if (con_type) *con_type = handle_Bezier;	break;
+			case 1:	if (pt_b->GetControlHandleLo(*p) && active) *active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
+			case 2: if (pt_b->GetControlHandleHi(*p) && active)	*active=1;if (con_type) *con_type = handle_Bezier;if (dir) {pt_b->GetLocation(dummy);*dir=Vector2(*p,dummy);}break;
 			}
 			
 			if (active)

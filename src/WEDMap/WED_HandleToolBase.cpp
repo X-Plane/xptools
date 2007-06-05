@@ -520,7 +520,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
 				
-				if (ht == handle_ArrowHead || ht == handle_Arrow)
+				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier) 
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
 					if (ht == handle_Arrow)
@@ -538,7 +538,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				case handle_Square:			GUI_PlotIcon(g,"handle_square.png", scrpt.x,scrpt.y,0,1.0);		break;
 				case handle_Vertex:			GUI_PlotIcon(g,"handle_vertexround.png", scrpt.x,scrpt.y,0,1.0);break;
 				case handle_VertexSharp:	GUI_PlotIcon(g,"handle_vertexsharp.png", scrpt.x,scrpt.y,0,1.0);break;
-				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,0,1.0);	break;
+				case handle_Bezier:			GUI_PlotIcon(g,"handle_control.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				case handle_ClosePt:		GUI_PlotIcon(g,"handle_closeloop.png", scrpt.x,scrpt.y,0,1.0);	break;
 				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0,1.0);		break;
 				case handle_ArrowHead:		
