@@ -15,12 +15,21 @@
 
 GUI_TabControl::GUI_TabControl()
 {
+	mTextColor[0] = mTextColor[1] = mTextColor[2] = 0.0;
+	mTextColor[3] =									1.0;
 }
 
 GUI_TabControl::~GUI_TabControl()
 {
 }
 
+void		GUI_TabControl::SetTextColor(float color[4])
+{
+	mTextColor[0] = color[0];
+	mTextColor[1] = color[1];
+	mTextColor[2] = color[2];
+	mTextColor[3] = color[3];
+}
 
 int		GUI_TabControl::GetNaturalHeight(void)
 {
@@ -75,12 +84,12 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 		bounds[0] = bounds[2];				
 	}
 	
-	float c[4] = { 0,0,0,1};
-	float ch[4] = { 0.5, 0.5, 0.5, 1 };
 	GetBounds(bounds);
 	for (n = 0; n < mItems.size(); ++n)
 	{
-		GUI_FontDraw(state, font_UI_Basic, (n == mTrackBtn && mHilite) ? ch : c, (bounds[0] + TAB_PADDING), bounds[1] + TAB_BASELINE, mItems[n].c_str());
+//		GUI_FontDraw(state, font_UI_Basic, (n == mTrackBtn && mHilite) ? ch : c, (bounds[0] + TAB_PADDING), bounds[1] + TAB_BASELINE, mItems[n].c_str());
+		GUI_FontDraw(state, font_UI_Basic, mTextColor, (bounds[0] + TAB_PADDING), bounds[1] + TAB_BASELINE, mItems[n].c_str());
+
 		bounds[0] += mWidths[n];
 	}
 	

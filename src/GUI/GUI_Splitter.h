@@ -16,6 +16,7 @@ public:
 	
 			void		AlignContents();
 			void		AlignContentsAt(int split);
+			void		SetImage(const char * image_res);
 	
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);
@@ -29,6 +30,8 @@ private:
 	int		mDirection;
 	int		mSlop;		// mouse - boundary = slop
 	int		mClick;
+	
+	string	mImage;
 	
 };
 

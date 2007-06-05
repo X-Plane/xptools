@@ -15,6 +15,8 @@ public:
 						 GUI_TabControl();
 	virtual				~GUI_TabControl();
 
+			void		SetTextColor(float color[4]);
+
 	virtual	void		SetDescriptor(const string& inDesc);
 	virtual	void		Draw(GUI_GraphState * state);
 	
@@ -32,6 +34,8 @@ private:
 		
 		int					mTrackBtn;
 		int					mHilite;
+		
+		float				mTextColor[4];
 	
 };	
 

@@ -57,6 +57,14 @@ void	GUI_ScrollerPane::Draw(GUI_GraphState * g)
 {
 	int bounds[4];
 	int tile[4] = { 0, 0, 1, 1 };
+	
+	if (!mImage.empty())
+	{
+		glColor3f(1,1,1);
+		GetBounds(bounds);
+		GUI_DrawStretched(g, mImage.c_str(), bounds, tile);
+	}
+	
 	if (mScrollV && mScrollH)
 	{
 		glColor3f(1,1,1);
@@ -75,6 +83,10 @@ void	GUI_ScrollerPane::AttachSlaveV(GUI_ScrollerPane *inSlaveV)
 	mSlaveV.push_back(inSlaveV);
 }
 
+void	GUI_ScrollerPane::SetImage(const char * image_res)
+{
+	mImage = image_res;
+}
 
 void	GUI_ScrollerPane::PositionInContentArea(GUI_Pane * inPane)
 {

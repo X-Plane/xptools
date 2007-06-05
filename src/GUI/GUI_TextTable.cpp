@@ -6,6 +6,7 @@
 #include <math.h>
 #include "GUI_TextField.h"
 #include "WED_ToolUtils.h"
+#include "GUI_Resources.h"
 #include "AssertUtils.h"
 #define RESIZE_MARGIN 4
 
@@ -23,7 +24,7 @@
 	provider to provide content IN BULK?
 #endif
 
-GUI_TextTable::GUI_TextTable(GUI_Commander * parent) : GUI_Commander(parent),
+GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander(parent),
 	mContent(NULL),
 	mClickCellX(-1),
 	mClickCellY(-1),
@@ -34,13 +35,66 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent) : GUI_Commander(parent),
 	mDragX(-1),
 	mDragY(-1),
 	mDragDest(gui_Table_None),
-	mDragPart(drag_WholeCell)
+	mDragPart(drag_WholeCell),
+	mCellIndent(indent)
 {
 	mEditInfo.content_type = gui_Cell_None;
+	mColorGridlines[0] = 0.5f;
+	mColorGridlines[1] = 0.5f;
+	mColorGridlines[2] = 0.5f;
+	mColorGridlines[3] = 1.0f;
+	
+	mColorSelect[0] = 1.0;
+	mColorSelect[1] = 1.0;
+	mColorSelect[2] = 0.0;
+	mColorSelect[3] = 1.0;
+
+	mColorText[0] = 0.8;
+	mColorText[1] = 0.8;
+	mColorText[2] = 0.8;
+	mColorText[3] = 1.0;
+
+	mColorTextSelect[0] = 1.0;
+	mColorTextSelect[1] = 1.0;
+	mColorTextSelect[2] = 1.0;
+	mColorTextSelect[3] = 1.0;	
+	
+	mColorInsertInto[0] = 1.0;
+	mColorInsertInto[1] = 0.0;
+	mColorInsertInto[2] = 0.0;
+	mColorInsertInto[3] = 1.0;
+
+	mColorInsertBetween[0] = 0.0;
+	mColorInsertBetween[1] = 0.5;
+	mColorInsertBetween[2] = 1.0;
+	mColorInsertBetween[3] = 1.0;
+	
+	GUI_TexPosition_t	metrics;
+	GUI_GetTextureResource("disclose.png", 0, &metrics);
+	mDiscloseIndent = metrics.real_width / 2;
 }
 
 GUI_TextTable::~GUI_TextTable()
 {
+}
+
+void	GUI_TextTable::SetColors(
+							float		grid_lines[4],
+							float		select[4],
+							float		text[4],
+							float		text_select[4],
+							float		insert_between[4],
+							float		insert_into[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mColorGridlines		[n]=grid_lines		[n];
+		mColorSelect		[n]=select			[n];
+		mColorText			[n]=text			[n];
+		mColorTextSelect	[n]=text_select		[n];
+		mColorInsertBetween	[n]=insert_between	[n];
+		mColorInsertInto	[n]=insert_into		[n];
+	}
 }
 
 void		GUI_TextTable::SetParentTable(GUI_Table * parent)
@@ -57,12 +111,11 @@ void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
 	inState->SetState(false, false, false,	false, false, false, false);
-	glColor3f(0.5,0.5,0.5);
-	glBegin(GL_LINE_LOOP);
-	glVertex2i(cell_bounds[0],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[3]);
-	glVertex2i(cell_bounds[0],cell_bounds[3]);
+	glColor4fv(mColorGridlines);
+	glBegin(GL_LINE_STRIP);
+	glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
+	glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
+	glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
 	glEnd();	
 	
 	if (!mContent) return;
@@ -71,17 +124,17 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 
 	if (c.is_selected)
 	{
-		glColor3f(1,1,0);
+		glColor4fv(mColorSelect);
 		glBegin(GL_QUADS);
-		glVertex2i(cell_bounds[0]+1,cell_bounds[1]+1);
-		glVertex2i(cell_bounds[0]+1,cell_bounds[3]-1);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[3]-1);
+		glVertex2i(cell_bounds[0]  ,cell_bounds[1]+1);
+		glVertex2i(cell_bounds[0]  ,cell_bounds[3]  );
+		glVertex2i(cell_bounds[2]-1,cell_bounds[3]  );
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]+1);
 		glEnd();			
-		glColor3f(0.5,0.5,0.5);
+		glColor4fv(mColorGridlines);
 	}
 	
-	cell_bounds[0] += (c.indent_level * 10);
+	cell_bounds[0] += (c.indent_level * mCellIndent);
 	
 	char buf[50];
 	switch(c.content_type) {
@@ -105,34 +158,30 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
 		
-		if (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds)
-		glBegin(GL_TRIANGLES);
-		else
-		glBegin(GL_LINE_LOOP);
-		if (c.is_disclosed)
-		{
-			glVertex2i(cell_bounds[0] + 2, middle + 4); 
-			glVertex2i(cell_bounds[0] + 10, middle + 4); 
-			glVertex2i(cell_bounds[0] + 6, middle - 4); 
-		}
-		else
-		{
-			glVertex2i(cell_bounds[0] + 2, middle + 4); 
-			glVertex2i(cell_bounds[0] + 6, middle); 
-			glVertex2i(cell_bounds[0] + 2, middle - 4); 
-		}
-		glEnd();
-		cell_bounds[0] += 10;
+		int tile[4] = { c.is_disclosed ? 1 : 0, 
+			(cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds) ? 1 : 0,
+			2, 2 };
+		
+		glColor3f(1,1,1);
+		GUI_DrawCentered(inState, "disclose.png", cell_bounds, -1, 0, tile, NULL, NULL);
+		
+		cell_bounds[0] += mDiscloseIndent;
 	}
 	
-	float col[4] = { 0.0,0.0,0.0,1.0 };
-	GUI_FontDraw(inState, font_UI_Basic, col, cell_bounds[0], cell_bounds[1], c.text_val.c_str());	
+	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
+	GUI_FontDraw(inState, font_UI_Basic, 
+		c.is_selected ? mColorTextSelect : mColorText,
+		cell_bounds[0]+3, line_h, c.text_val.c_str());	
 
 	if (c.content_type == gui_Cell_CheckBox)
 	{
-		int selector[4] = { c.int_val ? 1 : 0, (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_CheckBox && mInBounds) ? 1 : 0, 2, 2 };
+		int selector[4] = { (c.int_val != 0) ? 1 : 0, (cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_CheckBox && mInBounds) || c.bool_partial ? 1 : 0, 2, 2 };
 		glColor3f(1,1,1);
-		GUI_DrawCentered(inState, "check.png", cell_bounds, 0, 0, selector, NULL, NULL);
+		switch(c.bool_val) {
+		case gui_Bool_Check:		GUI_DrawCentered(inState, "check.png", cell_bounds, 0, 0, selector, NULL, NULL);	break;
+		case gui_Bool_Lock:			GUI_DrawCentered(inState, "lock.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
+		case gui_Bool_Visible:		GUI_DrawCentered(inState, "eye.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
+		}		
 	}
 	
 	inState->SetState(false, false, false,	true, true, false, false);
@@ -143,7 +192,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		if (cell_x == mDragX || mDragDest == gui_Table_Row)
 		if (cell_y == mDragY || mDragDest == gui_Table_Column)
 		{
-			glColor4f(0,1,1,0.5);
+			glColor4fv(mColorInsertInto);
 			glBegin(GL_QUADS);
 			glVertex2i(cell_bounds[0]+1,cell_bounds[1]+1);
 			glVertex2i(cell_bounds[0]+1,cell_bounds[3]-1);
@@ -157,7 +206,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	case gui_Insert_Right:
 	case gui_Insert_Bottom:
 	case gui_Insert_Top:
-		glColor4f(0,0,0,0.5);
+		glColor4fv(mColorInsertBetween);
 		glLineWidth(4);
 		glBegin(GL_LINES);
 		if ((mDragDest == gui_Insert_Left && cell_x == mDragX) || (mDragDest == gui_Insert_Right && cell_x == mDragX+1))
@@ -184,7 +233,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glLineWidth(1);
 		break;
 	}
-	glColor3f(0.5,0.5,0.5);
+	glColor4fv(mColorGridlines);
 	
 }
 
@@ -219,16 +268,16 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	mClickCellX = -1;
 	mClickCellY = -1;	
 	
-	cell_bounds[0] += (mEditInfo.indent_level * 10);
+	cell_bounds[0] += (mEditInfo.indent_level * mCellIndent);
 	
-	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
+//	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 	
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
 		if (mEditInfo.can_disclose)
 		{
 			mTrackLeft = cell_bounds[0];
-			mTrackRight = cell_bounds[0] + 10;
+			mTrackRight = cell_bounds[0] + mDiscloseIndent;
 
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
@@ -240,7 +289,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				return 1;
 			}
 		}
-		cell_bounds[0] += 10;		
+		cell_bounds[0] += mDiscloseIndent;		
 	}
 	
 	if ((!mEditInfo.is_selected || (mModifiers & (gui_ShiftFlag+gui_ControlFlag))) && mEditInfo.can_select)
@@ -286,6 +335,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
 		return 0;
 	}
+
+	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 		
 	if (!mEditInfo.can_edit)	return 1;
 	
@@ -865,6 +916,15 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 
 GUI_TextTableHeader::GUI_TextTableHeader() : mContent(NULL), mGeometry(NULL)
 {	
+	mColorGridlines[0] = 0.5f;
+	mColorGridlines[1] = 0.5f;
+	mColorGridlines[2] = 0.5f;
+	mColorGridlines[3] = 1.0f;
+
+	mColorText[0] = 0.8;
+	mColorText[1] = 0.8;
+	mColorText[2] = 0.8;
+	mColorText[3] = 1.0;
 }
 
 GUI_TextTableHeader::~GUI_TextTableHeader()
@@ -876,6 +936,23 @@ void		GUI_TextTableHeader::SetProvider(GUI_TextTableHeaderProvider * content)
 	mContent = content;
 }
 
+void		GUI_TextTableHeader::SetImage(const char * image)
+{
+	mImage = image;
+}
+
+
+void		GUI_TextTableHeader::SetColors(
+							float		grid_lines[4],
+							float		text[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mColorGridlines		[n]=grid_lines		[n];
+		mColorText			[n]=text			[n];
+	}
+}
+
 void		GUI_TextTableHeader::SetGeometry(GUI_TableGeometry * geometry)
 {
 	mGeometry = geometry;
@@ -883,21 +960,30 @@ void		GUI_TextTableHeader::SetGeometry(GUI_TableGeometry * geometry)
 
 void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState			  )
 {
-	inState->SetState(false, false, false,	false, false, false, false);
-	glColor3f(0.5,0.5,0.5);
-	glBegin(GL_LINE_LOOP);
-	glVertex2i(cell_bounds[0],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[3]);
-	glVertex2i(cell_bounds[0],cell_bounds[3]);
-	glEnd();
+	if (mImage.empty())
+	{
+		inState->SetState(false, false, false,	false, false, false, false);
+		glColor4fv(mColorGridlines);
+		glBegin(GL_LINE_STRIP);
+		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
+		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
+		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
+		glEnd();
+	}
+	else
+	{
+		glColor3f(1,1,1);
+		int tile[4] = { 0, 0, 1, 1 };
+		GUI_DrawHorizontalStretch(inState, "header.png", cell_bounds, tile);
+	}
+
 	
 	if (!mContent) return;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_x,c);
 	
-	float col[4] = { 0.0,0.0,0.0,1.0 };
-	GUI_FontDraw(inState, font_UI_Basic, col, cell_bounds[0], cell_bounds[1], c.title.c_str());	
+	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+3, line_h, c.title.c_str());	
 }
 
 int			GUI_TextTableHeader::HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
@@ -946,6 +1032,15 @@ void		GUI_TextTableHeader::HeadMouseUp  (int cell_bounds[4], int cell_x, int mou
 
 GUI_TextTableSide::GUI_TextTableSide() : mContent(NULL), mGeometry(NULL)
 {	
+	mColorGridlines[0] = 0.5f;
+	mColorGridlines[1] = 0.5f;
+	mColorGridlines[2] = 0.5f;
+	mColorGridlines[3] = 1.0f;
+
+	mColorText[0] = 0.8;
+	mColorText[1] = 0.8;
+	mColorText[2] = 0.8;
+	mColorText[3] = 1.0;
 }
 
 GUI_TextTableSide::~GUI_TextTableSide()
@@ -962,23 +1057,33 @@ void		GUI_TextTableSide::SetGeometry(GUI_TableGeometry * geometry)
 	mGeometry = geometry;
 }
 
+void		GUI_TextTableSide::SetColors(
+							float		grid_lines[4],
+							float		text[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mColorGridlines		[n]=grid_lines		[n];
+		mColorText			[n]=text			[n];
+	}
+}
+
 void		GUI_TextTableSide::SideDraw	 (int cell_bounds[4], int cell_y, GUI_GraphState * inState			  )
 {
 	inState->SetState(false, false, false,	false, false, false, false);
-	glColor3f(0.5,0.5,0.5);
-	glBegin(GL_LINE_LOOP);
-	glVertex2i(cell_bounds[0],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[1]);
-	glVertex2i(cell_bounds[2],cell_bounds[3]);
-	glVertex2i(cell_bounds[0],cell_bounds[3]);
+	glColor4fv(mColorGridlines);
+	glBegin(GL_LINE_STRIP);
+	glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
+	glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
+	glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
 	glEnd();
-	
+
 	if (!mContent) return;
 	GUI_HeaderContent	c;
 	mContent->GetHeaderContent(cell_y,c);
 	
-	float col[4] = { 0.0,0.0,0.0,1.0 };
-	GUI_FontDraw(inState, font_UI_Basic, col, cell_bounds[0], cell_bounds[1], c.title.c_str());	
+	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
+	GUI_FontDraw(inState, font_UI_Basic, mColorText, cell_bounds[0]+3, line_h, c.title.c_str());	
 }
 
 int			GUI_TextTableSide::SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)

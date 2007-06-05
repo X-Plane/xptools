@@ -53,6 +53,11 @@ GUI_TabPane::~GUI_TabPane()
 {
 }
 
+void			GUI_TabPane::SetTextColor(float color[4])
+{
+	mTabs->SetTextColor(color);
+}
+
 void			GUI_TabPane::SetTab(int n)
 {
 	mTabs->SetValue(n);

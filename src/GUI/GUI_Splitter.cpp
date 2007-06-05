@@ -2,6 +2,7 @@
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
 #include "GUI_Resources.h"
+#include "GUI_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -21,8 +22,22 @@ GUI_Splitter::~GUI_Splitter()
 {
 }
 
+void		GUI_Splitter::SetImage(const char * image_res)
+{
+	mImage = image_res;
+}
+
 void		GUI_Splitter::Draw(GUI_GraphState * state)
 {
+	if (!mImage.empty())
+	{
+		int		bounds[4];
+		glColor3f(1,1,1);
+		int tile[4] = { 0, 0, 1, 1 };
+		GetBounds(bounds);
+		GUI_DrawStretched(state, mImage.c_str(), bounds, tile);		
+	}
+
 	if (CountChildren() > 1)
 	{
 		int		b[4], b1[4], b2[4];

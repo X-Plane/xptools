@@ -37,6 +37,8 @@ public:
 							 GUI_TabPane(GUI_Commander * parent);
 	virtual					~GUI_TabPane();
 
+			void			SetTextColor(float color[4]);
+			
 			void			SetTab(int n);
 			int				GetTab(void) const;
 			

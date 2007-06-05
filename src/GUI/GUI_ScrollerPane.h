@@ -66,6 +66,8 @@ public:
 
 			void	ContentGeometryChanged(void);					// Fix scrollbars, we changed!
 
+			void	SetImage(const char * image_res);
+
 	virtual	void	Draw(GUI_GraphState * g);
 			
 	// From GUI_Pane
@@ -92,6 +94,7 @@ private:
 	GUI_ScrollBar *					mScrollV;
 	GUI_ScrollerPaneContent *		mContent;
 	bool							mCalibrating;
+	string							mImage;
 
 };
 	
