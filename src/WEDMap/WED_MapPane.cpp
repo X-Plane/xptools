@@ -97,6 +97,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mMap->SetTool(mTools[0]);
 	mInfoAdapter->SetTool(mTools[0]);
+	mToolbar->SetValue(mTools.size()-1);
 	
 	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
 	// 1. On the commit of any operation.
