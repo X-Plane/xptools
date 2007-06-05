@@ -10,6 +10,8 @@ public:
 	virtual			~GUI_ToolBar();
 	
 			void	SizeToBitmap(void);
+
+			void	SetToolTips(const vector<string>& in_tips);
 	
 	virtual	void	SetValue(float inValue);
 
@@ -24,9 +26,10 @@ public:
 
 private:
 
-	string		mResource;
-	int			mH;
-	int			mV;
+	vector<string>	mTips;
+	string			mResource;
+	int				mH;
+	int				mV;
 	
 };
 

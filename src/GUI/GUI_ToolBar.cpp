@@ -22,6 +22,11 @@ GUI_ToolBar::~GUI_ToolBar()
 {	
 }
 
+void	GUI_ToolBar::SetToolTips(const vector<string>& in_tips)
+{
+	mTips = in_tips;
+}
+
 void	GUI_ToolBar::SetValue(float inValue)
 {
 	GUI_Control::SetValue(inValue);
@@ -102,9 +107,12 @@ int		GUI_ToolBar::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 	tip_bounds[1] = bounds[1] + (yt  ) * bounds[5];
 	tip_bounds[2] = bounds[0] + (xt+1) * bounds[4];
 	tip_bounds[3] = bounds[1] + (yt+1) * bounds[5];
-	char buf[20];
-	sprintf(buf,"%d",xt+yt*mH);
-	tip = buf;
+	
+	int n = xt + yt * mH;
+	
+	if (n >= 0 && n < mTips.size())
+		tip = mTips[n];
+
 	return 1;
 }
 
