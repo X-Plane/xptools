@@ -44,6 +44,12 @@
 
 /* Begin PBXBuildFile section */
 		8D0C4E920486CD37000505A6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
+		D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */ = {isa = PBXBuildFile; fileRef = D606164E0C14BE46007BA5C9 /* ui_measurements.txt */; };
+		D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
+		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
+		D60617F10C14D18C007BA5C9 /* gradient.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EF0C14D18C007BA5C9 /* gradient.png */; };
+		D6061A1C0C150845007BA5C9 /* header.png in Resources */ = {isa = PBXBuildFile; fileRef = D6061A1B0C150844007BA5C9 /* header.png */; };
 		D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC850C0385AA00992876 /* scroll_btn_h.png */; };
 		D607AC8A0C0385AA00992876 /* scroll_btn_v.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC860C0385AA00992876 /* scroll_btn_v.png */; };
 		D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC870C0385AA00992876 /* scrollbar_h.png */; };
@@ -714,6 +720,12 @@
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_UIMeasurements.h; sourceTree = "<group>"; };
+		D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_UIMeasurements.cpp; sourceTree = "<group>"; };
+		D606164E0C14BE46007BA5C9 /* ui_measurements.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ui_measurements.txt; sourceTree = "<group>"; };
+		D60617EE0C14D18C007BA5C9 /* disclose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = disclose.png; sourceTree = "<group>"; };
+		D60617EF0C14D18C007BA5C9 /* gradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient.png; sourceTree = "<group>"; };
+		D6061A1B0C150844007BA5C9 /* header.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = header.png; sourceTree = "<group>"; };
 		D607AC850C0385AA00992876 /* scroll_btn_h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scroll_btn_h.png; sourceTree = "<group>"; };
 		D607AC860C0385AA00992876 /* scroll_btn_v.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scroll_btn_v.png; sourceTree = "<group>"; };
 		D607AC870C0385AA00992876 /* scrollbar_h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scrollbar_h.png; sourceTree = "<group>"; };
@@ -1625,6 +1637,9 @@
 		D607B7950C0B831400992876 /* tables */ = {
 			isa = PBXGroup;
 			children = (
+				D6061A1B0C150844007BA5C9 /* header.png */,
+				D60617EE0C14D18C007BA5C9 /* disclose.png */,
+				D60617EF0C14D18C007BA5C9 /* gradient.png */,
 				D607B7A00C0B847C00992876 /* check.png */,
 				D607B7960C0B831400992876 /* eye.png */,
 				D607B7970C0B831400992876 /* lock.png */,
@@ -1803,10 +1818,10 @@
 				D6BC37560AB22C85003949C5 /* UI */,
 				D6BC376A0AB22C85003949C5 /* Utils */,
 				D6BC37B40AB22C85003949C5 /* VPF */,
+				D6BC37BB0AB22C85003949C5 /* WEDCore */,
 				D6ED413C0B6ADE0100D5484E /* WEDEntities */,
 				D6ED3EC70B6A750600D5484E /* WEDProperties */,
 				D6ED3E1E0B6A636C00D5484E /* WEDResources */,
-				D6BC37BB0AB22C85003949C5 /* WEDCore */,
 				D60B0BD00C0658E600AD5EB7 /* WEDImportExport */,
 				D6BC37E10AB22C85003949C5 /* WEDMap */,
 				D6BC37E70AB22C85003949C5 /* WEDWindows */,
@@ -2330,6 +2345,8 @@
 				D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */,
 				D607AEFF0C03BEC300992876 /* WED_Colors.h */,
 				D607AF000C03BEC300992876 /* WED_Colors.cpp */,
+				D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */,
+				D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */,
 			);
 			path = WEDMap;
 			sourceTree = "<group>";
@@ -2656,6 +2673,7 @@
 				D6A185AD0BA878B100BBCD0C /* pushbutton.png */,
 				D6A185AE0BA878B100BBCD0C /* radiobutton.png */,
 				D607B6320C09FE5F00992876 /* WED_Info.plist */,
+				D606164E0C14BE46007BA5C9 /* ui_measurements.txt */,
 			);
 			path = WEDResources;
 			sourceTree = "<group>";
@@ -2997,6 +3015,11 @@
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
+				D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */,
+				D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */,
+				D60617F00C14D18C007BA5C9 /* disclose.png in Resources */,
+				D60617F10C14D18C007BA5C9 /* gradient.png in Resources */,
+				D6061A1C0C150845007BA5C9 /* header.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3567,6 +3590,7 @@
 				D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */,
 				D607B65B0C0A3FF300992876 /* WED_AboutBox.cpp in Sources */,
 				D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */,
+				D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
