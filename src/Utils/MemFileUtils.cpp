@@ -1312,20 +1312,20 @@ int		MFS_done(MFScanner * s)
 
 void	MFS_string_eol(MFScanner * s, string * out_string)
 {
-	while(s->cur<s->end && isspace(*s->cur)						)s->cur++;	const char * c1=s->cur;
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur) )s->cur++;	const char * c1=s->cur;
 	while(s->cur<s->end && !iseoln(*s->cur)						)s->cur++;	const char * c2=s->cur;	if(out_string)*out_string=string(c1,c2);
 	while(s->cur<s->end && (iseoln(*s->cur) || isspace(*s->cur)))s->cur++;
 }
 
 void	MFS_string(MFScanner * s, string * out_string)
 {
-	while(s->cur<s->end &&  isspace(*s->cur)						)s->cur++;	const char* c1=s->cur;
+	while(s->cur<s->end &&  isspace(*s->cur) && !iseoln(*s->cur)	)s->cur++;	const char* c1=s->cur;
 	while(s->cur<s->end && !isspace(*s->cur) && !iseoln(*s->cur)	)s->cur++;	const char* c2=s->cur;	if(out_string)*out_string=string(c1,c2);
 }
 
 int		MFS_string_match(MFScanner * s, const char * input, int eol_ok)
 {
-	while(s->cur<s->end && isspace(*s->cur)			   ) s->cur++;				const char* c1=s->cur;
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur)) s->cur++;				const char* c1=s->cur;
 	while(s->cur<s->end && *s->cur==*input && *input!=0){s->cur++; input++;}
 
 	if(*input==0 && 		  isspace(*s->cur))return 1;
@@ -1335,7 +1335,7 @@ int		MFS_string_match(MFScanner * s, const char * input, int eol_ok)
 
 int		MFS_int(MFScanner * s)
 {
-	while(s->cur<s->end && isspace(*s->cur))s->cur++;
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))s->cur++;
 
 	xint sign_mult=1;
 	if(s->cur<s->end && *s->cur=='-'){sign_mult=-1;	s->cur++;}
@@ -1351,7 +1351,7 @@ int		MFS_int(MFScanner * s)
 
 double	MFS_double(MFScanner * s)
 {
-	while(s->cur<s->end && isspace(*s->cur))s->cur++;
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))s->cur++;
 
 	double	sign_mult	=1;
 	double	ret_val		=0;
