@@ -123,14 +123,14 @@ int			GUI_ScrollBar::MouseDown(int x, int y, int button)
 	if (track_coord < b1)
 	{
 		mClickPart = sb_PartDownButton;
-		vnow = max(vmin, vnow-1);
+		vnow = max(vmin, vnow-vpage*0.1f);
 		if (vnow != this->GetValue())
 			this->SetValue(vnow);
 	}
 	else if (track_coord > b2)
 	{
 		mClickPart = sb_PartUpButton;
-		vnow = min(vmax, vnow+1);
+		vnow = min(vmax, vnow+vpage*0.1f);
 		if (vnow != this->GetValue())
 			this->SetValue(vnow);
 	}
@@ -154,6 +154,7 @@ int			GUI_ScrollBar::MouseDown(int x, int y, int button)
 		mSlop = track_coord - t1;
 	}	
 	mInPart = 1;
+	Start(0.3);
 	return 1;
 }
 
@@ -196,30 +197,30 @@ void		GUI_ScrollBar::MouseDrag(int x, int y, int button)
 	if (track_coord < b1 && mClickPart == sb_PartDownButton)
 	{
 		mInPart = 1;
-		vnow = max(vmin, vnow-1);
-		if (vnow != this->GetValue())
-			this->SetValue(vnow);
+//		vnow = max(vmin, vnow-vpage*0.1f);
+//		if (vnow != this->GetValue())
+//			this->SetValue(vnow);
 	}
 	if (track_coord > b1 && track_coord < t1 && mClickPart == sb_PartDownPage)
 	{
 		mInPart = 1;
-		vnow = max(vmin, vnow-vpage);
-		if (vnow != this->GetValue())
-			this->SetValue(vnow);
+//		vnow = max(vmin, vnow-vpage);
+//		if (vnow != this->GetValue())
+//			this->SetValue(vnow);
 	}
 	if (track_coord > t2 && track_coord < b2 && mClickPart == sb_PartUpPage)
 	{
 		mInPart = 1;
-		vnow = min(vmax, vnow+vpage);
-		if (vnow != this->GetValue())
-			this->SetValue(vnow);
+//		vnow = min(vmax, vnow+vpage);
+//		if (vnow != this->GetValue())
+//			this->SetValue(vnow);
 	}
 	if (track_coord > b2 && mClickPart == sb_PartUpButton)
 	{
 		mInPart = 1;
-		vnow = min(vmax, vnow+1);
-		if (vnow != this->GetValue())
-			this->SetValue(vnow);
+//		vnow = min(vmax, vnow+vpage*0.1f);
+//		if (vnow != this->GetValue())
+//			this->SetValue(vnow);
 	}
 	if (mClickPart == sb_PartThumb)
 	{
@@ -239,6 +240,41 @@ void		GUI_ScrollBar::MouseUp(int x, int y, int button)
 	mInPart = 0;
 	mClickPart = sb_PartNone;
 	Refresh();
+	Stop();
+}
+
+void		GUI_ScrollBar::TimerFired(void)
+{
+	if (mInPart)
+	{
+		float vnow, vmin, vmax, vpage;
+		vnow = this->GetValue();
+		vmin = this->GetMin();
+		vmax = this->GetMax();
+		vpage = this->GetPageSize();
+		
+		switch(mClickPart) {
+		case sb_PartDownButton:
+			vnow = max(vmin, vnow-vpage*0.1f);
+			if (vnow != this->GetValue()) this->SetValue(vnow);
+			break;
+		case sb_PartDownPage:
+			vnow = max(vmin, vnow-vpage);
+			if (vnow != this->GetValue()) this->SetValue(vnow);
+			break;
+		case sb_PartUpPage:
+			vnow = min(vmax, vnow+vpage);
+			if (vnow != this->GetValue()) this->SetValue(vnow);
+			break;
+		case sb_PartUpButton:
+			vnow = min(vmax, vnow+vpage*0.1f);
+			if (vnow != this->GetValue()) this->SetValue(vnow);
+			break;
+		}	
+		
+		if (mClickPart == sb_PartDownButton || mClickPart == sb_PartUpButton)		Start(0.05);
+		else																		Start(0.1 );
+	}
 }
 
 void		GUI_ScrollBar::Draw(GUI_GraphState * state)

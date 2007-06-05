@@ -2,8 +2,9 @@
 #define GUI_SCROLLBAR_H
 
 #include "GUI_Control.h"
+#include "GUI_Timer.h"
 
-class GUI_ScrollBar : public GUI_Control {
+class GUI_ScrollBar : public GUI_Control, public GUI_Timer {
 public:
 						 GUI_ScrollBar();
 						~GUI_ScrollBar();
@@ -14,13 +15,15 @@ public:
 	virtual	void		MouseUp(int x, int y, int button);
 	virtual	void		Draw(GUI_GraphState * state);
 
-	// From GUI_Control
-	virtual	void	SetValue(float inValue);
-	virtual	void	SetMin(float inMin);
-	virtual	void	SetMax(float inMax);
-	virtual	void	SetPageSize(float inPageSize);
+	virtual	void		TimerFired(void);	
 
-			int		GetMinorAxis(int vertical);
+	// From GUI_Control
+	virtual	void		SetValue(float inValue);
+	virtual	void		SetMin(float inMin);
+	virtual	void		SetMax(float inMax);
+	virtual	void		SetPageSize(float inPageSize);
+
+			int			GetMinorAxis(int vertical);
 
 private:
 
