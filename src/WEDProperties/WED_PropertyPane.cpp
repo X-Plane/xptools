@@ -19,6 +19,7 @@ WED_PropertyPane::WED_PropertyPane(
 			filter)
 {
 	int vertical = pane_style == propPane_Selection || pane_style == propPane_FilteredVertical;
+	int horizontal = pane_style == propPane_Filtered;
 	int bounds[4] = { 0, 0, 100, 100 };
 //	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
@@ -30,6 +31,7 @@ WED_PropertyPane::WED_PropertyPane(
 	mScroller->SetSticky(1,1,1,1);
 	
 	mTextTable.SetProvider(&mPropertyTable);
+	mTextTable.SetGeometry(&mPropertyTable);
 	
 	mTextTable.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
@@ -48,7 +50,7 @@ WED_PropertyPane::WED_PropertyPane(
 	mScroller->SetContent(mTable);	
 	mTextTable.SetParentTable(mTable);
 	
-	if (!vertical)
+	if (horizontal)
 	{
 		mTextTableHeader.SetProvider(&mPropertyTable);
 		mTextTableHeader.SetGeometry(&mPropertyTable);	
@@ -95,20 +97,20 @@ WED_PropertyPane::WED_PropertyPane(
 		this is real arbitrary - would be nice if we did not have to just KNOW all the braodcaster reelatoinships outside the impls
 	#endif
 	
-	if (!vertical)	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-	if (!vertical)	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
+	if (horizontal)	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
+	if (horizontal)	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
 	if (vertical)	mTextTableSide.AddListener(mSide);		// Header listens to text table to know when to refresh on col resize
 	if (vertical)	mTextTableSide.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mPropertyTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 //	main_splitter->AlignContents();
 	
-	if (!vertical)	this->PackPane(mHeader, gui_Pack_Top);
+	if (horizontal)	this->PackPane(mHeader, gui_Pack_Top);
 	if (vertical)	this->PackPane(mSide, gui_Pack_Left);
 					this->PackPane(mScroller, gui_Pack_Center);
 					
 	if ( vertical)  mScroller->PositionSidePane(mSide);
-	if (!vertical)	mScroller->PositionHeaderPane(mHeader);
+	if (horizontal)	mScroller->PositionHeaderPane(mHeader);
 	
 	archive_broadcaster->AddListener(&mPropertyTable);
 	
