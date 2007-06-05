@@ -342,7 +342,16 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_KEYDOWN:		
 		if (obj)
 		{
-			char	c = MapVirtualKeyEx(wParam, 2, NULL);
+			unsigned int vKey, RetCode, ScanCode;
+			unsigned short Char = 0;
+			BYTE KeyState[256];
+			HKL hKL = GetKeyboardLayout(NULL); 
+			ScanCode = ((lParam>> 16) & 0xff);
+			vKey = MapVirtualKeyEx(ScanCode, 1, hKL); 
+			GetKeyboardState((unsigned char*)&KeyState);
+			ToAsciiEx(vKey, ScanCode, (unsigned char*)&KeyState, &Char, 0, hKL); 
+			char c = Char;
+
 			if (c == 0)
 			{
 				switch(wParam & 0xFF) {
@@ -368,7 +377,14 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 			else
-			obj->KeyPressed(c, message, wParam, lParam);
+			if (!obj->KeyPressed(c, message, wParam, lParam))
+			{
+				if (c == '=')
+					obj->MouseWheel(obj->mMouse.x,obj->mMouse.y, 1, 0);
+				else if (c == '-')
+					obj->MouseWheel(obj->mMouse.x,obj->mMouse.y, -1, 0);
+			}
+
 		}
       break;
 
