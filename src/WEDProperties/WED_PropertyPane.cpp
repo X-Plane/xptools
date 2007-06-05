@@ -1,4 +1,6 @@
 #include "WED_PropertyPane.h"
+#include "WED_UIMeasurements.h"
+#include "WED_Colors.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -9,7 +11,7 @@ WED_PropertyPane::WED_PropertyPane(
 						int						pane_style,
 						const char **			filter) :
 	GUI_Commander(inCommander),
-	mTextTable(this),
+	mTextTable(this,WED_UIMeasurement("table_indent_width")),
 	mPropertyTable(resolver, col_names, def_col_widths, 
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
@@ -20,6 +22,8 @@ WED_PropertyPane::WED_PropertyPane(
 	int bounds[4] = { 0, 0, 100, 100 };
 //	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
+	
+//	mScroller->SetImage("gradient.png");
 	mScroller->SetParent(this);
 	mScroller->Show();
 //	mScroller->SetBounds(bounds);
@@ -27,6 +31,14 @@ WED_PropertyPane::WED_PropertyPane(
 	
 	mTextTable.SetProvider(&mPropertyTable);
 	
+	mTextTable.SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Table_Select),
+				WED_Color_RGBA(wed_Table_Text),
+				WED_Color_RGBA(wed_Table_SelectText),
+				WED_Color_RGBA(wed_Table_Drag_Insert),
+				WED_Color_RGBA(wed_Table_Drag_Into));
+
 	mTable = new GUI_Table;
 	mTable->SetGeometry(&mPropertyTable);
 	mTable->SetContent(&mTextTable);
@@ -40,6 +52,12 @@ WED_PropertyPane::WED_PropertyPane(
 	{
 		mTextTableHeader.SetProvider(&mPropertyTable);
 		mTextTableHeader.SetGeometry(&mPropertyTable);	
+		
+		mTextTableHeader.SetImage("header.png");
+		mTextTableHeader.SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Header_Text));
+		
 		mHeader = new GUI_Header;
 		bounds[1] = 0;
 		bounds[3] = 20;
@@ -56,6 +74,11 @@ WED_PropertyPane::WED_PropertyPane(
 	{
 		mTextTableSide.SetProvider(&mPropertyTable);
 		mTextTableSide.SetGeometry(&mPropertyTable);	
+		
+		mTextTableSide.SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Table_Text));
+		
 		mSide = new GUI_Side;
 		bounds[0] = 0;
 		bounds[2] = 100;

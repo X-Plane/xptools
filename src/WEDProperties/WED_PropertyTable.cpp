@@ -4,12 +4,32 @@
 #include "ISelection.h"
 #include "IOperation.h"
 #include "IGIS.h"
+#include "WED_Entity.h"
 #include "WED_Messages.h"
 #include "GUI_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
+#include "WED_UIMeasurements.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
+
+inline bool AnyLocked(WED_Thing * t)
+{
+	if (t == NULL) return false;
+	WED_Entity * e = dynamic_cast<WED_Entity *>(t);
+	if (e == NULL) return false;
+	if (e->GetLocked()) return true;
+	return AnyLocked(t->GetParent());
+}
+
+inline bool AnyHidden(WED_Thing * t)
+{
+	if (t == NULL) return false;
+	WED_Entity * e = dynamic_cast<WED_Entity *>(t);
+	if (e == NULL) return false;
+	if (e->GetHidden()) return true;
+	return AnyHidden(t->GetParent());
+}
 
 WED_PropertyTable::WED_PropertyTable(
 									IResolver *				resolver,
@@ -19,7 +39,10 @@ WED_PropertyTable::WED_PropertyTable(
 									int						dynamic_cols,
 									int						sel_only,
 									const char **			filter)
-	:	GUI_SimpleTableGeometry(count_strs(col_names),def_col_widths,20),
+	:	GUI_SimpleTableGeometry(
+				count_strs(col_names),
+				def_col_widths,
+				WED_UIMeasurement("table_row_height")),
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
@@ -85,6 +108,10 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Bool:
 		the_content.content_type = gui_Cell_CheckBox;
 		the_content.int_val = val.int_val;
+		the_content.bool_val = gui_Bool_Check;
+		the_content.bool_partial = 0;
+		if (mColNames[mVertical ? cell_y : cell_x] == "Locked")	{ the_content.bool_val = gui_Bool_Lock;		if (!the_content.int_val)	the_content.bool_partial = AnyLocked(t); }
+		if (mColNames[mVertical ? cell_y : cell_x] == "Hidden")	{ the_content.bool_val = gui_Bool_Visible;	if (!the_content.int_val)	the_content.bool_partial = AnyHidden(t); }
 		break;
 	case prop_Enum:
 		the_content.content_type = gui_Cell_Enum;
@@ -106,14 +133,18 @@ void	WED_PropertyTable::GetCellContent(
 		break;		
 	}
 	int unused_vis, unused_kids;
-	if (cell_x == 0)
-	GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
+//	if (cell_x == 0)
+	if (!mVertical && !mSelOnly)
+	if (mColNames[mVertical ? cell_y : cell_x] == "Name")
+	{
+		GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
+		the_content.indent_level = GetThingDepth(t);	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
+	}
 
 	the_content.can_edit = inf.can_edit;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
-	the_content.indent_level = (!mVertical && cell_x == 0) ? GetThingDepth(t) : 0;	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 }
 
 void	WED_PropertyTable::GetEnumDictionary(
