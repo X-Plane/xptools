@@ -504,6 +504,45 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 	return NULL;
 }
 
+int			GUI_Pane::InternalGetCursor(int x, int y)
+{
+	int ret = gui_Cursor_None;
+	if (mVisible)
+	{
+		if (x >= mBounds[0] && x <= mBounds[2] &&
+			y >= mBounds[1] && y <= mBounds[3])
+		{
+			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			{
+				ret = (*c)->InternalGetCursor(x, y);
+				if (ret != gui_Cursor_None) return ret;
+			}
+			
+			ret = this->GetCursor(x,y);
+		}
+	}
+	return ret;
+}
+
+int		GUI_Pane::InternalGetHelpTip(int x, int y, int tip_bounds[4], string& tip)
+{
+	if (mVisible)
+	{
+		if (x >= mBounds[0] && x <= mBounds[2] &&
+			y >= mBounds[1] && y <= mBounds[3])
+		{
+			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			{
+				if ((*c)->InternalGetHelpTip(x, y, tip_bounds, tip)) return 1;
+			}
+			
+			if (GetHelpTip(x,y,tip_bounds,tip)) return 1;
+		}
+	}
+	return 0;
+}
+
+
 GUI_DragOperation		GUI_Pane::InternalDragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
 	mDragTarget = FindByPoint(x,y);

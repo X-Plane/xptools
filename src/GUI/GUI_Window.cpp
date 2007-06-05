@@ -391,6 +391,33 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 			CopyMenusRecursive(::GetMenu((*sWindows.begin())->mWindow),new_mbar);
 			::DrawMenuBar(mWindow);
 		}
+
+		mToolTip = CreateWindowEx(
+					WS_EX_TOPMOST,
+					TOOLTIPS_CLASS,
+					NULL,
+					WS_POPUP | TTS_NOPREFIX,
+					CW_USEDEFAULT, CW_USEDEFAULT,
+					CW_USEDEFAULT, CW_USEDEFAULT,
+					mWindow,
+					NULL,
+					NULL,
+					NULL);
+		SetWindowPos(mToolTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		RECT	cl;
+		GetClientRect(mWindow,&cl);
+		TOOLINFO ti;
+		ti.cbSize = sizeof(ti);
+		ti.uFlags = 0;	//TTF_SUBCLASS;
+		ti.hwnd = mWindow;
+		ti.uId = 1;
+		ti.lpszText = LPSTR_TEXTCALLBACK;
+		ti.rect.bottom = cl.bottom;
+		ti.rect.top = cl.top;
+		ti.rect.left = cl.left;
+		ti.rect.right = cl.right;
+
+		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if APL
 
@@ -488,6 +515,21 @@ void			GUI_Window::MouseWheel(int inX, int inY, int inDelta, int inAxis)
 	
 void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 {
+#if IBM
+		RECT cl;
+		TOOLINFO ti;
+					GetClientRect(mWindow, &cl);
+					ti.cbSize = sizeof(ti);
+					ti.hwnd = mWindow;
+					ti.uId = 1;
+					ti.rect.bottom = cl.bottom;
+					ti.rect.top= cl.top;
+					ti.rect.left = cl.left;
+					ti.rect.right= cl.right;
+					SendMessage(mToolTip, TTM_NEWTOOLRECT, 0, (LPARAM) &ti);
+
+#endif
+
 	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] }; 
 
 	mBounds[0] = 0;
@@ -983,7 +1025,44 @@ HWND GUI_Window::AnyHWND(void)
 LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	GUI_Window * me = (GUI_Window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if ((message >= WM_MOUSEFIRST && message <= WM_MOUSELAST) ||
+		 message == WM_NCMOUSEMOVE)
+	{
+		int x = Client2OGL_X(LOWORD(lParam),hWnd);
+		int y = Client2OGL_Y(HIWORD(lParam),hWnd);
+		if (x < me->mTipBounds[0] || y < me->mTipBounds[1] || x > me->mTipBounds[2] || y > me->mTipBounds[3])
+			SendMessage(me->mToolTip,TTM_POP,0,0);
+
+		MSG msg;
+		msg.hwnd = hWnd;
+		msg.message = message;
+		msg.lParam = lParam;
+		msg.wParam = wParam;
+		SendMessage(me->mToolTip, TTM_RELAYEVENT, 0, (LPARAM) &msg);
+	}
 	switch(message) {
+		case WM_NOTIFY:
+			{
+				NMHDR * hdr = (NMHDR *) lParam;
+				NMTTDISPINFO * di = (NMTTDISPINFO *) lParam;
+				TOOLINFO ti;
+				string tip;
+				int has_tip;
+				RECT cl;
+				switch(hdr->code) {
+				case TTN_GETDISPINFO:
+					has_tip = me->InternalGetHelpTip(
+						Client2OGL_X(me->mMouse.x,hWnd),
+						Client2OGL_Y(me->mMouse.y,hWnd),
+						me->mTipBounds, tip);
+					if (tip.empty()) di->szText[0] = 0;
+					else			 strcpy(di->szText,tip.c_str());
+					return 0;
+				default: 
+					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
+				}
+			}
+			return 0;			
 		case WM_INITMENU:
 			EnableMenusWin();
 			return 0;
@@ -992,6 +1071,19 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			return 0;
 		case WM_COMMAND:
 			me->DispatchHandleCommand(LOWORD(wParam));
+			return 0;
+		case WM_SETCURSOR:
+			{
+				int x, y;
+				me->GetMouseLoc(&x,&y);
+				int curs = me->InternalGetCursor(Client2OGL_X(x,me->mWindow),Client2OGL_Y(y,me->mWindow));
+				switch(curs) {
+				case gui_Cursor_None:		
+				case gui_Cursor_Arrow:		SetCursor(LoadCursor(NULL,IDC_ARROW));	break;
+				case gui_Cursor_Resize_H:	SetCursor(LoadCursor(NULL,IDC_SIZEWE));	break;
+				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	break;
+				}
+			}
 			return 0;
 		default:
 			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);

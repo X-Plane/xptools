@@ -82,6 +82,9 @@ private:
 
 		static LRESULT CALLBACK SubclassFunc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+		HWND				mToolTip;
+		int					mTipBounds[4];
+
 	#endif
 	
 	#if APL

@@ -161,6 +161,7 @@ public:
 			float			GetTimeNow(void);
 
 	/* TEMPLATE METHODS - Override these to customize a pane. */
+
 	virtual	void		Draw(GUI_GraphState * state) { }
 	
 	virtual	int			MouseMove(int x, int y			  ) { return 0; }
@@ -168,6 +169,9 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button) { 			}
 	virtual	void		MouseUp  (int x, int y, int button) { 			}
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis) { return 0; }
+
+	virtual	int			GetCursor(int x, int y) { return gui_Cursor_None; }
+	virtual	int			GetHelpTip(int x, int y, int tip_bounds[4], string& tip) { return 0; }
 
 	virtual	GUI_DragOperation			DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) { return gui_Drag_None;	}
 	virtual	GUI_DragOperation			DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended) { return gui_Drag_None;	}
@@ -186,6 +190,9 @@ private:
 			GUI_Pane *	InternalMouseDown(int x, int y, int button);
 			GUI_Pane *	InternalMouseMove(int x, int y);
 			int			InternalMouseWheel(int x, int y, int dist, int axis);
+			int			InternalGetCursor(int x, int y);
+			int			InternalGetHelpTip(int x, int y, int tip_bounds[4], string& tip);
+
 			void		ParentResized(int inOldBounds[4], int inNewBounds[4]);
 
 			GUI_DragOperation			InternalDragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);

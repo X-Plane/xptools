@@ -157,6 +157,15 @@ typedef int GUI_KeyFlags;
 #define GUI_VK_NUMPAD_ENT   0xBC
 #define GUI_VK_NUMPAD_EQ    0xBD
 
+/***************************************************************************
+ * CURSORS
+ ***************************************************************************/
+enum {
+	gui_Cursor_None = 0,
+	gui_Cursor_Arrow,
+	gui_Cursor_Resize_H,
+	gui_Cursor_Resize_V
+};
 
 /***************************************************************************
  * MENU DEFINES

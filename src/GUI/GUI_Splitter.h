@@ -22,6 +22,7 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp(int x, int y, int button);
+	virtual	int			GetCursor(int x, int y);
 
 private:
 

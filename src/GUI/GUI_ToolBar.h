@@ -20,6 +20,8 @@ public:
 	virtual	void	MouseDrag(int x, int y, int button);
 	virtual	void	MouseUp  (int x, int y, int button);
 
+	virtual	int		GetHelpTip(int x, int y, int tip_bounds[4], string& tip);
+
 private:
 
 	string		mResource;

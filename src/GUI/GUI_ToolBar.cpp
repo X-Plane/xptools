@@ -86,6 +86,29 @@ int			GUI_ToolBar::MouseDown(int x, int y, int button)
 void		GUI_ToolBar::MouseDrag(int x, int y, int button) { 			}
 void		GUI_ToolBar::MouseUp  (int x, int y, int button) { 			}
 
+int		GUI_ToolBar::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
+{
+	int bounds[6];
+	GetBounds(bounds);
+	bounds[4] = bounds[2] - bounds[0];
+	bounds[5] = bounds[3] - bounds[1];
+	bounds[4] /= mH;
+	bounds[5] /= mV;
+		
+	int xt = (x - bounds[0]) / bounds[4];
+	int yt = (y - bounds[1]) / bounds[5];
+	
+	tip_bounds[0] = bounds[0] + (xt  ) * bounds[4];
+	tip_bounds[1] = bounds[1] + (yt  ) * bounds[5];
+	tip_bounds[2] = bounds[0] + (xt+1) * bounds[4];
+	tip_bounds[3] = bounds[1] + (yt+1) * bounds[5];
+	char buf[20];
+	sprintf(buf,"%d",xt+yt*mH);
+	tip = buf;
+	return 1;
+}
+
+
 void	GUI_ToolBar::SizeToBitmap(void)
 {
 	GUI_TexPosition_t	metrics;

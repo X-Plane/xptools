@@ -115,6 +115,26 @@ void		GUI_Splitter::MouseUp(int x, int y, int button)
 	Refresh();
 }
 
+int			GUI_Splitter::GetCursor(int x, int y)
+{
+	if (CountChildren() < 2) return gui_Cursor_None;
+		int		b1[4], b2[4];
+
+	GetNthChild(0)->GetBounds(b1);
+	GetNthChild(1)->GetBounds(b2);
+
+	if (mDirection == gui_Split_Vertical)
+	{
+		if (y >= b1[3] && y <= b2[1])
+			return gui_Cursor_Resize_V;
+	} else {
+		if (x >= b1[2] && x <= b2[0])
+			return gui_Cursor_Resize_H;
+	}
+	return gui_Cursor_None;
+}
+
+
 void		GUI_Splitter::AlignContents()
 {
 	if (CountChildren() > 1)
