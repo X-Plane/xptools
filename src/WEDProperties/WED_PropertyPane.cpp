@@ -1,6 +1,7 @@
 #include "WED_PropertyPane.h"
 #include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
+#include "GUI_Resources.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -61,8 +62,11 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Header_Text));
 		
 		mHeader = new GUI_Header;
+
+		GUI_TexPosition_t	metrics;
+		GUI_GetTextureResource("header.png", 0, &metrics);
 		bounds[1] = 0;
-		bounds[3] = 20;
+		bounds[3] = metrics.real_height;
 		mHeader->SetBounds(bounds);	
 		mHeader->SetGeometry(&mPropertyTable);
 		mHeader->SetHeader(&mTextTableHeader);
