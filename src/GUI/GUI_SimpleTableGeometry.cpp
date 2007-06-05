@@ -62,10 +62,10 @@ int			GUI_SimpleTableGeometry::GetCellHeight(int n)
 int			GUI_SimpleTableGeometry::ColForX(int n)
 {
 	vector<int>::iterator i = lower_bound(mCols.begin(),mCols.end(),n);
-	if (i == mCols.end()) return mCols.size();
+	if (i == mCols.end()) return (int) mCols.size()-1;
 	int p = distance(mCols.begin(),i);
 	if (n == *i) ++p;
-	if (p == mCols.size()) return -1;
+	if (p == mCols.size()) return (int)mCols.size()-1;
 	return p;
 }
 
