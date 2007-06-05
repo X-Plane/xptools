@@ -122,8 +122,11 @@ void	GUI_ScrollerPane::PositionHeaderPane(GUI_Pane * pane)
 	this->GetBounds(bounds_me);
 	if (mScrollH)
 		bounds_me[1] += mScrollH->GetMinorAxis(0);
-	if (mScrollV)
-		bounds_me[2] -= mScrollV->GetMinorAxis(1);
+
+// Bens: let header overhang scrollbar.  Sider does not!		
+
+//	if (mScrollV)				
+//		bounds_me[2] -= mScrollV->GetMinorAxis(1);
 	int bounds_child[4];
 	pane->GetBounds(bounds_child);
 	bounds_child[0] = bounds_me[0];
