@@ -14,6 +14,7 @@
 #include "WED_Thing.h"
 #include "WED_Menus.h"
 #include "WED_Select.h"
+#include "WED_Colors.h"
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
 
@@ -41,6 +42,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	int		splitter_b[4];	
 	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
+	main_splitter->SetImage("gradient.png");
 	main_splitter->SetParent(this);
 	main_splitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
@@ -61,6 +63,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Splitter and tabs ---------------
 	
 	GUI_Splitter * prop_splitter = new GUI_Splitter(gui_Split_Vertical);
+	prop_splitter->SetImage("gradient.png");
 	prop_splitter->SetParent(main_splitter);
 	prop_splitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
@@ -71,6 +74,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	prop_tabs->SetParent(prop_splitter);
 	prop_tabs->Show();
 	prop_tabs->SetSticky(1,1,1,0);
+	prop_tabs->SetTextColor(WED_Color_RGBA(wed_Tabs_Text));
 
 	// --------------- Selection ---------------
 
@@ -132,8 +136,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- Hierarchy  View ---------------
 
-	static const char * titles[] =  { "Name", "Locked", "Hidden", 0 };
-	static int widths[] =			{ 100,		50,		50		};
+	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
+	static int widths[] =			{ 50,		50,		100		};
 
 	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
 	prop_pane->SetParent(prop_splitter);

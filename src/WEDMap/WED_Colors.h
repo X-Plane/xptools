@@ -50,6 +50,15 @@ enum WED_Color {
 	wed_Surface_Snow,
 	wed_Surface_Transparent,
 	
+	wed_Table_Gridlines,
+	wed_Table_Text,
+	wed_Table_Select,
+	wed_Table_SelectText,
+	wed_Table_Drag_Insert,
+	wed_Table_Drag_Into,
+	wed_Header_Text,
+	wed_Tabs_Text,
+	
 	wed_Last
 };
 
