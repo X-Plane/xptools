@@ -214,6 +214,8 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 		uh oh
 #endif
 	}
+	InitCommonControls(); 
+	
 
 #endif
 }
