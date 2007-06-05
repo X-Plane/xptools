@@ -16,7 +16,7 @@
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
 #include "WED_ToolInfoAdapter.h"
-
+#include "WED_UIMeasurements.h"
 
 
 WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive)
@@ -47,7 +47,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
 	mInfoAdapter = new WED_ToolInfoAdapter;
-	mTextTable = new GUI_TextTable(cmdr);
+	mTextTable = new GUI_TextTable(cmdr,WED_UIMeasurement("table_indent_width"));
 	mTable = new GUI_Table;
 
 	mTable->SetGeometry(mInfoAdapter);
