@@ -30,13 +30,12 @@ static int SB_BuildMetrix(
 				float& thumb2,					// top of th umb
 				float& maxbut)					// cut from sb to max button's start
 {
-	GUI_TexPosition_t	metrics;
-	metrics.real_width  = metrics.real_height = 11;
+	int	metrics[2];
 	
-	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
-	float	button_len = (vertical ? metrics.real_height : metrics.real_width) / 2;
-	GUI_GetTextureResource(vertical ? "scrollbar_v.png" : "scrollbar_h.png", 0, &metrics);
-	float	thumb_len =  (vertical ? metrics.real_height : metrics.real_width);
+	GUI_GetImageResourceSize(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", metrics);
+	float	button_len = (vertical ? metrics[1] : metrics[0]) / 2;
+	GUI_GetImageResourceSize(vertical ? "scrollbar_v.png" : "scrollbar_h.png", metrics);
+	float	thumb_len =  (vertical ? metrics[1] : metrics[0]);
 
 	float sbl = MD - 2.0 * button_len;		// real scroll bar len - buttons
 	minbut = M1 + button_len;				// subtract square buttons from ends
@@ -79,12 +78,12 @@ GUI_ScrollBar::~GUI_ScrollBar()
 
 int		GUI_ScrollBar::GetMinorAxis(int vertical)
 {
-	GUI_TexPosition_t	metrics;
+	int metrics[2];
 
-	GUI_GetTextureResource(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", 0, &metrics);
+	GUI_GetImageResourceSize(vertical ? "scroll_btn_v.png" : "scroll_btn_h.png", metrics);
 
 
-	float	button_len = (vertical ? metrics.real_width : metrics.real_height) / 2;
+	float	button_len = (vertical ? metrics[0] : metrics[1]) / 2;
 
 	return button_len;
 

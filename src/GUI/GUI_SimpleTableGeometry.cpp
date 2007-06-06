@@ -73,15 +73,20 @@ int			GUI_SimpleTableGeometry::RowForY(int n)
 {
 	return n / mRowHeight;
 }
+
+bool		GUI_SimpleTableGeometry::CanSetCellWidth (void) const { return true; }
 	
 void		GUI_SimpleTableGeometry::SetCellWidth (int n, int w)
 {
+	if (w < 5) w = 5;
 	ExtendTo(n);
 	int delta = w - GetCellWidth(n);
 	for (int i = n; i < mCols.size(); ++i)	
 		mCols[i] += delta;
 //	BroadcastMessage(GUI_TABLE_SHAPE_RESIZED, 0);
 }
+
+bool		GUI_SimpleTableGeometry::CanSetCellHeight(void) const { return false; }
 
 void		GUI_SimpleTableGeometry::SetCellHeight(int n, int h)
 {

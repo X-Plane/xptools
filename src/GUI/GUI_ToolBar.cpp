@@ -119,12 +119,12 @@ int		GUI_ToolBar::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 
 void	GUI_ToolBar::SizeToBitmap(void)
 {
-	GUI_TexPosition_t	metrics;
+	int	metrics[2];
 	
-	GUI_GetTextureResource(mResource.c_str(),0,&metrics);
+	GUI_GetImageResourceSize(mResource.c_str(),metrics);
 	int bounds[4];
 	GetBounds(bounds);
-	bounds[2] = bounds[0] + metrics.real_width / 2;
-	bounds[1] = bounds[3] - metrics.real_height;
+	bounds[2] = bounds[0] + metrics[0] / 2;
+	bounds[1] = bounds[3] - metrics[1];
 	SetBounds(bounds);
 }

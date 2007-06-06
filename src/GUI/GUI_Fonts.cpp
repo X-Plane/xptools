@@ -136,3 +136,20 @@ float	GUI_GetLineAscent(int inFontID)
 	return sFontMgr->GetLineAscent(sFonts[inFontID], kFontSizes[inFontID]);
 }
 
+void	GUI_TruncateText(
+				string&							ioText,
+				int								inFontID,
+				float							inSpace)
+{
+	if (ioText.empty()) return;
+
+	int chars = GUI_FitForward(inFontID, &*ioText.begin(), &*ioText.end(), inSpace);
+	if (chars == ioText.length()) return;
+	if (chars < 0) { ioText.clear(); return; }
+	ioText.erase(chars);
+	if (ioText.length() > 0)	ioText[ioText.length()-1] = '.';
+	if (ioText.length() > 1)	ioText[ioText.length()-2] = '.';
+	if (ioText.length() > 2)	ioText[ioText.length()-3] = '.';
+
+}
+

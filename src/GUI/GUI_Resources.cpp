@@ -180,7 +180,71 @@ int	GUI_GetTextureResource(
 	
 	return info.tex_id;
 
-}	
+}
+
+int	GUI_GetImageResourceWidth(const char * in_resource)
+{
+	string r(in_resource);	
+	TexResourceTable::iterator i = sTexes.find(r);
+	if (i != sTexes.end())
+		return i->second.metrics.real_width;
+	
+	ImageInfo	im;
+	int			ret;
+	
+	if (GUI_GetImageResource(in_resource, &im) == 0)
+	{
+		ret = im.width;
+		DestroyBitmap(&im);
+		return ret;
+	}
+	return 0;	
+}
+
+int	GUI_GetImageResourceHeight(const char * in_resource)
+{	
+	string r(in_resource);	
+	TexResourceTable::iterator i = sTexes.find(r);
+	if (i != sTexes.end())
+		return i->second.metrics.real_height;
+	
+	ImageInfo	im;
+	int			ret;
+	
+	if (GUI_GetImageResource(in_resource, &im) == 0)
+	{
+		ret = im.height;
+		DestroyBitmap(&im);
+		return ret;
+	}
+	return 0;	
+
+}
+	
+int	GUI_GetImageResourceSize(const char * in_resource, int bounds[2])
+{	
+	bounds[0] = bounds[1] = 0;
+	string r(in_resource);	
+	TexResourceTable::iterator i = sTexes.find(r);
+	if (i != sTexes.end())
+	{
+		bounds[0] = i->second.metrics.real_width;
+		bounds[1] = i->second.metrics.real_height;
+		return 1;
+	}
+	
+	ImageInfo	im;
+	
+	if (GUI_GetImageResource(in_resource, &im) == 0)
+	{
+		bounds[0] = im.width;
+		bounds[1] = im.height;
+		DestroyBitmap(&im);
+		return 1;
+	}
+	return 0;	
+
+}
 
 
 float	GUI_Rescale_S(float s, GUI_TexPosition_t * metrics);

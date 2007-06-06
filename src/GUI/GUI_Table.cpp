@@ -207,6 +207,26 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 		mContent->CellMouseUp(cellbounds, mClickCellX, mClickCellY, x, y, button);	
 }
 
+int		GUI_Table::GetCursor(int x, int y)
+{
+	if (mGeometry == NULL) return gui_Cursor_None;
+	if (mContent == NULL) return gui_Cursor_None;
+	int cx = MouseToCellX(x);
+	int cy = MouseToCellY(y);
+	if (cx >= 0 &&
+		cx < mGeometry->GetColCount() &&
+		cy >= 0 &&
+		cy < mGeometry->GetRowCount())
+	{
+		int cellbounds[4];
+		if (CalcCellBounds(cx, cy, cellbounds))
+		return mContent->CellGetCursor(cellbounds, cx, cy, x, y);
+	}
+	return gui_Cursor_None;
+}
+
+
+
 GUI_DragOperation			GUI_Table::DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
 	if (mGeometry == NULL) return gui_Drag_None;
@@ -613,6 +633,23 @@ void		GUI_Header::MouseUp  (int x, int y, int button)
 		mHeader->HeadMouseUp(cellbounds, mClickCellX, x, y, button);	
 }
 
+int		GUI_Header::GetCursor(int x, int y)
+{
+	if (mGeometry == NULL) return gui_Cursor_None;
+	if (mHeader == NULL) return gui_Cursor_None;
+	int cx = MouseToCellX(x);
+	if (cx >= 0 &&
+		cx < mGeometry->GetColCount())
+	{
+		int cellbounds[4];
+		if (CalcCellBounds(cx, cellbounds))
+			return mHeader->HeadGetCursor(cellbounds, cx, x, y);
+	}
+	return gui_Cursor_None;
+}
+
+
+
 void		GUI_Header::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
 				int						inMsg,
@@ -770,6 +807,22 @@ void		GUI_Side::MouseUp  (int x, int y, int button)
 		mClickCellY = MouseToCellY(y);	
 	if (CalcCellBounds(mClickCellY, cellbounds))
 		mSide->SideMouseUp(cellbounds, mClickCellY, x, y, button);	
+}
+
+
+int		GUI_Side::GetCursor(int x, int y)
+{
+	if (mGeometry == NULL) return gui_Cursor_None;
+	if (mSide == NULL) return gui_Cursor_None;
+	int cy = MouseToCellY(x);
+	if (cy >= 0 &&
+		cy < mGeometry->GetRowCount())
+	{
+		int cellbounds[4];
+		if (CalcCellBounds(cy, cellbounds))
+			return mSide->SideGetCursor(cellbounds, cy, x, y);
+	}
+	return gui_Cursor_None;
 }
 
 void		GUI_Side::ReceiveMessage(

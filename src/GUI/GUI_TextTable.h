@@ -115,6 +115,9 @@ public:
 						int							end_y,
 						int							is_toggle)=0;
 	virtual	void	SelectionEnd(void)=0;
+	virtual	int		SelectDisclose(
+						int							open_it,
+						int							all)=0;		// return true if you support this op.
 
 	virtual	int		TabAdvance(
 						int&						io_x,
@@ -189,6 +192,7 @@ public:
 			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);
 
+			void		SetImage(const char * image, int alternations);
 			void		SetColors(
 							float		grid_lines[4],
 							float		select[4],
@@ -201,6 +205,7 @@ public:
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
+	virtual	int			CellGetCursor(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y												  );
 	virtual	GUI_DragOperation	CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y);
@@ -269,6 +274,9 @@ private:
 	float					mColorTextSelect[4];
 	float					mColorInsertInto[4];
 	float					mColorInsertBetween[4];
+	string					mImage;
+	int						mAlternate;
+	
 };	
 
 
@@ -290,6 +298,7 @@ public:
 	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
 	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
+	virtual	int			HeadGetCursor(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y												  );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;
@@ -312,6 +321,7 @@ public:
 			void		SetProvider(GUI_TextTableHeaderProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 
+			void		SetImage(const char * image);
 			void		SetColors(
 							float		grid_lines[4],
 							float		text[4]);
@@ -320,12 +330,15 @@ public:
 	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
 	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
+	virtual	int			SideGetCursor(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y												   );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;
 	GUI_TableGeometry *				mGeometry;
 	int								mCellResize;
 	int								mLastY;
+
+	string							mImage;
 	
 	float					mColorGridlines[4];
 	float					mColorText[4];	

@@ -27,6 +27,8 @@ public:
 	virtual	int			ColForX(int n);
 	virtual	int			RowForY(int n);
 	
+	virtual	bool		CanSetCellWidth (void) const;
+	virtual	bool		CanSetCellHeight(void) const;
 	virtual	void		SetCellWidth (int n, int w);
 	virtual	void		SetCellHeight(int n, int h);
 

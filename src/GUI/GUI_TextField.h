@@ -25,9 +25,15 @@ public:
 						 GUI_TextField(int h_scroll, GUI_Commander * parent);
 	virtual				~GUI_TextField();
 
+			void		SetColors(float text_color[4],
+								  float hilite_color[4],
+								  float bkgnd_color[4],
+								  float box_color[4]);
+
 			void		SetWidth(float width);
 			void		SetKeyAllowed(char key, bool allowed);
 			void		SetVKAllowed(int vk, bool allowed);
+			void		SetMargins(float l, float b, float r, float t);
 
 	// GUI_Pane
 	virtual	void		Draw(GUI_GraphState * state);
@@ -107,6 +113,13 @@ private:
 		string				mText;		
 		bool				mAllowed[256];
 		bool				mAllowedVK[256];
+		float				mMargins[4];
+
+		float				mColorText[4];
+		float				mColorHilite[4];
+		float				mColorBkgnd[4];
+		float				mColorBox[4];
+
 };
 
 #endif /* GUI_TEXTFIELD_H */

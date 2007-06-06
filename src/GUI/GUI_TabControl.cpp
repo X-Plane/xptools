@@ -33,10 +33,7 @@ void		GUI_TabControl::SetTextColor(float color[4])
 
 int		GUI_TabControl::GetNaturalHeight(void)
 {
-		GUI_TexPosition_t	metrics;
-
-	GUI_GetTextureResource("tabs.png", 0, &metrics);
-	return metrics.real_height / 3;
+	return GUI_GetImageResourceHeight("tabs.png") / 3;
 }
 
 void		GUI_TabControl::SetDescriptor(const string& inDesc)
@@ -75,6 +72,8 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 	glColor3f(1,1,1);
 	GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_line);
 	
+	int rs = bounds[2];
+	
 	int n;
 	for (n = 0; n < mItems.size(); ++n)
 	{
@@ -82,6 +81,13 @@ void		GUI_TabControl::Draw(GUI_GraphState * state)
 		bounds[2] = bounds[0] + mWidths[n];
 		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);
 		bounds[0] = bounds[2];				
+	}
+	
+	if (bounds[0] < rs)
+	{
+		bounds[2] = max(rs,bounds[0]+40);
+		int tile_tab[4] = { 0, 1, 1, 3 };
+		GUI_DrawHorizontalStretch(state,"tabs.png",bounds,tile_tab);		
 	}
 	
 	GetBounds(bounds);

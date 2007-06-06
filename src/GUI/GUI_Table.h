@@ -61,6 +61,8 @@ public:
 	virtual	int			RowForY(int n)=0;
 	
 	// Setting geometry
+	virtual	bool		CanSetCellWidth (void) const=0;
+	virtual	bool		CanSetCellHeight(void) const=0;
 	virtual	void		SetCellWidth (int n, int w)=0;
 	virtual	void		SetCellHeight(int n, int h)=0;
 };
@@ -73,6 +75,7 @@ public:
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	int			CellGetCursor(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y												  )=0;
 
 	virtual	GUI_DragOperation	CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
 	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
@@ -90,6 +93,7 @@ public:
 	virtual	int			HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
 	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  )=0;
 	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	int			HeadGetCursor(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y												  )=0;
 
 };
 
@@ -100,6 +104,7 @@ public:
 	virtual	int			SideMouseDown(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags mods, int& wants_lock)=0;
 	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									  )=0;
 	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									  )=0;
+	virtual	int			SideGetCursor(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y												  )=0;
 
 };
 
@@ -124,6 +129,8 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	int			GetCursor(int x, int y);
+	
 	virtual	GUI_DragOperation			DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	GUI_DragOperation			DragOver	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void						DragScroll	(int x, int y);
@@ -181,6 +188,7 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	int			GetCursor(int x, int y);
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -214,6 +222,7 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	int			GetCursor(int x, int y);
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,

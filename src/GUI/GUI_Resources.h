@@ -30,6 +30,11 @@ int	GUI_GetTextureResource(
 			const char *		in_resource,
 			int					flags,
 			GUI_TexPosition_t *	out_metrics);	// can be null
+			
+int		GUI_GetImageResourceWidth(const char * in_resource);
+int		GUI_GetImageResourceHeight(const char * in_resource);
+int		GUI_GetImageResourceSize(const char * in_resource, int dims[2]);
+
 
 inline float	GUI_Rescale_S(float s, GUI_TexPosition_t * metrics) { return s * metrics->s_rescale; }
 inline float	GUI_Rescale_T(float t, GUI_TexPosition_t * metrics) { return t * metrics->t_rescale; }

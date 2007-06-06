@@ -219,14 +219,10 @@ void		GUI_Splitter::AlignContentsAt(int split)
 
 int		GUI_Splitter::GetSplitSize(void)
 {
-		GUI_TexPosition_t	metrics;
-
 	if (mDirection == gui_Split_Vertical)
 	{
-		GUI_GetTextureResource("splitter_h.png", 0, &metrics);
-		return metrics.real_height / 2;
+		return GUI_GetImageResourceHeight("splitter_h.png") / 2;
 	} else {
-		GUI_GetTextureResource("splitter_v.png", 0, &metrics);
-		return metrics.real_width / 2;
+		return GUI_GetImageResourceWidth("splitter_v.png") / 2;
 	}
 }

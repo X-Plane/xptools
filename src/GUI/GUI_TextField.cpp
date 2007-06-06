@@ -17,12 +17,17 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	mState(NULL),
 	mScrollH(scrollH),
 	mCaret(0)
-	
 {
+	mColorText[0] = 0.0;	mColorText[1] = 0.0;	mColorText[2] = 0.0;	mColorText[3] = 1.0;
+	mColorHilite[0] = 1.0;	mColorHilite[1] = 1.0;	mColorHilite[2] = 0.0;	mColorHilite[3] = 1.0;
+	mColorBkgnd[0] = 1.0;	mColorBkgnd[1] = 1.0;	mColorBkgnd[2] = 1.0;	mColorBkgnd[3] = 1.0;	
+	mColorBox[0] = 0.3;		mColorBox[1] = 0.5;		mColorBox[2] = 1.0;		mColorBox[3] = 1.0;
+
 	mLogicalBounds[0] = 0;
 	mLogicalBounds[1] = 0;
 	mLogicalBounds[2] = 100;
 	mLogicalBounds[3] = 100;
+	mMargins[0] = mMargins[1] = mMargins[2] = mMargins[3] = 0.0f;
 	
 	for (int n = 0; n < 256; ++n)
 		mAllowedVK[n] = mAllowed[n] = true;
@@ -30,6 +35,21 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 
 GUI_TextField::~GUI_TextField()
 {
+}
+
+void		GUI_TextField::SetColors(
+								float text_color[4],
+								float hilite_color[4],
+								float bkgnd_color[4],
+								float box_color[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mColorText[n] = text_color[n];
+		mColorHilite[n] = hilite_color[n];
+		mColorBkgnd[n] = bkgnd_color[n];
+		mColorBox[n] = box_color[n];
+	}
 }
 
 void		GUI_TextField::SetKeyAllowed(char key, bool allowed)
@@ -42,11 +62,19 @@ void		GUI_TextField::SetVKAllowed(int vk, bool allowed)
 	mAllowedVK[(unsigned char) vk] = allowed;
 }
 
+void		GUI_TextField::SetMargins(float l, float b, float r, float t)
+{
+	mMargins[0] = l;
+	mMargins[1] = b;
+	mMargins[2] = r;
+	mMargins[3] = t;
+}
+
 void		GUI_TextField::SetWidth(float width)
 {
 	mLogicalBounds[2] = mLogicalBounds[0] + width;
-	Repaginate();
 	ConstrainLogicalBounds();
+	Repaginate();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();	
 }
@@ -54,8 +82,8 @@ void		GUI_TextField::SetWidth(float width)
 
 void		GUI_TextField::Draw(GUI_GraphState * state)
 {
-	state->SetState(0,0,0,  0,0, 0,0);
-	glColor3f(1,1,1);
+	state->SetState(0,0,0,  1,1, 0,0);
+	glColor4fv(mColorBkgnd);
 	int b[4];
 	GetBounds(b);
 	glBegin(GL_QUADS);
@@ -65,7 +93,7 @@ void		GUI_TextField::Draw(GUI_GraphState * state)
 	glVertex2i(b[2],b[1]);
 	glEnd();
 	glLineWidth(2);
-	glColor3f(0.3,0.5,1.0);
+	glColor4fv(mColorBox);
 	glBegin(GL_LINE_LOOP);
 	glVertex2i(b[0],b[1]);
 	glVertex2i(b[0],b[3]);
@@ -73,7 +101,7 @@ void		GUI_TextField::Draw(GUI_GraphState * state)
 	glVertex2i(b[2],b[1]);
 	glEnd();
 	glLineWidth(1);
-	
+
 	mState = state;
 	OGLE::Draw(mCaret && IsActiveNow() && IsFocused());
 	mState = NULL;
@@ -112,8 +140,8 @@ void		GUI_TextField::SetBounds(int x1, int y1, int x2, int y2)
 		mLogicalBounds[0] = x1;
 		mLogicalBounds[2] = x2;
 	}
-	Repaginate();
 	ConstrainLogicalBounds();
+	Repaginate();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 }
@@ -126,8 +154,8 @@ void		GUI_TextField::SetBounds(int inBounds[4])
 		mLogicalBounds[0] = inBounds[0];
 		mLogicalBounds[2] = inBounds[2];
 	}
-	Repaginate();
 	ConstrainLogicalBounds();
+	Repaginate();
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	Refresh();
 }
@@ -263,19 +291,19 @@ void			GUI_TextField::GetVisibleBounds(
 {
 	int vbounds[4];
 	GetBounds(vbounds);
-	bounds[0] = vbounds[0];
-	bounds[1] = vbounds[1];
-	bounds[2] = vbounds[2];
-	bounds[3] = vbounds[3];
+	bounds[0] = vbounds[0] + mMargins[0];
+	bounds[1] = vbounds[1] + mMargins[1];
+	bounds[2] = vbounds[2] - mMargins[2];
+	bounds[3] = vbounds[3] - mMargins[3];
 }
 
 void			GUI_TextField::GetLogicalBounds(
 						float			bounds[4])
 {
-	bounds[0] = mLogicalBounds[0];
-	bounds[1] = mLogicalBounds[1];
-	bounds[2] = mLogicalBounds[2];
-	bounds[3] = mLogicalBounds[3];
+	bounds[0] = mLogicalBounds[0] + mMargins[0];
+	bounds[1] = mLogicalBounds[1] + mMargins[1];
+	bounds[2] = mLogicalBounds[2] - mMargins[2];
+	bounds[3] = mLogicalBounds[3] - mMargins[3];
 }
 
 void			GUI_TextField::SetLogicalHeight(
@@ -358,9 +386,8 @@ void			GUI_TextField::DrawString(
 						float			x,
 						float			y)
 {
-	float c[4] = { 0,0,0,1 };
 	int yy = y;
-	GUI_FontDrawScaled(mState, font_UI_Basic, c,
+	GUI_FontDrawScaled(mState, font_UI_Basic, mColorText,
 						x, yy, x + 10000, yy + GUI_GetLineHeight(font_UI_Basic),
 						tStart, tEnd, align_Left);
 }
@@ -371,7 +398,7 @@ void			GUI_TextField::DrawSelection(
 	mState->SetState(false, 0, false, false, false, false, false);
 	if (bounds[0] == bounds[2])
 	{
-		glColor3f(0,0,0);
+		glColor4fv(mColorText);
 		glBegin(GL_LINES);
 		glVertex2f(bounds[0], bounds[1]);
 		glVertex2f(bounds[0], bounds[3]);
@@ -379,7 +406,7 @@ void			GUI_TextField::DrawSelection(
 	}
 	else
 	{
-		glColor3f(1, 1, 0);
+		glColor4fv(mColorHilite);
 		glBegin(GL_QUADS);
 		glVertex2f(bounds[0], bounds[1]);
 		glVertex2f(bounds[0], bounds[3]);
