@@ -63,10 +63,8 @@ WED_PropertyPane::WED_PropertyPane(
 		
 		mHeader = new GUI_Header;
 
-		GUI_TexPosition_t	metrics;
-		GUI_GetTextureResource("header.png", 0, &metrics);
 		bounds[1] = 0;
-		bounds[3] = metrics.real_height;
+		bounds[3] = GUI_GetImageResourceHeight("header.png");
 		mHeader->SetBounds(bounds);	
 		mHeader->SetGeometry(&mPropertyTable);
 		mHeader->SetHeader(&mTextTableHeader);
@@ -81,9 +79,10 @@ WED_PropertyPane::WED_PropertyPane(
 		mTextTableSide.SetProvider(&mPropertyTable);
 		mTextTableSide.SetGeometry(&mPropertyTable);	
 		
+		mTextTableSide.SetImage("sider.png");
 		mTextTableSide.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Table_Text));
+				WED_Color_RGBA(wed_Header_Text));
 		
 		mSide = new GUI_Side;
 		bounds[0] = 0;

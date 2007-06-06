@@ -66,6 +66,9 @@ public:
 						int							end_y,
 						int							is_toggle);
 	virtual	void	SelectionEnd(void);
+	virtual	int		SelectDisclose(
+						int							open_it,
+						int							all);
 
 	virtual	int		TabAdvance(
 						int&						io_x,
@@ -117,6 +120,7 @@ public:
 
 	virtual	int		GetColCount(void);
 	virtual	int		GetRowCount(void);
+	virtual	int		ColForX(int n);
 	
 	virtual void	GetHeaderContent(
 						int							cell_x, 

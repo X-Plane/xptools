@@ -129,7 +129,7 @@ void	WED_PropertyTable::GetCellContent(
 			t->GetNthPropertyDictItem(idx,*iter,label);
 			the_content.text_val += label;
 		}		
-		if (the_content.text_val.empty())	the_content.text_val="-";
+		if (the_content.text_val.empty())	the_content.text_val="none";
 		break;		
 	}
 	int unused_vis, unused_kids;
@@ -345,6 +345,40 @@ void	WED_PropertyTable::SelectionEnd(void)
 	op->CommitOperation();
 	mSelSave.clear();
 }
+
+int		WED_PropertyTable::SelectDisclose(
+						int							open_it,
+						int							all)
+{
+	if (mVertical) return 0;
+	if (all)
+	{
+		int cc = GetRowCount();
+		vector<int>	things(cc);
+		for (int n = 0; n < cc; ++n)
+		{
+			WED_Thing * t = FetchNth(n);
+			things.push_back(t->GetID());
+		}
+		for (int n = 0; n <things.size(); ++n)
+			mOpen[things[n]] = open_it;
+	} else {
+		ISelection * sel = WED_GetSelect(mResolver);
+		vector<IBase *>	sv;
+		sel->GetSelectionVector(sv);
+		for (int n = 0; n < sv.size(); ++n)
+		{
+			WED_Thing * t = dynamic_cast<WED_Thing *>(sv[n]);
+			if (t)
+			{
+				mOpen[t->GetID()] = open_it;
+			}
+		}
+	}
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);		
+	return 1;
+}
+
 
 int		WED_PropertyTable::TabAdvance(
 						int&						io_x,
@@ -604,6 +638,13 @@ int			WED_PropertyTable::GetColCount(void)
 	WED_Thing * root = WED_GetWorld(mResolver);
 	ISelection * sel = WED_GetSelect(mResolver);
 	return CountRowsRecursive(root, sel);
+}
+
+int		WED_PropertyTable::ColForX(int n)
+{
+	int c = GUI_SimpleTableGeometry::ColForX(n);
+	int cc = GetColCount();
+	return min(c,cc-1);
 }
 
 int			WED_PropertyTable::GetRowCount(void)
