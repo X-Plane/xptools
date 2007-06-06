@@ -56,6 +56,9 @@ check.png				GUI_RES		tables\check.png
 gradient.png			GUI_RES		tables\gradient.png	
 disclose.png			GUI_RES		tables\disclose.png	
 header.png				GUI_RES		tables\header.png	
+sider.png				GUI_RES		tables\sider.png	
+property_bar.png		GUI_RES		tables\property_bar.png
+arrows.png				GUI_RES		tables\arrows.png
 
 /* app code */
 WED_DataModel.sql		GUI_RES		"..\WEDCore\WED_DataModel.sql"
