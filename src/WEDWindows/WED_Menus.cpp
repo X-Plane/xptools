@@ -109,5 +109,14 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu	airpor_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);	
+
+#if APL
+	MenuRef	win_menu;
+	if (CreateStandardWindowMenu(kWindowMenuIncludeRotate,&win_menu)==noErr)
+		InsertMenu(win_menu,0);
 		
+	MenuRef hp = 0;
+	MenuItemIndex ind = 0;
+	OSStatus err = HMGetHelpMenu(&hp,&ind);
+#endif
 }
