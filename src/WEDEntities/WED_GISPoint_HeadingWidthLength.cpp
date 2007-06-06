@@ -9,8 +9,8 @@
 
 WED_GISPoint_HeadingWidthLength::WED_GISPoint_HeadingWidthLength(WED_Archive * parent, int id) :
 	WED_GISPoint_Heading(parent, id),
-	width(this,"width","GIS_points_headingwidthlength", "width",1.0),
-	length(this,"length","GIS_points_headingwidthlength", "length",1.0)
+	width (this,"width", "GIS_points_headingwidthlength", "width" ,1.0,5,1),
+	length(this,"length","GIS_points_headingwidthlength", "length",1.0,5,1)
 {
 }
 

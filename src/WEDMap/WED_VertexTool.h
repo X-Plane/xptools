@@ -41,14 +41,14 @@ public:
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
-	virtual	int			FindProperty(const char * in_prop) { return -1; }
-	virtual int			CountProperties(void) { return 0; }
-	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) {} 
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) { }
-	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) { }
+//	virtual	int			FindProperty(const char * in_prop) { return -1; }
+//	virtual int			CountProperties(void) { return 0; }
+//	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) {} 
+//	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) { }
+//	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) { }
 	
-	virtual void		GetNthProperty(int n, PropertyVal_t& val) { }
-	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
+//	virtual void		GetNthProperty(int n, PropertyVal_t& val) { }
+//	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
 

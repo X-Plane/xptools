@@ -1,6 +1,7 @@
 #include "WED_ToolInfoAdapter.h"
 #include "WED_MapToolNew.h"
 #include "GUI_Messages.h"
+#include "GUI_Fonts.h"
 #include "IPropertyObject.h"
 
 const int COL_WIDTH = 100;
@@ -42,16 +43,30 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	
 	if (cell_x % 2)
 	{
+		char buf[100], fmt[10];
+		
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 		mTool->GetNthProperty(cell_x / 2, val);
 		
 		switch(inf.prop_kind) {
-		case prop_Int:		the_content.content_type = gui_Cell_Integer;		the_content.int_val = val.int_val;					break;
-		case prop_Double:	the_content.content_type = gui_Cell_Double;			the_content.double_val = val.double_val;			break;
-		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;				break;
-		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;					break;
-		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;					break;
-		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;				break;
+		case prop_Int:		
+			the_content.content_type = gui_Cell_Integer;		
+			the_content.int_val = val.int_val;			
+			sprintf(fmt,"%%%dd", inf.digits);
+			sprintf(buf,fmt,val.int_val);
+			the_content.text_val = buf;
+			break;
+		case prop_Double:	
+			the_content.content_type = gui_Cell_Double;			
+			the_content.double_val = val.double_val;	
+			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
+			sprintf(buf,fmt,val.double_val);
+			the_content.text_val = buf;
+			break;
+		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;		break;
+		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;			break;
+		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;			break;
+		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
 		}
 		the_content.can_edit = inf.can_edit;
 		
@@ -211,17 +226,48 @@ int			WED_ToolInfoAdapter::GetRowCount(void)
 
 int			WED_ToolInfoAdapter::GetCellLeft (int n)
 {
-	return n * COL_WIDTH;
+	int t = 0;
+	for (int i = 0; i < n; ++i)
+	t += GetCellWidth(i);
+	return t;
 }
 
 int			WED_ToolInfoAdapter::GetCellRight(int n)
 {
-	return (n+1) * COL_WIDTH;
+	int t = 0;
+	for (int i = 0; i <= n; ++i)
+	t += GetCellWidth(i);
+	return t;
 }
 
 int			WED_ToolInfoAdapter::GetCellWidth(int n)
 {
-	return COL_WIDTH;
+	if (mTool == NULL) return 10;
+	if (n >= mTool->CountProperties() * 2) return 10;
+	PropertyInfo_t	inf;
+	const char * zero = "0";
+
+	mTool->GetNthPropertyInfo(n / 2, inf);
+
+	PropertyDict_t	dict;
+	int w = 0;
+
+	if (n % 2) 
+	switch(inf.prop_kind) {
+	case prop_Int:			
+	case prop_Double:		return inf.digits * GUI_MeasureRange(font_UI_Basic, zero,zero+1) + 10;
+	case prop_String:		return 100;
+	case prop_Bool:			return 30;
+	case prop_Enum:			
+	case prop_EnumSet:		
+		mTool->GetNthPropertyDict(n / 2, dict);
+		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
+			w = max(w,(int) GUI_MeasureRange(font_UI_Basic, &*d->second.begin(),&*d->second.end())+20);
+		return w;
+	default:				return 50;
+	}
+	else
+		return GUI_MeasureRange(font_UI_Basic, &*inf.prop_name.begin(), &*inf.prop_name.end()) + 15;
 }
 
 int			WED_ToolInfoAdapter::GetCellBottom(int n)
@@ -241,7 +287,15 @@ int			WED_ToolInfoAdapter::GetCellHeight(int n)
 
 int			WED_ToolInfoAdapter::ColForX(int n)
 {
-	return min(n / COL_WIDTH, GetColCount()-1);
+	if (n < 0) return -1;
+	int cc = GetColCount();
+	for (int c = 0; c < cc; ++c)
+	{
+		int w = GetCellWidth(c);
+		if (n < w) return c;
+		n -= w;
+	}
+	return cc-1;
 }
 
 int			WED_ToolInfoAdapter::RowForY(int n)

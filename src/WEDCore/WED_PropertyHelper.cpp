@@ -111,6 +111,7 @@ void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_Int;
 	info.prop_name = mTitle;
+	info.digits = mDigits;
 }
 
 void		WED_PropIntText::GetPropertyDict(PropertyDict_t& dict)
@@ -251,6 +252,8 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
 	info.prop_name = mTitle;
+	info.digits = mDigits;
+	info.decimals = mDecimals;
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)

@@ -29,8 +29,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	tool != create_Marks),		// close required?
 	mType(tool),
 		mPavement(tool == create_Taxi ? this : NULL,"Pavement","","",Surface_Type,surf_Concrete),
-		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25),
-		mHeading(tool == create_Taxi ? this : NULL,"Heading","","",0),
+		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25,4,2),
+		mHeading(tool == create_Taxi ? this : NULL,"Heading","","",0,5,2),
 		mMarkings(this,"Markings", "", "", LinearFeature)
 {
 	mPavement.value = surf_Concrete;

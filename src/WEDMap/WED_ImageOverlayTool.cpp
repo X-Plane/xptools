@@ -221,6 +221,8 @@ void		WED_ImageOverlayTool::GetNthPropertyInfo(int n, PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
 	info.prop_name = strs[n];
+	info.digits = 10;
+	info.decimals = 6;
 }
 
 void		WED_ImageOverlayTool::GetNthPropertyDict(int n, PropertyDict_t& dict)

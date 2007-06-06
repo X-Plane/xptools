@@ -57,7 +57,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
 	mTextTable = new GUI_TextTable(cmdr,WED_UIMeasurement("table_indent_width"));
-	mTable = new GUI_Table;
+	mTable = new GUI_Table(1);
 	
 	mTextTable->SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),

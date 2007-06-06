@@ -5,8 +5,8 @@ DEFINE_PERSISTENT(WED_Taxiway)
 
 WED_Taxiway::WED_Taxiway(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	surface(this,		"Surface",			"WED_taxiway",	"surface",	Surface_Type,	surf_Concrete),
-	roughness(this,		"Roughness",		"WED_taxiway",	"roughness",	0.25),
-	heading(this,		"Texture Heading",	"WED_taxiway",	"heading",		0)
+	roughness(this,		"Roughness",		"WED_taxiway",	"roughness",	0.25,4,2),
+	heading(this,		"Texture Heading",	"WED_taxiway",	"heading",		0,6,2)
 {
 }
 

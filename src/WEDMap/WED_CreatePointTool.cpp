@@ -71,11 +71,11 @@ WED_CreatePointTool::WED_CreatePointTool(
 		heli_surface	(tool==create_Helipad		?this:NULL,"Surface",		"","",Surface_Type,surf_Concrete),
 		heli_markings	(tool==create_Helipad		?this:NULL,"Markings",		"","",Helipad_Markings,heli_Mark_Default),
 		heli_shoulder	(tool==create_Helipad		?this:NULL,"Shoulder",		"","",Shoulder_Type,shoulder_None),
-		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		"","",0.25),
+		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		"","",0.25,4,2),
 		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	"","",Heli_Lights,heli_Yellow),
 		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	"","",Light_Fixt,light_VASI),
-		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0),		
-		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0),
+		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),		
+		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0,5,1),
 		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0)	
 {
 }

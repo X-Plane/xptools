@@ -27,6 +27,8 @@ struct PropertyInfo_t {
 	int				can_edit;
 	int				prop_kind;	
 	string			prop_name;
+	int				digits;
+	int				decimals;
 };
 
 struct	PropertyVal_t {

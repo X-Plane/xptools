@@ -6,7 +6,7 @@
 
 WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) : 
 	WED_GISLine(parent, id),
-	width(this,"width","GIS_lines_heading", "width", 50.0)
+	width(this,"width","GIS_lines_heading", "width", 50.0,6,2)
 {
 }
 

@@ -7,8 +7,8 @@
 
 WED_GISPoint::WED_GISPoint(WED_Archive * parent, int id) :
 	WED_Entity(parent, id), 
-	latitude(this,"latitude","GIS_points","latitude",0.0),
-	longitude(this,"longitude","GIS_points","longitude",0.0)
+	latitude (this,"latitude" ,"GIS_points","latitude" ,0.0,10,6),
+	longitude(this,"longitude","GIS_points","longitude",0.0,11,6)
 {
 }
 

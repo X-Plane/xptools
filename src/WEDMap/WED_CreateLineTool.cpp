@@ -51,17 +51,17 @@ WED_CreateLineTool::WED_CreateLineTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
-		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",					"","",Surface_Type,	surf_Concrete),
-		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",					"","",Shoulder_Type,shoulder_None),
-		rwy_roughness		(tool==create_Runway	?this:NULL,"Roughness",					"","",0.25),
-		rwy_center_lites	(tool==create_Runway	?this:NULL,"Centerline Lights",			"","",1),
-		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge Lights",				"","",Edge_Lights,	edge_MIRL),
-		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Distance Remaining Signs",	"","",1),
-		rwy_markings		(tool==create_Runway	?this:NULL,"Markings",					"","",Runway_Markings,	mark_NonPrecis),
-		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appraoch Lights",			"","",Light_App,		app_MALSF),
-		rwy_tdzl			(tool==create_Runway	?this:NULL,"TDZL",						"","",0),
-		rwy_reil			(tool==create_Runway	?this:NULL,"REIL",						"","",REIL_Lights,		reil_None),
-		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",						"","",1)
+		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",				"","",Surface_Type,	surf_Concrete),
+		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",				"","",Shoulder_Type,shoulder_None),
+		rwy_roughness		(tool==create_Runway	?this:NULL,"Rough",					"","",0.25,4,2),
+		rwy_center_lites	(tool==create_Runway	?this:NULL,"Center Lgts",			"","",1),
+		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge Lgts",				"","",Edge_Lights,	edge_MIRL),
+		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Dist Signs",			"","",1),
+		rwy_markings		(tool==create_Runway	?this:NULL,"Markings",				"","",Runway_Markings,	mark_NonPrecis),
+		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appch Lgts",			"","",Light_App,		app_MALSF),
+		rwy_tdzl			(tool==create_Runway	?this:NULL,"TDZL",					"","",0),
+		rwy_reil			(tool==create_Runway	?this:NULL,"REIL",					"","",REIL_Lights,		reil_None),
+		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",					"","",1)
 {
 }
 									

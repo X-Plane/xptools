@@ -67,6 +67,8 @@ void	WED_PropertyTable::GetCellContent(
 						int							cell_y, 
 						GUI_CellContent&			the_content)
 {
+	char buf[100], fmt[10];
+	
 	the_content.content_type = gui_Cell_None;
 	the_content.can_edit = 0;
 	the_content.can_disclose = 0;
@@ -96,10 +98,16 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Int:
 		the_content.content_type = gui_Cell_Integer;
 		the_content.int_val = val.int_val;
+		sprintf(fmt,"%%%dd", inf.digits);
+		sprintf(buf,fmt,val.int_val);
+		the_content.text_val = buf;
 		break;
 	case prop_Double:
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
+		sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
+		sprintf(buf,fmt,val.double_val);
+		the_content.text_val = buf;
 		break;
 	case prop_String:
 		the_content.content_type = gui_Cell_EditText;

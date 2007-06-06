@@ -8,7 +8,7 @@
 
 WED_GISPoint_Heading::WED_GISPoint_Heading(WED_Archive * parent, int id) :
 	WED_GISPoint(parent, id),
-	heading(this,"heading","GIS_points_heading", "heading",0.0)
+	heading(this,"heading","GIS_points_heading", "heading",0.0,6,2)
 {
 }
 

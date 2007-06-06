@@ -86,11 +86,13 @@ public:
 
 	int				value;
 
+	int				mDigits;
+
 	operator int&() { return value; }
 	operator int() const { return value; }
 	WED_PropIntText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
+	WED_PropIntText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, int initial, int digits)  : WED_PropertyItem(parent, title, table, column), value(initial), mDigits(digits) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -135,11 +137,14 @@ public:
 
 	double			value;
 
+	int				mDigits;
+	int				mDecimals;
+	
 						operator double&() { return value; }
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial)  : WED_PropertyItem(parent, title, table, column), value(initial) { }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial, int digits, int decimals)  : WED_PropertyItem(parent, title, table, column), mDigits(digits), mDecimals(decimals), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);

@@ -42,7 +42,7 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
 
-	mTable = new GUI_Table;
+	mTable = new GUI_Table(pane_style==propPane_Hierarchy);
 	mTable->SetGeometry(&mPropertyTable);
 	mTable->SetContent(&mTextTable);
 	mTable->SetParent(mScroller);
@@ -61,7 +61,7 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Header_Text));
 		
-		mHeader = new GUI_Header;
+		mHeader = new GUI_Header(pane_style==propPane_Hierarchy);
 
 		bounds[1] = 0;
 		bounds[3] = GUI_GetImageResourceHeight("header.png");
@@ -86,7 +86,7 @@ WED_PropertyPane::WED_PropertyPane(
 		
 		mSide = new GUI_Side;
 		bounds[0] = 0;
-		bounds[2] = 100;
+		bounds[2] = 180;
 		mSide->SetBounds(bounds);	
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);
