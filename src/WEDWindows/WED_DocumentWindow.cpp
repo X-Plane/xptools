@@ -109,7 +109,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- AIRPORT
 
 	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", NULL };
-	static		 int	air_w[] = { 100, 100, 100, 50, 100  };
+	static		 int	air_w[] = { 200, 100, 100, 75, 100  };
 	static const char * air_f[] = { "WED_Airport", NULL };
 	
 	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
@@ -118,7 +118,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- LIGHTS, SIGNS, BEACONS ---------------
 
 	static const char * sin_t[] = { "Name", "Type", "Size", "Angle", 0 };
-	static		 int	sin_w[] = { 100, 100, 100, 100  };
+	static		 int	sin_w[] = { 200, 100, 100, 100  };
 	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
 	
 	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);	
@@ -126,12 +126,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- RUNWAYS ---------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2"
+	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2",
 									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
 									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
-	static		 int	rwy_w[] = { 100, 100, 100, 100, 100, 100, 
-									100, 100, 100, 100, 100, 100, 
-									100, 100, 100, 100, 100, 100, 100 };
+	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150, 
+									150, 150, 150, 150, 150, 150, 
+									150, 150, 150, 150, 150, 150, 150 };
 	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
 	
 	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);	
@@ -140,7 +140,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- TAXIWAYS ---------------
 
 	static const char * tax_t[] = { "Name", "Surface", "Roughness", "Texture Heading", 0 };
-	static		 int	tax_w[] = { 100, 150, 100, 100  };
+	static		 int	tax_w[] = { 200, 150, 100, 150  };
 	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
 	
 	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);	
@@ -149,7 +149,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- HELIPADS ---------------
 
 	static const char * hel_t[] = { "Name", "Surface", "Markings", "Shoulder", "Roughness", "Lights", 0 };
-	static		 int	hel_w[] = { 100, 150, 150, 150, 100, 150 };
+	static		 int	hel_w[] = { 200, 130, 130, 130, 100, 130 };
 	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
 	
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);	
@@ -158,7 +158,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
-	static int widths[] =			{ 50,		50,		100		};
+	static int widths[] =			{ 50,		50,		200		};
 
 	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
 	prop_pane->SetParent(prop_splitter);
