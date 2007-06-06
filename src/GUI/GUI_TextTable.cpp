@@ -176,14 +176,6 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	case gui_Cell_CheckBox:
 		c.text_val = "";
 		break;		
-	case gui_Cell_Integer:
-		sprintf(buf,"%d",c.int_val);
-		c.text_val = buf;
-		break;
-	case gui_Cell_Double:
-		sprintf(buf,"%lf",c.double_val);
-		c.text_val = buf;
-		break;
 	}
 	
 	if(c.is_disclosed || c.can_disclose)
@@ -439,16 +431,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_Double:
 		if (mParent)
 		{
-			switch(mEditInfo.content_type) {
-			case gui_Cell_Integer:
-				sprintf(buf,"%d",mEditInfo.int_val);
-				mEditInfo.text_val = buf;
-				break;
-			case gui_Cell_Double:
-				sprintf(buf,"%lf",mEditInfo.double_val);
-				mEditInfo.text_val = buf;
-				break;
-			}
 			CreateEdit(cell_bounds);
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
@@ -657,7 +639,20 @@ int			GUI_TextTable::CellGetCursor(int cell_bounds[4], int cell_x, int cell_y, i
 	return gui_Cursor_Arrow;
 }
 
-
+int			GUI_TextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, string& tip								  )
+{
+	GUI_CellContent	c;
+	if (!mContent) return 0;
+	mContent->GetCellContent(cell_x,cell_y,c);
+	switch(c.content_type) { 
+	case gui_Cell_EditText:
+	case gui_Cell_Integer:
+	case gui_Cell_Double:
+	case gui_Cell_Enum:
+	case gui_Cell_EnumSet:	tip = c.text_val;	return 1;
+	default:									return 0;
+	}
+}
 
 GUI_DragOperation	GUI_TextTable::CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
 {
@@ -1010,16 +1005,6 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 				mParent->CalcCellBounds(x,y,cell_bounds);
 				mClickCellX = x;
 				mClickCellY = y;
-				switch(mEditInfo.content_type) {
-				case gui_Cell_Integer:
-					sprintf(buf,"%d",mEditInfo.int_val);
-					mEditInfo.text_val = buf;
-					break;
-				case gui_Cell_Double:
-					sprintf(buf,"%lf",mEditInfo.double_val);
-					mEditInfo.text_val = buf;
-					break;
-				}
 				CreateEdit(cell_bounds);
 				mTextField->SetDescriptor(mEditInfo.text_val);
 				mTextField->SetSelection(0,mEditInfo.text_val.size());
@@ -1178,6 +1163,16 @@ int			GUI_TextTableHeader::HeadGetCursor(int cell_bounds[4], int cell_x, int mou
 	return gui_Cursor_Arrow;
 }
 
+int			GUI_TextTableHeader::HeadGetHelpTip(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, string& tip)
+{	
+	if (!mContent) return 0;
+	GUI_HeaderContent	c;
+	mContent->GetHeaderContent(cell_x,c);
+	tip = c.title;
+	return 1;
+}
+
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
@@ -1298,4 +1293,13 @@ void		GUI_TextTableSide::SideMouseUp  (int cell_bounds[4], int cell_y, int mouse
 int			GUI_TextTableSide::SideGetCursor(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y)
 {
 	return gui_Cursor_Arrow;
+}
+
+int			GUI_TextTableSide::SideGetHelpTip(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, string& tip								  )
+{
+	if (!mContent) return 0;
+	GUI_HeaderContent	c;
+	mContent->GetHeaderContent(cell_y,c);
+	tip = c.title;
+	return 1;
 }

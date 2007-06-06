@@ -28,10 +28,10 @@ enum GUI_CellContentType {
 								// GET					SET
 	gui_Cell_None,
 	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
-	gui_Cell_EditText,			// string				string
+	gui_Cell_EditText,			// string&string		string
 	gui_Cell_CheckBox,			// int val				int val
-	gui_Cell_Integer,			// int val				int val
-	gui_Cell_Double,			// double val			double val
+	gui_Cell_Integer,			// string&int val		int val
+	gui_Cell_Double,			// string&double val	double val
 	gui_Cell_Enum,				// string&int			int
 	gui_Cell_EnumSet			// string val&int set	int set
 };
@@ -206,6 +206,7 @@ public:
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
 	virtual	void		CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
 	virtual	int			CellGetCursor(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y												  );
+	virtual	int			CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, string& tip								  );
 	virtual	GUI_DragOperation	CellDragEnter	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y);
@@ -299,6 +300,7 @@ public:
 	virtual	void		HeadMouseDrag(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
 	virtual	void		HeadMouseUp  (int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button									  );
 	virtual	int			HeadGetCursor(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y												  );
+	virtual	int			HeadGetHelpTip(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, string& tip								  );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;
@@ -331,6 +333,7 @@ public:
 	virtual	void		SideMouseDrag(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
 	virtual	void		SideMouseUp  (int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, int button									   );
 	virtual	int			SideGetCursor(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y												   );
+	virtual	int			SideGetHelpTip(int cell_bounds[4], int cell_y, int mouse_x, int mouse_y, string& tip								   );
 
 private:
 	GUI_TextTableHeaderProvider *	mContent;

@@ -30,12 +30,13 @@ static bool ClipTo(int pane[4], int cell[4])
  * MAIN TABLE
  ************************************************************************************************************/
 
-GUI_Table::GUI_Table() :
+GUI_Table::GUI_Table(int fill_right) :
 	mGeometry(NULL),
 	mContent(NULL),
 	mScrollH(0),
 	mScrollV(0),
-	mDragX(-1),mDragY(-1)
+	mDragX(-1),mDragY(-1),
+	mExtendSide(fill_right)
 {	
 }
 
@@ -225,6 +226,23 @@ int		GUI_Table::GetCursor(int x, int y)
 	return gui_Cursor_None;
 }
 
+int			GUI_Table::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
+{
+	if (mGeometry == NULL) return 0;
+	if (mContent == NULL) return 0;
+	int mx = MouseToCellX(x);
+	int my = MouseToCellY(y);
+	if (mx >= 0 &&
+		mx < mGeometry->GetColCount() &&
+		my >= 0 &&
+		my < mGeometry->GetRowCount())
+	{
+		if (CalcCellBounds(mx, my, tip_bounds))
+		return mContent->CellGetHelpTip(tip_bounds, mx, my, x, y, tip);
+	}
+	return 0;
+	
+}
 
 
 GUI_DragOperation			GUI_Table::DragEnter	(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)
@@ -523,6 +541,7 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 	bounds[2] = mGeometry->GetCellRight (x) + b[0] - mScrollH;
 	bounds[3] = mGeometry->GetCellTop   (y) + b[1] - mScrollV;
 
+	if (mExtendSide)
 	if (x == mGeometry->GetColCount()-1 && bounds[2] < b[2])
 		bounds[2] = b[2];
 
@@ -545,10 +564,11 @@ void		GUI_Table::SizeShowAll(void)
  ************************************************************************************************************/
 #pragma mark -
 
- GUI_Header::GUI_Header() :
+ GUI_Header::GUI_Header(int fill_right) :
 	mGeometry(NULL),
 	mHeader(NULL),
-	mTable(NULL)
+	mTable(NULL),
+	mExtendSide(fill_right)	
 {	
 }
 
@@ -648,7 +668,19 @@ int		GUI_Header::GetCursor(int x, int y)
 	return gui_Cursor_None;
 }
 
-
+int		GUI_Header::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
+{
+	if (mGeometry == NULL) return 0;
+	if (mHeader == NULL) return 0;
+	int cx = MouseToCellX(x);
+	if (cx >= 0 &&
+		cx < mGeometry->GetColCount())
+	{
+		if (CalcCellBounds(cx, tip_bounds))
+			return mHeader->HeadGetHelpTip(tip_bounds, cx, x, y, tip);
+	}
+	return 0;
+}
 
 void		GUI_Header::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
@@ -710,6 +742,7 @@ int		GUI_Header::CalcCellBounds(int x, int bounds[4])
 	bounds[2] = mGeometry->GetCellRight (x) + b[0] - mTable->GetScrollH();
 	bounds[3] = b[3];
 	
+	if (mExtendSide)
 	if (x == mGeometry->GetColCount()-1 && bounds[2] < b[2])
 		bounds[2] = b[2];
 
@@ -824,6 +857,21 @@ int		GUI_Side::GetCursor(int x, int y)
 	}
 	return gui_Cursor_None;
 }
+
+int		GUI_Side::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
+{
+	if (mGeometry == NULL) return 0;
+	if (mSide == NULL) return 0;
+	int cy = MouseToCellY(y);
+	if (cy >= 0 &&
+		cy < mGeometry->GetRowCount())
+	{
+		if (CalcCellBounds(cy, tip_bounds))
+			return mSide->SideGetHelpTip(tip_bounds, cy, x, y, tip);
+	}
+	return 0;
+}
+
 
 void		GUI_Side::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
