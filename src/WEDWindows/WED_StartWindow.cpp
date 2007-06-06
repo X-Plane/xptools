@@ -33,32 +33,28 @@
 static int *	SizeOfPng(const char * png)
 {
 	static int bounds[4];
-	ImageInfo	im;
-	GUI_GetImageResource(png, &im);
 	bounds[0] = 0; bounds[1] = 0;
-	bounds[2] = im.width;
-	bounds[3] = im.height;
-	DestroyBitmap(&im);
+	GUI_GetImageResourceSize(png, bounds+2);
 	return bounds;	
 }
 
 WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_movable | xwin_style_centered, SizeOfPng("startup_bkgnd.png"), cmder)
 {
-	ImageInfo bkgnd, btns;
-	GUI_GetImageResource("startup_bkgnd.png", &bkgnd);
-	GUI_GetImageResource("startup_btns.png", &btns);	
+	int bkgnd[2], btns[2];
+	GUI_GetImageResourceSize("startup_bkgnd.png", bkgnd);
+	GUI_GetImageResourceSize("startup_btns.png", btns);	
 
 //	SetBounds(100, 100, bkgnd.width + 100, bkgnd.height + 100);
 
-	int btn_width = btns.width / 2;
-	int btn_height = btns.height / 2;
+	int btn_width = btns[0] / 2;
+	int btn_height = btns[1] / 2;
 	
 	int btn_width1  = btn_width  / 2; int btn_width2  = btn_width  - btn_width1 ;
 	int btn_height1 = btn_height / 2; int btn_height2 = btn_height - btn_height1;
 	
-	int height = bkgnd.height * 0.25;
-	int p1 = bkgnd.width * 0.25;
-	int p2 = bkgnd.width * 0.75;
+	int height = bkgnd[1] * 0.25;
+	int p1 = bkgnd[0] * 0.25;
+	int p2 = bkgnd[0] * 0.75;
 
 	int	new_off[4] = { 0, 0, 2, 2 };
 	int	new_on [4] = { 0, 1, 2, 2 };
@@ -79,8 +75,6 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mOpen->AddListener(this);
 	mNew->SetSticky(1,1,0,0);
 	mOpen->SetSticky(1,1,0,0);
-	DestroyBitmap(&bkgnd);
-	DestroyBitmap(&btns);
 }
 
 WED_StartWindow::~WED_StartWindow()

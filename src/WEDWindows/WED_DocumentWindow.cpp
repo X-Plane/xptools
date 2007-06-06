@@ -37,18 +37,26 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	DebugAssert(root);
 //	DebugAssert(s);
 	
+	GUI_Packer * packer = new GUI_Packer;
+	packer->SetParent(this);
+	packer->SetSticky(1,1,1,1);
+	packer->Show();
+	int		splitter_b[4];	
+	GUI_Pane::GetBounds(splitter_b);
+	packer->SetBounds(splitter_b);
+	
 	/****************************************************************************************************************************************************************
 	 * MAP VIEW
 	****************************************************************************************************************************************************************/
 
-	int		splitter_b[4];	
+//	int		splitter_b[4];	
 	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		main_splitter->SetImage ("gradient.png");
 	else											main_splitter->SetImage1("gradient.png");
-	main_splitter->SetParent(this);
+	main_splitter->SetParent(packer);
 	main_splitter->Show();
-	GUI_Pane::GetBounds(splitter_b);
-	main_splitter->SetBounds(splitter_b);
+//	GUI_Pane::GetBounds(splitter_b);
+//	main_splitter->SetBounds(splitter_b);
 	main_splitter->SetSticky(1,1,1,1);
 		
 	double	lb[4];
@@ -57,6 +65,14 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->SetParent(main_splitter);
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,0,1);
+	
+	GUI_Pane * top_bar = mMapPane->GetTopBar();
+	top_bar->SetParent(packer);
+	top_bar->Show();
+	packer->PackPane(top_bar, gui_Pack_Top);
+	top_bar->SetSticky(1,0,1,1);
+	packer->PackPane(main_splitter, gui_Pack_Center);
+	
 
 	/****************************************************************************************************************************************************************
 	 * PROPERTY-SIDE

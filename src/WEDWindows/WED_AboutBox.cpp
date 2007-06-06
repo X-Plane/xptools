@@ -29,12 +29,8 @@
 static int *	SizeOfPng(const char * png)
 {
 	static int bounds[4];
-	ImageInfo	im;
-	GUI_GetImageResource(png, &im);
 	bounds[0] = 0; bounds[1] = 0;
-	bounds[2] = im.width;
-	bounds[3] = im.height;
-	DestroyBitmap(&im);
+	GUI_GetImageResourceSize(png, bounds+2);
 	return bounds;	
 }
 
