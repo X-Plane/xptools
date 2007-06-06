@@ -8,7 +8,7 @@ class	WED_MapToolNew;
 class	WED_ToolInfoAdapter : public GUI_TextTableProvider, public GUI_TableGeometry, public GUI_Broadcaster {
 public:
 
-					 WED_ToolInfoAdapter();
+					 WED_ToolInfoAdapter(int height);
 	virtual			~WED_ToolInfoAdapter();
 
 			void	SetTool(WED_MapToolNew * tool);
@@ -53,6 +53,9 @@ public:
 						int							end_y,
 						int							is_toggle);
 	virtual	void	SelectionEnd(void);
+	virtual	int		SelectDisclose(
+						int							open_it,
+						int							all);
 
 	virtual	int		TabAdvance(
 						int&						io_x,
@@ -117,11 +120,13 @@ public:
 	
 	virtual	void		SetCellWidth (int n, int w);
 	virtual	void		SetCellHeight(int n, int h);
+	virtual	bool		CanSetCellWidth (void) const;
+	virtual	bool		CanSetCellHeight(void) const;
 
 private:
 
 	WED_MapToolNew *	mTool;
-	
+	int					mRowHeight;
 };
 
 #endif

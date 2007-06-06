@@ -4,9 +4,8 @@
 #include "IPropertyObject.h"
 
 const int COL_WIDTH = 100;
-const int ROW_HEIGHT = 16;
 
-WED_ToolInfoAdapter::WED_ToolInfoAdapter() : mTool(NULL)
+WED_ToolInfoAdapter::WED_ToolInfoAdapter(int height) : mTool(NULL), mRowHeight(height)
 {
 }
 
@@ -39,6 +38,8 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	the_content.bool_partial = 0;
 	if (!mTool) return;
 	
+	if (cell_x == mTool->CountProperties() * 2) return;
+	
 	if (cell_x % 2)
 	{
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
@@ -67,7 +68,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 				mTool->GetNthPropertyDictItem(cell_x/2,*iter,label);
 				the_content.text_val += label;
 			}
-			if (the_content.text_val.empty())	the_content.text_val="-";
+			if (the_content.text_val.empty())	the_content.text_val="none";
 		}
 
 	}
@@ -182,6 +183,13 @@ void	WED_ToolInfoAdapter::SelectionEnd(void)
 {
 }
 
+int		WED_ToolInfoAdapter::SelectDisclose(
+						int							open_it,
+						int							all)
+{
+	return 0;
+}
+
 int		WED_ToolInfoAdapter::TabAdvance(
 						int&						io_x,
 						int&						io_y,
@@ -193,7 +201,7 @@ int		WED_ToolInfoAdapter::TabAdvance(
 
 int			WED_ToolInfoAdapter::GetColCount(void)
 {
-	return mTool ? (mTool->CountProperties() * 2) : 0;
+	return mTool ? (mTool->CountProperties() * 2) + 1 : 1;
 }
 
 int			WED_ToolInfoAdapter::GetRowCount(void)
@@ -218,27 +226,37 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 
 int			WED_ToolInfoAdapter::GetCellBottom(int n)
 {
-	return n * ROW_HEIGHT;
+	return n * mRowHeight;
 }
 
 int			WED_ToolInfoAdapter::GetCellTop	 (int n)
 {
-	return (n+1) * ROW_HEIGHT;
+	return (n+1) * mRowHeight;
 }
 
 int			WED_ToolInfoAdapter::GetCellHeight(int n)
 {
-	return ROW_HEIGHT;
+	return mRowHeight;
 }
 
 int			WED_ToolInfoAdapter::ColForX(int n)
 {
-	return n / COL_WIDTH;
+	return min(n / COL_WIDTH, GetColCount()-1);
 }
 
 int			WED_ToolInfoAdapter::RowForY(int n)
 {
-	return n / ROW_HEIGHT;
+	return n / mRowHeight;
+}
+
+bool		WED_ToolInfoAdapter::CanSetCellWidth(void) const 
+{
+	return false;
+}
+
+bool		WED_ToolInfoAdapter::CanSetCellHeight(void) const 
+{
+	return false;
 }
 
 void		WED_ToolInfoAdapter::SetCellWidth (int n, int w)

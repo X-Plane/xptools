@@ -58,6 +58,7 @@ enum WED_Color {
 	wed_Table_Drag_Into,
 	wed_Header_Text,
 	wed_Tabs_Text,
+	wed_PropertyBar_Text,
 	
 	wed_Last
 };

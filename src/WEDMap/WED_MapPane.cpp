@@ -15,6 +15,8 @@
 #include "WED_TerraserverLayer.h"
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
+#include "WED_Colors.h"
+#include "GUI_Resources.h"
 #include "WED_ToolInfoAdapter.h"
 #include "WED_UIMeasurements.h"
 
@@ -53,20 +55,31 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
-	mInfoAdapter = new WED_ToolInfoAdapter;
+	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
 	mTextTable = new GUI_TextTable(cmdr,WED_UIMeasurement("table_indent_width"));
 	mTable = new GUI_Table;
+	
+	mTextTable->SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Table_Select),
+				WED_Color_RGBA(wed_Table_Text),
+				WED_Color_RGBA(wed_PropertyBar_Text),
+				WED_Color_RGBA(wed_Table_Drag_Insert),
+				WED_Color_RGBA(wed_Table_Drag_Into));
+	
 
 	mTable->SetGeometry(mInfoAdapter);
 	mTable->SetContent(mTextTable);
 	mTextTable->SetProvider(mInfoAdapter);
-	mTable->SetParent(this);
-	mTable->Show();
+//	mTable->SetParent(this);
+//	mTable->Show();
 	mTable->SizeShowAll();
 	mTextTable->SetParentTable(mTable);
-	mTable->SetSticky(1,1,1,0);
-	this->PackPane(mTable, gui_Pack_Bottom);
+//	mTable->SetSticky(1,0,1,1);
+//	this->PackPane(mTable, gui_Pack_Top);
 	mTextTable->AddListener(mTable);
+	mTextTable->SetImage("property_bar.png", 2);
+
 	mInfoAdapter->AddListener(mTable);
 
 	mToolbar = new GUI_ToolBar(1,16,"map_tools.png");
@@ -125,6 +138,11 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// messages (secretly it's our document's GetArchive() member) and anyone who needs it (our map).
 	
 	archive->AddListener(mMap);
+}
+
+GUI_Pane *	WED_MapPane::GetTopBar(void)
+{
+	return mTable;
 }
 
 WED_MapPane::~WED_MapPane()
