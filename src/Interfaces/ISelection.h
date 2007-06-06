@@ -32,7 +32,7 @@ public:
 	virtual		int				GetSelectionCount(void) const=0;
 	virtual		void			GetSelectionSet(set<IBase *>& sel) const=0;
 	virtual		void			GetSelectionVector(vector<IBase *>& sel) const=0;
-	virtual		IBase *		GetNthSelection(int n) const=0;
+	virtual		IBase *			GetNthSelection(int n) const=0;
 
 	virtual		int				IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const=0;
 
