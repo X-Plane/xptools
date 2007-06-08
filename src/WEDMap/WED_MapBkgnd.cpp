@@ -19,25 +19,32 @@ WED_MapBkgnd::~WED_MapBkgnd()
 
 void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 {
-	double pl,pr,pb,pt;
-	double ll,lr,lb,lt;
+	double pl,pr,pb,pt;	// pixel boundary
+	double ll,lb,lr,lt;	// logical boundary
 
-	g->SetState(false,false,false, true,true, false,false);
-	
-	glColor4fv(WED_Color_RGBA(wed_Map_Matte));
-	glBegin(GL_QUADS);
 
 	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
+	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
+	
+	ll = GetZoomer()->LonToXPixel(ll);
+	lr = GetZoomer()->LonToXPixel(lr);
+	lb = GetZoomer()->LatToYPixel(lb);
+	lt = GetZoomer()->LatToYPixel(lt);
+
+
+
+	// First: splat the whole area with the matte color.  This is clipped to
+	// pixel bounds cuz we don't need to draw where we can't see.
+	g->SetState(false,false,false, true,true, false,false);
+	glColor4fv(WED_Color_RGBA(wed_Map_Matte));
+	glBegin(GL_QUADS);
 	glVertex2d(pl,pb);
 	glVertex2d(pl,pt);
 	glVertex2d(pr,pt);
 	glVertex2d(pr,pb);
 
-	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
-	ll = GetZoomer()->LonToXPixel(ll);
-	lr = GetZoomer()->LonToXPixel(lr);
-	lb = GetZoomer()->LatToYPixel(lb);
-	lt = GetZoomer()->LatToYPixel(lt);
+	// Next, splat the whole world area with the world background color.  No need 
+	// to intersect this to the visible area - graphics ard culls good enough.
 
 	glColor4fv(WED_Color_RGBA(wed_Map_Bkgnd));
 	glVertex2d(ll,lb);
@@ -46,21 +53,61 @@ void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 	glVertex2d(lr,lb);
 	glEnd();
 		
+}
+
+void		WED_MapBkgnd::DrawStructure(int inCurrent, GUI_GraphState * g)
+{
+//	double pl,pr,pb,pt;	// pixel boundary
+	double ll,lb,lr,lt;	// logical boundary
+	double vl,vb,vr,vt;	// visible boundry
+
+
+//	GetZoomer()->GetPixelBounds(pl,pb,pr,pt);
+	GetZoomer()->GetMapLogicalBounds(ll,lb,lr,lt);
+	GetZoomer()->GetMapVisibleBounds(vl,vb,vr,vt);
+	
+	vl = max(vl,ll);
+	vb = max(vb,lb);
+	vr = min(vr,lr);
+	vt = min(vt,lt);
+	
+	ll = GetZoomer()->LonToXPixel(ll);
+	lr = GetZoomer()->LonToXPixel(lr);
+	lb = GetZoomer()->LatToYPixel(lb);
+	lt = GetZoomer()->LatToYPixel(lt);
+
+
+
+	// First: splat the whole area with the matte color.  This is clipped to
+	// pixel bounds cuz we don't need to draw where we can't see.
+	g->SetState(false,false,false, true,true, false,false);
+	// Gridline time...		
 	glColor4fv(WED_Color_RGBA(wed_Map_Gridlines));
 	g->SetState(false,false,false, false,true, false,false);
 	
-	pl = min(lr,max(ll,pl));
-	pr = min(lr,max(ll,pr));
-	pt = min(lt,max(lb,pt));
-	pb = min(lt,max(lb,pb));
+	double lon_span = vr - vl;
+	double lat_span = vt - vb;
+	double longest_span = max(lon_span,lat_span);
+	double divisions = 1;
+	if (longest_span > 20)	divisions = 10;
+	if (longest_span > 60)	divisions = 30;
+	if (longest_span > 90)	divisions = 45;
+	
+	double cl = floor(vl / divisions) * divisions;
+	double cb = floor(vb / divisions) * divisions;
+	double cr = ceil (vr / divisions) * divisions;
+	double ct = ceil (vt / divisions) * divisions;
 	
 	glBegin(GL_LINES);
-	for(double t = 0.0; t <= 1.0; t += 0.25)
+	for(double t = cl; t <= cr; t += divisions)
 	{
-		glVertex2d(pl,lb+(lt-lb)*t);
-		glVertex2d(pr,lb+(lt-lb)*t);
-		glVertex2d(ll+(lr-ll)*t,pb);
-		glVertex2d(ll+(lr-ll)*t,pt);
+		glVertex2d(GetZoomer()->LonToXPixel(t), lb);
+		glVertex2d(GetZoomer()->LonToXPixel(t), lt);
+	}
+	for(double t = cb; t <= ct; t += divisions)
+	{
+		glVertex2d(ll,GetZoomer()->LatToYPixel(t));
+		glVertex2d(lr,GetZoomer()->LatToYPixel(t));
 	}
 	glEnd();
 	

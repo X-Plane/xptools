@@ -10,6 +10,7 @@ public:
 	virtual				~WED_MapBkgnd();
 
 	virtual	void		DrawVisualization(int inCurrent, GUI_GraphState * g);
+	virtual	void		DrawStructure	 (int inCurrent, GUI_GraphState * g);
 		
 };
 		

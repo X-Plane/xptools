@@ -3,13 +3,18 @@
 #include "WED_Menus.h"
 #include "GUI_ToolBar.h"
 #include "XESConstants.h"
+#include "IGIS.h"
+#include "ISelection.h"
+#include "WED_Thing.h"
 #include "WED_Map.h"
 #include "WED_MapBkgnd.h"
+#include "WED_ToolUtils.h"
 #include "WED_MarqueeTool.h"
 #include "WED_CreatePolygonTool.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
+#include "WED_WorldMapLayer.h"
 #include "WED_ImageOverlayTool.h"
 #include "WED_VertexTool.h"
 #include "WED_TerraserverLayer.h"
@@ -27,8 +32,36 @@ char	kToolKeys[] = {
 	'r', 'p', 'm', 'v' 
 };
 
+static void GetExtentAll(Bbox2& box, IResolver * resolver)
+{
+	box = Bbox2();
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(wrl);
+	if (ent) ent->GetBounds(box);
+}
 
-WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive)
+static int accum_box(IBase * who, void * ref)
+{
+	Bbox2 * total = (Bbox2 *) ref;
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(who);
+	if (ent)
+	{
+		Bbox2 ent_box;
+		ent->GetBounds(ent_box);
+		*total += ent_box;
+	}
+	return 0;
+}
+
+static void GetExtentSel(Bbox2& box, IResolver * resolver)
+{
+	box = Bbox2();
+	ISelection * sel = WED_GetSelect(resolver);
+	sel->IterateSelection(accum_box,&box);
+}
+
+
+WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive) : mResolver(resolver)
 {
 	mMap = new WED_Map(resolver);
 
@@ -36,7 +69,8 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
-
+	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
+	
 	// TOOLS
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
 	mTools.push_back(					new WED_CreatePointTool("Windsock", mMap, mMap, resolver, archive, create_Windsock));
@@ -161,9 +195,9 @@ WED_MapPane::~WED_MapPane()
 
 void	WED_MapPane::ZoomShowAll(void)
 {
-	double l,b,r,t;
-	mMap->GetMapLogicalBounds(l,b,r,t);
-	mMap->SetAspectRatio(1.0 / cos((b+t) * 0.5 * DEG_TO_RAD));
+//	double l,b,r,t;
+//	mMap->GetMapLogicalBounds(l,b,r,t);
+//	mMap->SetAspectRatio(1.0 / cos((b+t) * 0.5 * DEG_TO_RAD));
 	mMap->ZoomShowAll();
 }
 
@@ -182,8 +216,10 @@ int		WED_MapPane::Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 
 int		WED_MapPane::Map_HandleCommand(int command)
 {
+	Bbox2 box;
 	switch(command) {
 	case wed_PickOverlay:	mImageOverlay->PickFile();	return 1;
+	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVis(); return 1;
 
@@ -194,14 +230,21 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_Pavement100:	mStructureLayer->SetPavementTransparency(1.0f);		return 1;
 	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
 
+	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	return 1;
+	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	return 1;
+	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	return 1;
+
 	default:		return 0;
 	}	
 }
 
 int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
+	Bbox2	box;
+	
 	switch(command) {
 	case wed_PickOverlay:	return 1;
+	case wed_ToggleWorldMap:	ioCheck = mWorldMap->IsVisible();return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }
 	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis(); return 1;
 	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
@@ -210,6 +253,11 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_Pavement75:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.75f;	return 1;
 	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
 	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
+	
+	case wed_ZoomWorld:		return 1;
+	case wed_ZoomAll:		GetExtentAll(box, mResolver); return !box.is_empty()  && !box.is_null();
+	case wed_ZoomSelection:	GetExtentSel(box, mResolver); return !box.is_empty()  && !box.is_null();
+	
 	default:		return 0;
 	}	
 }

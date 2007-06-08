@@ -35,11 +35,15 @@ WED_MapZoomerNew::WED_MapZoomerNew()
 	mPixels[1] = 0.0;
 	mPixels[2] = 1.0;
 	mPixels[3] = 1.0;
-	mVisibleBounds[0] = mLogicalBounds[0] = 0.0;
-	mVisibleBounds[1] = mLogicalBounds[1] = 0.0;
-	mVisibleBounds[2] = mLogicalBounds[2] = 1.0;
-	mVisibleBounds[3] = mLogicalBounds[3] = 1.0;
-	mAspectRatio = 1.0;
+	mLogicalBounds[0] = -180.0;
+	mLogicalBounds[1] =  -90.0;
+	mLogicalBounds[2] =  180.0;
+	mLogicalBounds[3] =   90.0;
+	
+	mPixel2DegLat = 1.0;
+	mLonCenter = mLatCenter = 0.0;
+	RecalcAspectRatio();
+
 }
 
 WED_MapZoomerNew::~WED_MapZoomerNew()
@@ -48,22 +52,23 @@ WED_MapZoomerNew::~WED_MapZoomerNew()
 
 double	WED_MapZoomerNew::XPixelToLon(double x)
 {
-	return rescale(mPixels[0], mPixels[2], mVisibleBounds[0], mVisibleBounds[2], x);
+	return mLonCenter + (x - (mPixels[2]+mPixels[0])*0.5) * mPixel2DegLat / mLonCenterCOS;
+
 }
 
 double	WED_MapZoomerNew::YPixelToLat(double y)
 {
-	return rescale(mPixels[1], mPixels[3], mVisibleBounds[1], mVisibleBounds[3], y);
+	return mLatCenter + (y - (mPixels[3]+mPixels[1])*0.5) * mPixel2DegLat;
 }
 
 double	WED_MapZoomerNew::LonToXPixel(double lon)
 {
-	return rescale(mVisibleBounds[0], mVisibleBounds[2], mPixels[0], mPixels[2], lon);
+	return (mPixels[2]+mPixels[0])*0.5 + (lon - mLonCenter) * mLonCenterCOS / mPixel2DegLat;
 }
 
 double	WED_MapZoomerNew::LatToYPixel(double lat)
 {
-	return rescale(mVisibleBounds[1], mVisibleBounds[3], mPixels[1], mPixels[3], lat);
+	return (mPixels[3]+mPixels[1])*0.5 + (lat - mLatCenter) / mPixel2DegLat;
 }
 
 Point2	WED_MapZoomerNew::PixelToLL(const Point2& p)
@@ -90,6 +95,9 @@ void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n)
 
 double	WED_MapZoomerNew::GetPPM(void)
 {
+	#if !DEV
+	can we do better?
+	#endif
 	return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));
 }
 
@@ -107,18 +115,6 @@ void	WED_MapZoomerNew::SetPixelBounds(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 					
-void	WED_MapZoomerNew::SetMapVisibleBounds(
-					double	inWest,
-					double	inSouth,		
-					double	inEast,
-					double	inNorth)
-{
-	mVisibleBounds[0] = inWest;
-	mVisibleBounds[1] = inSouth;
-	mVisibleBounds[2] = inEast;
-	mVisibleBounds[3] = inNorth;
-	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
-}					
 void	WED_MapZoomerNew::SetMapLogicalBounds(	
 					double	inWest,
 					double	inSouth,
@@ -151,11 +147,12 @@ void	WED_MapZoomerNew::GetMapVisibleBounds(
 					double&	outEast,
 					double&	outNorth)
 {
-	outWest = mVisibleBounds[0];
-	outSouth = mVisibleBounds[1];
-	outEast = mVisibleBounds[2];
-	outNorth = mVisibleBounds[3];
+	outWest = XPixelToLon	(mPixels[0]);
+	outSouth = YPixelToLat	(mPixels[1]);
+	outEast = XPixelToLon	(mPixels[2]);
+	outNorth = YPixelToLat	(mPixels[3]);
 }					
+
 void	WED_MapZoomerNew::GetMapLogicalBounds(	
 					double&	outWest,
 					double&	outSouth,
@@ -169,54 +166,39 @@ void	WED_MapZoomerNew::GetMapLogicalBounds(
 }					
 
 
-void	WED_MapZoomerNew::SetAspectRatio(double a)
-{
-	mAspectRatio = a;
-}
+//void	WED_MapZoomerNew::SetAspectRatio(double a)
+//{
+//	mAspectRatio = a;
+//}
 
 void	WED_MapZoomerNew::ZoomShowAll(void)
 {
-	double	mapWidth = mLogicalBounds[2] - mLogicalBounds[0];
-	double	mapHeight = mLogicalBounds[3] - mLogicalBounds[1];
-	double	mapCenterX = 0.5 * (mLogicalBounds[2] + mLogicalBounds[0]);
-	double	mapCenterY = 0.5 * (mLogicalBounds[3] + mLogicalBounds[1]);
-	double	viewWidth = mPixels[2] - mPixels[0];
-	double	viewHeight = mPixels[3] - mPixels[1];
+	ZoomShowArea(mLogicalBounds[0],mLogicalBounds[1],mLogicalBounds[2],mLogicalBounds[3]);
+}
+
+void	WED_MapZoomerNew::ZoomShowArea(
+							double	inWest,
+							double	inSouth,
+							double	inEast,
+							double	inNorth)
+{
+	mLonCenter = (inWest + inEast) * 0.5;
+	mLatCenter = (inSouth + inNorth) * 0.5;
 	
-	// Our official aspect ratio is the shape of a 1x1 logical unit box.
-	// So we have to bias our logical zoomout to take in extra dead area to
-	// preserve this aspect ratio!!  Here's how we do it:
+	double required_width_logical = inEast - inWest;
+	double required_height_logical = inNorth - inSouth;
+	double pix_avail_width = mPixels[2] - mPixels[0];
+	double pix_avail_height = mPixels[3] - mPixels[1];
 	
-	// Our visible aspect ratio is the aspect ratio of the actual window...
-	// probably varies depending on the user's monitor and other weird stuff.
-	double	visAspectPixels = viewHeight / viewWidth;
-	// Map aspect ratio is the difference in logical units of the shape of our map.
-	double	mapAspect = mapHeight / mapWidth;
+	double scale_for_vert = required_height_logical / pix_avail_height;
+	double scale_for_horz = required_width_logical / pix_avail_width * mLonCenterCOS;
 	
-	// Now we have to transform the map's aspect ratio into logical units, e.g. 
-	// how much of the map _should_ be visible.
-	double	visAspectLogical = visAspectPixels / mAspectRatio;
+	mPixel2DegLat = max(scale_for_vert,scale_for_horz);
+	RecalcAspectRatio();
 	
-	// This number needs to be the same as mapAspect...if it's not we have to make
-	// an adjustment.
-	if (visAspectLogical > mapAspect)
-	{
-		// The area we have to display is taller than our map.  Pad the map on the top
-		// and bottom.
-		mapHeight = mapWidth * visAspectLogical;
-	} else {
-		// The area we have to display is wider than our map.  PAd the map on the left and
-		// right.
-		mapWidth = mapHeight / visAspectLogical;
-	}
-	
-	// Now set the map bounds.
-	mVisibleBounds[0] = mapCenterX - 0.5 * mapWidth;
-	mVisibleBounds[1] = mapCenterY - 0.5 * mapHeight;
-	mVisibleBounds[2] = mapCenterX + 0.5 * mapWidth;
-	mVisibleBounds[3] = mapCenterY + 0.5 * mapHeight;
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
+
 
 void	WED_MapZoomerNew::PanPixels(
 					double	x1,
@@ -230,11 +212,10 @@ void	WED_MapZoomerNew::PanPixels(
 	double delta_lon = XPixelToLon(x2) - XPixelToLon(x1);
 	double delta_lat = YPixelToLat(y2) - YPixelToLat(y1);
 	
-	// Move the map in the opposite direction.
-	mVisibleBounds[0] -= delta_lon;
-	mVisibleBounds[1] -= delta_lat;
-	mVisibleBounds[2] -= delta_lon;
-	mVisibleBounds[3] -= delta_lat;
+	mLatCenter -= delta_lat;
+	mLonCenter -= delta_lon;
+	RecalcAspectRatio();
+	
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
 
@@ -249,19 +230,19 @@ void	WED_MapZoomerNew::ZoomAround(
 	//    the lower left.
 	// 3. Scroll the map back.
 	
-	PanPixels(centerXPixel, centerYPixel, mPixels[0], mPixels[1]);
+	double px = (mPixels[0]+mPixels[2]) * 0.5;
+	double py = (mPixels[1]+mPixels[3]) * 0.5;
 	
-	double	width = mVisibleBounds[2] - mVisibleBounds[0];
-	double	height = mVisibleBounds[3] - mVisibleBounds[1];
-	width /= zoomFactor;
-	height /= zoomFactor;
-	mVisibleBounds[2] = mVisibleBounds[0] + width;
-	mVisibleBounds[3] = mVisibleBounds[1] + height;
+	PanPixels(centerXPixel, centerYPixel, px,py);
 
-	PanPixels(mPixels[0], mPixels[1], centerXPixel, centerYPixel);
+	mPixel2DegLat /= zoomFactor;
+	RecalcAspectRatio();
+
+	PanPixels(px,py, centerXPixel, centerYPixel);
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }					
 
+/*
 void	WED_MapZoomerNew::ScrollReveal(
 				double	inLon,
 				double	inLat)
@@ -275,6 +256,7 @@ void	WED_MapZoomerNew::ScrollReveal(
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 	
 }
+
 
 void	WED_MapZoomerNew::ScrollReveal(
 				double	inWest,
@@ -315,26 +297,48 @@ void	WED_MapZoomerNew::ScrollReveal(
 	}
 	BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 }
+*/
 
 void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
 {
+	double vbounds[4];
+	GetMapVisibleBounds(vbounds[0],vbounds[1],vbounds[2],vbounds[3]);
+
 	for (int n = 0; n < 4; ++n)
 	{
 		outTotalBounds[n] = mLogicalBounds[n];
-		outVisibleBounds[n] = mVisibleBounds[n];
+		outVisibleBounds[n] = vbounds[n];
 	}
 }
 
 void	WED_MapZoomerNew::ScrollH(float xOffset)
 {
-	mVisibleBounds[2] -= mVisibleBounds[0];
-	mVisibleBounds[0] = xOffset + mLogicalBounds[0];
-	mVisibleBounds[2] += mVisibleBounds[0];
+	float log[4], vis[4];
+	GetScrollBounds(log, vis);
+	
+	float now = vis[0] - log[0];
+	xOffset -= now;	
+	mLonCenter += (xOffset * mPixel2DegLat / mLonCenterCOS);
 }
 
 void	WED_MapZoomerNew::ScrollV(float yOffset)
 {
-	mVisibleBounds[3] -= mVisibleBounds[1];
-	mVisibleBounds[1] = yOffset + mLogicalBounds[1];
-	mVisibleBounds[3] += mVisibleBounds[1];
+	float log[4], vis[4];
+	GetScrollBounds(log, vis);
+	
+	float now = vis[1] - log[1];
+	yOffset -= now;	
+	mLatCenter += (yOffset * mPixel2DegLat);
+	RecalcAspectRatio();
+}
+
+void	WED_MapZoomerNew::RecalcAspectRatio(void)
+{
+	double top_lat = YPixelToLat(mPixels[3]);
+	double bot_lat = YPixelToLat(mPixels[1]);
+	
+	if (top_lat > 0 && bot_lat < 0)
+		mLonCenterCOS = 1.0;
+	else
+		mLonCenterCOS = cos(min(fabs(top_lat),fabs(bot_lat)) * DEG_TO_RAD);
 }

@@ -21,56 +21,27 @@
  *
  */
 
-#ifndef WED_Colors_H
-#define WED_Colors_H
+#ifndef WED_WorldMapLayer_H
+#define WED_WorldMapLayer_H
 
-enum WED_Color {
-	wed_Map_Matte,	
-	wed_Map_Gridlines,
-	wed_Map_Bkgnd,	
+#include "WED_MapLayer.h"
+
+class WED_WorldMapLayer : public WED_MapLayer {
+public:
+
+						 WED_WorldMapLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
+	virtual				~WED_WorldMapLayer();
+
+			bool		IsVisible(void) { return mVisible; }
+			void		ToggleVisible(void);
+
+	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
 	
-	wed_Structure,
-	wed_StructureSelected,
-	wed_StructureLocked,
-	wed_StructureLockedSelected,
+private:
 
-	wed_ControlHandle,
-	wed_Link,
-	wed_ControlLink,
-	wed_GhostLink,
-	wed_Marquee,
+	bool			mVisible;
 
-	wed_Surface_Asphalt,
-	wed_Surface_Concrete,
-	wed_Surface_Grass,
-	wed_Surface_Dirt,
-	wed_Surface_Gravel,
-	wed_Surface_DryLake,
-	wed_Surface_Water,
-	wed_Surface_Snow,
-	wed_Surface_Transparent,
-	
-	wed_Table_Gridlines,
-	wed_Table_Text,
-	wed_Table_Select,
-	wed_Table_SelectText,
-	wed_Table_Drag_Insert,
-	wed_Table_Drag_Into,
-	wed_Header_Text,
-	wed_Tabs_Text,
-	wed_PropertyBar_Text,
 
-	wed_TextField_Bkgnd,
-	wed_TextField_Text,
-	wed_TextField_Hilite,
-	wed_TextField_FocusRing,
-	
-	wed_Last
 };
 
-float *		WED_Color_RGBA		(WED_Color c);
-float *		WED_Color_RGBA_Alpha(WED_Color c, float alpha, float storage[4]);
-float *		WED_Color_Surface	(int surface, float alpha, float storage[4]);
-
-
-#endif /* WED_Colors_H */
+#endif /* WED_WorldMapLayer_H */

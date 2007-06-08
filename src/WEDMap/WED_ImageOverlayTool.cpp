@@ -86,7 +86,7 @@ void		WED_ImageOverlayTool::DrawVisualization		(int inCurrent, GUI_GraphState * 
 	if (mVisible && mBits)
 	{
 		g->SetState(0, 1, 0,    0, 1,  0, 0);
-		glColor4f(1.0, 1.0, 1.0, 0.5);
+		glColor4f(1.0, 1.0, 1.0, 1.0);
 		g->BindTex(mTexID, 0);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 0.0);

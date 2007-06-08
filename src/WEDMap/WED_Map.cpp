@@ -40,46 +40,46 @@ void		WED_Map::SetBounds(int x1, int y1, int x2, int y2)
 {
 	GUI_Pane::SetBounds(x1,y1,x2,y2);
 
-	double	old_bounds[4], new_bounds[4], log_bounds[4];
-	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
-	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
+//	double	old_bounds[4], new_bounds[4], log_bounds[4];
+//	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
+//	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
 	
-	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
-	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
+//	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
+//	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
 	
-	new_bounds[0] = x1;
-	new_bounds[1] = y1;
-	new_bounds[2] = dobmax2(x1+1.0,x2);
-	new_bounds[3] = dobmax2(y1+1.0,y2);
+//	new_bounds[0] = x1;
+//	new_bounds[1] = y1;
+//	new_bounds[2] = dobmax2(x1+1.0,x2);
+//	new_bounds[3] = dobmax2(y1+1.0,y2);
 	
-	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
-	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
+//	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
+//	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
 
-	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
-	SetPixelBounds(new_bounds[0],new_bounds[1],new_bounds[2],new_bounds[3]);
+//	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
+	SetPixelBounds(x1,y1,x2,y2);
 }
 
 void		WED_Map::SetBounds(int inBounds[4])
 {
 	GUI_Pane::SetBounds(inBounds);
 
-	double	old_bounds[4], new_bounds[4], log_bounds[4];
-	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
-	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
+//	double	old_bounds[4], new_bounds[4], log_bounds[4];
+//	GetPixelBounds(old_bounds[0],old_bounds[1],old_bounds[2],old_bounds[3]);
+//	GetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
 	
-	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
-	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
+//	old_bounds[2] = dobmax2(old_bounds[0]+1,old_bounds[2]);
+//	old_bounds[3] = dobmax2(old_bounds[1]+1,old_bounds[3]);
 	
-	new_bounds[0] = inBounds[0];
-	new_bounds[1] = inBounds[1];
-	new_bounds[2] = dobmax2(inBounds[0]+1.0,inBounds[2]);
-	new_bounds[3] = dobmax2(inBounds[1]+1.0,inBounds[3]);
+//	new_bounds[0] = inBounds[0];
+//	new_bounds[1] = inBounds[1];
+//	new_bounds[2] = dobmax2(inBounds[0]+1.0,inBounds[2]);
+//	new_bounds[3] = dobmax2(inBounds[1]+1.0,inBounds[3]);
 		
-	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
-	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
+//	log_bounds[2] = log_bounds[0] + extrap(0.0,0.0,old_bounds[2]-old_bounds[0],new_bounds[2]-new_bounds[0],log_bounds[2] - log_bounds[0]);
+//	log_bounds[3] = log_bounds[1] + extrap(0.0,0.0,old_bounds[3]-old_bounds[1],new_bounds[3]-new_bounds[1],log_bounds[3] - log_bounds[1]);
 
-	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
-	SetPixelBounds(new_bounds[0],new_bounds[1],new_bounds[2],new_bounds[3]);
+//	SetMapVisibleBounds(log_bounds[0],log_bounds[1],log_bounds[2],log_bounds[3]);
+	SetPixelBounds(inBounds[0],inBounds[1],inBounds[2],inBounds[3]);
 
 }
 
@@ -129,19 +129,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (status)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 	
-	#if !DEV
-	nuke this
-	#endif
-	char hack[100];
-	WED_Archive * a = WED_GetWorld(mResolver)->GetArchive();
-	sprintf(hack, "Dirty: %s (%d)", a->IsDirty() ? "yes" : "no", a->IsDirty());
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 45, hack);
-
-	float ppm = GetPPM();
-	float icon_scale = 	ppm * 2.0;
-	if (icon_scale > 1.0) icon_scale = 1.0;
-
-	sprintf(hack, "%f ppm %f icons", GetPPM(), icon_scale);
+	
+	char hack[50];
+	int x, y;
+	GetMouseLocNow(&x,&y);
+	sprintf(hack, "%+010.6lf %+011.6lf", XPixelToLon(x),YPixelToLat(y));
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, hack);
 	
@@ -159,7 +151,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
-		for (int n = 0; n < t; ++n)
+		for (int n = t-1; n >= 0; --n)
 			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g);
 	}
 }
@@ -176,7 +168,7 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
-		for (int n = 0; n < t; ++n)
+		for (int n = t-1; n >= 0; --n)
 			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g);
 	}
 }

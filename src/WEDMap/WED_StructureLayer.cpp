@@ -772,6 +772,8 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		 ******************************************************************************************************************************************************/		
 		if ((poly = SAFE_CAST(IGISPolygon,entity)) != NULL)
 		{
+		
+			if (mPavementAlpha > 0.0)
 			if ((taxi = SAFE_CAST(WED_Taxiway, poly)) != NULL)
 			{
 				vector<Point2>	pts;

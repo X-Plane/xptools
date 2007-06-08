@@ -70,22 +70,12 @@ public:
 	// This API is called by the map class to set up and modify the zoomer
 	
 	// Overall setup
-			void	SetPixelBounds(					// Set the area on the screen the user
-							double 	inLeft,			// can see.
-							double	inBottom,
-							double	inRight,
-							double	inTop);
-			void	SetMapVisibleBounds(			// Set the amount of the map visible in
-							double	inWest,			// this screen area.
-							double	inSouth,
-							double	inEast,
-							double	inNorth);
+
 			void	SetMapLogicalBounds(			// Define the max scrollable map positions.
 							double	inWest,
 							double	inSouth,
 							double	inEast,
 							double	inNorth);
-			void	SetAspectRatio(double);			// Aspect ratio of logical coords (e.g. 1.3 for Boston)
 
 			void	GetPixelBounds(					// Get the area on the screen the user
 							double& outLeft,			// can see.
@@ -106,6 +96,11 @@ public:
 
 	// Scrolling operations
 			void	ZoomShowAll(void);				// Zoom out to reveal the whole map
+			void	ZoomShowArea(
+							double	inWest,
+							double	inSouth,
+							double	inEast,
+							double	inNorth);
 			void	PanPixels(						// Pan so that the logical pixel under p1
 							double	x1,				// is now visible under p2
 							double	y1,
@@ -129,14 +124,24 @@ public:
 	virtual	void	ScrollH(float xOffset);
 	virtual	void	ScrollV(float yOffset);
 
+protected:	
+			void	SetPixelBounds(					// Set the area on the screen the user
+							double 	inLeft,			// can see.
+							double	inBottom,
+							double	inRight,
+							double	inTop);
+							
 
-	
 private:
 
+			void	RecalcAspectRatio(void);
+
 	double	mPixels[4];
-	double	mVisibleBounds[4];
 	double	mLogicalBounds[4];
-	double	mAspectRatio;
+	double	mLatCenter;
+	double	mLonCenter;
+	double	mLonCenterCOS;
+	double	mPixel2DegLat;
 	
 };
 	
