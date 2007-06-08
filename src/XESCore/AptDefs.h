@@ -20,7 +20,7 @@ enum {
 	apt_freq_gnd 		= 53,
 	apt_freq_twr 		= 54,
 	apt_freq_app 		= 55,
-	apt_freq_ctr 		= 56,
+	apt_freq_dep 		= 56,
 	apt_done 			= 99,
 	// These records are new with X-Plane 850!
 	apt_sign 			= 20,
