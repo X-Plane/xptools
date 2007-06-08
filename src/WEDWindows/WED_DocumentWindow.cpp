@@ -108,9 +108,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- AIRPORT
 
-	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", NULL };
-	static		 int	air_w[] = { 200, 100, 100, 75, 100  };
-	static const char * air_f[] = { "WED_Airport", NULL };
+	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", "Frequency", NULL };
+	static		 int	air_w[] = { 200, 100, 100, 75, 100, 150  };
+	static const char * air_f[] = { "WED_Airport", "WED_ATCFrequency", NULL };
 	
 	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);	
 	prop_tabs->AddPane(prop_pane2, "Airports");
@@ -194,6 +194,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
+	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
@@ -201,6 +202,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
 	
+	case wed_AddATCFreq:WED_DoMakeNewATC(mDocument); return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -232,8 +234,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case gui_Close:															return 1;
+	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
+	case wed_AddATCFreq:return WED_CanMakeNewATC(mDocument); 
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument); 
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
 	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);	

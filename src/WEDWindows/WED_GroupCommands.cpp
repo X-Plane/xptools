@@ -27,6 +27,8 @@
 #include "ISelection.h"
 #include "WED_Thing.h"
 #include "WED_Airport.h"
+#include "WED_ATCFrequency.h"
+#include "WED_AirportNode.h"
 #include "WED_Group.h"
 
 
@@ -177,6 +179,21 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 }
 
 
+int		WED_CanMakeNewATC(IResolver * inResolver)
+{
+	WED_Airport * now_sel = WED_GetCurrentAirport(inResolver);
+	return now_sel != NULL;
+}
+
+void	WED_DoMakeNewATC(IResolver * inResolver)
+{
+	WED_Airport * now_sel = WED_GetCurrentAirport(inResolver);
+	now_sel->StartOperation("Add ATC Frequency");
+	WED_ATCFrequency * f=  WED_ATCFrequency::CreateTyped(now_sel->GetArchive());
+	f->SetParent(now_sel,now_sel->CountChildren());
+	now_sel->CommitOperation();	
+}
+
 void	WED_DoSetCurrentAirport(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
@@ -216,6 +233,8 @@ void	WED_DoClear(IResolver * resolver)
 	IOperation * op = dynamic_cast<IOperation *> (sel);
 
 	set<WED_Thing *>	who;
+	set<WED_Thing *>	chain;
+	
 	WED_GetSelectionRecursive(resolver, who);
 	if (who.empty()) return;
 	
@@ -223,10 +242,33 @@ void	WED_DoClear(IResolver * resolver)
 	
 	sel->Clear();
 	
-	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	while(!who.empty())
 	{
-		(*i)->SetParent(NULL, 0);
-		(*i)->Delete();
+		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+		{
+			WED_Thing * p = (*i)->GetParent();
+			if (p && who.count(p) == 0)
+				chain.insert(p);
+			(*i)->SetParent(NULL, 0);
+			(*i)->Delete();
+		}
+
+		who.clear();
+		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
+		{
+			IGISPointSequence * l = dynamic_cast<IGISPointSequence *>(*i);
+			if (l)
+			{
+				if ((*i)->CountChildren() < 2)
+					who.insert(*i);
+			}
+			IGISPolygon * p = dynamic_cast<IGISPolygon *>(*i);
+			if (p && (*i)->CountChildren() == 0)
+				who.insert(*i);
+				
+		}
+		
+		chain.clear();
 	}
 	
 	op->CommitOperation();
@@ -498,5 +540,136 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 		if (keeper) sel->Insert(keeper);
 	}
 
+	op->CommitOperation();
+}
+
+static int	unsplittable(IBase * base, void * ref)
+{
+	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
+	if (!t) return 1;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if (!p) return 1;
+	
+	WED_Thing * parent = t->GetParent();
+	if (!parent) return 1;
+	
+	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
+	if (!s) return 1;
+	
+	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 1;
+	
+	int pos = t->GetMyPosition();
+	int next = (pos							  + 1) % parent->CountChildren();
+	int prev = (pos + parent->CountChildren() - 1) % parent->CountChildren();
+	int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
+	int okay_prev = (s->GetGISClass() == gis_Ring) || prev < pos;
+
+	WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
+	WED_Thing * tprev = okay_prev ? parent->GetNthChild(prev) : NULL;
+	
+	ISelection * sel = (ISelection*) ref;
+	
+	int okay = ((tnext && sel->IsSelected(tnext)) ||
+			    (tprev && sel->IsSelected(tprev)));
+	return !okay;
+}
+
+typedef	pair<ISelection *, vector<WED_Thing *> * >	hack_t;
+
+static int	collect_splits(IBase * base, void * ref)
+{
+	hack_t * info = (hack_t *) ref;
+
+	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
+	if (!t) return 0;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if (!p) return 0;
+	
+	WED_Thing * parent = t->GetParent();
+	if (!parent) return 0;
+	
+	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
+	if (!s) return 0;
+	
+	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 0;
+	
+	int pos = t->GetMyPosition();
+	int next = (pos							  + 1) % parent->CountChildren();
+	int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
+
+	WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
+	
+	ISelection * sel = info->first;
+	
+	int okay = tnext && sel->IsSelected(tnext);
+	if (okay)
+		info->second->push_back(t);
+	return 0;
+}
+
+
+
+int		WED_CanSplit(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->IterateSelection(unsplittable, sel)) return 0;
+	return 1;
+}
+
+void	WED_DoSplit(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	
+	vector<WED_Thing *> who;
+	hack_t	info;
+	info.first = sel;
+	info.second = &who;
+	
+	sel->IterateSelection(collect_splits, &info);
+	if (who.empty()) return;
+	
+	op->StartOperation("Split Segments.");
+	
+	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
+	{
+		WED_Thing * parent = (*w)->GetParent();
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
+		WED_AirportNode * node = dynamic_cast<WED_AirportNode *>(*w);
+		
+		WED_AirportNode * new_node = WED_AirportNode::CreateTyped(parent->GetArchive());
+		Segment2	seg;
+		Bezier2		bez;
+		
+		set<int> attrs;
+		node->GetAttributes(attrs);
+		new_node->SetAttributes(attrs);
+		
+		if (seq->GetSide((*w)->GetMyPosition(),seg,bez))
+		{
+			Bezier2	b1, b2;
+			bez.partition(b1,b2);
+			new_node->SetLocation(b2.p1);
+			new_node->SetSplit(false);
+			new_node->SetControlHandleHi(b2.c1);
+			node->SetSplit(true);
+			node->SetControlHandleHi(b1.c1);
+			WED_AirportNode * follow = dynamic_cast<WED_AirportNode *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
+			follow->SetSplit(true);
+			follow->SetControlHandleLo(b2.c2);
+		}
+		else
+		{
+			new_node->SetLocation(seg.midpoint());
+		}
+		new_node->SetParent(parent, (*w)->GetMyPosition() + 1);
+		string name;
+		node->GetName(name);
+		name += ".1";
+		new_node->SetName(name);
+		
+		sel->Insert(new_node);
+	}
+	
 	op->CommitOperation();
 }

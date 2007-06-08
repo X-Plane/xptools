@@ -35,6 +35,9 @@ void	WED_DoUngroup(IResolver * inResolver);
 int		WED_CanMakeNewAirport(IResolver * inResolver);
 void	WED_DoMakeNewAirport(IResolver * inResolver);
 
+int		WED_CanMakeNewATC(IResolver * inResolver);
+void	WED_DoMakeNewATC(IResolver * inResolver);
+
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);
 
@@ -43,6 +46,9 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 
 int		WED_CanClear(IResolver * resolver);
 void	WED_DoClear(IResolver * resolver);
+
+int		WED_CanSplit(IResolver * resolver);
+void	WED_DoSplit(IResolver * resolver);
 
 int		WED_CanSelectAll(IResolver * resolver);
 void	WED_DoSelectAll(IResolver * resolver);

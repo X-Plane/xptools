@@ -17,6 +17,7 @@ enum {
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
+	wed_Split,
 	wed_MoveFirst,
 	wed_MovePrev,
 	wed_MoveNext,
@@ -28,9 +29,13 @@ enum {
 	wed_Pavement75,
 	wed_Pavement100,
 	// view menu
+	wed_ZoomWorld,
+	wed_ZoomAll,
+	wed_ZoomSelection,
 	wed_ToggleLines,	
 	wed_PickOverlay,
 	wed_ToggleOverlay,
+	wed_ToggleWorldMap,
 	wed_ToggleTerraserver,
 	// Select Menu
 	wed_SelectParent,
@@ -39,7 +44,8 @@ enum {
 	wed_SelectPoly,
 	// Airport Menu
 	wed_CreateApt,
-	wed_EditApt
+	wed_EditApt,
+	wed_AddATCFreq
 
 };
 
