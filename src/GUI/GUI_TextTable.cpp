@@ -73,6 +73,11 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mColorInsertBetween[2] = 1.0;
 	mColorInsertBetween[3] = 1.0;
 	
+	mTFColorText[0] = 0.0;		mTFColorText[1] = 0.0;		mTFColorText[2] = 0.0;		mTFColorText[3] = 1.0;
+	mTFColorHilite[0] = 1.0;	mTFColorHilite[1] = 1.0;	mTFColorHilite[2] = 0.0;	mTFColorHilite[3] = 1.0;
+	mTFColorBkgnd[0] = 1.0;		mTFColorBkgnd[1] = 1.0;		mTFColorBkgnd[2] = 1.0;		mTFColorBkgnd[3] = 1.0;	
+	mTFColorBox[0] = 0.3;		mTFColorBox[1] = 0.5;		mTFColorBox[2] = 1.0;		mTFColorBox[3] = 1.0;	
+	
 	mDiscloseIndent = GUI_GetImageResourceWidth("disclose.png") / 2;
 }
 
@@ -104,6 +109,22 @@ void	GUI_TextTable::SetColors(
 		mColorInsertInto	[n]=insert_into		[n];
 	}
 }
+
+void		GUI_TextTable::SetTextFieldColors(
+								float text_color[4],
+								float hilite_color[4],
+								float bkgnd_color[4],
+								float box_color[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mTFColorText[n] = text_color[n];
+		mTFColorHilite[n] = hilite_color[n];
+		mTFColorBkgnd[n] = bkgnd_color[n];
+		mTFColorBox[n] = box_color[n];
+	}
+}
+
 
 void		GUI_TextTable::SetParentTable(GUI_Table * parent)
 {
@@ -868,6 +889,8 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 		{
 			float transparent[4] = { 0.0, 0.0, 0.0, 0.0 };
 			mTextField->SetColors(mColorTextSelect, mColorSelect, transparent, transparent);
+		} else {
+			mTextField->SetColors(mTFColorText,mTFColorHilite,mTFColorBkgnd,mTFColorBox);
 		}
 	}
 	

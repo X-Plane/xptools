@@ -200,6 +200,11 @@ public:
 							float		text_select[4],
 							float		insert_between[4],
 							float		insert_into[4]);
+			void		SetTextFieldColors(
+								float text_color[4],
+								float hilite_color[4],
+								float bkgnd_color[4],
+								float box_color[4]);
 
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
@@ -275,6 +280,12 @@ private:
 	float					mColorTextSelect[4];
 	float					mColorInsertInto[4];
 	float					mColorInsertBetween[4];
+	
+	float					mTFColorText[4];
+	float					mTFColorHilite[4];
+	float					mTFColorBkgnd[4];
+	float					mTFColorBox[4];	
+	
 	string					mImage;
 	int						mAlternate;
 	

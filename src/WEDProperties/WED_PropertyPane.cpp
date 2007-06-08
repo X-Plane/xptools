@@ -41,6 +41,11 @@ WED_PropertyPane::WED_PropertyPane(
 				WED_Color_RGBA(wed_Table_SelectText),
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
+	mTextTable.SetTextFieldColors(
+				WED_Color_RGBA(wed_TextField_Text),
+				WED_Color_RGBA(wed_TextField_Hilite),
+				WED_Color_RGBA(wed_TextField_Bkgnd),
+				WED_Color_RGBA(wed_TextField_FocusRing));
 
 	mTable = new GUI_Table(pane_style==propPane_Hierarchy);
 	mTable->SetGeometry(&mPropertyTable);
