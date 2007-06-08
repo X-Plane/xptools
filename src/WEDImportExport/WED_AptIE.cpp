@@ -28,6 +28,7 @@
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
 #include "WED_AirportSign.h"
+#include "WED_ATCFrequency.h"
 #include "WED_Helipad.h"
 #include "WED_LightFixture.h"
 #include "WED_RampPosition.h"
@@ -123,6 +124,7 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_AirportBoundary *	bou;
 	WED_AirportChain *		cha;
 	WED_AirportSign *		sgn;
+	WED_ATCFrequency *		atc;
 	WED_Helipad *			hel;
 	WED_LightFixture *		lit;
 	WED_RampPosition *		ram;
@@ -218,6 +220,11 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	{
 		apts.back().windsocks.push_back(AptWindsock_t());
 		win->Export(apts.back().windsocks.back());
+	} 
+	else if (atc = dynamic_cast<WED_ATCFrequency *>(what))
+	{
+		apts.back().atc.push_back(AptATCFreq_t());
+		atc->Export(apts.back().atc.back());
 	}
 	
 	
@@ -443,6 +450,13 @@ void	WED_AptImport(
 			WED_Windsock * new_win = WED_Windsock::CreateTyped(archive);
 			new_win->SetParent(new_apt,new_apt->CountChildren());
 			new_win->Import(*win);
+		}
+
+		for (AptATCFreqVector::iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
+		{
+			WED_ATCFrequency * new_atc = WED_ATCFrequency::CreateTyped(archive);
+			new_atc->SetParent(new_apt,new_apt->CountChildren());
+			new_atc->Import(*atc);
 		}
 
 	}
