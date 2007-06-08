@@ -127,7 +127,11 @@ int GUI_GetImageResource(
 {
 	GUI_Resource res = GUI_LoadResource(in_resource);
 	if (res == NULL) return -1;
-	int ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);
+	int ret;
+	if (strstr(in_resource,".jpg"))
+		ret = CreateBitmapFromJPEGData((void *) GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image);
+	else
+		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);
 	GUI_UnloadResource(res);
 	return ret;
 }
