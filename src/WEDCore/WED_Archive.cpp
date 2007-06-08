@@ -68,7 +68,7 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
-void	WED_Archive::LoadFromDB(sqlite3 * db)
+void	WED_Archive::LoadFromDB(sqlite3 * db, const map<int,int>& mapping)
 {
 	{
 		sql_command		fetch_objects(db, "SELECT WED_things.id, WED_classes.name FROM WED_things JOIN WED_classes on WED_things.class_id = WED_classes.id;", NULL);
@@ -92,7 +92,7 @@ void	WED_Archive::LoadFromDB(sqlite3 * db)
 	if (ob->second != NULL)
 	if (ob->second->GetDirty())
 	{
-		ob->second->FromDB(db);
+		ob->second->FromDB(db, mapping);
 		ob->second->SetDirty(false);
 	}
 	
@@ -122,7 +122,11 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 		}
 		else
 		{
-			if (ob->second->GetDirty())
+			#if OPTIMIZE
+				this sucks
+			#endif
+//			BEN SAYS: always I/O out to disk - otherwise if the enum system is remapped we get killed.
+//			if (ob->second->GetDirty())
 			{
 				ob->second->ToDB(db);
 				ob->second->SetDirty(false);

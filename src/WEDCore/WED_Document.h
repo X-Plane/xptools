@@ -12,7 +12,6 @@
 #include "WED_Archive.h"
 #include "WED_UndoMgr.h"
 
-class	WED_Package;
 class	WED_Thing;
 
 typedef struct sqlite3 sqlite3;
@@ -41,7 +40,6 @@ public:
 
 						WED_Document(
 								const string& 		path, 
-								WED_Package * 		inPackage,
 								double				inBounds[4]);
 						~WED_Document();
 
@@ -70,9 +68,10 @@ public:
 	AptVector			gApts;
 	AptIndex			gAptIndex;
 
+	static	bool	TryCloseAll(void);
+
 private:
 
-	WED_Package *		mPackage;
 	double				mBounds[4];
 
 	string				mFilePath;

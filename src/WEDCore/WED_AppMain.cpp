@@ -72,7 +72,8 @@
 	_R(WED_Select) \
 	_R(WED_Taxiway) \
 	_R(WED_TowerViewpoint) \
-	_R(WED_Windsock)
+	_R(WED_Windsock) \
+	_R(WED_ATCFrequency)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

@@ -1,6 +1,6 @@
 #include "WED_Application.h"
-#include "WED_Package.h"
-#include "WED_PackageWindow.h"
+#include "WED_Document.h"
+#include "WED_DocumentWindow.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
 #include "WED_Menus.h"
@@ -46,8 +46,10 @@ int		WED_Application::HandleCommand(int command)
 		if (GetFilePathFromUser(getFile_Save, "Please name your new scenery package", "Create", FILE_DIALOG_NEW_PROJECT, buf, sizeof(buf)))
 		{
 			try {
-				WED_Package * pack = new WED_Package(buf, true);
-				WED_PackageWindow * wind = new WED_PackageWindow(LastPart(buf), pack_bounds, this, pack);
+			
+				double b[4] = { -180, -90, 180, 90 };
+				WED_Document * doc = new WED_Document(buf, b);				
+				WED_DocumentWindow * wind = new WED_DocumentWindow(LastPart(buf), this, doc);
 			} catch (...) {
 				DoUserAlert("An error occurred");
 				#if ERROR_HANDLING
@@ -60,8 +62,10 @@ int		WED_Application::HandleCommand(int command)
 		if (GetFilePathFromUser(getFile_PickFolder, "Please pick your scenery package", "Open", FILE_DIALOG_OPEN_PROJECT, buf, sizeof(buf) ))
 		{
 			try {
-				WED_Package * pack = new WED_Package(buf, false);
-				WED_PackageWindow * wind = new WED_PackageWindow(LastPart(buf), pack_bounds, this, pack);
+				double b[4] = { -180, -90, 180, 90 };
+				WED_Document * doc = new WED_Document(buf, b);				
+				WED_DocumentWindow * wind = new WED_DocumentWindow(LastPart(buf), this, doc);
+
 			} catch (...) {
 				DoUserAlert("An error occurred");
 				#if ERROR_HANDLING
@@ -100,5 +104,5 @@ void	WED_Application::Preferences(void)
 bool	WED_Application::CanQuit(void)
 {
 //	if (ConfirmMessage("Are you sure you want to quit WED", "Quit", "Cancel"))	return true;	return false;
-	return WED_Package::TryCloseAll();
+	return WED_Document::TryCloseAll();
 }

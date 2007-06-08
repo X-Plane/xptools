@@ -163,10 +163,24 @@ CREATE TABLE IF NOT EXISTS WED_airport(
 	icao			string		NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS WED_ATCFrequency(
+	id				integer		PRIMARY KEY,
+	kind			string		NOT NULL,
+	freq			double		NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS WED_airportnode(
 	id				integer		NOT NULL,
 	attributes		string		NOT NULL,
 	PRIMARY KEY(id,attributes)	
+);
+
+CREATE TABLE IF NOT EXISTS WED_enum_system(
+	value			integer		PRIMARY KEY,
+	name			string		NOT NULL,
+	desc			string		NOT NULL,
+	domain			integer		NOT NULL,
+	export			integer		NOT NULL
 );
 
 INSERT OR REPLACE INTO WED_things VALUES(1,0,0,"root",0);

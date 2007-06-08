@@ -150,7 +150,7 @@ public:
 	// does NOT call StateChanged!  Subclasses must provide.
 	virtual	void 			ReadFrom(IOReader * reader)=0;
 	virtual	void 			WriteTo(IOWriter * writer)=0;
-	virtual void			FromDB(sqlite3 * db)=0;
+	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
 	virtual void			ToDB(sqlite3 * db)=0;
 	
 	virtual const char *	GetClass(void) const=0;

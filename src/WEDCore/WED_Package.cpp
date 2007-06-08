@@ -154,7 +154,7 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 	if (err = FILE_make_dir_exist(parent.c_str()))
 		WED_ThrowPrintf("Unable to open create %s: %d", parent.c_str(), err);
 
-	WED_Document * tile = new WED_Document(path, this, bounds);
+	WED_Document * tile = new WED_Document(path, bounds);
 	mTiles[lon_lat_to_idx(lon, lat)] = tile;
 	#if BENTODO
 	revisit - is opening and creating a tile really different?>?
@@ -171,7 +171,7 @@ WED_Document *	WED_Package::NewTile(int lon, int lat)
 	sprintf(partial, DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
 	string path = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;
 
-	WED_Document * tile = new WED_Document(path, this, bounds);
+	WED_Document * tile = new WED_Document(path, bounds);
 	mTiles[lon_lat_to_idx(lon, lat)] = tile;
 	tile->AddListener(this);
 	return tile;

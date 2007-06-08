@@ -1,29 +1,43 @@
 #include "WED_Document.h"
 #include "WED_Progress.h"
 #include "GUI_Resources.h"
+#include "FileUtils.h"
 #include "XESIO.h"
 #include "AptIO.h"
 #include "MapAlgs.h"
 #include "WED_Thing.h"
 #include "WED_Messages.h"
+#include "WED_EnumSystem.h"
 #include <sqlite3.h>
 #include "WED_Errors.h"
 #include "GUI_Resources.h"
-
+#include "PlatformUtils.h"
 // TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
 
+static string	process_path(const string& package_path)
+{
+	string ret(package_path);
+	FILE_make_dir_exist(ret.c_str());
+	ret += DIR_STR "WED";
+	FILE_make_dir_exist(ret.c_str());
+	ret += DIR_STR "earth.wed";
+	return ret;
+}
+
+static set<WED_Document *> sDocuments;
+
 WED_Document::WED_Document(
 								const string& 		path, 
-								WED_Package * 		inPackage,
 								double				inBounds[4]) :
-	mDB(path.c_str()),
 //	mProperties(mDB.get()),
-	mFilePath(path),
-	mPackage(inPackage),
+	mFilePath(process_path(path)),
+	mDB(mFilePath.c_str()),
+//	mPackage(inPackage),
 	mUndo(&mArchive)
 {
+	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
 	
 	string buf;
@@ -42,7 +56,9 @@ WED_Document::WED_Document(
 	mBounds[3] = inBounds[3];	
 	
 	mUndo.StartCommand("Load from disk.");
-	mArchive.LoadFromDB(mDB.get());
+	enum_map_t	mapping;
+	ENUM_read(mDB.get(), mapping);
+	mArchive.LoadFromDB(mDB.get(),mapping);
 	mUndo.CommitCommand();
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
@@ -50,6 +66,7 @@ WED_Document::WED_Document(
 
 WED_Document::~WED_Document()
 {
+	sDocuments.erase(this);
 	printf("Starting doc dtor.\n");
 //	mArchive.SaveToDB(mDB.get());
 	printf("Doc saved, broadcasting.\n");
@@ -94,13 +111,17 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 void	WED_Document::Save(void)
 {
 	mArchive.SaveToDB(mDB.get());
+	ENUM_write(mDB.get());
 }
 
 void	WED_Document::Revert(void)
 {
 	mUndo.StartCommand("Revert from Saved.");
+	
+	enum_map_t	mapping;
+	ENUM_read(mDB.get(), mapping);
 	mArchive.ClearAll();
-	mArchive.LoadFromDB(mDB.get());
+	mArchive.LoadFromDB(mDB.get(), mapping);
 	mUndo.CommitCommand();
 }
 
@@ -175,3 +196,15 @@ void *		WED_Document::QueryInterface(const char * class_id)
 }
 
 */
+
+bool	WED_Document::TryCloseAll(void)
+{
+	set<WED_Document *>	documents(sDocuments);
+	for (set<WED_Document *>::iterator p = documents.begin(); p != documents.end(); ++p)
+	{
+		if (!(*p)->TryClose()) return false;
+	}
+	return true;
+}
+
+

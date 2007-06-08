@@ -42,7 +42,7 @@ public:
 	void			SetUndo(WED_UndoLayer * inUndo);
 
 	void			ClearAll(void);
-	void			LoadFromDB(sqlite3 * db);
+	void			LoadFromDB(sqlite3 * db, const map<int,int>& mapping);
 	void			SaveToDB(sqlite3 * db);
 	
 	// Undo convenience API.  
