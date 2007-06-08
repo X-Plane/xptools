@@ -40,7 +40,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause)=0;
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)=0;
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
 	virtual	void		GetUpdate(SQL_Update& io_update)=0;
 
@@ -69,7 +69,7 @@ public:
 	// Utility to help manage streaming
 			void 		ReadPropsFrom(IOReader * reader);
 			void 		WritePropsTo(IOWriter * writer);	
-			void		PropsFromDB(sqlite3 * db, const char * where_clause);
+			void		PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
 	
 private:
@@ -101,7 +101,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
@@ -125,7 +125,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
@@ -153,7 +153,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
@@ -177,7 +177,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
@@ -202,7 +202,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
@@ -227,7 +227,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
 	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	

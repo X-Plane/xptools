@@ -9,6 +9,7 @@ using std::set;
 using std::vector;
 using std::map;
 
+struct	sqlite3;
 /*
 	WED_EnumSystem - THEORY OF OPERATION
 	
@@ -44,6 +45,11 @@ int					ENUM_Create(int domain, const char * value, const char * descrip, int ex
 int					ENUM_Import(int domain, int export_value);
 
 void				ENUM_Init(void);
+
+typedef	map<int,int>	enum_map_t;
+
+void				ENUM_write(sqlite3 * db);
+void				ENUM_read (sqlite3 * db, enum_map_t& out_map);
 
 
 #define ENUM_DOMAIN(D,H)	D,

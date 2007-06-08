@@ -1,7 +1,7 @@
 ENUM_DOMAIN(Airport_Type, "Airport Type")
 	ENUM(type_Airport,	"Airport", apt_airport)
-	ENUM(type_Seaport,	"Seaport", apt_seaport)
 	ENUM(type_Heliport,	"Heliport",apt_heliport)
+	ENUM(type_Seaport,	"Seaport", apt_seaport)
 
 ENUM_DOMAIN(Edge_Lights, "Runway Edge Light Types")
 	
@@ -121,3 +121,12 @@ ENUM_DOMAIN(LinearFeature, "Linear Markings")
 	ENUM(line_HoldLightsPulse,	"Hold Short Lights (Pulsing Amber)",	apt_light_hold_short_flash)	
 	ENUM(line_HoldShortCenter,	"Hold Short Centerline Lights (Amber/Green)",apt_light_hold_short_centerline)
 	ENUM(line_BoundaryEdge,		"Boundary Edge Lights (Red)",			apt_light_bounary)
+
+ENUM_DOMAIN(ATCFrequency, "ATC Frequency")
+	ENUM(atc_AWOS,				"AWOS",									apt_freq_awos)
+	ENUM(atc_CTAF,				"CTAF",									apt_freq_ctaf)
+	ENUM(atc_Delivery,			"Clearance Delivery",					apt_freq_del)
+	ENUM(atc_Ground,			"Ground Control",						apt_freq_gnd)
+	ENUM(atc_Tower,				"Tower",								apt_freq_twr)
+	ENUM(atc_Approach,			"Approach",								apt_freq_app)
+	ENUM(atc_Departure,			"Departure",							apt_freq_dep)

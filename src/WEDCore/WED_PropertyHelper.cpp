@@ -5,6 +5,13 @@
 #include "SQLUtils.h"
 #include "WED_EnumSystem.h"
 
+inline int remap(const map<int,int>& m, int v)
+{
+	map<int,int>::const_iterator i = m.find(v);
+	if (i == m.end()) return -1;
+	return i->second;
+}
+
 int		WED_PropertyHelper::FindProperty(const char * in_prop)
 {
 	for (int n = 0; n < mItems.size(); ++n)
@@ -60,10 +67,10 @@ void 		WED_PropertyHelper::WritePropsTo(IOWriter * writer)
 		mItems[n]->WriteTo(writer);
 }
 
-void 		WED_PropertyHelper::PropsFromDB(sqlite3 * db, const char * where_clause)
+void 		WED_PropertyHelper::PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	for (int n = 0; n < mItems.size(); ++n)
-		mItems[n]->FromDB(db,where_clause);
+		mItems[n]->FromDB(db,where_clause, mapping);
 }
 
 void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table)
@@ -151,7 +158,7 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
@@ -221,7 +228,7 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
@@ -293,7 +300,7 @@ void 		WED_PropDoubleText::WriteTo(IOWriter * writer)
 	writer->WriteDouble(value);
 }
 
-void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
@@ -371,7 +378,7 @@ void 		WED_PropStringText::WriteTo(IOWriter * writer)
 }
 
 
-void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
@@ -443,17 +450,18 @@ void 		WED_PropIntEnum::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<string>	v;	
+	sql_row1<int>		v;	
 	int err = cmd.simple_exec(k,v);	
 	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 	
-	value = ENUM_Lookup(v.a.c_str());
+	value = remap(mapping,v.a);
+	DebugAssert(value != -1);
 	DebugAssert(ENUM_Domain(value)==domain);
 }
 
@@ -463,10 +471,9 @@ void		WED_PropIntEnum::ToDB(sqlite3 * db, const char * id_col, const char * id_v
 
 void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
 {
-	string quoted("'");
-	quoted += ENUM_Fetch(value);
-	quoted += '\'';
-	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
+	char as_int[1024];
+	sprintf(as_int,"%d", value);
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
 }
 
 
@@ -530,13 +537,13 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 	}
 }
 
-void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause)
+void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
 	sql_row0			k;
-	sql_row1<string>	v;	
+	sql_row1<int>		v;	
 	
 	value.clear();
 	cmd.begin();
@@ -545,8 +552,10 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause)
 		rc = cmd.get_row(v);
 		if (rc == SQLITE_ROW)
 		{
-			value.insert(ENUM_Lookup(v.a.c_str()));		
-			DebugAssert(ENUM_Domain(ENUM_Lookup(v.a.c_str()))==domain);
+			v.a = remap(mapping, v.a);
+			DebugAssert(v.a != -1);
+			value.insert(v.a);		
+			DebugAssert(ENUM_Domain(v.a)==domain);
 		}
 	} while (rc == SQLITE_ROW); 
 	
@@ -574,9 +583,9 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 			sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
 			sql_command cmd2(db,cmd_buf,"@e");
 			
-			sql_row1<string>	p;
+			sql_row1<int>	p;
 
-			p.a = ENUM_Fetch(*i);
+			p.a = *i;
 			int err = cmd2.simple_exec(p);
 			if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
 		}
