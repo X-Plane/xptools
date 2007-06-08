@@ -21,6 +21,7 @@ about.png				GUI_RES		about.png
 colors.png				GUI_RES		colors.png
 ui_measurements.txt		GUI_RES		ui_measurements.txt
 map_tools.png			GUI_RES		map_tools.png	
+worldmap_big.jpg		GUI_RES		worldmap_big.jpg
 
 /* Start window */
 startup_bar.png			GUI_RES		startup_bar.png			
