@@ -613,6 +613,9 @@
 		D6ED40440B6AD47300D5484E /* WED_UndoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */; };
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
+		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
+		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
+		D6F264030C18996B00C26DC4 /* worldmap_big.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D6F264020C18996B00C26DC4 /* worldmap_big.jpg */; };
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
@@ -1471,6 +1474,11 @@
 		D6EDAF690B529EB900754E77 /* GUI_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Application.cpp; sourceTree = "<group>"; };
 		D6EDAF6A0B529EB900754E77 /* GUI_Broadcaster.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Broadcaster.cpp; sourceTree = "<group>"; };
 		D6EDAFC20B52A01900754E77 /* GUI_Clipboard.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Clipboard.cpp; sourceTree = "<group>"; };
+		D6F25F900C185F8000C26DC4 /* WED_WorldMapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_WorldMapLayer.h; sourceTree = "<group>"; };
+		D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_WorldMapLayer.cpp; sourceTree = "<group>"; };
+		D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCFrequency.h; sourceTree = "<group>"; };
+		D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCFrequency.cpp; sourceTree = "<group>"; };
+		D6F264020C18996B00C26DC4 /* worldmap_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap_big.jpg; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
 		D6FEC6ED0BE0F019006A99CC /* WED_CreateLineTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateLineTool.h; sourceTree = "<group>"; };
@@ -2356,6 +2364,8 @@
 				D607AF000C03BEC300992876 /* WED_Colors.cpp */,
 				D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */,
 				D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */,
+				D6F25F900C185F8000C26DC4 /* WED_WorldMapLayer.h */,
+				D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */,
 			);
 			path = WEDMap;
 			sourceTree = "<group>";
@@ -2658,15 +2668,16 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D6F264020C18996B00C26DC4 /* worldmap_big.jpg */,
 				D682E1050C10E23C00BBE1A0 /* scrollbar_corner.png */,
 				D682DE5A0C10985100BBE1A0 /* startup_bar.png */,
 				D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */,
 				D682DE5C0C10985100BBE1A0 /* startup_btns.png */,
 				D682DB250C0E3A7700BBE1A0 /* Vera.ttf */,
 				D607B7950C0B831400992876 /* tables */,
-				D607B6F00C0A439900992876 /* about.png */,
 				D607B64B0C0A3F8200992876 /* WED.icns */,
 				D60B090E0C061B2100AD5EB7 /* GUI.nib */,
+				D607B6F00C0A439900992876 /* about.png */,
 				D607AF5B0C03D4A300992876 /* colors.png */,
 				D607ADC30C039A5800992876 /* splitter_h.png */,
 				D607ADC40C039A5800992876 /* splitter_v.png */,
@@ -2763,6 +2774,8 @@
 				D6FF2B890B6E985200960D5E /* WED_Group.cpp */,
 				D6FEC7370BE0F280006A99CC /* WED_RunwayNode.h */,
 				D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */,
+				D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */,
+				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -3032,6 +3045,7 @@
 				D682E4170C1627F700BBE1A0 /* property_bar.png in Resources */,
 				D682E4840C162C9100BBE1A0 /* arrows.png in Resources */,
 				D682E97A0C17124A00BBE1A0 /* sider.png in Resources */,
+				D6F264030C18996B00C26DC4 /* worldmap_big.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3603,6 +3617,8 @@
 				D607B65B0C0A3FF300992876 /* WED_AboutBox.cpp in Sources */,
 				D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */,
 				D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */,
+				D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */,
+				D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
