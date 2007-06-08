@@ -78,9 +78,9 @@ void 			WED_AirportChain::WriteTo(IOWriter * writer)
 	writer->WriteInt(closed);
 }
 
-void			WED_AirportChain::FromDB(sqlite3 * db)
+void			WED_AirportChain::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
-	WED_GISChain::FromDB(db);
+	WED_GISChain::FromDB(db, mapping);
 	
 	sql_command	cmd(db,"SELECT closed FROM WED_airportchains WHERE id=@i;","@i");
 	

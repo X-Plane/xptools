@@ -1,0 +1,54 @@
+/* 
+ * Copyright (c) 2007, Laminar Research.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE.
+ *
+ */
+
+#include "WED_ATCFrequency.h"
+#include "WED_EnumSystem.h"
+#include "AptDefs.h"
+
+
+DEFINE_PERSISTENT(WED_ATCFrequency)
+
+WED_ATCFrequency::WED_ATCFrequency(WED_Archive * a, int i) : WED_Thing(a, i),
+	freq_type	(this, "Type",		"WED_ATCFrequency",	"kind", ATCFrequency, atc_Tower),
+	freq		(this, "Frequency",	"WED_ATCFrequency",	"freq", 128.8, 6, 2)
+{
+}
+
+WED_ATCFrequency::~WED_ATCFrequency()
+{
+}
+
+void	WED_ATCFrequency::Import(const AptATCFreq_t& info)
+{
+	SetName(info.name);
+	freq = (double) info.freq / 100.0;
+	freq_type = ENUM_Import(ATCFrequency, info.atc_type);
+}
+
+void	WED_ATCFrequency::Export(		 AptATCFreq_t& info) const
+{
+	GetName(info.name);
+	info.freq = round(freq.value * 100.0);
+	info.atc_type = ENUM_Export(freq_type.value);
+}
+

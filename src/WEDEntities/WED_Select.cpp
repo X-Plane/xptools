@@ -40,9 +40,9 @@ void 			WED_Select::WriteTo(IOWriter * writer)
 		
 }
 
-void			WED_Select::FromDB(sqlite3 * db)
+void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
-	WED_Thing::FromDB(db);
+	WED_Thing::FromDB(db, mapping);
 
 	mSelected.clear();
 	sql_command	cmd(db,"SELECT item FROM WED_selection WHERE id=@id;","@id");

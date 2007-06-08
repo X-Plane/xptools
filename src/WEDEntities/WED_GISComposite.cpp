@@ -68,13 +68,27 @@ void			WED_GISComposite::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds
 
 int				WED_GISComposite::GetNumEntities(void ) const
 {
-	return CountChildren();
+	int cc = CountChildren();
+	int t = 0;
+	for (int n = 0; n < cc; ++n)
+	if (dynamic_cast<IGISEntity *>(GetNthChild(n)))
+		++t;
+	return t;
 }
 
 IGISEntity *	WED_GISComposite::GetNthEntity  (int n) const
 {
-	IGISEntity * e = SAFE_CAST(IGISEntity,GetNthChild(n));
-	DebugAssert(e != NULL);
-	return e;
+	int cc = CountChildren();
+	for (int c = 0; c < cc; ++c)
+	{
+		IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(c));
+		if (ent)
+		{
+			if (n == 0) return ent;
+			--n;
+		}
+	}
+	DebugAssert(!"Bad entity nubmer.");
+	return NULL;
 }
 

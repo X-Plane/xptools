@@ -69,9 +69,9 @@ void 			WED_KeyObjects::WriteTo(IOWriter * writer)
 	}
 }
 
-void			WED_KeyObjects::FromDB(sqlite3 * db)
+void			WED_KeyObjects::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
-	WED_Thing::FromDB(db);
+	WED_Thing::FromDB(db, mapping);
 	choices.clear();
 	
 	int err;

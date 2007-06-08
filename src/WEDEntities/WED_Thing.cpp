@@ -39,7 +39,7 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 	WritePropsTo(writer);
 }
 
-void			WED_Thing::FromDB(sqlite3 * db)
+void			WED_Thing::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
 	child_id.clear();
 	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
@@ -65,7 +65,7 @@ void			WED_Thing::FromDB(sqlite3 * db)
 	
 	char where_crud[100];
 	sprintf(where_crud,"id=%d",GetID());	
-	PropsFromDB(db,where_crud);
+	PropsFromDB(db,where_crud,mapping);
 }
 
 void			WED_Thing::ToDB(sqlite3 * db)

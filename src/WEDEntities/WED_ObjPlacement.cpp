@@ -28,9 +28,9 @@ void 			WED_ObjPlacement::WriteTo(IOWriter * writer)
 	writer->WriteInt(model_id);
 }
 
-void			WED_ObjPlacement::FromDB(sqlite3 * db)
+void			WED_ObjPlacement::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
-	WED_GISPoint_Heading::FromDB(db);
+	WED_GISPoint_Heading::FromDB(db, mapping);
 	sql_command	cmd(db,"SELECT model_id FROM WED_objects WHERE id=@i;","@i");
 	
 	sql_row1<int>						key(GetID());
