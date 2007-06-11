@@ -43,24 +43,62 @@ void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
 	GetOuterRing()->GetBounds(bounds);
 }
 
+bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
+{
+	Bbox2	me;
+	
+	// Quick check: if there is no union between our bbox and the bounds
+	// no possible intersection - fast exit.
+	GetBounds(me);
+	if (!bounds.overlap(me)) return false;
+	
+	// We have a slight problem: rings don't have area.  So we will do TWO possible
+	// tests:
+	// 1. If any ring intersects the box, that means we have a border crossing...
+	//    that is, some sub-segment registers as being at least partly in the box.
+	//    We must intersect.
+	// 2. If there are NO intersections then each ring of the polygon is either
+	//    entirely inside or outside the bbox.  Therefore the bbox is either entirely
+	//    inside or outside the polygon.  Test one corner.
+	
+	// For now we'll try case 2 first.  At least I am sure we can fast-exit
+	// the "pt inside ring" case using a bbox test.  I don't know how well
+	// our ring-box intersection code can fast-exit.
+	
+	if (PtWithin(bounds.p1)) return true;
+	
+	// Okay at least one point of the box is outside - if there is an interesection
+	// there must be an edge crossing, um, somewhere.
+	
+	if (GetOuterRing()->IntersectsBox(bounds)) return true;
+	
+	int hh = GetNumHoles();
+	for (int h = 0; h < hh; ++h)
+	{
+		if (GetNthHole(h)->IntersectsBox(bounds)) return true;
+	}
+	return false;
+}
+
 bool				WED_GISPolygon::WithinBox		(const Bbox2&  bounds) const
 {
 	return GetOuterRing()->WithinBox(bounds);
 }
 
-bool				WED_GISPolygon::IntersectsBox		(const Bbox2&  bounds) const
-{
-	// A ring can NOT intersect the box because it goes AROUND it.  So this is NOT
-	// the same!
-//	return GetOuterRing()->IntersectsBox(bounds);
-	Bbox2	bnd;
-	GetBounds(bnd);
-	return bounds.overlap(bnd);
-}
 
 bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 {
+	// WARNING: rings do not contain the area inside them!  So PtWithin 
+	// returns false for our sub-parts.  That's why we're using inside_polygon_bez.
+	// If we want to fast-track exit this, we must do the bbox check ourselves!
+	Bbox2	bounds;
+
 	IGISPointSequence * outer_ring = GetOuterRing();
+	// Fast exit: if the bbox of our outer ring doesn't contain the point, we can
+	// go home happy fast.
+	outer_ring->GetBounds(bounds);
+	if (!bounds.contains(p)) return false;
+	
 	if (!inside_polygon_bez(
 			Bezier_Seq_Iterator(outer_ring,0),
 			Bezier_Seq_Iterator(outer_ring,outer_ring->GetNumPoints()),
@@ -71,7 +109,11 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 	for (int n = 0; n < h; ++n)
 	{
 		IGISPointSequence * sq = GetNthHole(n);
-
+		
+		// Fast skip: if p is outside the bbox don't bother with a full
+		// polygon check, which is rather expensive.
+		sq->GetBounds(bounds);
+		if (bounds.contains(p))
 		if (inside_polygon_bez(
 				Bezier_Seq_Iterator(sq,0),
 				Bezier_Seq_Iterator(sq,sq->GetNumPoints()),
@@ -83,6 +125,15 @@ bool				WED_GISPolygon::PtWithin		(const Point2& p	 ) const
 
 bool				WED_GISPolygon::PtOnFrame		(const Point2& p, double d) const
 {
+	// Fast case: normally we must check all inner holes if we "miss" the outer hole.
+	// BUT: if we are OUTSIDE the outer hole, we can early exit and not test a damned
+	// thing. 
+	Bbox2	me;
+	GetBounds(me);
+	me.p1 -= Vector2(d,d);
+	me.p2 += Vector2(d,d);	
+	if (!me.contains(p)) return false;
+	
 	if (GetOuterRing()->PtOnFrame(p,d)) return true;
 	
 	int h = GetNumHoles();

@@ -4,6 +4,18 @@
 #include "WED_Entity.h"
 #include "IGIS.h"
 
+/*
+
+	WED_GISPolygon has no cache because:
+	
+	- It has exactly one outer ring.
+	- Its bounding box is exactly the same as the outer ring.
+	
+	Thus it can simply access the outer ring's bounding box in constant time.  If thist proves to be a performance problem we can copy
+	the cache out.
+
+*/
+
 class	WED_GISPolygon : public WED_Entity, public virtual IGISPolygon {
 
 DECLARE_INTERMEDIATE(WED_GISPolygon)
@@ -25,6 +37,7 @@ public:
 
 	virtual			void					DeleteHole  (int n)					;
 	virtual			void					AddHole		(IGISPointSequence * r) ;
+
 
 };
 

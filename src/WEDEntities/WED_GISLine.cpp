@@ -29,15 +29,19 @@ bool			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
 {
 	Bbox2	me;
 	GetBounds(me);
-	return me.overlap(bounds);
+	if (!me.overlap(bounds)) return false;
+	
+	#if DEV
+		not quite good enough??
+	#endif
+	return true;
 }
 
 bool			WED_GISLine::WithinBox		(const Bbox2&  bounds) const
 {
-	Segment2 s;
-	GetSource()->GetLocation(s.p1);
-	GetTarget()->GetLocation(s.p2);
-	return bounds.contains(s.p1) && bounds.contains(s.p2);
+	Bbox2	me;
+	GetBounds(me);
+	return bounds.contains(me);
 }
 
 bool			WED_GISLine::PtWithin		(const Point2& p	 ) const
@@ -47,10 +51,15 @@ bool			WED_GISLine::PtWithin		(const Point2& p	 ) const
 
 bool			WED_GISLine::PtOnFrame		(const Point2& p, double dist ) const
 {
+	Bbox2	me;
+	GetBounds(me);
+	me.p1 -= Vector2(dist,dist);
+	me.p2 += Vector2(dist,dist);
+	if (!me.contains(p)) return false;
+	
 	Segment2 s;
 	GetSource()->GetLocation(s.p1);
-	GetTarget()->GetLocation(s.p2);
-	
+	GetTarget()->GetLocation(s.p2);	
 	return s.is_near(p,dist);
 }
 

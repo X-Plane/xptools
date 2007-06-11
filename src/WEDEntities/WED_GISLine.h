@@ -4,6 +4,14 @@
 #include "WED_Entity.h"
 #include "IGIS.h"
 
+/*
+
+	NOTE:  WED_GisLine has a constant number of points, so it does not cache its bounding box.  If we find that we have a performance problem
+	we can add this, but since the access time to find the real bounding box is a constant-multiple of the cache time, it seems unlikely
+	that caching is needed.  (Unlike a taxiway with 800 points.)
+
+*/
+
 class	WED_GISLine : public WED_Entity, public virtual IGISLine {
 
 DECLARE_INTERMEDIATE(WED_GISLine)

@@ -13,7 +13,38 @@
 	All children of WED_Entities are WED_Entities, that is, we don't have random stuff jammed into the map.
 	
 	This class provides the "locked" and "hidden" property provided to anything on the map.
+
+	CACHING
 	
+	Because GIS entities are typically defined in a hierarchial tree structure, a straight implementation of things
+	like bounding boxes can be extraordinarily slow.   (For example, a simple depth-first search with bounding box
+	on N items would produce approximately NlogN or N^2 accesses since the parent will access all of the children when
+	asked for their bounding box.
+	
+	Since we could have logN performance with good culling primitives, all WED entity derivatives have a cache management
+	feature.  It works as follows:
+	
+	- The cache is automatically invalidated under some circumstances:
+	
+		1. A child is added or removed from the object.
+		2. The object is read in from DB or undo-memory (since we can't know what changed).
+		3. Any child or child's child's cache is invalidated (that is, cache invalidation goes up-stream.
+	
+	- The cache is rebuilt on demand by expensive-access routines.  Typically these include "GetBounds" and expensive
+	  iterators over children.  CacheRebuild is called to mark it as good and find out if real work must be done.
+	  
+	CACHE AND UNDO
+	
+	One might note that at the time of redo, the object's parent ID is invalid, thus the cache invalidate on redo might not
+	travel up the chain.  However this is a non-issue:
+	
+	- If an object X was deleted as part of an operation, we know that all of X's children were modified (to set their parent
+	  ptr to something else) and X's parent was modified (to remove X from its children).
+	  
+	- Therefore logically, any objects X' above X that might not get invalidated (because X's child was invalidated BEFORE X was
+	  reincarnated via undo) must have been modified, and thus X' will be "undone" as well and will thus be marked invalid
+	  directly.
+
 */
 
 #include "WED_Thing.h"
@@ -24,9 +55,23 @@ DECLARE_INTERMEDIATE(WED_Entity)
 
 public:
 
-		int		GetLocked(void) const;
-		int		GetHidden(void) const;
+			int		GetLocked(void) const;
+			int		GetHidden(void) const;
+
+	virtual	void 	ReadFrom(IOReader * reader);
+	virtual void	FromDB(sqlite3 * db, const map<int,int>& mapping);
+		
+protected:
+
+			void	CacheInval(void);			// Invalidate the cache.
+			bool	CacheBuild(void) const;		// Set cache to valid.  Returns true if cache needed rebuilding
+
+	virtual	void	AddChild(int id, int n);
+	virtual	void	RemoveChild(int id);
+		
 private:
+
+	mutable bool				cache_valid;
 
 	WED_PropBoolText			locked;
 	WED_PropBoolText			hidden;

@@ -22,6 +22,13 @@ public:
 	virtual	int				GetNumEntities(void ) const;
 	virtual	IGISEntity *	GetNthEntity  (int n) const;
 
+private:
+
+			void			RebuildCache(void) const;
+
+	mutable	Bbox2					mCacheBounds;
+	mutable	vector<IGISEntity *>	mEntities;
+
 };
 
 #endif

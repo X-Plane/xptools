@@ -29,6 +29,10 @@ public:
 	
 //	virtual	bool				IsClosed(void) const;
 
+private:
+
+	mutable	Bbox2		mCacheBounds;
+
 };
 
 #endif /* WED_GISCHAIN_H */

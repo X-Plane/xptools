@@ -17,18 +17,16 @@ GISClass_t		WED_GISComposite::GetGISClass		(void				 ) const
 
 void			WED_GISComposite::GetBounds		(	   Bbox2&  bounds) const
 {
-	bounds = Bbox2();
-	int n = GetNumEntities();
-	for (int i = 0; i <  n; ++i)
-	{
-		Bbox2 child;
-		GetNthEntity(i)->GetBounds(child);
-		bounds += child;
-	}
+	if (CacheBuild())	RebuildCache();
+	bounds = mCacheBounds;
 }
 
 bool			WED_GISComposite::IntersectsBox	(const Bbox2&  bounds) const
 {
+	Bbox2	me;
+	GetBounds(me);	
+	if (!bounds.overlap(me)) return false;
+
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
 		if (GetNthEntity(i)->IntersectsBox(bounds)) return true;
@@ -37,6 +35,10 @@ bool			WED_GISComposite::IntersectsBox	(const Bbox2&  bounds) const
 
 bool			WED_GISComposite::WithinBox		(const Bbox2&  bounds) const
 {
+	Bbox2	me;
+	GetBounds(me);	
+	if (bounds.contains(me)) return true;
+
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
 		if (!GetNthEntity(i)->WithinBox(bounds)) return false;
@@ -45,6 +47,10 @@ bool			WED_GISComposite::WithinBox		(const Bbox2&  bounds) const
 
 bool			WED_GISComposite::PtWithin		(const Point2& p	 ) const
 {
+	Bbox2	me;
+	GetBounds(me);	
+	if (!me.contains(p)) return false;
+
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
 		if (GetNthEntity(i)->PtWithin(p)) return true;
@@ -53,6 +59,12 @@ bool			WED_GISComposite::PtWithin		(const Point2& p	 ) const
 
 bool			WED_GISComposite::PtOnFrame		(const Point2& p, double d) const
 {
+	Bbox2	me;
+	GetBounds(me);	
+	me.p1 -= Vector2(d,d);
+	me.p2 += Vector2(d,d);
+	if (!me.contains(p)) return false;
+
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
 		if (GetNthEntity(i)->PtOnFrame(p, d)) return true;
@@ -68,27 +80,31 @@ void			WED_GISComposite::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds
 
 int				WED_GISComposite::GetNumEntities(void ) const
 {
-	int cc = CountChildren();
-	int t = 0;
-	for (int n = 0; n < cc; ++n)
-	if (dynamic_cast<IGISEntity *>(GetNthChild(n)))
-		++t;
-	return t;
+	if (CacheBuild())	RebuildCache();
+	return mEntities.size();
 }
 
 IGISEntity *	WED_GISComposite::GetNthEntity  (int n) const
 {
-	int cc = CountChildren();
-	for (int c = 0; c < cc; ++c)
-	{
-		IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(c));
-		if (ent)
-		{
-			if (n == 0) return ent;
-			--n;
-		}
-	}
-	DebugAssert(!"Bad entity nubmer.");
-	return NULL;
+	if (CacheBuild())	RebuildCache();
+	return mEntities[n];
 }
 
+
+void	WED_GISComposite::RebuildCache(void) const
+{
+	mCacheBounds = Bbox2();
+	mEntities.clear();
+	int n = CountChildren();
+	for (int i = 0; i <  n; ++i)
+	{
+		IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(i));
+		if (ent)
+		{
+			Bbox2 child;
+			ent->GetBounds(child);
+			mCacheBounds += child;
+			mEntities.push_back(ent);
+		}	
+	}
+}

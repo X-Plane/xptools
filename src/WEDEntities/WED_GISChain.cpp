@@ -18,34 +18,48 @@ GISClass_t		WED_GISChain::GetGISClass		(void				 ) const
 
 void			WED_GISChain::GetBounds		(	   Bbox2&  bounds) const
 {
-	int n = GetNumSides();
-	bounds = Bbox2();
-	
-	for (int i = 0; i < n; ++i)
+	if (CacheBuild())
 	{
-		Segment2 s;
-		Bezier2 b;
-		if (GetSide(i,s,b))
+		int n = GetNumSides();
+		mCacheBounds = Bbox2();
+		
+		for (int i = 0; i < n; ++i)
 		{
-			Bbox2	bb;
-			b.bounds(bb);
-			bounds += bb;
-		} else {
-			bounds += s.p1;
-			bounds += s.p2;
-		}		
+			Segment2 s;
+			Bezier2 b;
+			if (GetSide(i,s,b))
+			{
+				Bbox2	bb;
+				b.bounds(bb);
+				mCacheBounds += bb;
+			} else {
+				mCacheBounds += s.p1;
+				mCacheBounds += s.p2;
+			}		
+		}
 	}
+	bounds = mCacheBounds;
 }
 
 bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
 {
 	Bbox2	me;
 	GetBounds(me);
-	return bounds.overlap(me);
+	if (!bounds.overlap(me)) return false;
+
+
+	#if DEV
+		this is not good enough
+	#endif
+	return true;
 }
 
 bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 {	
+	Bbox2	me;
+	GetBounds(me);
+	if (bounds.contains(me)) return true;
+
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
 	{
@@ -55,6 +69,9 @@ bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 		{
 			Bbox2	bb;
 			b.bounds(bb);
+			#if DEV
+			examine this more closely?
+			#endif
 			if (!bounds.contains(bb)) return false;
 		} else {
 			if (!bounds.contains(s.p1)) return false;
@@ -72,6 +89,12 @@ bool			WED_GISChain::PtWithin		(const Point2& p	 ) const
 
 bool			WED_GISChain::PtOnFrame		(const Point2& p, double d	 ) const
 {
+	Bbox2	me;
+	GetBounds(me);
+	me.p1 -= Vector2(d,d);
+	me.p2 += Vector2(d,d);
+	if (!me.contains(p)) return false;
+
 	int c = GetNumSides();
 	for (int n = 0; n < c; ++n)
 	{

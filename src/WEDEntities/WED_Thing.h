@@ -60,9 +60,10 @@ public:
 	virtual		void			CommitOperation(void);
 	virtual		void			AbortOperation(void);		
 	
-private:
-			void				AddChild(int id, int n);
-			void				RemoveChild(int id);
+protected:
+
+	virtual		void			AddChild(int id, int n);
+	virtual		void			RemoveChild(int id);
 
 	int				parent_id;
 	vector<int>		child_id;
