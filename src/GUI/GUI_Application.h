@@ -8,9 +8,17 @@
 
 #include "GUI_Commander.h"
 
-#if !DEV
-document limitations of menus on windows
-#endif
+/*
+	WINDOWS WARNING: MENUS
+	
+	Windows has the following limitations on the menu system:
+	
+	1. App menus cannot be created dynamically on the fly because:
+	
+	- They are replicated as each window is made, but existing windows will not receive the new additions.
+	- Accelerators are only set up at startup (so all menus must be set up before app-run.
+	
+*/
 
 class	GUI_Application : public GUI_Commander {
 public:
