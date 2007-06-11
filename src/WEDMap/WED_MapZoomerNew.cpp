@@ -95,7 +95,7 @@ void	WED_MapZoomerNew::LLToPixelv(Point2 * dst, const Point2 * src, int n)
 
 double	WED_MapZoomerNew::GetPPM(void)
 {
-	#if !DEV
+	#if BENTODO
 	can we do better?
 	#endif
 	return fabs(LatToYPixel(MTR_TO_DEG_LAT) - LatToYPixel(0.0));

@@ -155,9 +155,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL);
 			if (!active) continue;
 			
-			#if !DEV
-			stdize!
-			#endif
 			float icon_scale = GetZoomer()->GetPPM() * 2.0;
 			if (icon_scale > 1.0) icon_scale = 1.0;
 			float icon_size = icon_scale * 10.0;

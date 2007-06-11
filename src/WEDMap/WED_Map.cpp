@@ -12,6 +12,8 @@
 #include "IResolver.h"
 #include "GUI_Fonts.h"
 
+#define SHOW_FPS 1
+
 WED_Map::WED_Map(IResolver * in_resolver) :
 	mResolver(in_resolver)
 {
@@ -130,12 +132,25 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 	
 	
-	char hack[50];
+	char mouse_loc[50];
 	int x, y;
 	GetMouseLocNow(&x,&y);
-	sprintf(hack, "%+010.6lf %+011.6lf", XPixelToLon(x),YPixelToLat(y));
+	sprintf(mouse_loc, "%+010.6lf %+011.6lf", XPixelToLon(x),YPixelToLat(y));
 
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, hack);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, mouse_loc);
+	
+	#if SHOW_FPS
+	static clock_t last_time = 0;
+		   clock_t now = clock();
+		   
+		   double t = ((double) (now - last_time) / (double) CLOCKS_PER_SEC);
+		   
+		   last_time = now;
+		   sprintf(mouse_loc, "%lf FPS", t);
+		   GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 45, mouse_loc);
+		   Refresh();
+		   
+	#endif
 	
 }
 
@@ -178,6 +193,7 @@ int			WED_Map::MouseDown(int x, int y, int button)
 	mIsToolClick = 1;
 	mIsMapDrag = 0;
 	if (mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { Refresh(); return 1; }
+	if (button == 0) return 1;
 	mIsToolClick = 0;
 	mIsMapDrag = 1;
 	mX = x;

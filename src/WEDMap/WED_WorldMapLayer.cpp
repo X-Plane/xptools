@@ -54,27 +54,33 @@ void		WED_WorldMapLayer::DrawVisualization		(int inCurrent, GUI_GraphState * g)
 {
 	if (mVisible)		
 	{
-		int	tex_id = GUI_GetTextureResource("worldmap_big.jpg", 0, NULL);
-		if (tex_id)
+		for (int y = 0; y < 2; ++y)
+		for (int x = 0; x < 4; ++x)
 		{
+			char	fname[30];
+			sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
+			int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
+			if (tex_id)
+			{
 
-			g->SetState(0, 1, 0,    0, 1,  0, 0);
-			glColor4f(1.0, 1.0, 1.0, 1.0);
-			g->BindTex(tex_id, 0);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0.0, 0.0);
-			glVertex2f( GetZoomer()->LonToXPixel(-180),
-						GetZoomer()->LatToYPixel( -90));
-			glTexCoord2f(0.0, 1.0);
-			glVertex2f( GetZoomer()->LonToXPixel(-180),
-						GetZoomer()->LatToYPixel(  90));
-			glTexCoord2f(1.0, 1.0);
-			glVertex2f( GetZoomer()->LonToXPixel( 180),
-						GetZoomer()->LatToYPixel(  90));
-			glTexCoord2f(1.0, 0.0);
-			glVertex2f( GetZoomer()->LonToXPixel( 180),
-						GetZoomer()->LatToYPixel( -90));
-			glEnd();
+				g->SetState(0, 1, 0,    0, 1,  0, 0);
+				glColor4f(1.0, 1.0, 1.0, 1.0);
+				g->BindTex(tex_id, 0);
+				glBegin(GL_QUADS);
+				glTexCoord2f(0.0, 0.0);
+				glVertex2f( GetZoomer()->LonToXPixel(-180 + x * 90),
+							GetZoomer()->LatToYPixel( -90 + y * 90));
+				glTexCoord2f(0.0, 1.0);
+				glVertex2f( GetZoomer()->LonToXPixel(-180 + x * 90),
+							GetZoomer()->LatToYPixel(       y * 90));
+				glTexCoord2f(1.0, 1.0);
+				glVertex2f( GetZoomer()->LonToXPixel( -90 + x * 90),
+							GetZoomer()->LatToYPixel(       y * 90));
+				glTexCoord2f(1.0, 0.0);
+				glVertex2f( GetZoomer()->LonToXPixel( -90 + x * 90),
+							GetZoomer()->LatToYPixel( -90 + y * 90));
+				glEnd();
+			}
 		}
 	}
 
