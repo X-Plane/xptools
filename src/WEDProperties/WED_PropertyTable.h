@@ -140,6 +140,7 @@ private:
 
 			bool			GetOpen(int id);
 			void			ToggleOpen(int id);
+			void			SetOpen(int id, int open);
 			void			GetFilterStatus(WED_Thing * what, ISelection * sel, 
 									int&	visible, 
 									int&	recurse_children,

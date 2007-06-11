@@ -369,7 +369,7 @@ int		WED_PropertyTable::SelectDisclose(
 			things.push_back(t->GetID());
 		}
 		for (int n = 0; n <things.size(); ++n)
-			mOpen[things[n]] = open_it;
+			SetOpen(things[n], open_it);
 	} else {
 		ISelection * sel = WED_GetSelect(mResolver);
 		vector<IBase *>	sv;
@@ -379,7 +379,7 @@ int		WED_PropertyTable::SelectDisclose(
 			WED_Thing * t = dynamic_cast<WED_Thing *>(sv[n]);
 			if (t)
 			{
-				mOpen[t->GetID()] = open_it;
+				SetOpen(t->GetID(), open_it);
 			}
 		}
 	}
@@ -751,6 +751,11 @@ bool WED_PropertyTable::GetOpen(int id)
 void WED_PropertyTable::ToggleOpen(int id)
 {
 	mOpen[id] = GetOpen(id) ? 0 : 1;
+}
+
+void WED_PropertyTable::SetOpen(int id, int o)
+{
+	mOpen[id] = o;
 }
 
 // This is the main "filter" function - it determines four properties at once about an entity:
