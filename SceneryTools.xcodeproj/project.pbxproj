@@ -350,6 +350,14 @@
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D65E4C390B654908004D7887 /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
+		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
+		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
+		D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083020C1A4DBB00F33E06 /* earth_21.jpg */; };
+		D670830C0C1A4DBB00F33E06 /* earth_22.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083030C1A4DBB00F33E06 /* earth_22.jpg */; };
+		D670830D0C1A4DBB00F33E06 /* earth_31.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083040C1A4DBB00F33E06 /* earth_31.jpg */; };
+		D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083050C1A4DBB00F33E06 /* earth_32.jpg */; };
+		D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083060C1A4DBB00F33E06 /* earth_41.jpg */; };
+		D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083070C1A4DBB00F33E06 /* earth_42.jpg */; };
 		D67EF4F10B5CF9F400D9190C /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D67EF4F30B5CF9F400D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D67EF4F40B5CF9F400D9190C /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
@@ -615,7 +623,6 @@
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
-		D6F264030C18996B00C26DC4 /* worldmap_big.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D6F264020C18996B00C26DC4 /* worldmap_big.jpg */; };
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
@@ -890,6 +897,14 @@
 		D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapZoomerNew.h; sourceTree = "<group>"; };
 		D65E49AB0B651219004D7887 /* WED_MapZoomer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomer.cpp; sourceTree = "<group>"; };
 		D65E4B3A0B65427C004D7887 /* RenderFarm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RenderFarm; sourceTree = BUILT_PRODUCTS_DIR; };
+		D67083000C1A4DBA00F33E06 /* earth_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_11.jpg; sourceTree = "<group>"; };
+		D67083010C1A4DBA00F33E06 /* earth_12.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_12.jpg; sourceTree = "<group>"; };
+		D67083020C1A4DBB00F33E06 /* earth_21.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_21.jpg; sourceTree = "<group>"; };
+		D67083030C1A4DBB00F33E06 /* earth_22.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_22.jpg; sourceTree = "<group>"; };
+		D67083040C1A4DBB00F33E06 /* earth_31.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_31.jpg; sourceTree = "<group>"; };
+		D67083050C1A4DBB00F33E06 /* earth_32.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_32.jpg; sourceTree = "<group>"; };
+		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
+		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D67EF50A0B5CF9F400D9190C /* XGrinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XGrinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF50C0B5CFA2000D9190C /* XGrinderShell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGrinderShell.h; sourceTree = "<group>"; };
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
@@ -1478,7 +1493,6 @@
 		D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_WorldMapLayer.cpp; sourceTree = "<group>"; };
 		D6F262EE0C18904E00C26DC4 /* WED_ATCFrequency.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCFrequency.h; sourceTree = "<group>"; };
 		D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCFrequency.cpp; sourceTree = "<group>"; };
-		D6F264020C18996B00C26DC4 /* worldmap_big.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = worldmap_big.jpg; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
 		D6FEC6ED0BE0F019006A99CC /* WED_CreateLineTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateLineTool.h; sourceTree = "<group>"; };
@@ -1812,6 +1826,21 @@
 			);
 			name = src;
 			path = "libsrc/CGAL-3.0/src";
+			sourceTree = "<group>";
+		};
+		D67082FF0C1A4DBA00F33E06 /* world */ = {
+			isa = PBXGroup;
+			children = (
+				D67083000C1A4DBA00F33E06 /* earth_11.jpg */,
+				D67083010C1A4DBA00F33E06 /* earth_12.jpg */,
+				D67083020C1A4DBB00F33E06 /* earth_21.jpg */,
+				D67083030C1A4DBB00F33E06 /* earth_22.jpg */,
+				D67083040C1A4DBB00F33E06 /* earth_31.jpg */,
+				D67083050C1A4DBB00F33E06 /* earth_32.jpg */,
+				D67083060C1A4DBB00F33E06 /* earth_41.jpg */,
+				D67083070C1A4DBB00F33E06 /* earth_42.jpg */,
+			);
+			path = world;
 			sourceTree = "<group>";
 		};
 		D6BC361B0AB22C84003949C5 /* src */ = {
@@ -2668,7 +2697,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
-				D6F264020C18996B00C26DC4 /* worldmap_big.jpg */,
+				D67082FF0C1A4DBA00F33E06 /* world */,
 				D682E1050C10E23C00BBE1A0 /* scrollbar_corner.png */,
 				D682DE5A0C10985100BBE1A0 /* startup_bar.png */,
 				D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */,
@@ -3045,7 +3074,14 @@
 				D682E4170C1627F700BBE1A0 /* property_bar.png in Resources */,
 				D682E4840C162C9100BBE1A0 /* arrows.png in Resources */,
 				D682E97A0C17124A00BBE1A0 /* sider.png in Resources */,
-				D6F264030C18996B00C26DC4 /* worldmap_big.jpg in Resources */,
+				D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */,
+				D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */,
+				D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */,
+				D670830C0C1A4DBB00F33E06 /* earth_22.jpg in Resources */,
+				D670830D0C1A4DBB00F33E06 /* earth_31.jpg in Resources */,
+				D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */,
+				D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */,
+				D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
