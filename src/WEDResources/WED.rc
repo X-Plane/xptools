@@ -21,7 +21,6 @@ about.png				GUI_RES		about.png
 colors.png				GUI_RES		colors.png
 ui_measurements.txt		GUI_RES		ui_measurements.txt
 map_tools.png			GUI_RES		map_tools.png	
-worldmap_big.jpg		GUI_RES		worldmap_big.jpg
 
 /* Start window */
 startup_bar.png			GUI_RES		startup_bar.png			
@@ -63,3 +62,13 @@ arrows.png				GUI_RES		tables\arrows.png
 
 /* app code */
 WED_DataModel.sql		GUI_RES		"..\WEDCore\WED_DataModel.sql"
+
+/* world map */
+earth_12.jpg			GUI_RES		world\earth_12.jpg
+earth_41.jpg			GUI_RES		world\earth_41.jpg
+earth_22.jpg			GUI_RES		world\earth_22.jpg
+earth_31.jpg			GUI_RES		world\earth_31.jpg
+earth_21.jpg			GUI_RES		world\earth_21.jpg
+earth_32.jpg			GUI_RES		world\earth_32.jpg
+earth_11.jpg			GUI_RES		world\earth_11.jpg
+earth_42.jpg			GUI_RES		world\earth_42.jpg
