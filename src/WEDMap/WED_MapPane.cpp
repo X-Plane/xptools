@@ -243,10 +243,10 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	Bbox2	box;
 	
 	switch(command) {
-	case wed_PickOverlay:	return 1;
-	case wed_ToggleWorldMap:	ioCheck = mWorldMap->IsVisible();return 1;
-	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }
-	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis(); return 1;
+	case wed_PickOverlay:																	return 1;
+	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
+	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
+	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis();							return 1;
 	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
