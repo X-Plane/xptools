@@ -292,12 +292,12 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().name) != 6) 
 				ok = false;
 			outApts.back().kind_code = rec_code;
+			outApts.back().beacon.color_code = apt_beacon_none;
+			outApts.back().tower.draw_obj = -1;
 			break;							
 		case apt_rwy_old:
 			outApts.back().pavements.push_back(AptPavement_t());
 			// Mark both of these as invalid until we get one.
-			outApts.back().beacon.color_code = NO_VALUE;
-			outApts.back().tower.draw_obj = -1;
 			rwy = &outApts.back().pavements.back();
 			if (outApts.back().kind_code == apt_airport)
 			if (!hit_prob)
@@ -732,7 +732,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 				gate->location.y, gate->location.x, gate->heading, gate->name.c_str());
 		}	
 		
-		if (apt->beacon.color_code != NO_VALUE)
+		if (apt->beacon.color_code != apt_beacon_none)
 			fprintf(fi, "%2d % 010.6lf % 011.6lf %d %s" CRLF, apt_beacon, apt->beacon.location.y,
 				apt->beacon.location.x, apt->beacon.color_code, apt->beacon.name.c_str());
 		
