@@ -750,7 +750,8 @@ bool WED_PropertyTable::GetOpen(int id)
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
-	mOpen[id] = GetOpen(id) ? 0 : 1;
+	int old_val = GetOpen(id);
+	mOpen[id] = old_val ? 0 : 1;
 }
 
 void WED_PropertyTable::SetOpen(int id, int o)
