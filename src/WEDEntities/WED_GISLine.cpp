@@ -17,6 +17,12 @@ GISClass_t		WED_GISLine::GetGISClass		(void				 ) const
 	return gis_Line;
 }
 
+const char *	WED_GISLine::GetGISSubtype	(void				 ) const
+{	
+	return GetClass();
+}
+
+
 void			WED_GISLine::GetBounds		(	   Bbox2&  bounds) const
 {
 	Point2 p1,p2;
@@ -74,10 +80,10 @@ int					WED_GISLine::GetNumPoints(void ) const
 	return 2;
 }
 
-void				WED_GISLine::DeletePoint (int n)
-{
-	Assert(!"You cannot delete points from a line.");
-}
+//void				WED_GISLine::DeletePoint (int n)
+//{
+//	Assert(!"You cannot delete points from a line.");
+//}
 
 IGISPoint *	WED_GISLine::SplitSide   (int n)
 {

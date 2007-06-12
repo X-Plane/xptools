@@ -15,6 +15,11 @@ GISClass_t		WED_GISComposite::GetGISClass		(void				 ) const
 	return gis_Composite;
 }
 
+const char *	WED_GISComposite::GetGISSubtype	(void				 ) const
+{	
+	return GetClass();
+}
+
 void			WED_GISComposite::GetBounds		(	   Bbox2&  bounds) const
 {
 	if (CacheBuild())	RebuildCache();
@@ -96,6 +101,7 @@ void	WED_GISComposite::RebuildCache(void) const
 	mCacheBounds = Bbox2();
 	mEntities.clear();
 	int n = CountChildren();
+	mEntities.reserve(n);
 	for (int i = 0; i <  n; ++i)
 	{
 		IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(i));

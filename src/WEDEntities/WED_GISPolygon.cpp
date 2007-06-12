@@ -38,6 +38,12 @@ GISClass_t		WED_GISPolygon::GetGISClass		(void				 ) const
 	return gis_Polygon;
 }
 
+const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
+{	
+	return GetClass();
+}
+
+
 void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
 {
 	GetOuterRing()->GetBounds(bounds);

@@ -85,28 +85,20 @@ void			WED_Select::ToDB(sqlite3 * db)
 
 #pragma mark -
 
-bool		WED_Select::IsSelected(IBase * iwho) const
+bool		WED_Select::IsSelected(ISelectable * iwho) const
 {
-	DebugAssert(iwho != NULL);
-	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
-	DebugAssert(who != NULL);
-	if (who == NULL) return false;
-
-	return mSelected.count(who->GetID()) > 0;
+	return mSelected.count(iwho->GetSelectionID()) > 0;
 }
 
-void		WED_Select::Select(IBase * iwho)
+void		WED_Select::Select(ISelectable * iwho)
 {
-	DebugAssert(iwho != NULL);
-	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
-	DebugAssert(who != NULL);
-	if (who == NULL) return;
-	
-	if (mSelected.size() != 1 || mSelected.count(who->GetID()) == 0)
+	int id = iwho->GetSelectionID();
+
+	if (mSelected.size() != 1 || mSelected.count(id) == 0)
 	{
 		StateChanged();
 		mSelected.clear();
-		mSelected.insert(who->GetID());
+		mSelected.insert(id);
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
@@ -121,47 +113,38 @@ void		WED_Select::Clear(void)
 	}
 }
 
-void		WED_Select::Toggle(IBase * iwho)
+void		WED_Select::Toggle(ISelectable * iwho)
 {
-	DebugAssert(iwho != NULL);
-	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
-	DebugAssert(who != NULL);
-	if (who == NULL) return;
+	int id = iwho->GetSelectionID();
 
 	StateChanged();
-	if (mSelected.count(who->GetID()) > 0)
-		mSelected.erase(who->GetID());
+	if (mSelected.count(id) > 0)
+		mSelected.erase(id);
 	else
-		mSelected.insert(who->GetID());
+		mSelected.insert(id);
 	BroadcastMessage(msg_SelectionChanged,0);
 }
 
-void		WED_Select::Insert(IBase * iwho)
+void		WED_Select::Insert(ISelectable * iwho)
 {
-	DebugAssert(iwho != NULL);
-	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
-	DebugAssert(who != NULL);
-	if (who == NULL) return;
+	int id = iwho->GetSelectionID();
 
-	if (mSelected.count(who->GetID()) == 0)
+	if (mSelected.count(id) == 0)
 	{
 		StateChanged();
-		mSelected.insert(who->GetID());
+		mSelected.insert(id);
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
 
-void		WED_Select::Erase(IBase * iwho)
+void		WED_Select::Erase(ISelectable * iwho)
 {
-	DebugAssert(iwho != NULL);
-	WED_Persistent * who = SAFE_CAST(WED_Persistent, iwho);
-	DebugAssert(who != NULL);
-	if (who == NULL) return;
+	int id = iwho->GetSelectionID();
 
-	if (mSelected.count(who->GetID()) > 0)
+	if (mSelected.count(id) > 0)
 	{
 		StateChanged();
-		mSelected.erase(who->GetID());
+		mSelected.erase(id);
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
@@ -171,14 +154,14 @@ int				WED_Select::GetSelectionCount(void) const
 	return mSelected.size();
 }
 
-void			WED_Select::GetSelectionSet(set<IBase *>& sel) const
+void			WED_Select::GetSelectionSet(set<ISelectable *>& sel) const
 {
 	sel.clear();
 	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		sel.insert(FetchPeer(*i));
 }
 
-void			WED_Select::GetSelectionVector(vector<IBase *>& sel) const
+void			WED_Select::GetSelectionVector(vector<ISelectable *>& sel) const
 {
 	sel.clear();
 	if (mSelected.empty()) return;
@@ -187,7 +170,7 @@ void			WED_Select::GetSelectionVector(vector<IBase *>& sel) const
 		sel.push_back(FetchPeer(*i));
 }
 
-IBase *		WED_Select::GetNthSelection(int n) const
+ISelectable *		WED_Select::GetNthSelection(int n) const
 {
 	DebugAssert(n >= 0 && n < mSelected.size());
 	if (n < 0) return NULL;
@@ -201,7 +184,7 @@ IBase *		WED_Select::GetNthSelection(int n) const
 	return FetchPeer(*i);	
 }
 
-int			WED_Select::IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const
+int			WED_Select::IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const
 {
 	int n = 0;
 	for (set<int>::const_iterator i = mSelected.begin(); i != mSelected.end(); ++i)

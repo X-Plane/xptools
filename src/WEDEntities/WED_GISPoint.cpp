@@ -21,6 +21,11 @@ GISClass_t		WED_GISPoint::GetGISClass		(void				 ) const
 	return gis_Point;
 }
 
+const char *	WED_GISPoint::GetGISSubtype	(void				 ) const
+{	
+	return GetClass();
+}
+
 void			WED_GISPoint::GetBounds		(	   Bbox2&  bounds) const
 {
 	bounds = Bbox2(Point2(longitude.value,latitude.value));

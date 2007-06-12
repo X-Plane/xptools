@@ -20,6 +20,7 @@ public:
 
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
+	virtual	const char *	GetGISSubtype	(void				 ) const;
 	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
@@ -28,7 +29,7 @@ public:
 	virtual	void			Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds);
 	// IGISPointSequence
 	virtual	int					GetNumPoints(void ) const;	
-	virtual	void				DeletePoint (int n)		 ;
+//	virtual	void				DeletePoint (int n)		 ;
 	virtual		  IGISPoint *	SplitSide   (int n)		 ;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual		  IGISPoint *	GetNthPoint (int n) const;
 	virtual	int					GetNumSides(void) const;

@@ -24,6 +24,7 @@ public:
 
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
+	virtual	const char *	GetGISSubtype	(void				 ) const;
 	virtual	void			GetBounds		(	   Bbox2&  bounds) const;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds) const;
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;

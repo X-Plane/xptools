@@ -16,28 +16,14 @@ GISClass_t		WED_GISChain::GetGISClass		(void				 ) const
 	return IsClosed() ? gis_Ring : gis_Chain;
 }
 
+const char *	WED_GISChain::GetGISSubtype	(void				 ) const
+{	
+	return GetClass();
+}
+
 void			WED_GISChain::GetBounds		(	   Bbox2&  bounds) const
 {
-	if (CacheBuild())
-	{
-		int n = GetNumSides();
-		mCacheBounds = Bbox2();
-		
-		for (int i = 0; i < n; ++i)
-		{
-			Segment2 s;
-			Bezier2 b;
-			if (GetSide(i,s,b))
-			{
-				Bbox2	bb;
-				b.bounds(bb);
-				mCacheBounds += bb;
-			} else {
-				mCacheBounds += s.p1;
-				mCacheBounds += s.p2;
-			}		
-		}
-	}
+	if (CacheBuild())	RebuildCache();
 	bounds = mCacheBounds;
 }
 
@@ -122,40 +108,45 @@ void			WED_GISChain::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)
 
 int					WED_GISChain::GetNumPoints(void ) const
 {
-	return CountChildren();
+	if (CacheBuild())	RebuildCache();
+	return mCachePts.size();
 }
 
+/*
 void	WED_GISChain::DeletePoint(int n)
 {
 	WED_Thing * k = GetNthChild(n);
 	k->SetParent(NULL, 0);
 	k->Delete();
 }
+*/
 
 
 IGISPoint *	WED_GISChain::GetNthPoint (int n) const
 {
-	IGISPoint * p = SAFE_CAST(IGISPoint,GetNthChild(n));
-	DebugAssert(p != NULL);
-	return p;
+	if (CacheBuild())	RebuildCache();
+	return mCachePts[n];
 }
 
 
 int			WED_GISChain::GetNumSides(void) const
 {
-	int n = CountChildren();
+	if (CacheBuild())	RebuildCache();
+	int n = mCachePts.size();
 	return (IsClosed()) ? n : (n-1);
 }
 
 bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 {
+	if (CacheBuild())	RebuildCache();
+
 	int n1 = n;
-	int n2 = (n + 1) % this->GetNumPoints();
+	int n2 = (n + 1) % mCachePts.size();
 	
-	IGISPoint * p1 = this->GetNthPoint(n1);
-	IGISPoint * p2 = this->GetNthPoint(n2);
-	IGISPoint_Bezier * c1 = (p1->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p1) : NULL;
-	IGISPoint_Bezier * c2 = (p2->GetGISClass()==gis_Point_Bezier) ? SAFE_CAST(IGISPoint_Bezier,p2) : NULL;
+	IGISPoint * p1 = mCachePts[n1];
+	IGISPoint * p2 = mCachePts[n2];
+	IGISPoint_Bezier * c1 = mCachePtsBezier[n1];
+	IGISPoint_Bezier * c2 = mCachePtsBezier[n2];
 
 	p1->GetLocation(b.p1);
 	p2->GetLocation(b.p2);
@@ -178,3 +169,43 @@ bool		WED_GISChain::GetSide(int n, Segment2& s, Bezier2& b) const
 	return true;
 }
 
+
+void WED_GISChain::RebuildCache(void) const
+{
+	mCachePts.clear();
+	mCachePtsBezier.clear();	
+	int nc = CountChildren();
+	mCachePts.reserve(nc);
+	mCachePtsBezier.reserve(nc);
+	
+	for (int n = 0; n < nc; ++n)
+	{
+		WED_Thing * c = GetNthChild(n);
+		IGISPoint *		   p = NULL;
+		IGISPoint_Bezier * b = dynamic_cast<IGISPoint_Bezier *>(c);
+		if (b) p = b; else p = dynamic_cast<IGISPoint *>(c);
+		if (p)
+		{
+			mCachePts.push_back(p);
+			mCachePtsBezier.push_back(b);
+		}
+	}
+	
+	int n = GetNumSides();
+	mCacheBounds = Bbox2();
+	
+	for (int i = 0; i < n; ++i)
+	{
+		Segment2 s;
+		Bezier2 b;
+		if (GetSide(i,s,b))
+		{
+			Bbox2	bb;
+			b.bounds(bb);
+			mCacheBounds += bb;
+		} else {
+			mCacheBounds += s.p1;
+			mCacheBounds += s.p2;
+		}		
+	}
+}
