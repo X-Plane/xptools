@@ -3,6 +3,7 @@
 
 #include "CompGeomDefs2.h"
 #include "IBase.h"
+#include "ISelection.h"
 
 //------------------------------------------------------------------------------------------------------------
 // ENTITY INTERFACE
@@ -25,6 +26,10 @@
 // and write generic editing code for all of it.  This promotes the separation of GIS algorithms from the base
 // class because we can write an algorithm using only the interface.)
 
+#if DEV
+doc GIS class vs subtype
+#endif
+
 enum GISClass_t {
 
 	gis_Point,
@@ -41,10 +46,11 @@ enum GISClass_t {
 	gis_Composite
 };
 
-class	IGISEntity : public virtual IBase {
+class	IGISEntity : public virtual ISelectable {
 public:
 
 	virtual	GISClass_t		GetGISClass		(void						 ) const=0;
+	virtual	const char *	GetGISSubtype	(void						 ) const=0;
 	virtual	void			GetBounds		(	   Bbox2&  bounds		 ) const=0;
 	virtual	bool			IntersectsBox	(const Bbox2&  bounds		 ) const=0;
 	virtual	bool			WithinBox		(const Bbox2&  bounds		 ) const=0;
@@ -119,7 +125,7 @@ class	IGISPointSequence : public virtual IGISEntity {
 public:
 
 	virtual	int					GetNumPoints(void ) const=0;	
-	virtual	void				DeletePoint (int n)		 =0;
+//	virtual	void				DeletePoint (int n)		 =0;
 	virtual		  IGISPoint *	SplitSide   (int n)		 =0;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 

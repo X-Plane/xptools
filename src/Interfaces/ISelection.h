@@ -19,23 +19,31 @@
 using std::vector;
 using std::set;
 
-class	ISelection : public virtual IBase {
+class	ISelectable : public virtual IBase {
 public:
-	virtual		bool			IsSelected(IBase * who) const=0;
 
-	virtual		void			Select(IBase * who)=0;
-	virtual		void			Clear (void			 )=0;
-	virtual		void			Toggle(IBase * who)=0;
-	virtual		void			Insert(IBase * who)=0;
-	virtual		void			Erase (IBase * who)=0;
-
-	virtual		int				GetSelectionCount(void) const=0;
-	virtual		void			GetSelectionSet(set<IBase *>& sel) const=0;
-	virtual		void			GetSelectionVector(vector<IBase *>& sel) const=0;
-	virtual		IBase *			GetNthSelection(int n) const=0;
-
-	virtual		int				IterateSelection(int (* func)(IBase * who, void * ref), void * ref) const=0;
+	virtual		int				GetSelectionID(void) const=0;
 
 };
+
+class	ISelection : public virtual IBase {
+public:
+	virtual		bool			IsSelected(ISelectable * who) const=0;
+
+	virtual		void			Select(ISelectable * who)=0;
+	virtual		void			Clear (void			 )=0;
+	virtual		void			Toggle(ISelectable * who)=0;
+	virtual		void			Insert(ISelectable * who)=0;
+	virtual		void			Erase (ISelectable * who)=0;
+
+	virtual		int				GetSelectionCount(void) const=0;
+	virtual		void			GetSelectionSet(set<ISelectable *>& sel) const=0;
+	virtual		void			GetSelectionVector(vector<ISelectable *>& sel) const=0;
+	virtual		ISelectable *	GetNthSelection(int n) const=0;
+
+	virtual		int				IterateSelection(int (* func)(ISelectable * who, void * ref), void * ref) const=0;
+
+};
+
 
 #endif /* ISELECTION_H */
