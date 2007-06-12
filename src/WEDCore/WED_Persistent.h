@@ -4,6 +4,7 @@
 #include "IBase.h"
 #include "WED_Archive.h"
 #include "AssertUtils.h"
+#include "ISelection.h"
 
 struct	sqlite3;
 class	IOReader;
@@ -71,6 +72,7 @@ public: 															\
 	static __Class * CreateTyped(									\
 								WED_Archive *	parent);			\
 	virtual const char * 	GetClass(void) const;					\
+	static	const char *	sClass;									\
 protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
@@ -102,16 +104,18 @@ __Class * __Class::CreateTyped(									\
 void __Class##_Register(void); 									\
 void __Class##_Register(void) 									\
 {																\
-	WED_Persistent::Register(#__Class, __Class::Create);		\
+	WED_Persistent::Register(__Class::sClass, __Class::Create);	\
 }																\
 																\
 const char * __Class::GetClass(void) const						\
 {																\
-	return #__Class;											\
-}
+	return sClass;												\
+}																\
+																\
+const char * __Class::sClass = #__Class;
 
 
-class	WED_Persistent : public virtual IBase {
+class	WED_Persistent : public virtual ISelectable {
 public:
 
 	typedef WED_Persistent * (* CTOR_f)(WED_Archive *, int);
@@ -158,6 +162,9 @@ public:
 	// These are for the archive's use..
 			void			SetDirty(int dirty);
 			int				GetDirty(void) const;
+
+	// ISelectable
+	virtual		int			GetSelectionID(void) const { return mID; }
 
 protected:
 

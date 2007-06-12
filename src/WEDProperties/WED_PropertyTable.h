@@ -5,7 +5,7 @@
 #include "GUI_Listener.h"
 #include "GUI_SimpleTableGeometry.h"
 
-class	IBase;
+class	ISelectable;
 class	ISelection;
 class	IResolver;
 class	WED_Thing;
@@ -162,7 +162,7 @@ private:
 	int							mSelOnly;
 	set<string>					mFilter;
 	
-	vector<IBase *>				mSelSave;
+	vector<ISelectable *>		mSelSave;
 };
 
 

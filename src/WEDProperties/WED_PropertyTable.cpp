@@ -326,7 +326,7 @@ void	WED_PropertyTable::SelectRange(
 	ISelection * s = WED_GetSelect(mResolver);
 	
 	s->Clear();
-	for (vector<IBase *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+	for (vector<ISelectable *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 		s->Insert(*u);
 	#if OPTIMIZE
 		provide accelerated sel-save-restore ops!
@@ -372,7 +372,7 @@ int		WED_PropertyTable::SelectDisclose(
 			SetOpen(things[n], open_it);
 	} else {
 		ISelection * sel = WED_GetSelect(mResolver);
-		vector<IBase *>	sv;
+		vector<ISelectable *>	sv;
 		sel->GetSelectionVector(sv);
 		for (int n = 0; n < sv.size(); ++n)
 		{
