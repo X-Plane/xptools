@@ -102,7 +102,7 @@ void	WED_DoGroup(IResolver * inResolver)
 void	WED_DoUngroup(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
-	vector<IBase *> items;
+	vector<ISelectable *> items;
 	sel->GetSelectionVector(items);
 	
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -110,7 +110,7 @@ void	WED_DoUngroup(IResolver * inResolver)
 	
 	sel->Clear();
 	
-	for (vector<IBase *>::iterator i = items.begin(); i != items.end(); ++i)
+	for (vector<ISelectable *>::iterator i = items.begin(); i != items.end(); ++i)
 	{
 		WED_Thing * dead_group = dynamic_cast<WED_Thing *>(*i);
 		DebugAssert(dead_group != NULL);
@@ -543,7 +543,7 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	op->CommitOperation();
 }
 
-static int	unsplittable(IBase * base, void * ref)
+static int	unsplittable(ISelectable * base, void * ref)
 {
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
@@ -576,7 +576,7 @@ static int	unsplittable(IBase * base, void * ref)
 
 typedef	pair<ISelection *, vector<WED_Thing *> * >	hack_t;
 
-static int	collect_splits(IBase * base, void * ref)
+static int	collect_splits(ISelectable * base, void * ref)
 {
 	hack_t * info = (hack_t *) ref;
 

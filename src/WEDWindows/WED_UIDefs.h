@@ -9,4 +9,8 @@ enum {
 	FILE_DIALOG_IMPORT_APTDAT
 };
 
+#define	BEZ_MIN_SEGS		3
+#define BEZ_MAX_SEGS		100
+#define	BEZ_PIX_PER_SEG		10
+
 #endif
