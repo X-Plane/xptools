@@ -53,7 +53,7 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	Bbox2	bounds;
 	GetBounds(bounds);
 	info.tower.location = info.beacon.location = Segment2(bounds.p1,bounds.p2).midpoint();
-	info.tower.draw_obj = 0;
+	info.tower.draw_obj = -1;
 	info.tower.height_ft = 50.0;
 	info.beacon.color_code = apt_beacon_none;	
 }
