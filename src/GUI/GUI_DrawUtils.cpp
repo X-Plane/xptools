@@ -230,3 +230,42 @@ void	GUI_PlotIcon(
 		glPopMatrix();
 }
 
+void	GUI_PlotIconBulk(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							count,
+				int *						x,
+				int	*						y,
+				float *						c,
+				float						scale)
+{
+	GUI_TexPosition_t metrics;	
+	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
+	
+	int width = (scale == 1.0f) ? metrics.real_width : scale * (float) metrics.real_width;
+	int height = (scale == 1.0f) ? metrics.real_height : scale * (float) metrics.real_height;
+	
+	int width1 = width / 2;
+	int width2 = width - width1;
+	
+	int height1 = height / 2;
+	int height2 = height - height1;
+	
+	state->SetState(0, 1, 0, 1, 1, 0, 0);
+	state->BindTex(tex_id, 0);
+
+	glBegin(GL_QUADS);	
+	while(count--)
+	{
+		register int xx = *x++;
+		register int yy = *y++;
+		glColor4fv(c);
+		c += 4;
+		glTexCoord2f(0.0f,0.0f);				glVertex2i(xx - width1, yy - height1);
+		glTexCoord2f(0.0f,1.0f);				glVertex2i(xx - width1, yy + height2);
+		glTexCoord2f(1.0f,1.0f);				glVertex2i(xx + width2, yy + height2);
+		glTexCoord2f(1.0f,0.0f);				glVertex2i(xx + width2, yy - height1);
+	}
+	glEnd();	
+}
+

@@ -51,4 +51,14 @@ void	GUI_PlotIcon(
 				float						angle,
 				float						scale);
 
+void	GUI_PlotIconBulk(
+				GUI_GraphState *			state,
+				const char *				in_resource,
+				int							count,
+				int *						x,
+				int	*						y,
+				float *						c,	//	4 floats RGBA per icon
+				float						scale);
+
+
 #endif
