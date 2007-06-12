@@ -7,7 +7,7 @@
 class	GUI_Pane;
 class	WED_MapZoomerNew;
 class	IControlHandles;
-class	IBase;
+class	ISelectable;
 class	IResolver;
 class	IGISEntity;
 
@@ -33,6 +33,7 @@ public:
 
 	// WED_Layer
 	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel);
 
 protected:
 
@@ -58,7 +59,7 @@ private:
 			int					ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IBase *>&		result);
+									set<IGISEntity *>&		result);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything
@@ -72,7 +73,7 @@ private:
 		IControlHandles *		mHandles;
 		int						mCanSelect;
 		
-		vector<IBase *>			mSelSave;		
+		vector<ISelectable *>	mSelSave;		
 		int						mSelToggle;
 		
 		// Variables for drag tracking

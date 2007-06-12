@@ -641,7 +641,7 @@ void WED_VertexTool::GetEntityInternal(vector<IGISEntity *>& e) const
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
-	vector<IBase *>	iu;
+	vector<ISelectable *>	iu;
 	vector<IGISEntity *> en;
 	
 	e.clear();
@@ -649,7 +649,7 @@ void WED_VertexTool::GetEntityInternal(vector<IGISEntity *>& e) const
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;
 	en.reserve(iu.size());
-	for (vector<IBase *>::iterator i = iu.begin(); i != iu.end(); ++i)
+	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * gent = SAFE_CAST(IGISEntity,*i);
 		if (gent) AddEntityRecursive(gent, e);

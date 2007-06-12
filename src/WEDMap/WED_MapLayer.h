@@ -19,8 +19,13 @@ public:
 	virtual	void		DrawSelected			(int inCurrent, GUI_GraphState * g) { }
 	
 	// These draw specific entities.  Use these to draw pieces of the data model.  Only visible entities will be passed in!	
-	virtual	void		DrawEntityVisualization	(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { }
-	virtual	void		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { }
+	virtual	bool		DrawEntityVisualization	(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { return false; }
+	virtual	bool		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { return false; }
+
+	// Extra iterations over the entity hiearchy get very expensive.  This routine returns whether a layer wants 
+	// per-entity drawing passes for either structure or visualization.  We can also say whether we need "seleted" to be
+	// calculated accurately - checking selection slows down the sped of drawing passes.
+	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)=0;
 
 protected:
 

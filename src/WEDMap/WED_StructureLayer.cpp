@@ -3,10 +3,12 @@
 #include "GUI_GraphState.h"
 #include "WED_Colors.h"
 #include "GISUtils.h"
+#include "WED_UIDefs.h"
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_AirportNode.h"
 #include "XESConstants.h"
+#include "MathUtils.h"
 #include "WED_Runway.h"
 #include "WED_Helipad.h"
 #include "WED_LightFixture.h"
@@ -21,7 +23,7 @@
 
 #include "GUI_DrawUtils.h"
 
-#define	BEZ_COUNT 100
+#define	AIRPORT_MIN_PIX	20
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -81,11 +83,16 @@ static void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, 
 			b.p2 = z->LLToPixel(b.p2);
 			b.c1 = z->LLToPixel(b.c1);
 			b.c2 = z->LLToPixel(b.c2);
-			pts.reserve(pts.capacity() + BEZ_COUNT);
-			contours.reserve(contours.capacity() + BEZ_COUNT);
-			for (int k = 0; k < BEZ_COUNT; ++k)
+
+			int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+								sqrt(Vector2(b.c1,b.c2).squared_length()) +
+								sqrt(Vector2(b.c2,b.p2).squared_length());
+			int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+			pts.reserve(pts.capacity() + point_count);
+			contours.reserve(contours.capacity() + point_count);
+			for (int k = 0; k < point_count; ++k)
 			{
-				pts.push_back(b.midpoint((float) k / (float) BEZ_COUNT));
+				pts.push_back(b.midpoint((float) k / (float) point_count));
 				contours.push_back((k == 0 && i == 0) ? is_hole : 0);
 			}
 			
@@ -146,25 +153,26 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glShape2v(GL_LINE_STRIP, pts, count);
 		return;
 	} 
-	
+	else for(set<int>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+	switch(*a) {	
 	// ------------ STANDARD TAXIWAY LINES ------------
-	if (attrs.count(line_SolidYellow))
-	{
+	case line_SolidYellow:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glDisable(GL_LINE_STIPPLE);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_BrokenYellow))
-	{
+		break;
+	case line_BrokenYellow:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0x3333);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_DoubleSolidYellow))
-	{
+		break;
+	case line_DoubleSolidYellow:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(3);
 		glDisable(GL_LINE_STIPPLE);
@@ -172,9 +180,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(0,0,0,1);
 		glLineWidth(1);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_RunwayHold))
-	{
+		break;
+	case line_RunwayHold:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
@@ -186,9 +194,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(1);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);		
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);		
-	}
-	if (attrs.count(line_OtherHold))
-	{
+		break;
+	case line_OtherHold:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glEnable(GL_LINE_STIPPLE);
@@ -196,9 +204,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,1.5);		
 		glDisable(GL_LINE_STIPPLE);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,-1.5);		
-	}
-	if (attrs.count(line_ILSHold))
-	{
+		break;
+	case line_ILSHold:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(5);
 		glDisable(GL_LINE_STIPPLE);
@@ -210,9 +218,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0x1111);
 		glShape2v(GL_LINE_STRIP, pts, count);					
-	}
-	if (attrs.count(line_ILSCriticalCenter))
-	{
+		break;
+	case line_ILSCriticalCenter:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(5);
 		glEnable(GL_LINE_STIPPLE);
@@ -225,17 +233,17 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glShape2v(GL_LINE_STRIP, pts, count);				
-	}
-	if (attrs.count(line_WideBrokenSingle))
-	{
+		break;
+	case line_WideBrokenSingle:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0xF0F0);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_WideBrokenDouble))
-	{
+		break;
+	case line_WideBrokenDouble:
+	
 		glColor4f(1,1,0,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
@@ -245,18 +253,18 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(1);
 		glDisable(GL_LINE_STIPPLE);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
+		break;
 
 	// ------------ ROADWAY TAXIWAY LINES ------------
-	if (attrs.count(line_SolidWhite))
-	{
+	case line_SolidWhite:
+	
 		glColor4f(1,1,1,1);
 		glLineWidth(1);
 		glDisable(GL_LINE_STIPPLE);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_Chequered))
-	{
+		break;
+	case line_Chequered:
+	
 		glColor4f(1,1,1,1);
 		glLineWidth(6);
 		glEnable(GL_LINE_STIPPLE);
@@ -270,19 +278,19 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0xCCCCC);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_BrokenWhite))
-	{
+		break;
+	case line_BrokenWhite:
+	
 		glColor4f(1,1,1,1);
 		glLineWidth(1);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0x3333);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
+		break;
 	
 	// ------------ BLACK-BACKED TAXIWAY LINES ------------
-	if (attrs.count(line_BSolidYellow))
-	{
+	case line_BSolidYellow:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(3);
 		glDisable(GL_LINE_STIPPLE);
@@ -290,9 +298,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_BBrokenYellow))
-	{
+		break;
+	case line_BBrokenYellow:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(3);
 		glDisable(GL_LINE_STIPPLE);
@@ -302,9 +310,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0x3333);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_BDoubleSolidYellow))
-	{
+		break;
+	case line_BDoubleSolidYellow:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(5);
 		glDisable(GL_LINE_STIPPLE);
@@ -315,9 +323,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(1);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_BRunwayHold))
-	{
+		break;
+	case line_BRunwayHold:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(12);
 		glDisable(GL_LINE_STIPPLE);
@@ -333,9 +341,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(1);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);		
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);		
-	}
-	if (attrs.count(line_BOtherHold))
-	{
+		break;
+	case line_BOtherHold:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(6);
 		glDisable(GL_LINE_STIPPLE);
@@ -347,9 +355,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,1.5);		
 		glDisable(GL_LINE_STIPPLE);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count,-1.5);		
-	}
-	if (attrs.count(line_BILSHold))
-	{
+		break;
+	case line_BILSHold:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(7);
 		glDisable(GL_LINE_STIPPLE);
@@ -364,9 +372,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0x1111);
 		glShape2v(GL_LINE_STRIP, pts, count);					
-	}
-	if (attrs.count(line_BILSCriticalCenter))
-	{
+		break;
+	case line_BILSCriticalCenter:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(7);
 		glDisable(GL_LINE_STIPPLE);
@@ -383,9 +391,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(1,1,0,1);
 		glLineWidth(1);
 		glShape2v(GL_LINE_STRIP, pts, count);				
-	}
-	if (attrs.count(line_BWideBrokenSingle))
-	{
+		break;
+	case line_BWideBrokenSingle:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(3);
 		glDisable(GL_LINE_STIPPLE);
@@ -395,9 +403,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1, 0xF0F0);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
-	if (attrs.count(line_BWideBrokenDouble))
-	{
+		break;
+	case line_BWideBrokenDouble:
+	
 		glColor4f(0.3,0.3,0.3,1);
 		glLineWidth(5);
 		glDisable(GL_LINE_STIPPLE);
@@ -411,35 +419,35 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(1);
 		glDisable(GL_LINE_STIPPLE);
 		glShape2v(GL_LINE_STRIP, pts, count);			
-	}
+		break;
 
 	// ------------ LIGHTS ------------
-	if (attrs.count(line_TaxiCenter))
-	{
+	case line_TaxiCenter:
+	
 		glColor4f(0.3,1,0.3,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_TaxiEdge))
-	{
+		break;
+	case line_TaxiEdge:
+	
 		glColor4f(0,0,1,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_HoldLights))
-	{
+		break;
+	case line_HoldLights:
+	
 		glColor4f(1,0.5,0,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7070);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_HoldLightsPulse))
-	{
+		break;
+	case line_HoldLightsPulse:
+	
 		glColor4f(1,0.5,0,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
@@ -448,9 +456,9 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(0.3,0.1,0,1);
 		glLineStipple(1,0x0070);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_HoldShortCenter))
-	{
+		break;
+	case line_HoldShortCenter:
+	
 		glColor4f(0.3,1,0.3,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
@@ -459,21 +467,22 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glColor4f(1,0.5,0,1);
 		glLineStipple(1,0x0070);
 		glShape2v(GL_LINE_STRIP, pts, count);		
-	}
-	if (attrs.count(line_BoundaryEdge))
-	{
+		break;
+	case line_BoundaryEdge:
+	
 		glColor4f(1,0,0,1);
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
 		glShape2v(GL_LINE_STRIP, pts, count);		
+		break;
 	}
 	
 	glLineWidth(1);
 	glDisable(GL_LINE_STIPPLE);
 }
 
-void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	g->SetState(false,0,false,   false,true,false,false);
 	
@@ -488,8 +497,8 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	WED_Color struct_color = selected ? (locked ? wed_StructureLockedSelected : wed_StructureSelected) :
 										(locked ? wed_StructureLocked		 : wed_Structure);
 	
-	GISClass_t kind = entity->GetGISClass();
-
+	GISClass_t 		kind		= entity->GetGISClass();
+	const char *	sub_class	= entity->GetGISSubtype();
 	IGISPoint *						pt;
 	IGISPoint_Heading *				pth;
 	IGISPoint_WidthLength *			ptwl;
@@ -523,21 +532,26 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	/******************************************************************************************************************************************************
 	 * RUNWAY DRAWING
 	 ******************************************************************************************************************************************************/	
-	if ((airport = SAFE_CAST(WED_Airport, entity)) != NULL)
+	if (sub_class == WED_Airport::sClass && (airport = SAFE_CAST(WED_Airport, entity)) != NULL)
 	{
-		if (GetZoomer()->GetPPM() < 0.005)
+		Bbox2	bounds;
+		airport->GetBounds(bounds);		
+		bounds.p1 = GetZoomer()->LLToPixel(bounds.p1);
+		bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);		
+		if (bounds.xspan() < AIRPORT_MIN_PIX && bounds.yspan() < AIRPORT_MIN_PIX)
 		{
-			Bbox2	bounds;
-			airport->GetBounds(bounds);
-			Point2 loc = GetZoomer()->LLToPixel(Segment2(bounds.p1,bounds.p2).midpoint());
+			float * f1 = WED_Color_RGBA(struct_color);
+			float * f2 = f1 + 4;
+			Point2 loc = Segment2(bounds.p1,bounds.p2).midpoint();
 			switch(airport->GetAirportType()) {
-			case type_Airport:		GUI_PlotIcon(g,"map_airport.png", loc.x,loc.y,0,1.0);	break;
-			case type_Seaport:		GUI_PlotIcon(g,"map_seaport.png", loc.x,loc.y,0,1.0);	break;
-			case type_Heliport:		GUI_PlotIcon(g,"map_heliport.png", loc.x,loc.y,0,1.0);	break;
+			case type_Airport:		mAirportIconsX.push_back(loc.x);	mAirportIconsY.push_back(loc.y);	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);
+			case type_Seaport:		mSeaportIconsX.push_back(loc.x);	mSeaportIconsY.push_back(loc.y);	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);
+			case type_Heliport:		mHeliportIconsX.push_back(loc.x);	mHeliportIconsY.push_back(loc.y);	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);
 			}
+			return false;
 		}
 	}
-	else if ((rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
+	else if (sub_class == WED_Runway::sClass && (rwy = SAFE_CAST(WED_Runway,entity)) != NULL)
 	{
 		Point2 	corners[4], shoulders[8], disp1[4], disp2[4], blas1[4], blas2[4];
 		bool	has_shoulders, has_disp1, has_disp2, has_blas1, has_blas2;
@@ -550,14 +564,17 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		if (has_disp2 = rwy->GetCornersDisp2(disp2))				GetZoomer()->LLToPixelv(disp2, disp2, 4);		
 		if (has_shoulders = rwy->GetCornersShoulders(shoulders))	GetZoomer()->LLToPixelv(shoulders, shoulders, 8);
 
-		// "Solid" geometry.		
-		glColor4fv(WED_Color_Surface(rwy->GetSurface(),mPavementAlpha, storage));
-									glShape2v(GL_QUADS, corners, 4);
-		if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
-		if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
-		glColor4fv(WED_Color_Surface(rwy->GetShoulder(),mPavementAlpha, storage));
-		if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);		
-
+		if (mPavementAlpha > 0.0f)
+		{
+			// "Solid" geometry.		
+			glColor4fv(WED_Color_Surface(rwy->GetSurface(),mPavementAlpha, storage));
+										glShape2v(GL_QUADS, corners, 4);
+			if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
+			if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
+			glColor4fv(WED_Color_Surface(rwy->GetShoulder(),mPavementAlpha, storage));
+			if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);		
+		}
+		
 		//  "Outline" geometry	
 		glColor4fv(WED_Color_RGBA(struct_color));
 		glShape2v(GL_LINE_LOOP, corners, 4);
@@ -594,67 +611,55 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		/******************************************************************************************************************************************************
 		 * NON-DIRECTIONAL POINT ELEMENTS
 		 ******************************************************************************************************************************************************/		
-		if ((pt = SAFE_CAST(IGISPoint,entity)) != NULL)
 		{
-			Point2 l;
-			pt->GetLocation(l);
-			l = GetZoomer()->LLToPixel(l);
-			
-			if ((tower = SAFE_CAST(WED_TowerViewpoint, pt)) != NULL)
+			Point2			l;
+			const char *	icon = NULL;
+				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
+			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
+			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
+			else pt = SAFE_CAST(IGISPoint,entity);
+			if (pt)			
 			{
-				GUI_PlotIcon(g,"map_towerview.png", l.x,l.y,0,icon_scale);
-			}
-			else if ((sock = SAFE_CAST(WED_Windsock, pt)) != NULL)
-			{
-				GUI_PlotIcon(g,"map_windsock.png", l.x,l.y,0,icon_scale);
-			}
-			else if ((beacon = SAFE_CAST(WED_AirportBeacon, pt)) != NULL)
-			{
-				GUI_PlotIcon(g,"map_beacon.png", l.x,l.y,0,icon_scale);
-			}
-			else
-			{
-				glBegin(GL_LINES);
-				glVertex2f(l.x, l.y - 3);
-				glVertex2f(l.x, l.y + 3);
-				glVertex2f(l.x - 3, l.y);
-				glVertex2f(l.x + 3, l.y);
-				glEnd();
+				pt->GetLocation(l);
+				l = GetZoomer()->LLToPixel(l);
+				if (icon) GUI_PlotIcon(g,icon, l.x,l.y,0,icon_scale);
+				else {
+					glBegin(GL_LINES);
+					glVertex2f(l.x, l.y - 3);
+					glVertex2f(l.x, l.y + 3);
+					glVertex2f(l.x - 3, l.y);
+					glVertex2f(l.x + 3, l.y);
+					glEnd();
+				}
 			}
 		}
 		break;
-
 	case gis_Point_Heading:
 		/******************************************************************************************************************************************************
 		 * DIRECTIONAL POINT ELEMENTS
 		 ******************************************************************************************************************************************************/			
-		if ((pth = SAFE_CAST(IGISPoint_Heading,entity)) != NULL)
 		{
-			Point2 l;
-			pth->GetLocation(l);
-			Vector2	dir;
-			NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
-			Vector2 r(dir.perpendicular_cw());
-			l = GetZoomer()->LLToPixel(l);
+			Point2			l;
+			Vector2			dir;
+			const char *	icon = NULL;
 			
-			if ((lfix = SAFE_CAST(WED_LightFixture, pth)) != NULL)
+				 if (sub_class == WED_LightFixture::sClass && (lfix = SAFE_CAST(WED_LightFixture,entity)) != NULL)pth = lfix, icon = "map_light.png"	;
+			else if (sub_class == WED_AirportSign::sClass  && (sign = SAFE_CAST(WED_AirportSign ,entity)) != NULL)pth = sign, icon = "map_taxisign.png"	;
+			else if (sub_class == WED_RampPosition::sClass && (ramp = SAFE_CAST(WED_RampPosition,entity)) != NULL)pth = ramp, icon = "map_rampstart.png";
+			else pth = SAFE_CAST(IGISPoint_Heading,entity);
+			if (pth)
 			{
-				GUI_PlotIcon(g,"map_light.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
-			}
-			else if ((sign = SAFE_CAST(WED_AirportSign,pth)) != NULL)
-			{
-				GUI_PlotIcon(g,"map_taxisign.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
-			}
-			else if ((ramp = SAFE_CAST(WED_RampPosition,pth)) != NULL)
-			{
-				GUI_PlotIcon(g,"map_rampstart.png", l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
-			}
-			else
-			{
-				glBegin(GL_LINES);
-				glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
-				glVertex2(l - r   * 3.0);			glVertex2(l + r   * 3.0);
-				glEnd();
+				pth->GetLocation(l);
+				NorthHeading2VectorMeters(l,l,pth->GetHeading(),dir);
+				Vector2 r(dir.perpendicular_cw());
+				l = GetZoomer()->LLToPixel(l);
+				if (icon)	GUI_PlotIcon(g,icon, l.x,l.y,atan2(dir.dx,dir.dy) * RAD_TO_DEG,icon_scale);
+				else {
+					glBegin(GL_LINES);
+					glVertex2(l - dir * 3.0);			glVertex2(l + dir * 6.0);
+					glVertex2(l - r   * 3.0);			glVertex2(l + r   * 3.0);
+					glEnd();
+				}
 			}
 		}
 		break;
@@ -662,38 +667,41 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		/******************************************************************************************************************************************************
 		 * HELIPADS AND OTHER GIS-SIMILAR
 		 ******************************************************************************************************************************************************/			
-		if ((ptwl = SAFE_CAST(IGISPoint_WidthLength,entity)) != NULL)
 		{
-			helipad = SAFE_CAST(WED_Helipad, ptwl);
-		
-			Point2 corners[4];
-			ptwl->GetCorners(corners);
-			GetZoomer()->LLToPixelv(corners, corners, 4);
-
-			if (helipad)
-			{	
-				glColor4fv(WED_Color_Surface(helipad->GetSurface(), mPavementAlpha, storage));
-				glShape2v(GL_QUADS, corners, 4);
-				glColor4fv(WED_Color_RGBA(struct_color));
-			}
-
-			glShape2v(GL_LINE_LOOP, corners, 4);
+			if (sub_class == WED_Helipad::sClass && (helipad = SAFE_CAST(WED_Helipad		 , entity)))	ptwl = helipad;
+			else									 ptwl    = SAFE_CAST(IGISPoint_WidthLength,entity)					  ;
 			
-			glBegin(GL_LINES);
-			glVertex2(Segment2(corners[0],corners[1]).midpoint(0.5));
-			glVertex2(Segment2(corners[2],corners[3]).midpoint(0.5));
-			glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
-			glVertex2(Segment2(
-						Segment2(corners[0],corners[1]).midpoint(1.5),
-						Segment2(corners[3],corners[2]).midpoint(1.5)).midpoint());
-			glEnd();
-			
-			if (helipad)
-			{
-				Point2	p;
-				helipad->GetLocation(p);
-				p = GetZoomer()->LLToPixel(p);
-				GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0,icon_scale);
+			if (ptwl)
+			{		
+				Point2 corners[4];
+				ptwl->GetCorners(corners);
+				GetZoomer()->LLToPixelv(corners, corners, 4);
+
+				if (helipad && mPavementAlpha > 0.0f)
+				{	
+					glColor4fv(WED_Color_Surface(helipad->GetSurface(), mPavementAlpha, storage));
+					glShape2v(GL_QUADS, corners, 4);
+					glColor4fv(WED_Color_RGBA(struct_color));
+				}
+
+				glShape2v(GL_LINE_LOOP, corners, 4);
+				
+				glBegin(GL_LINES);
+				glVertex2(Segment2(corners[0],corners[1]).midpoint(0.5));
+				glVertex2(Segment2(corners[2],corners[3]).midpoint(0.5));
+				glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
+				glVertex2(Segment2(
+							Segment2(corners[0],corners[1]).midpoint(1.5),
+							Segment2(corners[3],corners[2]).midpoint(1.5)).midpoint());
+				glEnd();
+				
+				if (helipad)
+				{
+					Point2	p;
+					helipad->GetLocation(p);
+					p = GetZoomer()->LLToPixel(p);
+					GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0,icon_scale);
+				}
 			}
 		}
 		break;
@@ -725,8 +733,15 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					b.p2 = GetZoomer()->LLToPixel(b.p2);
 					b.c1 = GetZoomer()->LLToPixel(b.c1);
 					b.c2 = GetZoomer()->LLToPixel(b.c2);
-					for (int n = 0; n <= BEZ_COUNT; ++n)
-						pts.push_back(b.midpoint((float) n / (float) BEZ_COUNT));
+					
+						
+					int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+										sqrt(Vector2(b.c1,b.c2).squared_length()) +
+										sqrt(Vector2(b.c2,b.p2).squared_length());
+					int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+					pts.reserve(point_count+1);					
+					for (int n = 0; n <= point_count; ++n)
+						pts.push_back(b.midpoint((float) n / (float) point_count));
 				} 
 				else
 				{
@@ -743,13 +758,15 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		/******************************************************************************************************************************************************
 		 * NON-RUNWAY LINES
 		 ******************************************************************************************************************************************************/		
-		if ((lw = SAFE_CAST(IGISLine_Width,entity)) != NULL)
+		if (sub_class == WED_Sealane::sClass && (sea = SAFE_CAST(WED_Sealane, entity)) != NULL) lw = sea;
+		else									 lw  = SAFE_CAST(IGISLine_Width,entity);
+		if (lw)
 		{
 			Point2 corners[4];
 			lw->GetCorners(corners);
 			GetZoomer()->LLToPixelv(corners, corners, 4);
 			
-			if ((sea = SAFE_CAST(WED_Sealane, entity)) != NULL)
+			if (sea && mPavementAlpha > 0.0f)
 			{
 				glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,mPavementAlpha, storage));
 				glShape2v(GL_QUADS, corners, 4);
@@ -762,7 +779,6 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 			glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
 			glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
 			glEnd();
-			
 		}
 		break;
 
@@ -770,12 +786,17 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		/******************************************************************************************************************************************************
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/		
-		if ((poly = SAFE_CAST(IGISPolygon,entity)) != NULL)
-		{
+		if (sub_class == WED_Taxiway::sClass && (taxi = SAFE_CAST(WED_Taxiway, entity)) != NULL) poly = taxi;
+		else								     poly = SAFE_CAST(IGISPolygon,entity);
 		
-			if (mPavementAlpha > 0.0)
-			if ((taxi = SAFE_CAST(WED_Taxiway, poly)) != NULL)
+		if (poly)
+		{
+			if (taxi && mPavementAlpha > 0.0f)
 			{
+				// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
+				// airport can is tiny...most pavement is, while visually insignificant, still sprawling, so a bbox-sizes test is poor.
+				// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
+				// is negligable anyway.
 				vector<Point2>	pts;
 				vector<int>		is_hole_start;
 				
@@ -792,7 +813,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					glEnable(GL_CULL_FACE);
 				}
 			}
-		
+
 			this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
 			int n = poly->GetNumHoles();
 			for (int c = 0; c < n; ++c)
@@ -800,7 +821,7 @@ void		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		}
 		break;
 	}
-	
+	return true;
 }
 
 bool		WED_StructureLayer::GetRealLinesShowing(void) const
@@ -824,3 +845,43 @@ float		WED_StructureLayer::GetPavementTransparency(void) const
 {
 	return mPavementAlpha;
 }
+
+void		WED_StructureLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+{
+	draw_ent_v = 0;
+	draw_ent_s = 1;
+	cares_about_sel = 1;
+}
+
+#if DEV
+doc this
+#endif
+
+void		WED_StructureLayer::DrawStructure(int inCurrent, GUI_GraphState * g)
+{
+	float scale = GetZoomer()->GetPPM() * 30.0;
+	if (scale > 1.0) scale = 1.0;
+	if (scale < 0.25) scale = 0.25;
+	if (!mAirportIconsX.empty())
+	{
+		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsX.size(), &*mAirportIconsX.begin(), &*mAirportIconsY.begin(), &*mAirportIconsC.begin(), scale);
+		mAirportIconsX.clear();
+		mAirportIconsY.clear();
+		mAirportIconsC.clear();
+	}
+	if (!mSeaportIconsX.empty())
+	{
+		GUI_PlotIconBulk(g,"map_seaport.png", mSeaportIconsX.size(), &*mSeaportIconsX.begin(), &*mSeaportIconsY.begin(), &*mSeaportIconsC.begin(), scale);
+		mSeaportIconsX.clear();
+		mSeaportIconsY.clear();
+		mSeaportIconsC.clear();
+	}
+	if (!mHeliportIconsX.empty())
+	{
+		GUI_PlotIconBulk(g,"map_heliport.png", mHeliportIconsX.size(), &*mHeliportIconsX.begin(), &*mHeliportIconsY.begin(), &*mHeliportIconsC.begin(), scale);
+		mHeliportIconsX.clear();
+		mHeliportIconsY.clear();
+		mHeliportIconsC.clear();
+	}
+}
+

@@ -22,6 +22,8 @@ public:
 	// These provide generalized drawing routines.  Use this to draw background images and other such stuff.
 	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
 
+	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel);
+
 	virtual	void		TimerFired(void);
 	
 private:

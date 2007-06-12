@@ -91,19 +91,25 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	Bbox2 bounds;
 	
+	int draw_ent_v, draw_ent_s, wants_sel;
+	
 	GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
+	ISelection * sel = GetSel();
+	IGISEntity * base = GetGISBase();
 
 	vector<WED_MapLayer *>::iterator l;
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	{
+		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
+		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
 		(*l)->DrawVisualization(cur == *l, state);
-		if (GetGISBase()) DrawVisFor(*l, cur == *l, bounds, GetGISBase(), state);
 	}
 
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	{
+		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
+		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
 		(*l)->DrawStructure(cur == *l, state);
-		if (GetGISBase()) DrawStrFor(*l, cur == *l, bounds, GetGISBase(), state);
 	}
 	
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
@@ -135,18 +141,23 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	char mouse_loc[50];
 	int x, y;
 	GetMouseLocNow(&x,&y);
-	sprintf(mouse_loc, "%+010.6lf %+011.6lf", XPixelToLon(x),YPixelToLat(y));
+	sprintf(mouse_loc, "%+010.6lf %+011.6lf (ppm: %lf/%lf)", XPixelToLon(x),YPixelToLat(y), GetPPM(), mPixel2DegLat);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, mouse_loc);
 	
 	#if SHOW_FPS
-	static clock_t last_time = 0;
-		   clock_t now = clock();
-		   
-		   double t = ((double) (now - last_time) / (double) CLOCKS_PER_SEC);
-		   
-		   last_time = now;
-		   sprintf(mouse_loc, "%lf FPS", t);
+	static clock_t  last_time = 0;
+	static float	fps = 0.0f;
+	static int		cycle = 0;
+		   ++cycle;
+		   if (cycle > 100)
+		   {
+				clock_t now = clock();		   
+				fps = ((float) (now - last_time) / ((float) CLOCKS_PER_SEC * 100.0f));		   
+				last_time = now;
+				cycle = 0;
+		   }
+		   sprintf(mouse_loc, "%lf FPS", fps);
 		   GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 45, mouse_loc);
 		   Refresh();
 		   
@@ -154,37 +165,41 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	
 }
 
-void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
+void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
 {
-	if (!what->IntersectsBox(bounds)) return;
+	Bbox2	what_bounds;
+	what->GetBounds(what_bounds);
+	if (!bounds.overlap(what_bounds)) return;
 	IGISComposite * c;
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
 	if (e && e->GetHidden()) return;
 	
-	layer->DrawEntityVisualization(current, what, g, GetSel() && GetSel()->IsSelected(what));
+	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
 		for (int n = t-1; n >= 0; --n)
-			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g);
+			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
 	}
 }
 
-void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g)
+void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
 {
-	if (!what->IntersectsBox(bounds))	return;
+	Bbox2	what_bounds;
+	what->GetBounds(what_bounds);
+	if (!bounds.overlap(what_bounds)) return;
 	IGISComposite * c;
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
 	if (e && e->GetHidden()) return;
 
-	layer->DrawEntityStructure(current, what, g, GetSel() && GetSel()->IsSelected(what));
+	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
 		int t = c->GetNumEntities();
 		for (int n = t-1; n >= 0; --n)
-			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g);
+			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
 	}
 }
 

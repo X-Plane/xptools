@@ -12,6 +12,8 @@
 #include "IGIS.h"
 #include "ISelection.h"
 #include "IOperation.h"
+#include "WED_UIDefs.h"
+#include "MathUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -21,7 +23,6 @@
 #define LINE_DIST 3
 #define	HANDLE_RAD 4
 #define HANDLE_RAD_SQR (HANDLE_RAD*HANDLE_RAD)
-#define BEZIER_SEGS 10
 
 // This util routine forms the line segment or bezier for a given "link" in a handles, converting from lat/lon to pixels.
 // returns true for bezier, false for segment.
@@ -249,7 +250,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if (sel && ent_base)
 		{
-			set<IBase *>	sel_set;
+			set<IGISEntity *>	sel_set;
 			Bbox2	bounds(
 							GetZoomer()->XPixelToLon(mDragX),
 							GetZoomer()->YPixelToLat(mDragY),
@@ -266,11 +267,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	
 			sel->GetSelectionVector(mSelSave);
 
-			for (set<IBase *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+			for (set<IGISEntity *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 			if (mSelToggle)
-				sel->Toggle(*i);
+				sel->Toggle((*i));
 			else	
-				sel->Insert(*i);
+				sel->Insert((*i));
 			
 				
 			#if BENTODO
@@ -285,7 +286,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 int		WED_HandleToolBase::ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IBase *>&	result)
+									set<IGISEntity *>&	result)
 {
 	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
 	if (thang) {
@@ -391,7 +392,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
 			{
-				set<IBase *>	sel_set;
+				set<IGISEntity *>	sel_set;
 				Bbox2	bounds(
 								GetZoomer()->XPixelToLon(mDragX),
 								GetZoomer()->YPixelToLat(mDragY),
@@ -401,17 +402,17 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 				ProcessSelectionRecursive(ent_base, bounds, sel_set);
 
 				sel->Clear();
-				for (vector<IBase *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
+				for (vector<ISelectable *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
 					sel->Insert(*u);
 				#if OPTIMIZE
 					provide accelerated sel-save-restore ops!
 				#endif
 
-				for (set<IBase *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
+				for (set<IGISEntity *>::iterator i = sel_set.begin(); i != sel_set.end(); ++i)
 				if (mSelToggle)
-					sel->Toggle(*i);
+					sel->Toggle((*i));
 				else	
-					sel->Insert(*i);
+					sel->Insert((*i));
 			}			
 		}
 		break;
@@ -450,6 +451,11 @@ void		WED_HandleToolBase::KillOperation(void)
 {
 }
 
+void		WED_HandleToolBase::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+{
+	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+}
+
 void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 {
 	if (!inCurrent) return;
@@ -483,10 +489,15 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
-						for (int n = 0; n < BEZIER_SEGS; ++n)
+						int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+											sqrt(Vector2(b.c1,b.c2).squared_length()) +
+											sqrt(Vector2(b.c2,b.p2).squared_length());
+						int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+
+						for (int n = 0; n < point_count; ++n)
 						{
-							float t1 = (float) n / (float) BEZIER_SEGS;
-							float t2 = (float) (n+1) / (float) BEZIER_SEGS;
+							float t1 = (float) n / (float) point_count;
+							float t2 = (float) (n+1) / (float) point_count;
 							Point2	p1 = b.midpoint(t1);
 							Point2	p2 = b.midpoint(t2);
 							glVertex2d(p1.x,p1.y);
@@ -556,5 +567,4 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 		glEnd();		
 	}
 }
-
 

@@ -40,7 +40,7 @@ static void GetExtentAll(Bbox2& box, IResolver * resolver)
 	if (ent) ent->GetBounds(box);
 }
 
-static int accum_box(IBase * who, void * ref)
+static int accum_box(ISelectable * who, void * ref)
 {
 	Bbox2 * total = (Bbox2 *) ref;
 	IGISEntity * ent = dynamic_cast<IGISEntity *>(who);

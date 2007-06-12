@@ -155,4 +155,7 @@ void	WED_TerraserverLayer::TimerFired(void)
 	GetHost()->Refresh();
 }
 
-
+void		WED_TerraserverLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+{
+	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+}

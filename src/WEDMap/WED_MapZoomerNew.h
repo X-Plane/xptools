@@ -141,6 +141,7 @@ private:
 	double	mLatCenter;
 	double	mLonCenter;
 	double	mLonCenterCOS;
+protected:
 	double	mPixel2DegLat;
 	
 };

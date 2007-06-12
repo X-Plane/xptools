@@ -11,6 +11,8 @@ public:
 
 	virtual	void		DrawVisualization(int inCurrent, GUI_GraphState * g);
 	virtual	void		DrawStructure	 (int inCurrent, GUI_GraphState * g);
+
+	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel);
 		
 };
 		

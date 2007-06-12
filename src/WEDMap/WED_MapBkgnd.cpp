@@ -112,3 +112,8 @@ void		WED_MapBkgnd::DrawStructure(int inCurrent, GUI_GraphState * g)
 	glEnd();
 	
 }
+
+void		WED_MapBkgnd::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+{
+	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+}
