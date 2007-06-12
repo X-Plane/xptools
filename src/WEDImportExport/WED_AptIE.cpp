@@ -432,6 +432,7 @@ void	WED_AptImport(
 			new_gat->Import(*gat);
 		}
 		
+		if (apt->tower.draw_obj != -1)
 		{
 			WED_TowerViewpoint * new_twr = WED_TowerViewpoint::CreateTyped(archive);
 			new_twr->SetParent(new_apt,new_apt->CountChildren());
