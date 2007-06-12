@@ -905,6 +905,7 @@
 		D67083050C1A4DBB00F33E06 /* earth_32.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_32.jpg; sourceTree = "<group>"; };
 		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
 		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
+		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
 		D67EF50A0B5CF9F400D9190C /* XGrinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XGrinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF50C0B5CFA2000D9190C /* XGrinderShell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGrinderShell.h; sourceTree = "<group>"; };
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
@@ -2210,6 +2211,7 @@
 		D6BC376A0AB22C85003949C5 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D6708AA60C1F2A1A00F33E06 /* MathUtils.h */,
 				D69FD7430B6CF765008E3AEC /* unzip.c */,
 				D69FD7440B6CF765008E3AEC /* unzip.h */,
 				D69FD7450B6CF765008E3AEC /* zip.c */,
