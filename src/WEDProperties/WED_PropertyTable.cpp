@@ -46,7 +46,8 @@ WED_PropertyTable::WED_PropertyTable(
 	mVertical(vertical),
 	mDynamicCols(dynamic_cols),
 	mSelOnly(sel_only),
-	mResolver(resolver)
+	mResolver(resolver),
+	mCacheValid(false)
 {
 	if (col_names)
 	while(*col_names)
@@ -246,7 +247,8 @@ void	WED_PropertyTable::ToggleDisclose(
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t)
 		ToggleOpen(t->GetID());
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+	mCacheValid = false;
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);		
 }
 
 void	WED_PropertyTable::DoDrag(
@@ -383,6 +385,7 @@ int		WED_PropertyTable::SelectDisclose(
 			}
 		}
 	}
+	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);		
 	return 1;
 }
@@ -589,16 +592,38 @@ GUI_DragOperation		WED_PropertyTable::DoDropBetweenRows(
 	return gui_Drag_Copy;
 }
 
-WED_Thing *	WED_PropertyTable::FetchNth(int row)
+#pragma mark -
+
+
+void WED_PropertyTable::RebuildCacheRecursive(WED_Thing * e, ISelection * sel)
 {
+	if (e == NULL) return;
+	int vis,kids,can_disclose,is_disclose;
+	GetFilterStatus(e,sel,vis,kids,can_disclose, is_disclose);
+
+	if (vis)
+		mThingCache.push_back(e);
+	
+	for (int n = 0; n < kids; ++n)
+		RebuildCacheRecursive(e->GetNthChild(n), sel);
+}
+
+void WED_PropertyTable::RebuildCache(void)
+{
+	mThingCache.clear();
+	mCacheValid = true;
 	WED_Thing * root = WED_GetWorld(mResolver);
 	ISelection * sel = WED_GetSelect(mResolver);
-	if (!root) return NULL;
-	// Ben says: tables are indexed bottom=0 to match OGL coords.
-	// INvert our numbers here because we really need to count up when we traverse the tree!
+	if (root)
+		RebuildCacheRecursive(root,sel);
+}
+
+WED_Thing *	WED_PropertyTable::FetchNth(int row)
+{
+	if (!mCacheValid)	RebuildCache();
 	if (!mVertical)
-		row = GetRowCount() - row - 1;
-	return FetchNthRecursive(root, row, sel);
+		row = mThingCache.size() - row - 1;
+	return mThingCache[row];
 }
 
 int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
@@ -616,36 +641,13 @@ int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
 	return ret;	
 }
 
-
-WED_Thing *	WED_PropertyTable::FetchNthRecursive(WED_Thing * e, int& row, ISelection * sel)
-{
-	if (e == NULL) return NULL;
-
-	int vis,kids,can_disclose,is_disclose;
-	GetFilterStatus(e,sel,vis,kids,can_disclose, is_disclose);
-
-	if (vis)
-	{
-		if (row == 0) return e;	
-		--row;
-	}
-	
-	for (int n = 0; n < kids; ++n)
-	{
-		WED_Thing * c = FetchNthRecursive(e->GetNthChild(n), row, sel);
-		if (c) return c;
-	}
-	return NULL;
-}
-
 int			WED_PropertyTable::GetColCount(void)
 {
 	if (!mVertical)
 		return mColNames.size();
 
-	WED_Thing * root = WED_GetWorld(mResolver);
-	ISelection * sel = WED_GetSelect(mResolver);
-	return CountRowsRecursive(root, sel);
+	if (!mCacheValid)	RebuildCache();
+	return mThingCache.size();
 }
 
 int		WED_PropertyTable::ColForX(int n)
@@ -660,30 +662,8 @@ int			WED_PropertyTable::GetRowCount(void)
 	if (mVertical)
 		return mColNames.size();
 
-	WED_Thing * root = WED_GetWorld(mResolver);
-	ISelection * sel = WED_GetSelect(mResolver);
-	
-	return CountRowsRecursive(root, sel);
-}
-
-int			WED_PropertyTable::CountRowsRecursive(WED_Thing * e, ISelection * sel)
-{
-	if (e == NULL) return 0;
-	int total = 0;
-
-	int vis,kids,can_disclose,is_disclose;
-	GetFilterStatus(e,sel,vis,kids,can_disclose, is_disclose);
-	
-	if (vis)
-	{
-		++total;
-	}
-	
-	for (int c = 0; c < kids; ++c) 
-	{
-		total += CountRowsRecursive(e->GetNthChild(c), sel);
-	}
-	return total;
+	if (!mCacheValid)	RebuildCache();
+	return mThingCache.size();
 }
 
 void	WED_PropertyTable::ReceiveMessage(
@@ -694,6 +674,9 @@ void	WED_PropertyTable::ReceiveMessage(
 //	if (inMsg == msg_SelectionChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 	if (inMsg == msg_ArchiveChanged)
 	{
+		// Set this to false FIRST, lest we have an explosion due to a stale cache!
+		mCacheValid = false;
+	
 		if (mDynamicCols)
 		{
 			set<string>	cols;

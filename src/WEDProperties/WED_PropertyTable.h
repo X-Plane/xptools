@@ -133,9 +133,9 @@ public:
 
 private:
 
+			void			RebuildCache(void);
+			void			RebuildCacheRecursive(WED_Thing * e, ISelection * sel);
 			WED_Thing *		FetchNth(int row);
-			WED_Thing *		FetchNthRecursive(WED_Thing * thing, int& row, ISelection * sel);
-			int				CountRowsRecursive(WED_Thing * thing, ISelection * sel);
 			int				GetThingDepth(WED_Thing * d);
 
 			bool			GetOpen(int id);
@@ -146,6 +146,9 @@ private:
 									int&	recurse_children,
 									int&	can_disclose,
 									int&	is_disclose);
+
+	vector<WED_Thing *>			mThingCache;
+	bool						mCacheValid;
 
 	vector<string>				mColNames;
 
