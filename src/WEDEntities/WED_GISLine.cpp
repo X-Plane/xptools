@@ -37,7 +37,7 @@ bool			WED_GISLine::IntersectsBox	(const Bbox2&  bounds) const
 	GetBounds(me);
 	if (!me.overlap(bounds)) return false;
 	
-	#if DEV
+	#if !DEV
 		not quite good enough??
 	#endif
 	return true;

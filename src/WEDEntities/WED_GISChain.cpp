@@ -33,8 +33,7 @@ bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
 	GetBounds(me);
 	if (!bounds.overlap(me)) return false;
 
-
-	#if DEV
+	#if !DEV
 		this is not good enough
 	#endif
 	return true;
@@ -55,9 +54,9 @@ bool			WED_GISChain::WithinBox		(const Bbox2&  bounds) const
 		{
 			Bbox2	bb;
 			b.bounds(bb);
-			#if DEV
-			examine this more closely?
-			#endif
+			// Ben says: bounding-box of a bezier is assured to touch the extreme points of the bezier.
+			// Thus if the bezier's bounding box is inside, the whole bezier must be inside since all extreme
+			// points are.  And since there is no "slop", this is the only test we need.
 			if (!bounds.contains(bb)) return false;
 		} else {
 			if (!bounds.contains(s.p1)) return false;

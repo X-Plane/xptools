@@ -15,20 +15,25 @@
 // - What is our overall bounds.
 // - All GIS entities must support a linear 2-d rescaling operation (described by remapping bounding boxes.
 //
-// Note: these are COM-style interfaces, so they do NOT have an inheritence relationship with each other - 
-// they are just IBase derivatives.  You can test for inheritence using  the SafeCast mechanism or use some
-// other mechanism.  The idea is that the inheritence hierarchy will be built by the IMPLEMENTATION.
-// 
 // Design note: the GIS interfaces are designe to promote the abstraction of a data model!  That is, they don't 
 // say HOW to edit something, just that this data has a certain amount of spatial extent that we can muck with.
 //
 // (This means that for a wide variety of spatial data model, we can reduce it to a finite number of cases
 // and write generic editing code for all of it.  This promotes the separation of GIS algorithms from the base
 // class because we can write an algorithm using only the interface.)
+//
+// The GIS class is the most specific class - that is, a bezier point will return bezier point, but not point.  
+// To correctly case out GIS classes, a client must handle the entire GIS spatial tree (or for points, at least 
+// point and all of its derivatives.
+//
+// (Someday we could make an "is-class" predicate to provide simpler casing.)
+//
+// The "sub-type" string provides an app-defined run-time type.  This is really a bit of a hack...WED does most
+// ops on GIS-type, but in a few cases casts down to a real WED type.  The "subtype" is actually the 
+// WED-persistent-class string.  If we wanted to be more pure we'd derive airport-spatial entities off of the 
+// GIS-spatial entities, e.g. a runway (line-width with more points to edit0, a taxiway (poly with pavement type),
+// etc.
 
-#if DEV
-doc GIS class vs subtype
-#endif
 
 enum GISClass_t {
 

@@ -853,12 +853,18 @@ void		WED_StructureLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_a
 	cares_about_sel = 1;
 }
 
-#if DEV
-doc this
-#endif
-
 void		WED_StructureLayer::DrawStructure(int inCurrent, GUI_GraphState * g)
 {
+	// Drawing each icon during iteration is slow because:
+	// - We have a ton of OGL state thrash.
+	// - We have to make individual calls to PlotIcon, which does overhead work per icon.
+	// So instead, we accumulate all of the icons into vectors and then blit them out all
+	// at once.  This gives us one bind, one set state and one glBegin.  We're still transforming
+	// vertices per frame, but that's okay -- the OGL state was the single really big cost.
+	// 
+	// Note that we clear the vectors to keep them from building up forever, but their memory 
+	// is not dealloated, so this works up a high-water-mark of icons.  This is good, as it means
+	// that in the long term our memory usage will stabilize.
 	float scale = GetZoomer()->GetPPM() * 30.0;
 	if (scale > 1.0) scale = 1.0;
 	if (scale < 0.25) scale = 0.25;
