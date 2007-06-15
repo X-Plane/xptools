@@ -9,3 +9,15 @@ table_indent_width 25
 # Set this to 1 to use a single gradient for the entire WED window.
 # Set this to 0 to apply the gradient seperately for the three panes within the window.
 one_big_gradient 0
+
+# This is the width at which we transition from full airports to icons
+airport_trans_width 20
+
+# This is the scale of the icons for airports themselves.  It is a multiplier.
+# When this is "1" one pixel of the airport icon = one meter on the map.
+airport_icon_scale 30
+
+# This is the scale of the icons for all of the parts of an airport - VASI lights,
+# signs, windsocks, parking spots.  It is a multiplier.
+# When this is "1" one pixel of the airport icon = one meter on the map.
+furniture_icon_scale 2
