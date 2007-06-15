@@ -17,13 +17,12 @@
 #include "WED_AirportSign.h"
 #include "WED_TowerViewpoint.h"
 #include "WED_Airport.h"
+#include "WED_UIMeasurements.h"
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
 
 #include "GUI_DrawUtils.h"
-
-#define	AIRPORT_MIN_PIX	20
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -38,6 +37,10 @@ WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, 
 {
 	mRealLines = true;
 	mPavementAlpha = 0.5;
+	mAirportTransWidth = WED_UIMeasurement("airport_trans_width");
+	mIconAirport = WED_UIMeasurement("airport_icon_scale");
+	mIconPart = WED_UIMeasurement("furniture_icon_scale");
+
 }
 
 WED_StructureLayer::~WED_StructureLayer()
@@ -526,7 +529,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 
 	glColor4fv(WED_Color_RGBA(struct_color));
 
-	float icon_scale = GetZoomer()->GetPPM() * 2.0;
+	float icon_scale = GetZoomer()->GetPPM() * mIconPart;
 	if (icon_scale > 1.0) icon_scale = 1.0;
 	
 	/******************************************************************************************************************************************************
@@ -538,15 +541,15 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		airport->GetBounds(bounds);		
 		bounds.p1 = GetZoomer()->LLToPixel(bounds.p1);
 		bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);		
-		if (bounds.xspan() < AIRPORT_MIN_PIX && bounds.yspan() < AIRPORT_MIN_PIX)
+		if (bounds.xspan() < mAirportTransWidth && bounds.yspan() < mAirportTransWidth)
 		{
 			float * f1 = WED_Color_RGBA(struct_color);
 			float * f2 = f1 + 4;
 			Point2 loc = Segment2(bounds.p1,bounds.p2).midpoint();
 			switch(airport->GetAirportType()) {
-			case type_Airport:		mAirportIconsX.push_back(loc.x);	mAirportIconsY.push_back(loc.y);	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);
-			case type_Seaport:		mSeaportIconsX.push_back(loc.x);	mSeaportIconsY.push_back(loc.y);	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);
-			case type_Heliport:		mHeliportIconsX.push_back(loc.x);	mHeliportIconsY.push_back(loc.y);	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);
+			case type_Airport:		mAirportIconsX.push_back(loc.x);	mAirportIconsY.push_back(loc.y);	mAirportIconsC.insert(mAirportIconsC.end(),f1,f2);		break;
+			case type_Seaport:		mSeaportIconsX.push_back(loc.x);	mSeaportIconsY.push_back(loc.y);	mSeaportIconsC.insert(mSeaportIconsC.end(),f1,f2);		break;
+			case type_Heliport:		mHeliportIconsX.push_back(loc.x);	mHeliportIconsY.push_back(loc.y);	mHeliportIconsC.insert(mHeliportIconsC.end(),f1,f2);	break;
 			}
 			return false;
 		}
@@ -865,9 +868,9 @@ void		WED_StructureLayer::DrawStructure(int inCurrent, GUI_GraphState * g)
 	// Note that we clear the vectors to keep them from building up forever, but their memory 
 	// is not dealloated, so this works up a high-water-mark of icons.  This is good, as it means
 	// that in the long term our memory usage will stabilize.
-	float scale = GetZoomer()->GetPPM() * 30.0;
+	float scale = GetZoomer()->GetPPM() * mIconAirport;
 	if (scale > 1.0) scale = 1.0;
-	if (scale < 0.25) scale = 0.25;
+	if (scale < 0.5) scale = 0.5;
 	if (!mAirportIconsX.empty())
 	{
 		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsX.size(), &*mAirportIconsX.begin(), &*mAirportIconsY.begin(), &*mAirportIconsC.begin(), scale);
