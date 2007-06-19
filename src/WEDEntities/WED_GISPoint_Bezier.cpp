@@ -78,6 +78,8 @@ void	WED_GISPoint_Bezier::SetControlHandleLo (const Point2& p)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -100,6 +102,8 @@ void	WED_GISPoint_Bezier::SetControlHandleHi (const Point2& p)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -120,6 +124,8 @@ void	WED_GISPoint_Bezier::DeleteHandleLo	   (void)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -140,6 +146,8 @@ void	WED_GISPoint_Bezier::DeleteHandleHi	   (void)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -149,6 +157,8 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 	{
 		StateChanged();
 		is_split.value = split;
+		CacheInval();
+		CacheBuild();
 	}
 }
 

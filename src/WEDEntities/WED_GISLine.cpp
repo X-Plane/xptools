@@ -25,6 +25,7 @@ const char *	WED_GISLine::GetGISSubtype	(void				 ) const
 
 void			WED_GISLine::GetBounds		(	   Bbox2&  bounds) const
 {
+	CacheBuild();
 	Point2 p1,p2;
 	GetSource()->GetLocation(p1);
 	GetTarget()->GetLocation(p2);
@@ -129,3 +130,4 @@ bool				WED_GISLine::GetSide(int n, Segment2& s, Bezier2& b) const
 	GetTarget()->GetLocation(s.p2);
 	return false;
 }
+

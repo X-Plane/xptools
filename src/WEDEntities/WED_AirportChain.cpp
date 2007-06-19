@@ -88,7 +88,7 @@ void			WED_AirportChain::FromDB(sqlite3 * db, const map<int,int>& mapping)
 	sql_row1<int>						cl;
 	
 	int err = cmd.simple_exec(key, cl);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete thing query: %d (%s)",err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	
 	closed = cl.a; 	
 }
@@ -101,7 +101,7 @@ void			WED_AirportChain::ToDB(sqlite3 * db)
 	sql_command	write_me(db,"INSERT OR REPLACE INTO WED_airportchains values(@id,@closed);","@id,@closed");
 	sql_row2 <int,int>bindings(GetID(),closed);
 	err = write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }
 
 

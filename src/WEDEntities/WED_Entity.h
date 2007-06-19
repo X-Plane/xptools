@@ -33,6 +33,17 @@
 	- The cache is rebuilt on demand by expensive-access routines.  Typically these include "GetBounds" and expensive
 	  iterators over children.  CacheRebuild is called to mark it as good and find out if real work must be done.
 	  
+	CORRECT CACHING BEHAVIORS:
+	
+	- Classes that use a cache should invalidate it if their internal state changes in a way that would change cached data,
+	  and force a rebuild any time it is accessed.  Exmaple: GIS Chain
+	  
+	- Classes that do not cache but pas through conventionally cached data should rebuild their caches (a no-op but call
+	  BuildCache()) so that the next inval is passed to all parents.  Example: GIS Line-Width.
+	
+	- Classes that do not cache but affect others should invalidate and immediately revalidate their caches (the second
+	  so that future invals are passed up).  Example: GIS Points.
+	  
 	CACHE AND UNDO
 	
 	One might note that at the time of redo, the object's parent ID is invalid, thus the cache invalidate on redo might not

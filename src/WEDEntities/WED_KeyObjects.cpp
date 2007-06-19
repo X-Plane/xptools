@@ -86,7 +86,7 @@ void			WED_KeyObjects::FromDB(sqlite3 * db, const map<int,int>& mapping)
 	{
 		choices[pair.a] = pair.b;
 	}
-	if (err != SQLITE_DONE) WED_ThrowPrintf("Unable to complete query: %d (%s)", err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }
 
 void			WED_KeyObjects::ToDB(sqlite3 * db)
@@ -99,7 +99,7 @@ void			WED_KeyObjects::ToDB(sqlite3 * db)
 		sql_row1<int>	key(GetID());
 		
 		err = clear_it.simple_exec(key);
-		if (err != SQLITE_DONE) WED_ThrowPrintf("Unable to complete query: %d (%s)", err, sqlite3_errmsg(db));
+		if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	{
 		sql_command add_pair(db,"INSERT INTO WED_key_objects(id,key,value) VALUES(@i,@k,@v);","@i,@k,@v");
@@ -108,7 +108,7 @@ void			WED_KeyObjects::ToDB(sqlite3 * db)
 		{
 			sql_row3<int, string, int>	binding(GetID(),i->first,i->second);
 			err = add_pair.simple_exec(binding);
-			if (err != SQLITE_DONE) WED_ThrowPrintf("Unable to complete query: %d (%s)", err, sqlite3_errmsg(db));
+			if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 	}
 }

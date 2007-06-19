@@ -46,6 +46,7 @@ const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
 
 void			WED_GISPolygon::GetBounds		(	   Bbox2&  bounds) const
 {
+	CacheBuild();
 	GetOuterRing()->GetBounds(bounds);
 }
 

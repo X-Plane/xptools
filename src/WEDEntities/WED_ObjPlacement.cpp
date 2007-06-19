@@ -37,7 +37,7 @@ void			WED_ObjPlacement::FromDB(sqlite3 * db, const map<int,int>& mapping)
 	sql_row1<int>						me;
 	
 	int err = cmd.simple_exec(key, me);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete entity query: %d (%s)",err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 
 	model_id = me.a;
 	
@@ -51,5 +51,5 @@ void			WED_ObjPlacement::ToDB(sqlite3 * db)
 								"@id,@m");
 	sql_row2 <int,int>bindings(GetID(),model_id);
 	err = write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update entity info: %d (%s)",err, sqlite3_errmsg(db));	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }

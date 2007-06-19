@@ -42,6 +42,8 @@ void	WED_GISPoint_HeadingWidthLength::SetWidth (double w)
 	{
 		StateChanged();
 		width.value = w;
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -57,6 +59,8 @@ void	WED_GISPoint_HeadingWidthLength::SetLength(double l)
 	{
 		StateChanged();
 		length.value = l;
+		CacheInval();
+		CacheBuild();
 	}
 }
 

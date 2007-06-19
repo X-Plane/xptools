@@ -58,7 +58,7 @@ void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
 	{
 		mSelected.insert(item.a);
 	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to complete selection query: %d (%s)",err, sqlite3_errmsg(db));	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }
 
 void			WED_Select::ToDB(sqlite3 * db)
@@ -69,7 +69,7 @@ void			WED_Select::ToDB(sqlite3 * db)
 	sql_command	nuke_all(db,"DELETE FROM WED_selection where id=@id;","@id");
 	sql_row1<int>	me(GetID());
 	err = nuke_all.simple_exec(me);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to clear selection: %d (%s)",err, sqlite3_errmsg(db));	
+	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 
 	if (!mSelected.empty())
 	{
@@ -78,7 +78,7 @@ void			WED_Select::ToDB(sqlite3 * db)
 		{
 			sql_row2<int, int>	id(GetID(),*i);
 			err = write_ids.simple_exec(id);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update selection info for %d: %d (%s)",*i,err, sqlite3_errmsg(db));	
+			if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 	}
 }

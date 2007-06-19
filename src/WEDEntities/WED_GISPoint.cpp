@@ -58,6 +58,8 @@ void			WED_GISPoint::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds
 		StateChanged();
 		longitude.value = old_bounds.rescale_to_x(new_bounds,longitude.value);
 		latitude.value  = old_bounds.rescale_to_y(new_bounds,latitude.value );
+		CacheInval();
+		CacheBuild();
 	}
 }
 
@@ -74,6 +76,8 @@ void	WED_GISPoint::SetLocation(const Point2& p)
 		StateChanged();
 		longitude.value = p.x;
 		latitude.value = p.y;
+		CacheInval();
+		CacheBuild();		
 	}
 }
 
