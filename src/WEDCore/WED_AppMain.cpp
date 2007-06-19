@@ -113,10 +113,11 @@ int main(int argc, const char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
+	WED_MakeMenus(&app);
 	WED_StartWindow * start = new WED_StartWindow(&app);
+
 	start->Show();
 
-	WED_MakeMenus(&app);
 	
 	gFailure = CGAL::set_error_handler(cgal_failure);
 	XESInit();
