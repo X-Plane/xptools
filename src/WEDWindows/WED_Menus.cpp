@@ -22,6 +22,8 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 #if IBM
 {	"-",					0,		0,								0,	0					},
+{	"&Preferences...",		0,		0,								0,	gui_Prefs			},
+{	"-",					0,		0,								0,	0					},
 {	"E&xit",				0,		0,								0,	gui_Quit			},
 #endif
 {	NULL,					0,		0,								0,	0					},
@@ -91,7 +93,14 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	NULL,						0,		0,										0, 0,				}
 };
 
-
+static const GUI_MenuItem_t kHelpMenu[] = {
+{	"&X-Plane Scenery Homepage",	0,	0,										0,	wed_HelpScenery },
+#if IBM
+{	"-",							0,		0,									0,	0				},
+{	"&About WED",					0,		0,									0,	gui_About		},
+#endif
+{	NULL,							0,		0,									0, 0,				}
+};
 
 void WED_MakeMenus(GUI_Application * inApp)
 {
@@ -110,9 +119,10 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
-	GUI_Menu	airpor_menu = inApp->CreateMenu(
+	GUI_Menu	airport_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);	
 
+	GUI_Menu	help_menu;
 #if APL
 	MenuRef	win_menu;
 	if (CreateStandardWindowMenu(kWindowMenuIncludeRotate,&win_menu)==noErr)
@@ -121,5 +131,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 	MenuRef hp = 0;
 	MenuItemIndex ind = 0;
 	OSStatus err = HMGetHelpMenu(&hp,&ind);
+	
+	inApp->RebuildMenu(hp, kHelpMenu);
+#else
+	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 #endif
 }

@@ -46,8 +46,9 @@ enum {
 	// Airport Menu
 	wed_CreateApt,
 	wed_EditApt,
-	wed_AddATCFreq
-
+	wed_AddATCFreq,
+	// Help Menu
+	wed_HelpScenery	
 };
 
 class	GUI_Application;
