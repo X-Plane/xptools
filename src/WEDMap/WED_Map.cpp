@@ -11,6 +11,7 @@
 #include "WED_Messages.h"
 #include "IResolver.h"
 #include "GUI_Fonts.h"
+#include <time.h>
 
 #define SHOW_FPS 0
 
