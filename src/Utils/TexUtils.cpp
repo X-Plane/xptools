@@ -76,6 +76,9 @@ bool LoadTextureFromFile(
 	#if USE_TIF
 	if (result) result = CreateBitmapFromTIF(inFileName, &im);
 	#endif
+	#if USE_JPEG
+	if (result) result = CreateBitmapFromJPEG(inFileName, &im);
+	#endif
 	if (result == 0)
 	{
 		if (im.pad != 0)
