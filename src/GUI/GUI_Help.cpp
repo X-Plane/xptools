@@ -38,7 +38,7 @@ void	GUI_LaunchURL(const char * url)
 			(void)ICStop(inst);}
 	#endif
 	#if IBM
-		ShellExecute(NULL,"open",url(),NULL,NULL,SW_SHOWNORMAL);
+		ShellExecute(NULL,"open",url,NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
 		#error not impl
