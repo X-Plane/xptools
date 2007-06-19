@@ -12,7 +12,7 @@
 #include "IResolver.h"
 #include "GUI_Fonts.h"
 
-#define SHOW_FPS 1
+#define SHOW_FPS 0
 
 WED_Map::WED_Map(IResolver * in_resolver) :
 	mResolver(in_resolver)
@@ -181,7 +181,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		int t = c->GetNumEntities();
 		for (int n = t-1; n >= 0; --n)
 			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
-	}
+	}	
 }
 
 void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)

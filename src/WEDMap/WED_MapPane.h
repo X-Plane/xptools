@@ -17,6 +17,7 @@ class	WED_ImageOverlayTool;
 class	WED_TerraserverLayer;
 class	WED_StructureLayer;
 class	WED_WorldMapLayer;
+//class	WED_TileServerLayer;
 
 class	IResolver;
 class	WED_Archive;
@@ -59,6 +60,7 @@ private:
 	
 	WED_ImageOverlayTool *	mImageOverlay;
 	WED_TerraserverLayer *	mTerraserver;
+//	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_WorldMapLayer *		mWorldMap;
 

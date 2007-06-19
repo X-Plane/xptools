@@ -5,6 +5,7 @@
 #include "AssertUtils.h"
 #include "WED_Persistent.h"
 #include "WED_ToolUtils.h"
+#include "WED_RunwayNode.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -181,7 +182,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
-			if (con_type) *con_type = handle_Icon;
+			if (con_type) *con_type = SAFE_CAST(WED_RunwayNode,en) ? handle_VertexSharp : handle_Icon;
 			pt->GetLocation(*p);
 			return;
 		}

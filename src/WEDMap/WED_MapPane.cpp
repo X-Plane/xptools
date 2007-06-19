@@ -17,6 +17,7 @@
 #include "WED_WorldMapLayer.h"
 #include "WED_ImageOverlayTool.h"
 #include "WED_VertexTool.h"
+//#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
@@ -69,6 +70,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
+//	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
 	
 	// TOOLS
@@ -222,6 +224,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVis(); return 1;
+//	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
 
 	case wed_Pavement0:		mStructureLayer->SetPavementTransparency(0.0f);		return 1;
 	case wed_Pavement25:	mStructureLayer->SetPavementTransparency(0.25f);	return 1;
@@ -247,6 +250,7 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
 	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
 	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis();							return 1;
+//	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
 	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
