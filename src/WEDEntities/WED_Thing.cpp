@@ -153,8 +153,7 @@ void	WED_Thing::GetName(string& n) const
 
 void	WED_Thing::SetName(const string& n)
 {
-	StateChanged();
-	name.value = n;
+	name = n;
 }
 
 WED_Thing *		WED_Thing::GetParent(void) const
@@ -164,7 +163,7 @@ WED_Thing *		WED_Thing::GetParent(void) const
 
 void				WED_Thing::SetParent(WED_Thing * parent, int nth)
 {
-	StateChanged();
+	StateChanged(wed_Change_Topology);
 	WED_Thing * old_parent = SAFE_CAST(WED_Thing, FetchPeer(parent_id));
 	if (old_parent) old_parent->RemoveChild(GetID());
 	parent_id = parent ? parent->GetID() : 0;
@@ -182,7 +181,7 @@ int			WED_Thing::GetMyPosition(void) const
 
 void				WED_Thing::AddChild(int id, int n)
 {
-	StateChanged();
+	StateChanged(wed_Change_Topology);
 	DebugAssert(n >= 0);
 	DebugAssert(n <= child_id.size());	
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
@@ -192,7 +191,7 @@ void				WED_Thing::AddChild(int id, int n)
 
 void				WED_Thing::RemoveChild(int id)
 {
-	StateChanged();
+	StateChanged(wed_Change_Topology);
 	vector<int>::iterator i = find(child_id.begin(),child_id.end(),id);
 	DebugAssert(i != child_id.end());
 	child_id.erase(i);
@@ -201,7 +200,7 @@ void				WED_Thing::RemoveChild(int id)
 void		WED_Thing::PropEditCallback(int before)
 {
 	if (before)
-		StateChanged();
+		StateChanged(wed_Change_Properties);
 }
 
 int				WED_Thing::Array_Count (void )

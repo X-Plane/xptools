@@ -23,6 +23,12 @@
 #include "IDirectory.h"
 #include "IOperation.h"
 
+enum {
+	wed_Change_Selection = 2,
+	wed_Change_Topology = 4,
+	wed_Change_Properties = 8
+};
+
 class	WED_Thing : public WED_Persistent, public WED_PropertyHelper, public virtual IArray, public virtual IDirectory, public virtual IOperation {
 
 DECLARE_INTERMEDIATE(WED_Thing)
