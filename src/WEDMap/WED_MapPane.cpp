@@ -264,6 +264,7 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	
 	default:		return 0;
 	}	
+	return 0;
 }
 
 void	WED_MapPane::ReceiveMessage(
