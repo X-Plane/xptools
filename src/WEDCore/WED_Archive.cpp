@@ -89,10 +89,10 @@ void	WED_Archive::LoadFromDB(sqlite3 * db, const map<int,int>& mapping)
 		
 			WED_Persistent * new_obj = WED_Persistent::CreateByClass(an_obj.b.c_str(), this, an_obj.a);
 			if(new_obj==NULL)
-				WED_ThrowPrintf("Unable to instantiate object of class: %s, id=%d.",an_obj.b.c_str(), an_obj.a);
+				WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 		if (err != SQLITE_DONE)	
-			WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
@@ -129,7 +129,7 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 			sql_row1<int>	key(ob->first);
 			int err = nuke_obj.simple_exec(key);
 			if (err != SQLITE_DONE)
-				WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+				WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 		else
 		{

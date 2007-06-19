@@ -225,7 +225,7 @@ void		ENUM_write(sqlite3 * db)
 	{
 		sql_command	clear_table(db,"DELETE FROM WED_enum_system WHERE 1;",NULL);
 		err = clear_table.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	
 	{
@@ -242,7 +242,7 @@ void		ENUM_write(sqlite3 * db)
 //			printf("Writing: %d,%s,%d ",r.a,r.b.c_str(),r.c);
 			err = add_item.simple_exec(r);
 //			printf(" result = %d\n", err);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));			
+			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 	}	
 }
@@ -265,7 +265,7 @@ void		ENUM_read (sqlite3 * db, enum_map_t& out_map)
 
 		}
 		if (err != SQLITE_DONE)	
-			WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	
 	{
@@ -281,7 +281,7 @@ void		ENUM_read (sqlite3 * db, enum_map_t& out_map)
 
 		}
 		if (err != SQLITE_DONE)	
-			WED_ThrowPrintf("SQL error %d: %s\n", err, sqlite3_errmsg(db));
+			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 }
 

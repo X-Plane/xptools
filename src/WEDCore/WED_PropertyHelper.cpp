@@ -104,7 +104,7 @@ void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const ch
 		
 		sql_command write_to_table(db, cmd.c_str(), NULL);
 		int err = write_to_table.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd.c_str(), err, sqlite3_errmsg(db));
+		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 }
 
@@ -166,7 +166,7 @@ void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause, const map
 	sql_row0		k;
 	sql_row1<int>	v;	
 	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	value = v.a;	
 }
 
@@ -236,7 +236,7 @@ void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause, const ma
 	sql_row0		k;
 	sql_row1<int>	v;	
 	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	value = v.a;	
 }
 
@@ -308,7 +308,7 @@ void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause, const 
 	sql_row0			k;
 	sql_row1<double>	v;	
 	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	value = v.a;	
 }
 
@@ -386,7 +386,7 @@ void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause, const 
 	sql_row0			k;
 	sql_row1<string>	v;	
 	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	value = v.a;	
 }
 
@@ -458,7 +458,7 @@ void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause, const map
 	sql_row0			k;
 	sql_row1<int>		v;	
 	int err = cmd.simple_exec(k,v);	
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	
 	value = remap(mapping,v.a);
 	DebugAssert(value != -1);
@@ -559,7 +559,7 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const 
 		}
 	} while (rc == SQLITE_ROW); 
 	
-	if (rc != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, rc, sqlite3_errmsg(db));
+	if (rc != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),rc);
 }
 
 void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
@@ -570,7 +570,7 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 		sprintf(cmd_buf,"DELETE FROM %s WHERE %s=%s;",mTable, id_col,id_val);
 		sql_command cmd(db,cmd_buf,NULL);
 		int err = cmd.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 	}
 	
 	if (!value.empty())
@@ -587,7 +587,7 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 
 			p.a = *i;
 			int err = cmd2.simple_exec(p);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete query '%s': %d (%s)",cmd_buf, err, sqlite3_errmsg(db));
+			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 		}
 	}		
 }

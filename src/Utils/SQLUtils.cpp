@@ -1,6 +1,6 @@
 #include "SQLUtils.h"
 #include "AssertUtils.h"
-
+#include "WED_Errors.h"
 sql_db::sql_db(const char * in_filename)
 {
 	int	result = sqlite3_open(in_filename, &db);
@@ -73,15 +73,7 @@ sql_command::sql_command(sqlite3 * db, const char * cmd,const char * params)
 	
 	const char * tail;
 	int result = sqlite3_prepare_v2(db, cmd, -1, &stmt, &tail);
-	if (result != SQLITE_OK)
-	{
-		const char * e = sqlite3_errmsg(db);
-		DoUserAlert(e);
-		throw result;
-		#if ERROR_CHECK
-		this sucks
-		#endif
-	}
+	WED_ThrowOSErr(result);
 	
 	for (int n = 0; n < param_name.size(); ++n)
 	{

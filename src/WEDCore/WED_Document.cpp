@@ -44,7 +44,7 @@ WED_Document::WED_Document(
 	
 	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
 	if (res == NULL)
-		WED_ThrowPrintf("Unable to open SQL code: %s.", buf.c_str());
+		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf.c_str());
 	
 	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
 	GUI_UnloadResource(res);
