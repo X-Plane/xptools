@@ -45,7 +45,7 @@ int		WED_Application::HandleCommand(int command)
 	switch(command) { 
 	case wed_HelpScenery:
 		GUI_LaunchURL("http://scenery.x-plane.com/");
-		break;
+		return 1;
 	case wed_NewPackage:
 		if (GetFilePathFromUser(getFile_Save, "Please name your new scenery package", "Create", FILE_DIALOG_NEW_PROJECT, buf, sizeof(buf)))
 		{
