@@ -58,11 +58,15 @@ private:
 
 	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent);
 
-			void		GetEntityInternal(vector<IGISEntity *>& e) const;
-			void		AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const;
+			void		GetEntityInternal(void) const;
+			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
 			
 		int						mSelVerts;
 		int						mInEdit;
+		
+		mutable vector<IGISEntity *>	mEntityCache;
+		mutable long long				mCacheKeyArchive;
+		mutable long long				mCacheKeyZoomer;
 };
 
 

@@ -66,6 +66,7 @@ public:
 			void	LLToPixelv(Point2 * dst, const Point2 * src, int n);
 	
 			double	GetPPM(void);
+			long long	CacheKey(void) { return mCacheKey; }
 	
 	// This API is called by the map class to set up and modify the zoomer
 	
@@ -141,6 +142,7 @@ private:
 	double	mLatCenter;
 	double	mLonCenter;
 	double	mLonCenterCOS;
+	long long mCacheKey;
 protected:
 	double	mPixel2DegLat;
 	

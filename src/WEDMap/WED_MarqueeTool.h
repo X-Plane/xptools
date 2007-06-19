@@ -59,8 +59,11 @@ private:
 	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent) { return ent_AtomicOrContainer; }
 
 //				void	GetEntityInternal(vector<IGISEntity *>& e);
-				bool	GetTotalBounds(Bbox2& b) const;
+				bool	GetTotalBounds(void) const;
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
+
+	mutable	Bbox2		mCacheBounds;
+	mutable long long	mCacheKeyArchive;
 
 };
 

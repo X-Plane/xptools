@@ -2,6 +2,7 @@
 #include "ISelection.h"
 #include "IResolver.h"
 #include "WED_ToolUtils.h"
+#include "WED_MapZoomerNew.h"
 #include "WED_Entity.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
@@ -37,7 +38,8 @@ WED_MarqueeTool::WED_MarqueeTool(
 										GUI_Pane *				host,
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver) :
-				WED_HandleToolBase(tool_name, host, zoomer, resolver)
+				WED_HandleToolBase(tool_name, host, zoomer, resolver),
+				mCacheKeyArchive(-1)
 {
 	SetControlProvider(this);
 }
@@ -78,9 +80,8 @@ int		WED_MarqueeTool::GetNthEntityID(int n) const
 
 int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 {
-	Bbox2	bounds;
-	if (!GetTotalBounds(bounds))	return 0;
-	if (bounds.is_point())			return 1;
+	if (!GetTotalBounds())			return 0;
+	if (mCacheBounds.is_point())	return 1;
 									return 9;
 }
 
@@ -91,26 +92,24 @@ void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleTyp
 	if (direction) *direction=Vector2();
 	if (p)
 	{
-		Bbox2	bounds;
-		if (!GetTotalBounds(bounds))
+		if (!GetTotalBounds())
 		{
 			*p = Point2(); return;
 		}
 		
-		if (bounds.is_point()) n = 8;
+		if (mCacheBounds.is_point()) n = 8;
 
-		p->x = bounds.p1.x * kControlsX1[n] + bounds.p2.x * kControlsX2[n];
-		p->y = bounds.p1.y * kControlsY1[n] + bounds.p2.y * kControlsY2[n];
+		p->x = mCacheBounds.p1.x * kControlsX1[n] + mCacheBounds.p2.x * kControlsX2[n];
+		p->y = mCacheBounds.p1.y * kControlsY1[n] + mCacheBounds.p2.y * kControlsY2[n];
 	}	
 }
 
 
 int		WED_MarqueeTool::GetLinks		    (int id) const
 {
-	Bbox2	bounds;
-	if (!GetTotalBounds(bounds))	return 0;
-	if (bounds.is_point())			return 0;
-									return 8;
+	if (!GetTotalBounds())		return 0;
+	if (mCacheBounds.is_point())return 0;
+								return 8;
 }
 
 void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
@@ -146,42 +145,42 @@ bool	WED_MarqueeTool::PointOnStructure(int id, const Point2& p) const
 
 void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta)
 {
-	Bbox2	old_b, new_b;
-	if (!GetTotalBounds(old_b)) return;
-	new_b = old_b;
+	Bbox2	new_b;
+	if (!GetTotalBounds()) return;
+	new_b = mCacheBounds;
 	new_b.p1 += delta;
 	new_b.p2 += delta;
-	ApplyRescale(old_b,new_b);	
+	ApplyRescale(mCacheBounds,new_b);	
 }
 
 void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta)
 {
-	Bbox2	old_b, new_b;
-	if (!GetTotalBounds(old_b)) return;
-	new_b = old_b;
+	Bbox2	new_b;
+	if (!GetTotalBounds()) return;
+	new_b = mCacheBounds;
 	
-	if (old_b.is_point()) c = 8;
+	if (mCacheBounds.is_point()) c = 8;
 	
 	new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
 	new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
 	new_b.p1.y += (delta.dy * kApplyCtrlY1[c]);
 	new_b.p2.y += (delta.dy * kApplyCtrlY2[c]);
 
-	ApplyRescale(old_b,new_b);
+	ApplyRescale(mCacheBounds,new_b);
 }
 
 void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 {
-	Bbox2	old_b, new_b;
-	if (!GetTotalBounds(old_b)) return;
-	new_b = old_b;
+	Bbox2	new_b;
+	if (!GetTotalBounds()) return;
+	new_b = mCacheBounds;
 	
 	new_b.p1.x += (delta.dx * kApplyLinkX1[c]);
 	new_b.p2.x += (delta.dx * kApplyLinkX2[c]);
 	new_b.p1.y += (delta.dy * kApplyLinkY1[c]);
 	new_b.p2.y += (delta.dy * kApplyLinkY2[c]);
 
-	ApplyRescale(old_b,new_b);
+	ApplyRescale(mCacheBounds,new_b);
 }
 
 /*
@@ -213,9 +212,14 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 	inval the cache when the sel changes.   We could also just respod to an "any changed" msg.
 #endif
 
-bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
+bool	WED_MarqueeTool::GetTotalBounds(void) const
 {
-	b = Bbox2();
+	long long key_a = WED_GetWorld(GetResolver())->GetArchive()->CacheKey();
+	
+	if (key_a == mCacheKeyArchive) return !mCacheBounds.is_null();
+	mCacheKeyArchive = key_a;
+	
+	mCacheBounds = Bbox2();
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
 
@@ -238,10 +242,10 @@ bool	WED_MarqueeTool::GetTotalBounds(Bbox2& b) const
 		{
 			Bbox2 local;
 			ent->GetBounds(local);
-			b += local;
+			mCacheBounds += local;
 		}
 	}	
-	return !b.is_null();
+	return !mCacheBounds.is_null();
 }
 
 void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds)

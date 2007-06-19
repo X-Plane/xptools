@@ -10,6 +10,8 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 
+#define	MIN_HANDLE_RECURSE_SIZE 20
+
 const double kCornerBlend0[6] = { 0.5, 0.5, 0.25, 0.0, 0.0, -0.25 };
 const double kCornerBlend1[6] = { 0.0, 0.5, 0.25, 0.0, 0.5,  0.75 };
 const double kCornerBlend2[6] = { 0.0, 0.0, 0.25, 0.5, 0.5,  0.75 };
@@ -33,7 +35,9 @@ WED_VertexTool::WED_VertexTool(
 				IResolver *				resolver,
 				int						sel_verts) :
 		WED_HandleToolBase(tool_name, host, zoomer, resolver),				
-		mSelVerts(sel_verts)
+		mSelVerts(sel_verts),
+		mCacheKeyArchive(-1),
+		mCacheKeyZoomer(-1)
 {
 	SetControlProvider(this);
 }
@@ -61,16 +65,14 @@ void	WED_VertexTool::EndEdit(void)
 
 int		WED_VertexTool::CountEntities(void) const
 {
-	vector<IGISEntity *> e;
-	GetEntityInternal(e);
-	return e.size();
+	GetEntityInternal();
+	return mEntityCache.size();
 }
 
 int		WED_VertexTool::GetNthEntityID(int n) const
 {
-	vector<IGISEntity *> e;
-	GetEntityInternal(e);
-	return reinterpret_cast<int>(e[n]);
+	GetEntityInternal();
+	return reinterpret_cast<int>(mEntityCache[n]);
 }
 
 int		WED_VertexTool::CountControlHandles(int id						  ) const
@@ -417,7 +419,7 @@ void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta)
 void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -636,27 +638,38 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	*/
 }
 
-void WED_VertexTool::GetEntityInternal(vector<IGISEntity *>& e) const
-{
+void WED_VertexTool::GetEntityInternal(void) const
+{	
 	ISelection * sel = WED_GetSelect(GetResolver());
-	DebugAssert(sel != NULL);
+	WED_Thing * wrl = WED_GetWorld(GetResolver());
+	long long key_a = wrl->GetArchive()->CacheKey();
+	long long key_z = GetZoomer()->CacheKey();
+	if (key_a == mCacheKeyArchive && key_z == mCacheKeyZoomer) return;
 
-	vector<ISelectable *>	iu;
-	vector<IGISEntity *> en;
+	mCacheKeyArchive = key_a;
+	mCacheKeyZoomer = key_z;
 	
-	e.clear();
+	DebugAssert(sel != NULL);
+	vector<ISelectable *>	iu;
+
+	mEntityCache.clear();
+
 	
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return;
-	en.reserve(iu.size());
+	mEntityCache.reserve(iu.size());
+	
+	Bbox2	bounds;
+	GetZoomer()->GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
+	
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		IGISEntity * gent = SAFE_CAST(IGISEntity,*i);
-		if (gent) AddEntityRecursive(gent, e);
+		if (gent) AddEntityRecursive(gent, bounds);
 	}
 }
 
-void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& vec) const
+void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area ) const
 {
 	WED_Entity * went = SAFE_CAST(WED_Entity,e);
 	if (went)
@@ -665,6 +678,14 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& v
 		if (went->GetHidden()) return;
 	}
 
+	Bbox2	ent_bounds;
+	e->GetBounds(ent_bounds);
+	
+	if (!ent_bounds.overlap(vis_area))	return;
+	
+	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
+	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);
+	
 	IGISPointSequence * ps;
 	IGISPolygon * poly;
 	IGISComposite * cmp;
@@ -677,33 +698,42 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, vector<IGISEntity *>& v
 	case gis_Point_HeadingWidthLength:
 	case gis_Line:
 	case gis_Line_Width:
-		vec.push_back(e);
+		mEntityCache.push_back(e);
 		break;
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+	
 		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
 		{
 			c = ps->GetNumPoints();
 			for (n = 0; n < c; ++n)
-				AddEntityRecursive(ps->GetNthPoint(n),vec);
+				AddEntityRecursive(ps->GetNthPoint(n),vis_area);
 		}
 		break;
 	case gis_Polygon:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+		
 		if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
-			AddEntityRecursive(poly->GetOuterRing(),vec);
+			AddEntityRecursive(poly->GetOuterRing(),vis_area);
 			c = poly->GetNumHoles();
 			for (n = 0; n < c; ++n)
-				AddEntityRecursive(poly->GetNthHole(n),vec);				
+				AddEntityRecursive(poly->GetNthHole(n),vis_area);				
 		}
 		break;
 	case gis_Composite:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+	
 		if ((cmp = SAFE_CAST(IGISComposite, e)) != NULL)
 		{
 			c = cmp->GetNumEntities();
 			for (n = 0; n < c; ++n)
-				AddEntityRecursive(cmp->GetNthEntity(n), vec);
+				AddEntityRecursive(cmp->GetNthEntity(n),vis_area);
 		}
 		break;
 	}

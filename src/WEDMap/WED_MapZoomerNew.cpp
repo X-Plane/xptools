@@ -31,6 +31,7 @@ inline	double	rescale(double s1, double s2, double d1, double d2, double v)
 
 WED_MapZoomerNew::WED_MapZoomerNew()
 {
+	mCacheKey = 0;
 	mPixels[0] = 0.0;
 	mPixels[1] = 0.0;
 	mPixels[2] = 1.0;
@@ -108,6 +109,7 @@ void	WED_MapZoomerNew::SetPixelBounds(
 					double	inRight,
 					double	inTop)
 {
+	++mCacheKey;
 	mPixels[0] = inLeft;
 	mPixels[1] = inBottom;
 	mPixels[2] = inRight;
@@ -121,6 +123,7 @@ void	WED_MapZoomerNew::SetMapLogicalBounds(
 					double	inEast,
 					double	inNorth)
 {
+	++mCacheKey;
 	mLogicalBounds[0] = inWest;
 	mLogicalBounds[1] = inSouth;
 	mLogicalBounds[2] = inEast;
@@ -182,6 +185,7 @@ void	WED_MapZoomerNew::ZoomShowArea(
 							double	inEast,
 							double	inNorth)
 {
+	++mCacheKey;
 	mLonCenter = (inWest + inEast) * 0.5;
 	mLatCenter = (inSouth + inNorth) * 0.5;
 	
@@ -206,6 +210,8 @@ void	WED_MapZoomerNew::PanPixels(
 					double	x2,
 					double	y2)
 {
+	++mCacheKey;
+
 	// This is straight-forward: calculate the difference in lat/lon numbers between
 	// the two pixels and change.  Positive numbers mean the user dragged up/right
 	// therefore the map's bounds are decreasing!  Whacky, eh?
@@ -224,6 +230,8 @@ void	WED_MapZoomerNew::ZoomAround(
 					double	centerXPixel,
 					double	centerYPixel)
 {
+	++mCacheKey;
+
 	// Zoom the map around a point.  We do this in three steps because I am lazy:
 	// 1. Scroll the map so that we are zooming around the lower left corner.
 	// 2. Zoom the map by adjusting only the top and right logical bounds, not
@@ -313,6 +321,8 @@ void	WED_MapZoomerNew::GetScrollBounds(float outTotalBounds[4], float outVisible
 
 void	WED_MapZoomerNew::ScrollH(float xOffset)
 {
+	++mCacheKey;
+
 	float log[4], vis[4];
 	GetScrollBounds(log, vis);
 	
@@ -323,6 +333,8 @@ void	WED_MapZoomerNew::ScrollH(float xOffset)
 
 void	WED_MapZoomerNew::ScrollV(float yOffset)
 {
+	++mCacheKey;
+
 	float log[4], vis[4];
 	GetScrollBounds(log, vis);
 	
@@ -334,6 +346,8 @@ void	WED_MapZoomerNew::ScrollV(float yOffset)
 
 void	WED_MapZoomerNew::RecalcAspectRatio(void)
 {
+	++mCacheKey;
+
 	double top_lat = YPixelToLat(mPixels[3]);
 	double bot_lat = YPixelToLat(mPixels[1]);
 	
