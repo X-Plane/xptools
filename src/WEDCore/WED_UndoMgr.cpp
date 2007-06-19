@@ -3,12 +3,15 @@
 #include "WED_UndoLayer.h"
 #include "AssertUtils.h"
 #include "WED_Messages.h"
-
+#include "PlatformUtils.h"
 // UNDO STACK ORDER IS:
 
 // CHRONOLOGICAL FROM BEGIN TO END
 // So...the last op DONE is in undo.back()
 // The first op UNDONE is redo.front()
+
+#define WARN_IF_LESS_LEVEL	10
+#define MAX_UNDO_LEVELS 20
 
 WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive) : mCommand(NULL), mArchive(inArchive)
 {
@@ -25,6 +28,11 @@ WED_UndoMgr::~WED_UndoMgr()
 
 void	WED_UndoMgr::StartCommand(const string& inName)
 {
+	while(mUndo.size() > MAX_UNDO_LEVELS)
+	{
+		delete mUndo.front();
+		mUndo.pop_front();
+	}
 	if (mCommand != NULL)
 		AssertPrintf("Command %s started while command %s still active.",inName.c_str(), mCommand->GetName().c_str());
 	mCommand = new WED_UndoLayer(mArchive, inName);
@@ -43,16 +51,20 @@ void	WED_UndoMgr::CommitCommand(void)
 	}
 	PurgeRedo();
 	mUndo.push_back(mCommand);
+	int change_mask = mCommand->GetChangeMask();
 	mCommand = NULL;	
+	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);	
 }
 
 void	WED_UndoMgr::AbortCommand(void)
 {
 	mArchive->SetUndo(NULL);
+	mArchive->SetUndo(UNDO_DISCARD);
 	Assert(mCommand != NULL);
 	mCommand->Execute();
 	delete mCommand;
 	mCommand = NULL;
+	mArchive->SetUndo(NULL);
 }
 
 bool	WED_UndoMgr::HasUndo(void) const
@@ -83,13 +95,14 @@ void	WED_UndoMgr::Undo(void)
 	WED_UndoLayer * undo = mUndo.back();
 	WED_UndoLayer * redo = new WED_UndoLayer(mArchive, undo->GetName());
 	mArchive->SetUndo(redo);
+	int change_mask = undo->GetChangeMask();
 	undo->Execute();
 	mArchive->SetUndo(NULL);
 	mRedo.push_front(redo);
 	delete undo;
 	mUndo.pop_back();
 	mArchive->mOpCount--;
-	mArchive->BroadcastMessage(msg_ArchiveChanged,0);		
+	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);		
 }
 
 void	WED_UndoMgr::Redo(void)
@@ -98,13 +111,14 @@ void	WED_UndoMgr::Redo(void)
 	WED_UndoLayer * redo = mRedo.front();
 	WED_UndoLayer * undo = new WED_UndoLayer(mArchive, redo->GetName());
 	mArchive->SetUndo(undo);
+	int change_mask = redo->GetChangeMask();
 	redo->Execute();
 	mArchive->SetUndo(NULL);	
 	mUndo.push_back(undo);
 	delete redo;
 	mRedo.pop_front();
 	mArchive->mOpCount++;
-	mArchive->BroadcastMessage(msg_ArchiveChanged,0);
+	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
 }
 
 void	WED_UndoMgr::PurgeUndo(void)
@@ -121,3 +135,26 @@ void	WED_UndoMgr::PurgeRedo(void)
 	mRedo.clear();
 }
 
+bool	WED_UndoMgr::ReleaseMemory(void)
+{
+	if (mUndo.empty() && mRedo.empty()) return false;
+	if (mUndo.size() > WARN_IF_LESS_LEVEL)
+	{
+		delete mUndo.front();
+		mUndo.pop_front();
+		return true;
+	}
+	
+//	if(!ConfirmMessage("WED is low on memory.  May I purge the undo list to free up memory?", "Purge", "Cancel")) return false;
+	
+	if (!mRedo.empty())
+	{
+		PurgeRedo();
+		return true;
+	}
+
+	delete mUndo.front();
+	mUndo.pop_front();
+	return true;
+	
+}

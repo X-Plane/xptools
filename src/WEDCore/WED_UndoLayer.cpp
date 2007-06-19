@@ -3,23 +3,29 @@
 #include "WED_Buffer.h"
 #include "WED_Archive.h"
 #include "AssertUtils.h"
-
+#include "WED_FastBuffer.h"
 // NOTE: we could store no turd for created objs 
 
 WED_UndoLayer::WED_UndoLayer(WED_Archive * inArchive, const string& inName) :
-	mArchive(inArchive), mName(inName)
+	mArchive(inArchive), mName(inName), mChangeMask(0)
 {
+	mStorage = new WED_FastBufferGroup;
 }
 
 WED_UndoLayer::~WED_UndoLayer(void)
 {
-	for (ObjInfoMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
-	if (i->second.buffer)
-		delete i->second.buffer;
+//	for(ObjInfoMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
+//	{
+//		if (i->second.buffer)
+//			delete i->second.buffer;
+//	}
+	delete mStorage;
 }
 
 void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 {
+		mChangeMask |= wed_Change_CreateDestroy;
+
 	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
@@ -42,8 +48,9 @@ void 	WED_UndoLayer::ObjectCreated(WED_Persistent * inObject)
 }
 
 
-void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
+void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject, int change_kind)
 {
+	mChangeMask |= change_kind;
 	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
@@ -59,7 +66,8 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 		info.the_class = inObject->GetClass();
 		info.op = op_Changed;
 		info.id = inObject->GetID();
-		info.buffer = new WED_Buffer;
+		info.buffer = mStorage->MakeNewBuffer();
+//		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
 		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));
@@ -68,6 +76,7 @@ void	WED_UndoLayer::ObjectChanged(WED_Persistent * inObject)
 
 void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 {
+		mChangeMask |= wed_Change_CreateDestroy;
 	ObjInfoMap::iterator iter = mObjects.find(inObject->GetID());
 	if (iter != mObjects.end())
 	{
@@ -79,6 +88,10 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		{
 			// Special case - a created and nuked object basically is temporary
 			// and is unneeded in the bigger scheme of things.
+			// Ben says: yes this sadly leaks space in the undo buffer, but 
+			// generally creating and then nuking a huge number of objects
+			// is a rare use pattern....the compression and speed the consolidated
+			// buffer gives us is a lot more important.
 			mObjects.erase(iter);			
 		} else {
 			// Note that we don't need to save the data - the original 
@@ -91,7 +104,8 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 		info.the_class = inObject->GetClass();
 		info.op = op_Destroyed;
 		info.id = inObject->GetID();
-		info.buffer = new WED_Buffer;
+		info.buffer = mStorage->MakeNewBuffer();
+//		info.buffer = new WED_Buffer;
 		inObject->WriteTo(info.buffer);	
 		info.buffer->WriteInt(inObject->GetDirty());
 		mObjects.insert(ObjInfoMap::value_type(inObject->GetID(), info));

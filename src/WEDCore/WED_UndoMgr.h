@@ -1,13 +1,15 @@
 #ifndef WED_UNDOMGR_H
 #define WED_UNDOMGR_H
 
+#include "GUI_MemoryHog.h"
+
 #include <list>
 using std::list;
 
 class	WED_Archive;
 class	WED_UndoLayer;
 
-class	WED_UndoMgr {
+class	WED_UndoMgr : public GUI_MemoryHog {
 public:
 
 	WED_UndoMgr(WED_Archive * inArchive);
@@ -27,6 +29,9 @@ public:
 	
 	void	PurgeUndo(void);
 	void	PurgeRedo(void);
+	
+	// From GUI_MemoryHog
+	virtual	bool	ReleaseMemory(void);	
 
 private:
 
