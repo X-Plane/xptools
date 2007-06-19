@@ -806,7 +806,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	ShiftControlMask = 0x00ff0000;
 	ExtKeyMask = 0x01ff0000;
 
-#if !DEV
+#if BENTODO
 	examine - is this right?
 #endif
 
