@@ -35,6 +35,8 @@ public:
 					 WED_StartWindow(GUI_Commander * cmder);
 	virtual			~WED_StartWindow();
 
+			void	ShowMessage(const string& msg);
+
 	virtual	bool	Closed(void);
 	
 	virtual	int		MouseMove(int x, int y			  );
@@ -45,6 +47,8 @@ public:
 							int						inParam);
 
 private:
+
+	string				mCaption;
 
 	GUI_Button *		mNew;
 	GUI_Button *		mOpen;

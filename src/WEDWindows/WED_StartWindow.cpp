@@ -28,6 +28,7 @@
 #include "GUI_DrawUtils.h"
 #include "GUI_Resources.h"
 #include "BitmapUtils.h"
+#include "GUI_Fonts.h"
 
 
 static int *	SizeOfPng(const char * png)
@@ -69,8 +70,8 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 					 p2 + btn_width2, height + btn_height2);
 	mNew->SetParent(this);
 	mOpen->SetParent(this);
-	mNew->Show();
-	mOpen->Show();
+//	mNew->Show();
+//	mOpen->Show();
 	mNew->AddListener(this);
 	mOpen->AddListener(this);
 	mNew->SetSticky(1,1,0,0);
@@ -80,6 +81,24 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 WED_StartWindow::~WED_StartWindow()
 {
 }
+
+void	WED_StartWindow::ShowMessage(const string& msg)
+{
+	mCaption = msg;
+	if (mCaption.empty())
+	{
+		mNew->Show();
+		mOpen->Show();
+	}
+	else
+	{
+		mNew->Hide();
+		mOpen->Hide();
+	}
+	Refresh();
+	UpdateNow();
+}
+
 
 void	WED_StartWindow::Draw(GUI_GraphState * state)
 {
@@ -91,7 +110,19 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 	
 	int kTileAll[4] = { 0, 0, 1, 1 };
 	GUI_DrawCentered(state, "startup_bkgnd.png", me, 0, 0, kTileAll, NULL, NULL);
-	GUI_DrawStretched(state, "startup_bar.png", child, kTileAll);
+	
+	if (mCaption.empty())
+	{
+		GUI_DrawStretched(state, "startup_bar.png", child, kTileAll);
+	} else {
+	
+		float color[4] = { 1.0, 1.0, 1.0, 1.0 };
+		
+		float f = GUI_GetLineHeight(font_UI_Basic);
+		
+		GUI_FontDrawScaled(state, font_UI_Basic, color, child[0], (child[1]+child[3]-f)*0.5f, child[2], (child[1]+child[3]+f)*0.5f, &*mCaption.begin(), &*mCaption.end(), align_Center);
+		
+	}
 }
 
 bool	WED_StartWindow::Closed(void)
