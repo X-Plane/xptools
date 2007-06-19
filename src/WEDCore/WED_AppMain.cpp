@@ -35,6 +35,7 @@
 #include <CGAL/assertions.h>
 #include "GUI_Clipboard.h"
 #include "WED_Package.h"
+#include "GUI_Resources.h"
 #include "WED_Application.h"
 #include "WED_AboutBox.h"
 
@@ -120,19 +121,38 @@ int main(int argc, const char * argv[])
 
 	
 	gFailure = CGAL::set_error_handler(cgal_failure);
+	
+	start->ShowMessage("Initializing...");
 	XESInit();
 
+	start->ShowMessage("Loading DEM tables...");
 	LoadDEMTables();
+	start->ShowMessage("Loading OBJ tables...");
 	LoadObjTables();
 	
+	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
 	ENUM_Init();
 	
+	start->ShowMessage("Registering classes...");
 	#define _R(x)	x##_Register();
 	REGISTER_LIST
 	#undef _R
+
+	for (int y = 0; y < 2; ++y)
+	for (int x = 0; x < 4; ++x)
+	{
+		char	fname[30];
+		sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
+		int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
+		sprintf(fname,"Loading earth_%d%d.jpg",x+1,y+1);
+		start->ShowMessage(fname);
+	}
 	
 	app.SetAbout(about);
+
+	start->ShowMessage(string());
+
 	app.Run();
 	
 	delete about;

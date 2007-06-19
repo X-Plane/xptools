@@ -2,6 +2,7 @@
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
 #include "PlatformUtils.h"
+#include "GUI_Help.h"
 #include "WED_UIDefs.h"
 #include "WED_Menus.h"
 
@@ -42,6 +43,9 @@ int		WED_Application::HandleCommand(int command)
 	buf[0] = 0;
 	
 	switch(command) { 
+	case wed_HelpScenery:
+		GUI_LaunchURL("http://scenery.x-plane.com/");
+		break;
 	case wed_NewPackage:
 		if (GetFilePathFromUser(getFile_Save, "Please name your new scenery package", "Create", FILE_DIALOG_NEW_PROJECT, buf, sizeof(buf)))
 		{
@@ -84,6 +88,7 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	switch(command) {
 	case gui_Undo:		ioName = "&Undo"; return 0;
 	case gui_Redo:		ioName = "&Redo"; return 0;
+	case wed_HelpScenery:
 	case wed_NewPackage:
 	case wed_OpenPackage:	return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
