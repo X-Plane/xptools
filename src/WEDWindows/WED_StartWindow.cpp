@@ -38,7 +38,7 @@ static int *	SizeOfPng(const char * png)
 	return bounds;	
 }
 
-WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_movable | xwin_style_centered, SizeOfPng("startup_bkgnd.png"), cmder)
+WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_resizable | xwin_style_centered, SizeOfPng("startup_bkgnd.png"), cmder)
 {
 	int bkgnd[2], btns[2];
 	GUI_GetImageResourceSize("startup_bkgnd.png", bkgnd);
