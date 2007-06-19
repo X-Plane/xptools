@@ -134,7 +134,7 @@ public:
 private:
 
 			void			RebuildCache(void);
-			void			RebuildCacheRecursive(WED_Thing * e, ISelection * sel);
+			void			RebuildCacheRecursive(WED_Thing * e, ISelection * sel, set<WED_Thing *> * sel_and_friends);
 			WED_Thing *		FetchNth(int row);
 			int				GetThingDepth(WED_Thing * d);
 

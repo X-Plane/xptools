@@ -595,7 +595,7 @@ GUI_DragOperation		WED_PropertyTable::DoDropBetweenRows(
 #pragma mark -
 
 
-void WED_PropertyTable::RebuildCacheRecursive(WED_Thing * e, ISelection * sel)
+void WED_PropertyTable::RebuildCacheRecursive(WED_Thing * e, ISelection * sel, set<WED_Thing *> * sel_and_friends)
 {
 	if (e == NULL) return;
 	int vis,kids,can_disclose,is_disclose;
@@ -604,18 +604,50 @@ void WED_PropertyTable::RebuildCacheRecursive(WED_Thing * e, ISelection * sel)
 	if (vis)
 		mThingCache.push_back(e);
 	
+	if (sel_and_friends)
+	if (sel_and_friends->count(e) == 0)
+		return;
+		
 	for (int n = 0; n < kids; ++n)
-		RebuildCacheRecursive(e->GetNthChild(n), sel);
+		RebuildCacheRecursive(e->GetNthChild(n), sel, sel_and_friends);
+}
+
+// Selection iterator: ref is a ptr to a set.  Accumulate the selected thing and all of its parents.
+static int SelectAndParents(ISelectable * what, void * ref)
+{
+	set<WED_Thing *> * all = (set<WED_Thing *> *) ref;
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	while(who)
+	{
+		if (all->count(who)) return 0;
+		all->insert(who);
+		who = who->GetParent();
+	}	
+	return 0;
 }
 
 void WED_PropertyTable::RebuildCache(void)
 {
 	mThingCache.clear();
 	mCacheValid = true;
+	set<WED_Thing*> all_sel;	
+
+	// Performance note: the "selection" hierarchy (all selected entities) is effectively ALWAYS fully disclosed, because we must iterate
+	// through everything to find the selection.  In a situation with a huge hierarchy, this gives us a horribly slow time to rebuild
+	// the contents of the table, even if only one object is selected.  (But we DO want to iterate, to go in hierarchy order.)
+	
+	// It turns out we can do better: we build a set (all_sel) that contains the selection and all views that have a selected thing as its
+	// child.  This represents a subset of the total tree that needs iteration.  When we rebulid our cache, if we hit a thing that isn't in
+	// "selection and friends" set, we simply stop.  
+	
+	// This cuts out iteration of whole sub-trees where there is no selection...for a trivial selection this really speeds up rebuild.
+
 	WED_Thing * root = WED_GetWorld(mResolver);
 	ISelection * sel = WED_GetSelect(mResolver);
+	if (mSelOnly)
+		sel->IterateSelection(SelectAndParents,&all_sel);
 	if (root)
-		RebuildCacheRecursive(root,sel);
+		RebuildCacheRecursive(root,sel,mSelOnly ? &all_sel : NULL);
 }
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
@@ -675,7 +707,11 @@ void	WED_PropertyTable::ReceiveMessage(
 	if (inMsg == msg_ArchiveChanged)
 	{
 		// Set this to false FIRST, lest we have an explosion due to a stale cache!
-		mCacheValid = false;
+		if (inParam & (wed_Change_CreateDestroy | wed_Change_Topology))
+			mCacheValid = false;
+	
+		if (mSelOnly && (inParam & wed_Change_Selection))
+			mCacheValid = false;
 	
 		if (mDynamicCols)
 		{
