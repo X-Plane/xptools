@@ -142,7 +142,7 @@ public:
 	// This method is called by the derived-class whenever its internals are changed
 	// by an editing operation.  It is the convenient way to signal "we better start
 	// recording persistent stuff".
-			void 			StateChanged(void);
+			void 			StateChanged(int change_kind = wed_Change_Any);
 	
 	// Methods provided by the base: all persistent objs must have an archive and
 	// GUID - this is non-negotiable!

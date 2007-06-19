@@ -40,9 +40,9 @@ void		WED_Persistent::AbortCommand(void)
 	mArchive->AbortCommand();
 }
 
-void 			WED_Persistent::StateChanged(void)
+void 			WED_Persistent::StateChanged(int change_kind)
 {
-	mArchive->ChangedObject(this);
+	mArchive->ChangedObject(this, change_kind);
 	mDirty = true;
 }
 
