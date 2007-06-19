@@ -72,3 +72,27 @@ earth_21.jpg			GUI_RES		world\earth_21.jpg
 earth_32.jpg			GUI_RES		world\earth_32.jpg
 earth_11.jpg			GUI_RES		world\earth_11.jpg
 earth_42.jpg			GUI_RES		world\earth_42.jpg
+
+/* Versioning info */
+#include "..\WEDCore\WED_Version.h"
+#include <winver.h>
+
+VS_VERSION_INFO		VERSIONINFO
+FILEVERSION			WED_VERSION_BIN
+PRODUCTVERSION		WED_VERSION_BIN
+FILEOS				VOS__WINDOWS32
+FILETYPE			VFT_APP
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "CompanyName",		"Laminar Research"
+			VALUE "FileDescription",	"X-Plane Sceney Editor"
+			VALUE "FileVersion",		WED_VERSION_RES
+			VALUE "ProductVersion",		WED_VERSION_RES
+			VALUE "LegalCopyright",		"Copyright 2007, Laminar Research"
+			VALUE "ProductName",		"WED"
+		END
+	END
+END
