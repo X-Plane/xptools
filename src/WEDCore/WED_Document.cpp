@@ -67,11 +67,7 @@ WED_Document::WED_Document(
 WED_Document::~WED_Document()
 {
 	sDocuments.erase(this);
-	printf("Starting doc dtor.\n");
-//	mArchive.SaveToDB(mDB.get());
-	printf("Doc saved, broadcasting.\n");
 	BroadcastMessage(msg_DocumentDestroyed, 0);
-	printf("Ending doc dtor.\n");
 }
 
 string				WED_Document::GetFilePath(void) const
@@ -84,14 +80,6 @@ void		WED_Document::GetBounds(double bounds[4])
 	for (int n = 0; n < 4; ++n)
 		bounds[n] = mBounds[n];
 }
-
-/*
-CREATE TABLE properties (key VARCHAR PRIMARY KEY,value DOUBLE);
-CREATE INDEX key_idx ON properties (key);
-SELECT COUNT(*) FROM properties WHERE key = 'key' AND value IS NOT NULL;
-SELECT value FROM properties WHERE key = 'key';
-DELETE FROM propeties WHERE key = 'key';
-*/
 
 WED_Archive *		WED_Document::GetArchive(void)
 {
@@ -110,8 +98,14 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 
 void	WED_Document::Save(void)
 {
+	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
+	#if ERROR_CHECK
+	hello
+	#endif
+
 	mArchive.SaveToDB(mDB.get());
 	ENUM_write(mDB.get());
+	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 }
 
 void	WED_Document::Revert(void)
