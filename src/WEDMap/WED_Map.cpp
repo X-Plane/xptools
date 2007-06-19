@@ -29,7 +29,7 @@ WED_Map::~WED_Map()
 
 void		WED_Map::SetTool(WED_MapToolNew * tool)
 {
-	if (mTool) mTool->KillOperation();
+	if (mTool) mTool->KillOperation(mIsToolClick);
 	mTool = tool;
 }
 
