@@ -693,6 +693,7 @@ static int	collect_splits(ISelectable * base, void * ref)
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return false;
 	if (sel->IterateSelection(unsplittable, sel)) return 0;
 	return 1;
 }
