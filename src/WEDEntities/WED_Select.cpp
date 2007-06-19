@@ -96,7 +96,7 @@ void		WED_Select::Select(ISelectable * iwho)
 
 	if (mSelected.size() != 1 || mSelected.count(id) == 0)
 	{
-		StateChanged();
+		StateChanged(wed_Change_Selection);
 		mSelected.clear();
 		mSelected.insert(id);
 		BroadcastMessage(msg_SelectionChanged,0);
@@ -107,7 +107,7 @@ void		WED_Select::Clear(void)
 {
 	if (!mSelected.empty())
 	{
-		StateChanged();
+		StateChanged(wed_Change_Selection);
 		mSelected.clear();
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
@@ -117,7 +117,7 @@ void		WED_Select::Toggle(ISelectable * iwho)
 {
 	int id = iwho->GetSelectionID();
 
-	StateChanged();
+	StateChanged(wed_Change_Selection);
 	if (mSelected.count(id) > 0)
 		mSelected.erase(id);
 	else
@@ -131,7 +131,7 @@ void		WED_Select::Insert(ISelectable * iwho)
 
 	if (mSelected.count(id) == 0)
 	{
-		StateChanged();
+		StateChanged(wed_Change_Selection);
 		mSelected.insert(id);
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
@@ -143,7 +143,7 @@ void		WED_Select::Erase(ISelectable * iwho)
 
 	if (mSelected.count(id) > 0)
 	{
-		StateChanged();
+		StateChanged(wed_Change_Selection);
 		mSelected.erase(id);
 		BroadcastMessage(msg_SelectionChanged,0);
 	}
