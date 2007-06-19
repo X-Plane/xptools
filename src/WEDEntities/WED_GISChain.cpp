@@ -33,7 +33,7 @@ bool				WED_GISChain::IntersectsBox	(const Bbox2&  bounds) const
 	GetBounds(me);
 	if (!bounds.overlap(me)) return false;
 
-	#if !DEV
+	#if BENTODO
 		this is not good enough
 	#endif
 	return true;

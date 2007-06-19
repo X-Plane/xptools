@@ -209,22 +209,26 @@ int			WED_Runway::GetShoulder(void) const
 
 void		WED_Runway::SetDisp1(double n)
 {
-		disp1 = n;
+	if (n < 0.0) n = 0.0;
+	disp1 = n;
 }
 
 void		WED_Runway::SetDisp2(double n)
 {
-		disp2 = n;
+	if (n < 0.0) n = 0.0;
+	disp2 = n;
 }
 
 void		WED_Runway::SetBlas1(double n)
 {
-		blas1 = n;
+	if (n < 0.0) n = 0.0;
+	blas1 = n;
 }
 
 void		WED_Runway::SetBlas2(double n)
 {
-		blas2 = n;
+	if (n < 0.0) n = 0.0;
+	blas2 = n;
 }
 
 double		WED_Runway::GetDisp1(void) const { return disp1.value; }

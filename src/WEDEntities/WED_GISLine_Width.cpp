@@ -34,6 +34,7 @@ double	WED_GISLine_Width::GetWidth (void		 ) const
 
 void	WED_GISLine_Width::SetWidth (double w)
 {
+	if (w < 0.0) w = 0.0;
 	if (w != width.value)
 	{
 		StateChanged();
