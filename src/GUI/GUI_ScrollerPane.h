@@ -95,6 +95,7 @@ private:
 	GUI_ScrollerPaneContent *		mContent;
 	bool							mCalibrating;
 	string							mImage;
+	bool							mCalibrateDirty;
 
 };
 	

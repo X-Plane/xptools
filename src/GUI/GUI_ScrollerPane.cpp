@@ -9,6 +9,20 @@
 #endif
 const int	kSBSIZE = 16;
 
+/*
+	Scroller deferred realignment:
+		Scroller views attempt to recompute the scroll bar limits and sizes when the content of the pane changes.  However in the case
+		of hierarchy views and other large content this can be quite expensive: O(N) where N = size of content, not size of what we can
+		realy see.  SO....we don't do this immediately when signaled - we simply mark ourselves as stale, then do it when we draw.  
+
+		(Technically this is slightly wrong -- we should also try to trap mouse events, because technically someone could show the scroller
+		and click on the scrollbar itself while it is not calibrated before the refresh comes through.  But this would require super-human
+		user speed and be a uesless click anyway since the user would be clicking on something not yet drawn.)
+		
+		The big win here is that when we have 5 hierarchies, some fully open, but most hidden, we don't "pay" for the hidden ones in any way,
+		because we don't have to recompute their size.
+*/	
+
 GUI_ScrollerPane::GUI_ScrollerPane(int inHScroll, int inVScroll) :
 	mScrollH(NULL),
 	mScrollV(NULL),
@@ -55,6 +69,8 @@ GUI_ScrollerPane::~GUI_ScrollerPane()
 
 void	GUI_ScrollerPane::Draw(GUI_GraphState * g)
 {
+	if (mCalibrateDirty)
+		CalibrateSBs();
 	int bounds[4];
 	int tile[4] = { 0, 0, 1, 1 };
 	
@@ -141,24 +157,24 @@ void	GUI_ScrollerPane::SetContent(GUI_ScrollerPaneContent * inPane)
 	mContent = inPane;
 	if (mContent != NULL)
 		mContent->AddListener(this);
-	CalibrateSBs();
+	mCalibrateDirty = true;
 }
 
 void	GUI_ScrollerPane::ContentGeometryChanged(void)
 {
-	CalibrateSBs();
+	mCalibrateDirty = true;
 }
 
 void	GUI_ScrollerPane::SetBounds(int x1, int y1, int x2, int y2)
 {
 	GUI_Pane::SetBounds(x1, y1, x2, y2);
-	CalibrateSBs();
+	mCalibrateDirty = true;
 }
 
 void	GUI_ScrollerPane::SetBounds(int inBounds[4])
 {
 	GUI_Pane::SetBounds(inBounds);
-	CalibrateSBs();
+	mCalibrateDirty = true;
 }
 
 int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
@@ -187,7 +203,7 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 			if (old_v != new_v)
 			{
 				mContent->ScrollV(new_v);
-				CalibrateSBs();
+				mCalibrateDirty = true;
 				Refresh();
 			}
 		} else {
@@ -204,7 +220,7 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 			if (old_v != new_v)
 			{
 				mContent->ScrollH(new_v);
-				CalibrateSBs();
+				mCalibrateDirty = true;
 				Refresh();
 			}
 		}
@@ -234,11 +250,12 @@ void	GUI_ScrollerPane::ReceiveMessage(
 	}
 		
 	if (inSrc == mContent && inMsg == GUI_SCROLL_CONTENT_SIZE_CHANGED && mContent && !mCalibrating)
-		CalibrateSBs();
+		mCalibrateDirty = true;
 }
 
 void	GUI_ScrollerPane::CalibrateSBs(void)
 {
+	mCalibrateDirty = false;
 	mCalibrating = true;
 
 	if (mContent == NULL)

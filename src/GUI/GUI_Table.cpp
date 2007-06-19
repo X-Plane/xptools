@@ -11,6 +11,21 @@
 
 #define	AUTOSCROLL_DIST	15
 
+/*
+	ALIGNMENT CACHING:
+
+	The table is a self-managed scroller: that is, it scrolls by tracking the virtual location of its cells, not by 
+	simply moving the whole pane around relative to the parent.  (In this sense, the pane bounds are the visible bounds,
+	NOT the logical bounds).
+	
+	This means that when the content changes, we would need to recalculate the relationship between the lgoical and visible
+	bounds.  But...we defer this until someone asks...this helps us avoid doing computation when our content changes
+	but we are hidden.  Once we are shown our parent scroller pane will ask where we are, and at that point we do the 
+	computation.
+
+*/	
+
+
 static bool ClipTo(int pane[4], int cell[4])
 {
 	int clip[4] = { max(pane[0], cell[0]),
@@ -36,7 +51,8 @@ GUI_Table::GUI_Table(int fill_right) :
 	mScrollH(0),
 	mScrollV(0),
 	mDragX(-1),mDragY(-1),
-	mExtendSide(fill_right)
+	mExtendSide(fill_right),
+	mAligned(true)
 {	
 }
 
@@ -59,7 +75,7 @@ void		GUI_Table::Draw(GUI_GraphState * state)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
-
+	AlignContents();
 	glPushAttrib(GL_SCISSOR_BIT);
 	glEnable(GL_SCISSOR_TEST);
 	
@@ -81,6 +97,7 @@ void		GUI_Table::Draw(GUI_GraphState * state)
 
 void	GUI_Table::RevealCol(int x)
 {
+	AlignContents();
 	int cell_bounds[4], pane_bounds[6];
 	if (!CalcCellBounds(x,0,cell_bounds)) 
 		return;
@@ -105,6 +122,7 @@ void	GUI_Table::RevealCol(int x)
 
 void	GUI_Table::RevealRow(int y)
 {
+	AlignContents();
 	int cell_bounds[4], pane_bounds[6];
 	if (!CalcCellBounds(0, y,cell_bounds)) 
 		return;
@@ -128,6 +146,7 @@ void	GUI_Table::RevealRow(int y)
 
 void	GUI_Table::RevealCell(int x, int y)
 {
+	AlignContents();
 	int cell_bounds[4], pane_bounds[6];
 	if (!CalcCellBounds(x,y,cell_bounds)) 
 		return;
@@ -161,6 +180,7 @@ int			GUI_Table::MouseDown(int x, int y, int button)
 {
 	if (mGeometry == NULL) return 0;
 	if (mContent == NULL) return 0;
+	AlignContents();
 	mClickCellX = MouseToCellX(x);
 	mClickCellY = MouseToCellY(y);
 	if (mClickCellX >= 0 &&
@@ -180,6 +200,7 @@ void		GUI_Table::MouseDrag(int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+	AlignContents();
 	if (!mLocked)
 	{
 		#if BENTODO
@@ -198,6 +219,7 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+	AlignContents();
 	if (!mLocked)
 	{
 		mClickCellX = MouseToCellX(x);
@@ -212,6 +234,7 @@ int		GUI_Table::GetCursor(int x, int y)
 {
 	if (mGeometry == NULL) return gui_Cursor_None;
 	if (mContent == NULL) return gui_Cursor_None;
+	AlignContents();
 	int cx = MouseToCellX(x);
 	int cy = MouseToCellY(y);
 	if (cx >= 0 &&
@@ -230,6 +253,7 @@ int			GUI_Table::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 {
 	if (mGeometry == NULL) return 0;
 	if (mContent == NULL) return 0;
+	AlignContents();
 	int mx = MouseToCellX(x);
 	int my = MouseToCellY(y);
 	if (mx >= 0 &&
@@ -249,6 +273,7 @@ GUI_DragOperation			GUI_Table::DragEnter	(int x, int y, GUI_DragData * drag, GUI
 {
 	if (mGeometry == NULL) return gui_Drag_None;
 	if (mContent == NULL) return gui_Drag_None;
+	AlignContents();
 	
 	mDragX = MouseToCellX(x);
 	mDragY = MouseToCellY(y);
@@ -270,6 +295,7 @@ GUI_DragOperation			GUI_Table::DragOver	(int x, int y, GUI_DragData * drag, GUI_
 {
 	if (mGeometry == NULL) return gui_Drag_None;
 	if (mContent == NULL) return gui_Drag_None;
+	AlignContents();
 
 	int new_x = MouseToCellX(x);
 	int new_y = MouseToCellY(y);
@@ -307,6 +333,7 @@ GUI_DragOperation			GUI_Table::DragOver	(int x, int y, GUI_DragData * drag, GUI_
 
 void					GUI_Table::DragScroll	(int x, int y)
 {
+	AlignContents();
 	int me[4];
 	GetBounds(me);
 	float total[4], vis[4];	
@@ -346,6 +373,7 @@ void						GUI_Table::DragLeave	(void)
 {
 	if (mGeometry == NULL) return;
 	if (mContent == NULL) return;
+	AlignContents();
 
 	int cellbounds[4];
 	if (mDragX != -1 && mDragY != -1)
@@ -361,6 +389,7 @@ GUI_DragOperation			GUI_Table::Drop		(int x, int y, GUI_DragData * drag, GUI_Dra
 {
 	if (mGeometry == NULL) return gui_Drag_None;
 	if (mContent == NULL) return gui_Drag_None;
+	AlignContents();
 	
 	int new_x = MouseToCellX(x);
 	int new_y = MouseToCellY(y);
@@ -383,7 +412,7 @@ void		GUI_Table::SetBounds(int x1, int y1, int x2, int y2)
 	int delta_y = new_height - old_height;
 	mScrollV -= delta_y;
 	GUI_Pane::SetBounds(x1,y1,x2,y2);
-	AlignContents();
+	mAligned = false;
 }
 
 void		GUI_Table::SetBounds(int inBounds[4])
@@ -395,11 +424,13 @@ void		GUI_Table::SetBounds(int inBounds[4])
 	int delta_y = new_height - old_height;
 	mScrollV -= delta_y;
 	GUI_Pane::SetBounds(inBounds);
-	AlignContents();
+	mAligned = false;
 }
 
 void		GUI_Table::AlignContents(void)
 {
+	if (mAligned) return;
+	mAligned = true;
 	float	vis[4],total[4];
 
 	GetScrollBounds(total,vis);	
@@ -431,7 +462,7 @@ void		GUI_Table::ReceiveMessage(
 //	int old_height = b[3] - b[1];
 //	int delta_y = new_height - old_height;
 //	mScrollV -= delta_y;
-		AlignContents();
+		mAligned = false;
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED, 0);
 		Refresh();
 		break;
@@ -443,6 +474,7 @@ void		GUI_Table::ReceiveMessage(
 
 void	GUI_Table::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
 {
+	AlignContents();
 	int	b[4];
 	GetBounds(b);
 	
@@ -479,6 +511,7 @@ void	GUI_Table::ScrollV(float yOffset)
 int		GUI_Table::MouseToCellX(int x)
 {
 	if (mGeometry == NULL) return -1;
+	AlignContents();
 	int	b[4];
 	GetBounds(b);
 	return mGeometry->ColForX(x - b[0] + mScrollH);
@@ -488,6 +521,7 @@ int		GUI_Table::MouseToCellX(int x)
 int		GUI_Table::MouseToCellY(int y)
 {
 	if (mGeometry == NULL) return -1;
+	AlignContents();
 	int	b[4];
 	GetBounds(b);
 	return mGeometry->RowForY(y - b[1] + mScrollV);
@@ -500,6 +534,7 @@ int		GUI_Table::CalcVisibleCells(int bounds[4])
 		int	b[4];
 		int l[4];
 	GetBounds(b);
+	AlignContents();
 	
 	int xc = mGeometry->GetColCount();
 	int yc = mGeometry->GetRowCount();
@@ -533,6 +568,7 @@ int		GUI_Table::CalcVisibleCells(int bounds[4])
 int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 {
 	if (mGeometry == NULL) return 0;
+	AlignContents();
 		int	b[4];
 	GetBounds(b);
 	
@@ -551,6 +587,7 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 void		GUI_Table::SizeShowAll(void)
 {
 	if (!mGeometry) return;
+	AlignContents();
 	int b[4];
 	GetBounds(b);
 	b[2] = b[0] + mGeometry->GetCellLeft(mGeometry->GetColCount()) - mGeometry->GetCellLeft(0);

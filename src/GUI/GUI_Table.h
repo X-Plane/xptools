@@ -173,10 +173,12 @@ private:
 			int						mClickCellX;
 			int						mClickCellY;
 			int						mLocked;
-		int					mDragX;
-		int					mDragY;
+			int						mDragX;
+			int						mDragY;
 		
-		int					mExtendSide;
+			int						mExtendSide;
+
+			bool					mAligned;
 		
 		
 };
@@ -248,7 +250,6 @@ private:
 			GUI_Table *				mTable;
 			int						mClickCellY;
 			int						mLocked;
-
 };
 
 
