@@ -487,6 +487,7 @@
 		D6BC3CCF0AB23C25003949C5 /* XGrinderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375A0AB22C85003949C5 /* XGrinderApp.cpp */; };
 		D6BC3CD20AB23C4D003949C5 /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D6BC3CD50AB23C7F003949C5 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
+		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
 		D6E0645A0BDD2E020070E31C /* GUI_ToolBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */; };
@@ -1457,6 +1458,9 @@
 		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
 		D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjConverterUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
+		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
+		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
 		D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ToolBar.cpp; sourceTree = "<group>"; };
@@ -1998,6 +2002,8 @@
 				D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */,
 				D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */,
 				D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */,
+				D6C37B160C27920D0023B35C /* GUI_Help.h */,
+				D6C37B170C27920D0023B35C /* GUI_Help.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -2358,6 +2364,7 @@
 				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
 				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
 				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
+				D6C37B880C2796850023B35C /* WED_Version.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3669,6 +3676,7 @@
 				D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */,
 				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
 				D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */,
+				D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3806,6 +3814,7 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				DEAD_CODE_STRIPPING = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
@@ -4073,8 +4082,8 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
+				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
-				INFOPLIST_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-fpermissive",
@@ -4102,6 +4111,9 @@
 					"WED=1",
 					"$(inherited)",
 				);
+				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
+				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
+				INFOPLIST_PREPROCESS = YES;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-fpermissive",
