@@ -82,15 +82,11 @@ int			WED_AboutBox::MouseDown(int x, int y, int button)
 void		WED_AboutBox::MouseUp  (int x, int y, int button)
 {
 	Stop();
-#if !IBM
 	Hide();
-#endif
 }
 
 void		WED_AboutBox::TimerFired(void)
 {
 	Stop();
-#if !IBM
 	Hide();
-#endif
 }
