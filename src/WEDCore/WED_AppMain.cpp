@@ -102,6 +102,7 @@ int main(int argc, const char * argv[])
 #if IBM
 	gInstance = hInstance;
 #endif
+	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 	WED_Application	app;
 	
@@ -134,5 +135,7 @@ int main(int argc, const char * argv[])
 	app.Run();
 	
 	delete about;
+	GUI_MemoryHog::RemoveNewHandler();
+	
 	return 0;
 }
