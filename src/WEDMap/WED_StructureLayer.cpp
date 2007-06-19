@@ -156,7 +156,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glShape2v(GL_LINE_STRIP, pts, count);
 		return;
 	} 
-	else for(set<int>::iterator a = attrs.begin(); a != attrs.end(); ++a)
+	else for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 	switch(*a) {	
 	// ------------ STANDARD TAXIWAY LINES ------------
 	case line_SolidYellow:
