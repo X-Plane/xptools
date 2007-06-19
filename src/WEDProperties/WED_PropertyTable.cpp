@@ -151,9 +151,13 @@ void	WED_PropertyTable::GetCellContent(
 	}
 
 	the_content.can_edit = inf.can_edit;
+	if (the_content.can_edit)
+	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
+	
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
+
 }
 
 void	WED_PropertyTable::GetEnumDictionary(
