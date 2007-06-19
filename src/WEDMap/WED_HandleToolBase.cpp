@@ -288,14 +288,19 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 									const Bbox2&		bounds,
 									set<IGISEntity *>&	result)
 {
+	int pt_sel = bounds.is_point();
+	Point2	psel = bounds.p1;
+
+	Bbox2		ent_bounds;
+	entity->GetBounds(ent_bounds);
+	if (pt_sel) { if (!ent_bounds.contains(psel))				return 0;	}
+	else		{ if (!ent_bounds.overlap(bounds))				return 0;	}
+
 	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
 	if (thang) {
 		if (thang->GetLocked()) return 0;
 		if (thang->GetHidden()) return 0;
 	}
-
-	int pt_sel = bounds.is_point();
-	Point2	psel = bounds.p1;
 	
 	double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
 				
@@ -447,8 +452,23 @@ int			WED_HandleToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 	return 0;
 }
 
-void		WED_HandleToolBase::KillOperation(void)
-{
+void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
+{	
+	if (mouse_is_down)
+	{
+		if (mDragType == drag_Sel)
+		{
+			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+			if(op) op->AbortOperation();			
+			mSelSave.clear();
+		}
+	} else if ( mDragType == drag_Links || 
+				mDragType == drag_Handles ||
+				mDragType == drag_Move)
+	{
+		mHandles->EndEdit();
+	} 
+	mDragType = drag_None;
 }
 
 void		WED_HandleToolBase::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)

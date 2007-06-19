@@ -17,7 +17,7 @@ public:
 	virtual	void		HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers)=0;
 	virtual	void		HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers)=0;
 	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  )=0;
-	virtual	void		KillOperation(void)=0;		// Called when another tool is picked.  If a shape is half built, ABORT!
+	virtual	void		KillOperation(bool mouse_is_down)=0;		// Called when another tool is picked.  If a shape is half built, ABORT!
 							
 	virtual	const char *	GetStatusText(void)=0;
 

@@ -56,7 +56,7 @@ public:
 	virtual	void				CreationDrag(const Point2& start_pt, const Point2& now_pt);
 	virtual	void				CreationUp(const Point2& start_pt, const Point2& now_pt);
 
-	virtual void		KillOperation(void);
+	virtual void		KillOperation(bool mouse_is_down);
 	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  );
 
 	

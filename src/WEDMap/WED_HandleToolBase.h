@@ -29,7 +29,7 @@ public:
 	virtual	void		HandleClickDrag			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	void		HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
-	virtual	void		KillOperation(void);
+	virtual	void		KillOperation(bool mouse_is_down);
 
 	// WED_Layer
 	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g);

@@ -353,9 +353,9 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 
 }
 
-void			WED_CreateToolBase::KillOperation(void)
+void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 {
-	WED_HandleToolBase::KillOperation();
+	WED_HandleToolBase::KillOperation(mouse_is_down);
 	mPts.clear();
 	mHasDirs.clear();
 	mIsSplit.clear();
