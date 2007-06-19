@@ -118,6 +118,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="freetype221ST.lib"
+				AdditionalLibraryDirectories="..\..\libsrc\freetype-2.2.1\objs\"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -696,6 +698,14 @@
 					RelativePath="..\..\src\WEDMap\WED_VertexTool.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\src\WEDMap\WED_WorldMapLayer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDMap\WED_WorldMapLayer.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="WEDImportExport"
@@ -766,6 +776,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\WEDCore\WED_Errors.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDCore\WED_FastBuffer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDCore\WED_FastBuffer.h"
 					>
 				</File>
 				<File
@@ -890,6 +908,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\WEDEntities\WED_AirportSign.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDEntities\WED_ATCFrequency.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDEntities\WED_ATCFrequency.h"
 					>
 				</File>
 				<File
@@ -1459,6 +1485,14 @@
 							CompileAs="2"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\Network\HTTPClient.cpp"
@@ -1597,11 +1631,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\GUI\GUI_Help.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\GUI\GUI_Listener.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\GUI\GUI_Listener.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\GUI\GUI_MemoryHog.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\GUI\GUI_MemoryHog.h"
 					>
 				</File>
 				<File
@@ -1848,6 +1894,14 @@
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								CompileAs="2"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
