@@ -29,6 +29,11 @@ class	WED_UndoMgr;
 
 #include "GUI_Broadcaster.h"
 
+enum {
+	wed_Change_Any			 = -1,
+	wed_Change_CreateDestroy =  1
+};
+
 class	WED_Archive : public GUI_Broadcaster {
 public:
 
@@ -39,6 +44,7 @@ public:
 	WED_Persistent *	Fetch(int in_id) const;
 
 	// Attach an undo layer - must be attached and detached with NULL in sequence.
+	void			DisableUndo(void);
 	void			SetUndo(WED_UndoLayer * inUndo);
 
 	void			ClearAll(void);
@@ -51,13 +57,14 @@ public:
 	void			CommitCommand(void);
 	void			AbortCommand(void);
 	
-	int				NewID(void);
-	
+	int				NewID(void);	
 	int				IsDirty(void);	// returns operation count since save, 0 if we're saved, or positive if new changes, or negative if saved changes were undone.
+	
+	long long		CacheKey(void);
 	
 private:
 
-	void			ChangedObject	(WED_Persistent * inObject);	
+	void			ChangedObject	(WED_Persistent * inObject, int change_kind);	
 	void			AddObject		(WED_Persistent * inObject);
 	void			RemoveObject	(WED_Persistent * inObject);
 
@@ -76,6 +83,8 @@ private:
 	
 	int				mID;
 	int				mOpCount;
+	
+	long long		mCacheKey;
 
 };
 

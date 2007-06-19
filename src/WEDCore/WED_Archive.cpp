@@ -8,7 +8,7 @@
 #include "SQLUtils.h"
 #include "WED_Messages.h"
 
-WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0)
+WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0), mCacheKey(0)
 {
 }
 
@@ -36,16 +36,19 @@ WED_Persistent *	WED_Archive::Fetch(int id) const
 	return iter->second;
 }
 
-void		WED_Archive::ChangedObject(WED_Persistent * inObject)
-{
-	if (mDying) return;
-	if (mUndo)	mUndo->ObjectChanged(inObject);
+void		WED_Archive::ChangedObject(WED_Persistent * inObject, int change_kind)
+{	
+	if (mDying) return;	
+	++mCacheKey;
+	if (mUndo == UNDO_DISCARD) return;
+	if (mUndo)	mUndo->ObjectChanged(inObject, change_kind);
 	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
 void		WED_Archive::AddObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
+	++mCacheKey;	
 	mID = max(mID,inObject->GetID()+1);
 	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
 	DebugAssert(iter == mObjects.end() || iter->second == NULL);
@@ -53,6 +56,7 @@ void		WED_Archive::AddObject(WED_Persistent * inObject)
 	if (iter == mObjects.end())			mObjects.insert(ObjectMap::value_type(inObject->GetID(), inObject));
 	else								iter->second = inObject;
 	
+	if (mUndo == UNDO_DISCARD) return;
 	if (mUndo) mUndo->ObjectCreated(inObject);
 	else		DebugAssert(!"Error: object changed outside of a command.");
 }
@@ -60,16 +64,19 @@ void		WED_Archive::AddObject(WED_Persistent * inObject)
 void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 {
 	if (mDying) return;
-	
+	++mCacheKey;	
 	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
 	Assert(iter != mObjects.end());
 	iter->second = NULL;
+	if (mUndo == UNDO_DISCARD) return;
 	if (mUndo) mUndo->ObjectDestroyed(inObject);
 	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
 void	WED_Archive::LoadFromDB(sqlite3 * db, const map<int,int>& mapping)
 {
+	++mCacheKey;
+
 	{
 		sql_command		fetch_objects(db, "SELECT WED_things.id, WED_classes.name FROM WED_things JOIN WED_classes on WED_things.class_id = WED_classes.id;", NULL);
 		
@@ -101,6 +108,8 @@ void	WED_Archive::LoadFromDB(sqlite3 * db, const map<int,int>& mapping)
 
 void	WED_Archive::ClearAll(void)
 {
+	++mCacheKey;
+
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	if (ob->second != NULL)
 		ob->second->Delete();	
@@ -109,6 +118,8 @@ void	WED_Archive::ClearAll(void)
 
 void	WED_Archive::SaveToDB(sqlite3 * db)
 {
+	++mCacheKey;
+
 	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{
@@ -152,13 +163,14 @@ void			WED_Archive::CommitCommand(void)
 {
 	DebugAssert(mUndoMgr != NULL);
 	mUndoMgr->CommitCommand();
-	BroadcastMessage(msg_ArchiveChanged,0);
 	
 	++mOpCount;
 }
 
 void			WED_Archive::AbortCommand(void)
 {
+	++mCacheKey;
+
 	DebugAssert(mUndoMgr != NULL);
 	mUndoMgr->AbortCommand();
 }
@@ -166,6 +178,11 @@ void			WED_Archive::AbortCommand(void)
 int	WED_Archive::NewID(void)
 {
 	return mID++;
+}
+
+long long WED_Archive::CacheKey(void) 
+{
+	return mCacheKey;
 }
 
 int		WED_Archive::IsDirty(void)
