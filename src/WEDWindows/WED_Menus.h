@@ -17,6 +17,7 @@ enum {
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
+	wed_Crop,
 	wed_Split,
 	wed_MoveFirst,
 	wed_MovePrev,

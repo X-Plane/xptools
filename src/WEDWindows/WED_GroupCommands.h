@@ -46,6 +46,8 @@ void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 
 int		WED_CanClear(IResolver * resolver);
 void	WED_DoClear(IResolver * resolver);
+int		WED_CanCrop(IResolver * resolver);
+void	WED_DoCrop(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
 void	WED_DoSplit(IResolver * resolver);

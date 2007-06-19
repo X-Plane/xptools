@@ -176,7 +176,6 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 WED_DocumentWindow::~WED_DocumentWindow()
 {
-	printf("Empty doc window dtor.\n");
 }
 
 int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
@@ -194,6 +193,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
+	case wed_Crop:		WED_DoCrop(mDocument); return 1;
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
@@ -233,6 +233,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
 						else				{								return 0; }
 	case gui_Clear:		return	WED_CanClear(mDocument);
+	case wed_Crop:		return	WED_CanCrop(mDocument);
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);

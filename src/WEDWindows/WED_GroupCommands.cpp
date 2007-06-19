@@ -275,6 +275,87 @@ void	WED_DoClear(IResolver * resolver)
 	
 }
 
+int		WED_CanCrop(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0)	return 0;
+										return 1;
+}
+
+static int	AccumSelectionAndParents(ISelectable * what, void * ref)
+{
+	set<WED_Thing *> * container = (set<WED_Thing *> *) ref;
+	WED_Thing * who = dynamic_cast<WED_Thing *>(what);
+	while(who)
+	{
+		container->insert(who);
+		who = who->GetParent();
+	}
+	return 0;
+}
+
+static void AccumDead(WED_Thing * who, set<WED_Thing *>& nuke_em, const set<WED_Thing *>& must_keep, ISelection * sel)
+{
+	if (must_keep.count(who) == 0) 
+	{
+		nuke_em.insert(who);
+	}	
+	if (!sel->IsSelected(who))
+	{
+		int nc = who->CountChildren();
+		for (int n = 0; n < nc; ++n)
+			AccumDead(who->GetNthChild(n), nuke_em, must_keep, sel);
+	}
+}
+
+void	WED_DoCrop(IResolver * resolver)
+{
+	ISelection *	sel = WED_GetSelect(resolver);
+	WED_Thing *		wrl = WED_GetWorld(resolver);
+	set<WED_Thing *>	must_keep;
+	set<WED_Thing *>	nuke_em;
+	set<WED_Thing *>	chain;
+	
+	sel->IterateSelection(AccumSelectionAndParents, &must_keep);
+	AccumDead(wrl, nuke_em, must_keep, sel);
+
+	if (nuke_em.empty()) return;
+	
+	wrl->StartOperation("Crop");
+	sel->Clear();
+	
+	while(!nuke_em.empty())
+	{
+		for (set<WED_Thing *>::iterator i = nuke_em.begin(); i != nuke_em.end(); ++i)
+		{
+			WED_Thing * p = (*i)->GetParent();
+			if (p && nuke_em.count(p) == 0)
+//			if (must_keep.count(p) == 0)
+				chain.insert(p);
+			(*i)->SetParent(NULL, 0);
+			(*i)->Delete();
+		}
+
+		nuke_em.clear();
+		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
+		{
+			IGISPointSequence * l = dynamic_cast<IGISPointSequence *>(*i);
+			if (l)
+			{
+				if ((*i)->CountChildren() < 2)
+					nuke_em.insert(*i);
+			}
+			IGISPolygon * p = dynamic_cast<IGISPolygon *>(*i);
+			if (p && (*i)->CountChildren() == 0)
+				nuke_em.insert(*i);
+		}
+		
+		chain.clear();
+	}
+	
+	wrl->CommitOperation();
+}
+
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
