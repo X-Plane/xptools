@@ -85,6 +85,7 @@
 		D60BFCE00C03664F00AD5EB7 /* handle_square.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCD90C03664F00AD5EB7 /* handle_square.png */; };
 		D60BFCE10C03664F00AD5EB7 /* handle_vertexround.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCDA0C03664F00AD5EB7 /* handle_vertexround.png */; };
 		D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */; };
+		D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */; };
 		D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */; };
 		D613A0FB0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */; };
 		D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */; };
@@ -210,6 +211,7 @@
 		D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681990B8AC9C200091AFC /* WED_GISChain.cpp */; };
 		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
+		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -779,6 +781,8 @@
 		D60BFCD90C03664F00AD5EB7 /* handle_square.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_square.png; sourceTree = "<group>"; };
 		D60BFCDA0C03664F00AD5EB7 /* handle_vertexround.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexround.png; sourceTree = "<group>"; };
 		D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexsharp.png; sourceTree = "<group>"; };
+		D60C07E00C2328B700783179 /* WED_FastBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FastBuffer.h; sourceTree = "<group>"; };
+		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A0F90BD62B0F00D50803 /* WED_ImageOverlayTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ImageOverlayTool.h; sourceTree = "<group>"; };
@@ -860,6 +864,8 @@
 		D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISPolygon.cpp; sourceTree = "<group>"; };
 		D63681A00B8ACA2600091AFC /* WED_GISComposite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISComposite.h; sourceTree = "<group>"; };
 		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
+		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
+		D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_MemoryHog.cpp; sourceTree = "<group>"; };
 		D656B11A0B51778F003FF84F /* ErrMsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ErrMsg.cpp; sourceTree = "<group>"; };
 		D656B11B0B51778F003FF84F /* ErrMsg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ErrMsg.h; sourceTree = "<group>"; };
 		D656B1260B51778F003FF84F /* MacSpec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MacSpec.cpp; sourceTree = "<group>"; };
@@ -1990,6 +1996,8 @@
 				D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */,
 				D659758D0BEA6F2A001FC7C3 /* GUI_TabPane.h */,
 				D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */,
+				D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */,
+				D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -2348,6 +2356,8 @@
 				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
 				D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */,
 				D6A17E240BA59EF900BBCD0C /* WED_Enums.h */,
+				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
+				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3657,6 +3667,8 @@
 				D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */,
 				D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */,
 				D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */,
+				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
+				D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
