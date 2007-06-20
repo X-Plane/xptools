@@ -129,7 +129,7 @@ int		WED_ImageOverlayTool::CountControlHandles(int id						  ) const
 	return 4;
 }
 
-void	WED_ImageOverlayTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
+void	WED_ImageOverlayTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;

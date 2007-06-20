@@ -96,7 +96,7 @@ int		WED_CreateToolBase::CountControlHandles(int id						  ) const
 	return mPts.size() * 3;
 }
 
-void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
+void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
 		int idx = n / 3;
 		int kind = n % 3;

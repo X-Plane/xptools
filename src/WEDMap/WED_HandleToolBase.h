@@ -59,7 +59,7 @@ private:
 			int					ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IGISEntity *>&		result);
+									set<IGISEntity *>&	result);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything

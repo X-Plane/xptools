@@ -22,7 +22,6 @@
 
 #define LINE_DIST 3
 #define	HANDLE_RAD 4
-#define HANDLE_RAD_SQR (HANDLE_RAD*HANDLE_RAD)
 
 // This util routine forms the line segment or bezier for a given "link" in a handles, converting from lat/lon to pixels.
 // returns true for bezier, false for segment.
@@ -42,8 +41,8 @@ static bool	ControlLinkToCurve(
 	
 	if (sc == -1 && tc == -1)
 	{
-		h->GetNthControlHandle(ei,sp, NULL, NULL, &s.p1, NULL);
-		h->GetNthControlHandle(ei,tp, NULL, NULL, &s.p2, NULL);
+		h->GetNthControlHandle(ei,sp, NULL, NULL, &s.p1, NULL, NULL);
+		h->GetNthControlHandle(ei,tp, NULL, NULL, &s.p2, NULL, NULL);
 		
 		if (z)
 		{
@@ -58,10 +57,10 @@ static bool	ControlLinkToCurve(
 	{
 		if(sc==-1)sc=sp;
 		if(tc==-1)tc=tp;
-		h->GetNthControlHandle(ei,sp,NULL,NULL,&b.p1, NULL);
-		h->GetNthControlHandle(ei,sc,NULL,NULL,&b.c1, NULL);
-		h->GetNthControlHandle(ei,tp,NULL,NULL,&b.p2, NULL);
-		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL);
+		h->GetNthControlHandle(ei,sp,NULL,NULL,&b.p1, NULL, NULL);
+		h->GetNthControlHandle(ei,sc,NULL,NULL,&b.c1, NULL, NULL);
+		h->GetNthControlHandle(ei,tp,NULL,NULL,&b.p2, NULL, NULL);
+		h->GetNthControlHandle(ei,tc,NULL,NULL,&b.c2, NULL, NULL);
 		
 		if (z) {
 		b.p1.x = z->LonToXPixel(b.p1.x);
@@ -103,6 +102,7 @@ WED_HandleToolBase::WED_HandleToolBase(
 	mDragType(drag_None),
 	mCanSelect(1)
 {
+
 }
 										
 WED_HandleToolBase::~WED_HandleToolBase()
@@ -153,18 +153,15 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 			int active;
 			Point2	cloc;
 			HandleType_t ht;
-			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL);
+			float radius = HANDLE_RAD;
+			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
 			if (!active) continue;
 			
-			float icon_scale = GetZoomer()->GetPPM() * 2.0;
-			if (icon_scale > 1.0) icon_scale = 1.0;
-			float icon_size = icon_scale * 10.0;
-			float icon_rad_sqr = icon_size * icon_size;			
-			
+			radius *= radius;
 			cloc.x = GetZoomer()->LonToXPixel(cloc.x);
 			cloc.y = GetZoomer()->LatToYPixel(cloc.y);
 			if ((this_dist=click_pt.squared_distance(cloc)) < best_dist)
-			if (this_dist < (ht == handle_Icon ? icon_rad_sqr : HANDLE_RAD_SQR))
+			if (this_dist < radius)
 			{
 				mHandleEntity = eid;
 				mHandleIndex = n;
@@ -283,6 +280,10 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	return (mDragType != drag_None);
 }
 
+#if !DEV
+doc and clean this
+#endif
+
 int		WED_HandleToolBase::ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
@@ -291,8 +292,22 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	int pt_sel = bounds.is_point();
 	Point2	psel = bounds.p1;
 
+	double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
+	double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));
+	double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(GetFurnitureIconRadius()));
+	double	max_slop_h = max(icon_dist_h,frame_dist);
+	double	max_slop_v = max(icon_dist_v,frame_dist);
+	if(WED_IsIconic(entity))
+		frame_dist = max(icon_dist_h,icon_dist_v);
+				
 	Bbox2		ent_bounds;
 	entity->GetBounds(ent_bounds);
+//	if (pt_sel)
+	{
+		ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
+		ent_bounds.p2 += Vector2(max_slop_h,max_slop_v);
+	}
+		
 	if (pt_sel) { if (!ent_bounds.contains(psel))				return 0;	}
 	else		{ if (!ent_bounds.overlap(bounds))				return 0;	}
 
@@ -302,8 +317,6 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		if (thang->GetHidden()) return 0;
 	}
 	
-	double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
-				
 	EntityHandling_t choice = TraverseEntity(entity);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
@@ -538,7 +551,7 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				Vector2		dir;
 				Point2	cpt, scrpt;
 				HandleType_t	ht;
-				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir);
+				mHandles->GetNthControlHandle(eid,cp,NULL, &ht, &cpt, &dir, NULL);
 				scrpt = GetZoomer()->LLToPixel(cpt);
 				
 				Vector2	orient;
