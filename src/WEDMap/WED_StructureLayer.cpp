@@ -37,10 +37,6 @@ WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, 
 {
 	mRealLines = true;
 	mPavementAlpha = 0.5;
-	mAirportTransWidth = WED_UIMeasurement("airport_trans_width");
-	mIconAirport = WED_UIMeasurement("airport_icon_scale");
-	mIconPart = WED_UIMeasurement("furniture_icon_scale");
-
 }
 
 WED_StructureLayer::~WED_StructureLayer()
@@ -529,8 +525,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 
 	glColor4fv(WED_Color_RGBA(struct_color));
 
-	float icon_scale = GetZoomer()->GetPPM() * mIconPart;
-	if (icon_scale > 1.0) icon_scale = 1.0;
+	float icon_scale = GetFurnitureIconScale();
 	
 	/******************************************************************************************************************************************************
 	 * RUNWAY DRAWING
@@ -541,7 +536,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		airport->GetBounds(bounds);		
 		bounds.p1 = GetZoomer()->LLToPixel(bounds.p1);
 		bounds.p2 = GetZoomer()->LLToPixel(bounds.p2);		
-		if (bounds.xspan() < mAirportTransWidth && bounds.yspan() < mAirportTransWidth)
+		if (bounds.xspan() < GetAirportTransWidth() && bounds.yspan() < GetAirportTransWidth())
 		{
 			float * f1 = WED_Color_RGBA(struct_color);
 			float * f2 = f1 + 4;
@@ -789,6 +784,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		/******************************************************************************************************************************************************
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/		
+		taxi = NULL;
 		if (sub_class == WED_Taxiway::sClass && (taxi = SAFE_CAST(WED_Taxiway, entity)) != NULL) poly = taxi;
 		else								     poly = SAFE_CAST(IGISPolygon,entity);
 		
@@ -868,9 +864,7 @@ void		WED_StructureLayer::DrawStructure(int inCurrent, GUI_GraphState * g)
 	// Note that we clear the vectors to keep them from building up forever, but their memory 
 	// is not dealloated, so this works up a high-water-mark of icons.  This is good, as it means
 	// that in the long term our memory usage will stabilize.
-	float scale = GetZoomer()->GetPPM() * mIconAirport;
-	if (scale > 1.0) scale = 1.0;
-	if (scale < 0.5) scale = 0.5;
+	float scale = GetAirportIconScale();
 	if (!mAirportIconsX.empty())
 	{
 		GUI_PlotIconBulk(g,"map_airport.png", mAirportIconsX.size(), &*mAirportIconsX.begin(), &*mAirportIconsY.begin(), &*mAirportIconsC.begin(), scale);

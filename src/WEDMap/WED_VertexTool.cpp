@@ -136,7 +136,7 @@ int		WED_VertexTool::CountControlHandles(int id						  ) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * dir) const
+void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
@@ -182,7 +182,19 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
-			if (con_type) *con_type = SAFE_CAST(WED_RunwayNode,en) ? handle_VertexSharp : handle_Icon;
+			if (con_type || radius)
+			{
+				if (en->GetGISSubtype() == WED_RunwayNode::sClass && SAFE_CAST(WED_RunwayNode,en))
+				{
+					if (con_type) *con_type = handle_VertexSharp;
+				}
+				else
+				{
+					if (con_type) *con_type = handle_Icon;
+					if (radius) *radius = GetFurnitureIconRadius();
+				}
+			}
+
 			pt->GetLocation(*p);
 			return;
 		}
@@ -230,6 +242,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 				if (con_type) *con_type = handle_Arrow;
 			} else
 				if (con_type) *con_type = handle_Icon;
+				if (radius) *radius = GetFurnitureIconRadius();
 			
 			return;
 		}
@@ -248,7 +261,11 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 				if (dir) *dir = Vector2(c,*p);
 				if (con_type) *con_type = handle_Arrow;
 			}
-			if (n == 2) if (con_type) *con_type = handle_Icon;
+			if (n == 2)
+			{
+				if (con_type) *con_type = handle_Icon;
+				if (radius) *radius = GetFurnitureIconRadius();
+			}
 			return;
 		}
 		break;

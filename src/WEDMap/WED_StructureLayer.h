@@ -24,10 +24,6 @@ private:
 	bool							mRealLines;
 	float							mPavementAlpha;
 
-	int								mAirportTransWidth;
-	double							mIconAirport;
-	double							mIconPart;
-
 	vector<int>			mAirportIconsX;
 	vector<int>			mAirportIconsY;
 	vector<float>		mAirportIconsC;

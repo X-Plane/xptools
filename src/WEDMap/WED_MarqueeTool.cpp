@@ -85,10 +85,11 @@ int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 									return 9;
 }
 
-void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction) const
+void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
 	if(active) *active=1;
-	if (con_type) *con_type = handle_Square;
+	if (con_type) *con_type = mCacheIconic ? handle_Icon : handle_Square;
+	if (radius && mCacheIconic) *radius = GetFurnitureIconRadius();
 	if (direction) *direction=Vector2();
 	if (p)
 	{
@@ -222,12 +223,14 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 	mCacheBounds = Bbox2();
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
-
+	mCacheIconic = false;
+	
 	vector<ISelectable *>	iu;
 	int ret = false;
 	
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;
+	bool iconic = iu.size() == 1;
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
 	{
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
@@ -240,11 +243,13 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		if (ent)
 		{
+			if (iconic && !WED_IsIconic(ent)) iconic = false;
 			Bbox2 local;
 			ent->GetBounds(local);
 			mCacheBounds += local;
 		}
-	}	
+	}
+	mCacheIconic = iconic;	
 	return !mCacheBounds.is_null();
 }
 
