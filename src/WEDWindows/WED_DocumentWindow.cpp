@@ -182,7 +182,7 @@ int	WED_DocumentWindow::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 {	
 	if ( mMapPane->Map_KeyPress(inKey, inVK, inFlags)) return 1;
 	if (inKey == GUI_KEY_DELETE && (inFlags & gui_DownFlag))
-	if (WED_CanClear(mDocument)) { WED_DoClear(mDocument); return 1; }
+	if (WED_CanClear(mDocument)) { DispatchHandleCommand(gui_Clear); return 1; }	// run through dispatcher to make sure we call the appropriate hooks!
 	return 0;
 }
 

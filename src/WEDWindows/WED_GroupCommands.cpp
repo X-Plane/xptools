@@ -270,6 +270,8 @@ void	WED_DoClear(IResolver * resolver)
 		
 		chain.clear();
 	}
+
+	WED_SetAnyAirport(resolver);
 	
 	op->CommitOperation();
 	
@@ -352,6 +354,8 @@ void	WED_DoCrop(IResolver * resolver)
 		
 		chain.clear();
 	}
+	
+	WED_SetAnyAirport(resolver);
 	
 	wrl->CommitOperation();
 }
