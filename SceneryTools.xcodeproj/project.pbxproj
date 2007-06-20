@@ -67,7 +67,6 @@
 		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
 		D60B090F0C061B2100AD5EB7 /* GUI.nib in Resources */ = {isa = PBXBuildFile; fileRef = D60B090E0C061B2100AD5EB7 /* GUI.nib */; };
 		D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */; };
-		D60BFC480C03619A00AD5EB7 /* map_airbase.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */; };
 		D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3E0C03619A00AD5EB7 /* map_airport.png */; };
 		D60BFC4A0C03619A00AD5EB7 /* map_beacon.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */; };
 		D60BFC4B0C03619A00AD5EB7 /* map_helipad.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFC400C03619A00AD5EB7 /* map_helipad.png */; };
@@ -764,7 +763,6 @@
 		D60B090E0C061B2100AD5EB7 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = GUI.nib; sourceTree = "<group>"; };
 		D60B10200C075B3700AD5EB7 /* WED_AptIE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AptIE.h; sourceTree = "<group>"; };
 		D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AptIE.cpp; sourceTree = "<group>"; };
-		D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_airbase.png; sourceTree = "<group>"; };
 		D60BFC3E0C03619A00AD5EB7 /* map_airport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_airport.png; sourceTree = "<group>"; };
 		D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_beacon.png; sourceTree = "<group>"; };
 		D60BFC400C03619A00AD5EB7 /* map_helipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_helipad.png; sourceTree = "<group>"; };
@@ -1701,7 +1699,6 @@
 		D60BFC3C0C03619A00AD5EB7 /* icons */ = {
 			isa = PBXGroup;
 			children = (
-				D60BFC3D0C03619A00AD5EB7 /* map_airbase.png */,
 				D60BFC3E0C03619A00AD5EB7 /* map_airport.png */,
 				D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */,
 				D60BFC400C03619A00AD5EB7 /* map_helipad.png */,
@@ -3049,7 +3046,6 @@
 				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
 				D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */,
 				D6E064820BDD32010070E31C /* map_tools.png in Resources */,
-				D60BFC480C03619A00AD5EB7 /* map_airbase.png in Resources */,
 				D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */,
 				D60BFC4A0C03619A00AD5EB7 /* map_beacon.png in Resources */,
 				D60BFC4B0C03619A00AD5EB7 /* map_helipad.png in Resources */,
