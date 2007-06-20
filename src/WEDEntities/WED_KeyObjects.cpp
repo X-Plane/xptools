@@ -26,10 +26,10 @@ void WED_KeyObjects::Directory_Edit(const char * name, IBase * who)
 {
 	string n(name);
 	WED_Persistent * target = SAFE_CAST(WED_Persistent,who);
-	if (target == NULL)
+	if (target == NULL && who != NULL)
 		AssertPrintf("Can't set a non-persistent to %s\n", name);
 
-	int id = target->GetID();
+	int id = target ? target->GetID() : 0;
 	
 	map<string,int>::iterator i = choices.find(n);
 	if (i != choices.end() && i->second == id) return;
