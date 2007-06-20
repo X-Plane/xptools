@@ -125,6 +125,11 @@ void		GUI_TextTable::SetTextFieldColors(
 	}
 }
 
+void	GUI_TextTable::KillEditing(void)
+{
+	TerminateEdit(false, false);
+}
+
 
 void		GUI_TextTable::SetParentTable(GUI_Table * parent)
 {
@@ -872,10 +877,6 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 
 
 
-void		GUI_TextTable::Deactivate(void)
-{
-}
-
 void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 {
 	if (!mTextField) 
@@ -911,6 +912,8 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 //	mTextField->SetWidth(1000);
 	mTextField->Show();
 	mTextField->TakeFocus();
+	
+	mParent->TrapFocus();
 }
 
 int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
@@ -918,9 +921,11 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 	if (mTextField && mTextField->IsFocused() && 
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
+		GUI_TextField * f = mTextField;
+		mTextField = NULL;
 		if (inSave)
 		{
-			mTextField->GetDescriptor(mEditInfo.text_val);
+			f->GetDescriptor(mEditInfo.text_val);
 			switch(mEditInfo.content_type) {
 			case gui_Cell_Integer:
 				mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
@@ -932,9 +937,8 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo, in_all);	
 		}
 		this->TakeFocus();
-		mTextField->Hide();
-		delete mTextField;
-		mTextField = NULL;
+		f->Hide();
+		delete f;
 		mEditInfo.content_type = gui_Cell_None;
 		return 1;				
 	}

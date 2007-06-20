@@ -83,7 +83,7 @@ public:
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y)=0;
 	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
 
-	virtual	void		Deactivate(void)=0;
+	virtual	void		KillEditing(void)=0;
 
 };
 
@@ -132,6 +132,7 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	virtual	int			TrapNotify(int x, int y, int button);
 	virtual	int			GetCursor(int x, int y);
 	virtual	int			GetHelpTip(int x, int y, int tip_bounds[4], string& tip);
 	

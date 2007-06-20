@@ -205,7 +205,7 @@ public:
 								float hilite_color[4],
 								float bkgnd_color[4],
 								float box_color[4]);
-
+								
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );
@@ -216,7 +216,7 @@ public:
 	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y);
 	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
-	virtual	void		Deactivate(void);
+	virtual	void		KillEditing(void);
 
 	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			AcceptTakeFocus(void) 	{ return 1; }

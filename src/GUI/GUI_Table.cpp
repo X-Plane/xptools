@@ -230,6 +230,19 @@ void		GUI_Table::MouseUp  (int x, int y, int button)
 		mContent->CellMouseUp(cellbounds, mClickCellX, mClickCellY, x, y, button);	
 }
 
+int GUI_Table::TrapNotify(int x, int y, int button)
+{
+	int b[4];
+	GetVisibleBounds(b);
+	if (x < b[0] || x > b[2] ||
+		y < b[1] || y > b[3])
+	{
+		if (mContent) mContent->KillEditing();
+		return 0;
+	}
+	return 1;
+}
+
 int		GUI_Table::GetCursor(int x, int y)
 {
 	if (mGeometry == NULL) return gui_Cursor_None;
@@ -463,6 +476,7 @@ void		GUI_Table::ReceiveMessage(
 //	int delta_y = new_height - old_height;
 //	mScrollV -= delta_y;
 		mAligned = false;
+		if (mContent) mContent->KillEditing();
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED, 0);
 		Refresh();
 		break;
