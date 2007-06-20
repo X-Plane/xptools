@@ -356,6 +356,11 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 {
 	WED_HandleToolBase::KillOperation(mouse_is_down);
+		if (mPts.size() >= mMinPts)
+		{
+			DoEmit(0);
+		}
+	
 	mPts.clear();
 	mHasDirs.clear();
 	mIsSplit.clear();
