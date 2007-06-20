@@ -283,7 +283,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	return (mDragType != drag_None);
 }
 
-#if !DEV
+#if BENTODO
 doc and clean this
 #endif
 
