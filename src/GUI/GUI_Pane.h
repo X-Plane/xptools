@@ -160,6 +160,8 @@ public:
 	virtual	void			GetMouseLocNow(int * out_x, int * out_y);
 			float			GetTimeNow(void);
 
+			void			TrapFocus(void);
+
 	/* TEMPLATE METHODS - Override these to customize a pane. */
 
 	virtual	void		Draw(GUI_GraphState * state) { }
@@ -169,6 +171,7 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button) { 			}
 	virtual	void		MouseUp  (int x, int y, int button) { 			}
 	virtual	int			ScrollWheel(int x, int y, int dist, int axis) { return 0; }
+	virtual	int			TrapNotify(int x, int y, int button) { return 0; }	
 
 	virtual	int			GetCursor(int x, int y) { return gui_Cursor_None; }
 	virtual	int			GetHelpTip(int x, int y, int tip_bounds[4], string& tip) { return 0; }
@@ -211,7 +214,8 @@ private:
 		string				mDesc;
 
 		GUI_Pane *			mDragTarget;
-		
+
+		set<GUI_Pane *>		mTrap;
 
 	GUI_Pane(const GUI_Pane&);
 	GUI_Pane& operator=(const GUI_Pane&);

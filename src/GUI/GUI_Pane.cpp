@@ -62,6 +62,13 @@ float		GUI_Pane::GetTimeNow(void)
 	return (float) clock() / (float) CLOCKS_PER_SEC;
 }
 
+void		GUI_Pane::TrapFocus(void)
+{
+	GUI_Pane * root = this;
+	while (root->GetParent()) root = root->GetParent();
+	root->mTrap.insert(this);
+}
+
 
 GUI_Pane::GUI_Pane() :
 	mParent(NULL),
@@ -468,6 +475,14 @@ GUI_Pane *	GUI_Pane::InternalMouseDown(int x, int y, int button)
 {
 	if (mVisible)
 	{
+		for (set<GUI_Pane *>::iterator t = mTrap.begin(); t != mTrap.end();)
+		{
+			set<GUI_Pane *>::iterator w(t);
+			++t;
+			if (!(*w)->TrapNotify(x,y,button))
+			mTrap.erase(w);
+		}
+	
 		if (x >= mBounds[0] && x <= mBounds[2] &&
 			y >= mBounds[1] && y <= mBounds[3])
 		{
