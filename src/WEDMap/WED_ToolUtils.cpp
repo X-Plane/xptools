@@ -100,6 +100,29 @@ void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport)
 	keys->Directory_Edit("airport", airport);
 }
 
+static WED_Airport *			FindAnyAirport(WED_Thing * who)
+{
+	if (who->GetClass() == WED_Airport::sClass)
+	{
+		WED_Airport * a = dynamic_cast<WED_Airport *>(who);
+		if (a) return a;
+	}
+	int nc = who->CountChildren();
+	for (int n = 0; n < nc; ++n)
+	{
+		WED_Airport * aa = FindAnyAirport(who->GetNthChild(n));
+		if (aa) return aa;
+	}
+	return NULL;
+}
+
+
+void			WED_SetAnyAirport(IResolver * resolver)
+{
+	WED_Thing * t = WED_GetWorld(resolver);
+	WED_SetCurrentAirport(resolver,FindAnyAirport(t));
+}
+
 
 ISelection *	WED_GetSelect(IResolver * resolver)
 {

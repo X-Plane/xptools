@@ -22,6 +22,7 @@ bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there ar
 
 WED_Airport *	WED_GetCurrentAirport(IResolver * resolver);
 void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport);		// Does NOT create a command!!!!!!
+void			WED_SetAnyAirport(IResolver * resolver);
 
 ISelection *	WED_GetSelect(IResolver * resolver);
 WED_Thing	*	WED_GetWorld(IResolver * resolver);
