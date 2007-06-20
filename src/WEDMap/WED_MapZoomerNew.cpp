@@ -328,7 +328,7 @@ void	WED_MapZoomerNew::ScrollH(float xOffset)
 	
 	float now = vis[0] - log[0];
 	xOffset -= now;	
-	mLonCenter += (xOffset * mPixel2DegLat / mLonCenterCOS);
+	mLonCenter += xOffset;// * mPixel2DegLat / mLonCenterCOS);
 }
 
 void	WED_MapZoomerNew::ScrollV(float yOffset)
@@ -340,7 +340,7 @@ void	WED_MapZoomerNew::ScrollV(float yOffset)
 	
 	float now = vis[1] - log[1];
 	yOffset -= now;	
-	mLatCenter += (yOffset * mPixel2DegLat);
+	mLatCenter += (yOffset);// * mPixel2DegLat);
 	RecalcAspectRatio();
 }
 
