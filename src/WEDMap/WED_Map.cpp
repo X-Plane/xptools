@@ -268,6 +268,7 @@ int			WED_Map::ScrollWheel(int x, int y, int dist, int axis)
 	
 	if (zoom != 1.0)
 		this->ZoomAround(zoom, x, y);
+	Refresh();
 	return 1;
 }
 
