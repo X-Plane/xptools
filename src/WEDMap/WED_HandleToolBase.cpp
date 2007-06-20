@@ -277,6 +277,9 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		}
 	}
 
+	if (mDragType != drag_None)
+		GUI_Commander::RegisterNotifiable(this);
+	
 	return (mDragType != drag_None);
 }
 
@@ -457,6 +460,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
 					GetZoomer()->PixelToLL(Point2(inX, inY)));
 
+	GUI_Commander::UnregisterNotifiable(this);
 	mDragType = drag_None;
 }
 
@@ -467,20 +471,18 @@ int			WED_HandleToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 
 void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 {	
-	if (mouse_is_down)
+	if (mDragType == drag_Sel)
 	{
-		if (mDragType == drag_Sel)
-		{
-			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
-			if(op) op->AbortOperation();			
-			mSelSave.clear();
-		}
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		if(op) op->AbortOperation();			
+		mSelSave.clear();
 	} else if ( mDragType == drag_Links || 
 				mDragType == drag_Handles ||
 				mDragType == drag_Move)
 	{
 		mHandles->EndEdit();
 	} 
+	GUI_Commander::UnregisterNotifiable(this);
 	mDragType = drag_None;
 }
 
@@ -599,5 +601,22 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 		glVertex2i(max(mDragX, mSelX),min(mDragY,mSelY));
 		glEnd();		
 	}
+}
+
+void		WED_HandleToolBase::PreCommandNotification(GUI_Commander * focus_target, int command)
+{
+	if (mDragType == drag_Sel)
+	{
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		if(op) op->CommitOperation();			
+		mSelSave.clear();
+	} else if ( mDragType == drag_Links || 
+				mDragType == drag_Handles ||
+				mDragType == drag_Move)
+	{
+		mHandles->EndEdit();
+	} 
+	mDragType = drag_None;
+	GUI_Commander::UnregisterNotifiable(this);
 }
 

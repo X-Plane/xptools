@@ -3,6 +3,7 @@
 
 #include "WED_MapToolNew.h"
 #include "CompGeomDefs2.h"
+#include "GUI_Commander.h"
 
 class	GUI_Pane;
 class	WED_MapZoomerNew;
@@ -13,7 +14,7 @@ class	IGISEntity;
 
 
 
-class	WED_HandleToolBase : public WED_MapToolNew {
+class	WED_HandleToolBase : public WED_MapToolNew, GUI_Commander_Notifiable {
 public:
 
 						 WED_HandleToolBase(
@@ -30,6 +31,9 @@ public:
 	virtual	void		HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	void		KillOperation(bool mouse_is_down);
+
+	// GUI_Commander_Notifiable
+	virtual	void		PreCommandNotification(GUI_Commander * focus_target, int command);
 
 	// WED_Layer
 	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g);
