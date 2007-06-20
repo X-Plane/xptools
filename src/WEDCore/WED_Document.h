@@ -75,6 +75,7 @@ private:
 	double				mBounds[4];
 
 	string				mFilePath;
+	string				mPackagePath;
 	
 	sql_db				mDB;
 	WED_Archive			mArchive;

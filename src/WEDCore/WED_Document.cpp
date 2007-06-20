@@ -32,6 +32,7 @@ WED_Document::WED_Document(
 								const string& 		path, 
 								double				inBounds[4]) :
 //	mProperties(mDB.get()),
+	mPackagePath(path),
 	mFilePath(process_path(path)),
 	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
@@ -128,7 +129,9 @@ bool	WED_Document::TryClose(void)
 {
 	if (IsDirty())
 	{
-		switch(DoSaveDiscardDialog("Save this document.","It needs saving.")) {
+		string msg = string("Save changes to document ") + mPackagePath + string(" before closing?");
+	
+		switch(DoSaveDiscardDialog("Save changes before closing...",msg.c_str())) {
 		case close_Save:	Save();	break;
 		case close_Discard:			break;
 		case close_Cancel:	return false;
