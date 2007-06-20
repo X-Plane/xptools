@@ -19,10 +19,10 @@ static string recip_name(const string& ident)
 	const char * p = ident.c_str();
 	
 	if (p[0] == 'H')		sprintf(buf,"H%02d",recip_num(atoi(p+1)));
-	else if (p[2] == 'C')	sprintf(buf,"%02C", recip_num(atoi(p)));
-	else if (p[2] == 'L')	sprintf(buf,"%02R", recip_num(atoi(p)));
-	else if (p[2] == 'R')	sprintf(buf,"%02L", recip_num(atoi(p)));
-	else					sprintf(buf,"%02x", recip_num(atoi(p)));
+	else if (p[2] == 'C')	sprintf(buf,"%02dC", recip_num(atoi(p)));
+	else if (p[2] == 'L')	sprintf(buf,"%02dR", recip_num(atoi(p)));
+	else if (p[2] == 'R')	sprintf(buf,"%02dL", recip_num(atoi(p)));
+	else					sprintf(buf,"%02dx", recip_num(atoi(p)));
 	return buf;
 }
 
