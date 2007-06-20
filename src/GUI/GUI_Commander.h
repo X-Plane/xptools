@@ -23,6 +23,15 @@
 	
 */
 
+class	GUI_Commander;
+
+class	GUI_Commander_Notifiable {
+public:
+
+	virtual	void			PreCommandNotification(GUI_Commander * focus_target, int command)=0;
+	
+};
+
 class	GUI_Commander {
 public:
 
@@ -39,6 +48,9 @@ public:
 			int				IsFocusedChain(void);			// Is the focus belwo us (we might have a shot)?
 	
 			GUI_Commander *	GetCmdParent(void);
+	
+	static	void			RegisterNotifiable(GUI_Commander_Notifiable * notif);
+	static	void			UnregisterNotifiable(GUI_Commander_Notifiable * notif);
 	
 	// Handler Dispatchers
 			int				DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);

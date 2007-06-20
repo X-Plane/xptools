@@ -4,6 +4,8 @@
 
 GUI_Commander * GUI_Commander::mCmdRoot = NULL;
 
+static set<GUI_Commander_Notifiable *>	sNotify;
+
 GUI_Commander::GUI_Commander(GUI_Commander * inParent) : mCmdParent(inParent), mCmdFocus(NULL)
 {
 	if (inParent == NULL)
@@ -135,9 +137,26 @@ int				GUI_Commander::DispatchKeyPress(char inKey, int inVK, GUI_KeyFlags inFlag
 	return 0;
 }
 
+
+void		GUI_Commander::RegisterNotifiable(GUI_Commander_Notifiable * notif)
+{
+	sNotify.insert(notif);
+}
+
+void		GUI_Commander::UnregisterNotifiable(GUI_Commander_Notifiable * notif)
+{
+	sNotify.erase(notif);
+}
+
 int				GUI_Commander::DispatchHandleCommand(int command)
 {
 	GUI_Commander * who = this->GetFocusForCommander();
+	for(set<GUI_Commander_Notifiable *>::iterator i = sNotify.begin(); i != sNotify.end();)
+	{
+		set<GUI_Commander_Notifiable *>::iterator j(i);
+		++i;
+		(*j)->PreCommandNotification(who, command);
+	}
 	while (who != NULL)
 	{
 		if (who->HandleCommand(command)) return 1;
