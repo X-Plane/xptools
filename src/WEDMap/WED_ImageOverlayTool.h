@@ -64,6 +64,7 @@ private:
 	bool			mBits;
 	string			mFile;
 	Polygon2		mCoords;
+	float			mS, mT;
 
 };	
 
