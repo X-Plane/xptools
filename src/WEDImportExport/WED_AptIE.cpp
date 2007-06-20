@@ -477,6 +477,7 @@ void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive)
 	{
 		wrl->StartOperation("Import apt.dat");
 		WED_AptImport(archive, wrl, path);
+		WED_SetAnyAirport(resolver);
 		wrl->CommitOperation();
 	}	
 }
