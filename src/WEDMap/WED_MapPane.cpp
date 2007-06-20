@@ -68,10 +68,10 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	// Visualizatoin layers
 	mLayers.push_back(					new WED_MapBkgnd(mMap, mMap, resolver));
+	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
 	mLayers.push_back(mStructureLayer = new WED_StructureLayer(mMap, mMap, resolver));
 	mLayers.push_back(mTerraserver = 	new WED_TerraserverLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
-	mLayers.push_back(mWorldMap =		new WED_WorldMapLayer(mMap, mMap, resolver));
 	
 	// TOOLS
 	mTools.push_back(					new WED_CreatePolygonTool("Boundary",mMap, mMap, resolver, archive, create_Boundary));
