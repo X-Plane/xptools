@@ -33,6 +33,12 @@ protected:
 	inline	IResolver *			GetResolver(void) const { return mResolver; }
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
 	
+			double				GetFurnitureIconScale(void) const;
+			double				GetFurnitureIconRadius(void) const;
+			double				GetAirportIconScale(void) const;
+			double				GetAirportIconRadius(void) const;
+	inline	int					GetAirportTransWidth(void) const { return mAirportTransWidth; }
+	
 private:
 
 						 WED_MapLayer();
@@ -40,6 +46,15 @@ private:
 	WED_MapZoomerNew *		mZoomer;
 	IResolver *				mResolver;
 	GUI_Pane *				mHost;
+	
+	double					mAirportRadius;
+	double					mFurnitureRadius;
+	double					mAirportFactor;
+	double					mFurnitureFactor;
+	
+	int						mAirportTransWidth;
+
+	
 	
 };
 		
