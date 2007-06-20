@@ -383,3 +383,15 @@ bool				WED_IsDragSelection(
 	return drag->NthItemHasClipType(0, sSelectionType);
 }
 
+bool			WED_IsIconic(IGISEntity * what)
+{
+	switch(what->GetGISClass()) {
+	case gis_Point:
+	case gis_Point_Heading:
+		return what->GetGISSubtype() != WED_RunwayNode::sClass;
+	case gis_Point_HeadingWidthLength:
+		return true;
+	default:
+		return false;
+	}
+}

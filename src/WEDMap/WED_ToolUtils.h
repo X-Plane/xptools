@@ -9,6 +9,7 @@ class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
 class	IResolver;
+class	IGISEntity;
 class	GUI_DragData;
 
 WED_Thing *		WED_FindParent(ISelection * isel,	// Selected objects
@@ -24,6 +25,8 @@ void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport);		// D
 
 ISelection *	WED_GetSelect(IResolver * resolver);
 WED_Thing	*	WED_GetWorld(IResolver * resolver);
+
+bool			WED_IsIconic(IGISEntity * what);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // FILTERS:
