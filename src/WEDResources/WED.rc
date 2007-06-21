@@ -43,7 +43,6 @@ map_rampstart.png		GUI_RES		icons\map_rampstart.png
 map_airport.png			GUI_RES		icons\map_airport.png		
 map_beacon.png			GUI_RES		icons\map_beacon.png		
 map_helipad.png			GUI_RES		icons\map_helipad.png		
-map_airbase.png			GUI_RES		icons\map_airbase.png		
 map_windsock.png		GUI_RES		icons\map_windsock.png	
 map_seaport.png			GUI_RES		icons\map_seaport.png		
 map_taxisign.png		GUI_RES		icons\map_taxisign.png	
