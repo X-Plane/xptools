@@ -734,7 +734,7 @@
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
-		508344B209E5C41E0093A071 /* ObjView.ppc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.ppc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_UIMeasurements.h; sourceTree = "<group>"; };
 		D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_UIMeasurements.cpp; sourceTree = "<group>"; };
 		D606164E0C14BE46007BA5C9 /* ui_measurements.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ui_measurements.txt; sourceTree = "<group>"; };
@@ -788,7 +788,7 @@
 		D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ImageOverlayTool.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
-		D62435440AE401EF004F00E3 /* RenderFarmUI.ppc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.ppc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D629FA810B95CB5600A2FB57 /* WED_MapLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapLayer.h; sourceTree = "<group>"; };
 		D629FA820B95CB5600A2FB57 /* WED_MapLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapLayer.cpp; sourceTree = "<group>"; };
 		D629FA990B95CDF000A2FB57 /* WED_MapToolNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MapToolNew.h; sourceTree = "<group>"; };
@@ -911,7 +911,7 @@
 		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
 		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
-		D67EF50A0B5CF9F400D9190C /* XGrinder.ppc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XGrinder.ppc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D67EF50A0B5CF9F400D9190C /* XGrinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XGrinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D67EF50C0B5CFA2000D9190C /* XGrinderShell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGrinderShell.h; sourceTree = "<group>"; };
 		D67EF50D0B5CFA2000D9190C /* XGrinderShell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGrinderShell.cpp; sourceTree = "<group>"; };
 		D67EF84B0B5E5C8700D9190C /* DSFTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = DSFTool; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1455,7 +1455,7 @@
 		D6BC38F00AB22C85003949C5 /* XSBPopups.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XSBPopups.h; sourceTree = "<group>"; };
 		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
-		D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.ppc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjConverterUI.ppc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjConverterUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
 		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
@@ -1468,7 +1468,7 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
-		D6ED37490B67964D00D5484E /* WED.ppc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.ppc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
@@ -1611,14 +1611,14 @@
 		195DF8CFFE9D517E11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				508344B209E5C41E0093A071 /* ObjView.ppc.app */,
-				D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.ppc.app */,
-				D62435440AE401EF004F00E3 /* RenderFarmUI.ppc.app */,
-				D67EF50A0B5CF9F400D9190C /* XGrinder.ppc.app */,
+				508344B209E5C41E0093A071 /* ObjView.app */,
+				D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */,
+				D62435440AE401EF004F00E3 /* RenderFarmUI.app */,
+				D67EF50A0B5CF9F400D9190C /* XGrinder.app */,
 				D67EF84B0B5E5C8700D9190C /* DSFTool */,
 				D67EF9890B6135F400D9190C /* ObjConverter */,
 				D65E4B3A0B65427C004D7887 /* RenderFarm */,
-				D6ED37490B67964D00D5484E /* WED.ppc.app */,
+				D6ED37490B67964D00D5484E /* WED.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2859,7 +2859,7 @@
 			name = ObjView;
 			productInstallPath = "$(HOME)/Applications";
 			productName = SceneryTools;
-			productReference = 508344B209E5C41E0093A071 /* ObjView.ppc.app */;
+			productReference = 508344B209E5C41E0093A071 /* ObjView.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D62435240AE401EF004F00E3 /* RenderFarmUI */ = {
@@ -2877,7 +2877,7 @@
 			name = RenderFarmUI;
 			productInstallPath = "$(HOME)/Applications";
 			productName = SceneryTools;
-			productReference = D62435440AE401EF004F00E3 /* RenderFarmUI.ppc.app */;
+			productReference = D62435440AE401EF004F00E3 /* RenderFarmUI.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D65E4B200B65427C004D7887 /* RenderFarm */ = {
@@ -2912,7 +2912,7 @@
 			name = XGrinder;
 			productInstallPath = "$(HOME)/Applications";
 			productName = SceneryTools;
-			productReference = D67EF50A0B5CF9F400D9190C /* XGrinder.ppc.app */;
+			productReference = D67EF50A0B5CF9F400D9190C /* XGrinder.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D67EF84A0B5E5C8700D9190C /* DSFTool */ = {
@@ -2962,7 +2962,7 @@
 			name = ObjConverterUI;
 			productInstallPath = "$(HOME)/Applications";
 			productName = SceneryTools;
-			productReference = D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.ppc.app */;
+			productReference = D6BC3CCA0AB2330E003949C5 /* ObjConverterUI.app */;
 			productType = "com.apple.product-type.application";
 		};
 		D6ED369A0B67964D00D5484E /* WED */ = {
@@ -2980,7 +2980,7 @@
 			name = WED;
 			productInstallPath = "$(HOME)/Applications";
 			productName = SceneryTools;
-			productReference = D6ED37490B67964D00D5484E /* WED.ppc.app */;
+			productReference = D6ED37490B67964D00D5484E /* WED.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -3773,6 +3773,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
+				CONFIGURATION_BUILD_DIR = "$(inherited)_${NATIVE_ARCH}";
+				CONFIGURATION_TEMP_DIR = "$(inherited)_${NATIVE_ARCH}";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -3802,7 +3804,6 @@
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
-				WRAPPER_EXTENSION = "$(NATIVE_ARCH).$(inherited)";
 			};
 			name = Debug;
 		};
@@ -3810,6 +3811,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
+				CONFIGURATION_BUILD_DIR = "$(inherited)_${NATIVE_ARCH}";
+				CONFIGURATION_TEMP_DIR = "$(inherited)_${NATIVE_ARCH}";
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_DYNAMIC_NO_PIC = YES;
@@ -3843,7 +3846,6 @@
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
-				WRAPPER_EXTENSION = "$(NATIVE_ARCH).$(inherited)";
 			};
 			name = Release;
 		};
