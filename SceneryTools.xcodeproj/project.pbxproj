@@ -2972,6 +2972,7 @@
 				D6ED369B0B67964D00D5484E /* Resources */,
 				D6ED369C0B67964D00D5484E /* Sources */,
 				D6ED373A0B67964D00D5484E /* Frameworks */,
+				D603D0050C2B004300C9C122 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3109,6 +3110,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D603D0050C2B004300C9C122 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nzip -j $BUILT_PRODUCTS_DIR/$EXECUTABLE_NAME$NATIVE_ARCH.zip $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8D0C4E8F0486CD37000505A6 /* Sources */ = {
@@ -3773,8 +3790,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
-				CONFIGURATION_BUILD_DIR = "$(inherited)_${NATIVE_ARCH}";
-				CONFIGURATION_TEMP_DIR = "$(inherited)_${NATIVE_ARCH}";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -3811,8 +3826,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
-				CONFIGURATION_BUILD_DIR = "$(inherited)_${NATIVE_ARCH}";
-				CONFIGURATION_TEMP_DIR = "$(inherited)_${NATIVE_ARCH}";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
