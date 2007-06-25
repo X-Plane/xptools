@@ -58,6 +58,8 @@
 		D6F2F8120BC586080051E526 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6F2F80E0BC586080051E526 /* md5.c */; };
 		D6F2F8130BC586080051E526 /* md5.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6F2F80F0BC586080051E526 /* md5.h */; };
 		D6FB81300AFF76DD004C1796 /* XPlaneSupport.tcl in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */; };
+		D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */ = {isa = PBXBuildFile; fileRef = D6FF83200C2DBC1900F22A73 /* obj_panel.c */; };
+		D6FF83230C2DBC1900F22A73 /* obj_panel.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6FF83210C2DBC1900F22A73 /* obj_panel.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -90,6 +92,7 @@
 				D6F2F7C60BC5818E0051E526 /* ac3d_prefix.h in CopyFiles */,
 				D6F2F8110BC586080051E526 /* AssertUtils.h in CopyFiles */,
 				D6F2F8130BC586080051E526 /* md5.h in CopyFiles */,
+				D6FF83230C2DBC1900F22A73 /* obj_panel.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +152,8 @@
 		D6F2F80E0BC586080051E526 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = md5.c; sourceTree = "<group>"; };
 		D6F2F80F0BC586080051E526 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
 		D6FB812F0AFF76DD004C1796 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
+		D6FF83200C2DBC1900F22A73 /* obj_panel.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = obj_panel.c; sourceTree = "<group>"; };
+		D6FF83210C2DBC1900F22A73 /* obj_panel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = obj_panel.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,6 +202,8 @@
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
 			isa = PBXGroup;
 			children = (
+				D6FF83200C2DBC1900F22A73 /* obj_panel.c */,
+				D6FF83210C2DBC1900F22A73 /* obj_panel.h */,
 				D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */,
 				D6F2F7580BC57FEA0051E526 /* dsf_export.cpp */,
 				D6F2F7590BC57FEA0051E526 /* dsf_export.h */,
@@ -363,6 +370,7 @@
 				D6F2F8060BC585F20051E526 /* XChunkyFileUtils.cpp in Sources */,
 				D6F2F8100BC586080051E526 /* AssertUtils.cpp in Sources */,
 				D6F2F8120BC586080051E526 /* md5.c in Sources */,
+				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
