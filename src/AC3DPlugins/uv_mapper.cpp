@@ -15,7 +15,7 @@ using std::max;
 namespace cgd {
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
-};
+}
 
 #include <ac_plugin.h>
 
