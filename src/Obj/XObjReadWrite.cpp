@@ -862,8 +862,17 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_end", xtrue))
 		{
 		}
+/******************************************************************************************************************************/		
+		// COCKPIT_REGION
 /******************************************************************************************************************************/
-
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"COCKPIT_REGION", false))
+		{
+			outObj.regions.push_back(XObjPanelRegion8());
+			outObj.regions.back().left   = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			outObj.regions.back().bottom = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			outObj.regions.back().right  = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+			outObj.regions.back().top    = TXT_MAP_int_scan(cur_ptr, end_ptr, xfals);
+		}
 		else
 		// Common attribute handling:
 		{
@@ -906,6 +915,16 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	// TEXTURES	
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
+
+	// SUBREGIONS
+	for (int r = 0; r < outObj.regions.size(); ++r)
+	{
+		fprintf(fi,"COCKPIT_REGION %d %d %d %d" CRLF, 
+			outObj.regions[r].left,
+			outObj.regions[r].bottom,
+			outObj.regions[r].right,
+			outObj.regions[r].top);
+	}
 
 	// POINT POOLS
 

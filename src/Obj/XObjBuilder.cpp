@@ -77,8 +77,8 @@ void	XObjBuilder::SetAttribute(int attr)
 	case attr_Shade_Smooth:	flat = 0;		break;
 	case attr_NoCull:		two_sided = 1;	break;
 	case attr_Cull:			two_sided = 0;	break;
-	case attr_Tex_Cockpit:	cockpit = 1;	break;
-	case attr_Tex_Normal:	cockpit = 0;	break;
+	case attr_Tex_Cockpit:	cockpit = -1;	break;
+	case attr_Tex_Normal:	cockpit = -2;	break;
 	case attr_No_Blend:		no_blend = 0.5;	break;
 	case attr_Blend:		no_blend = -1.0;break;
 	case attr_Hard:			hard = "object";break;
@@ -97,6 +97,7 @@ void	XObjBuilder::SetAttribute1(int attr, float v)
 	case attr_Offset: 	offset = v;					break;
 	case attr_Shiny_Rat:shiny  = v;					break;
 	case attr_No_Blend:	no_blend = v;				break;
+	case attr_Tex_Cockpit_Subregion: cockpit = v;	break;	
 	}
 }
 
@@ -386,7 +387,7 @@ void	XObjBuilder::SetDefaultState(void)
 	o_flat = flat = 0;
 	o_two_sided = two_sided = 0;
 	o_no_blend = no_blend = -1.0;
-	o_cockpit = cockpit = 0;
+	o_cockpit = cockpit = -2;
 	o_offset = offset = 0.0;
 
 	diffuse[0] = 1.0; diffuse[1] = 1.0; diffuse[2] = 1.0;
@@ -424,7 +425,18 @@ void XObjBuilder::SyncAttrs(void)
 	if (cockpit != o_cockpit)
 	{
 		lod->cmds.push_back(XObjCmd8()); 
-		lod->cmds.back().cmd = cockpit ? attr_Tex_Cockpit: attr_Tex_Normal;
+		switch(cockpit) {
+		case -2:
+			lod->cmds.back().cmd = attr_Tex_Normal;
+			break;
+		case -1:
+			lod->cmds.back().cmd = attr_Tex_Cockpit;
+			break;
+		default:
+			lod->cmds.back().cmd = attr_Tex_Cockpit_Subregion;
+			lod->cmds.back().params[0] = cockpit;
+			break;
+		}
 		o_cockpit = cockpit;
 	}
 	

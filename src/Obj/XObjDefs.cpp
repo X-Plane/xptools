@@ -76,6 +76,8 @@ cmd_info	gCmds[] = {
 {	anim_Hide,			type_Anim,		"ANIM_hide",		3,0,1},
 {	anim_Show,			type_Anim,		"ANIM_show",		3,0,1},
 
+{	attr_Tex_Cockpit_Subregion,	type_Attr,	"ATTR_cockpit_region",			1,0,1},
+
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
 };

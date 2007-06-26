@@ -103,12 +103,15 @@ enum {
 	anim_Rotate,
 	anim_Translate,
 	
-	// OBJ850 commands
+	// 850 commands
 	obj8_LightCustom,			// all in name??  param is pos?
 	obj8_LightNamed,			// name has light name, param is pos
 	attr_Layer_Group,			// name has group name, param[0] has offset
 	anim_Hide,					// only v1 and v2 are used
 	anim_Show,
+
+	// 900 commands
+	attr_Tex_Cockpit_Subregion,	
 	
 	attr_Max	
 };	
@@ -191,9 +194,17 @@ struct	XObjLOD8 {
 	vector<XObjCmd8>		cmds;
 };
 
+struct XObjPanelRegion8 {
+	int						left;
+	int						bottom;
+	int						right;
+	int						top;
+};
+
 struct	XObj8 {
 	string 					texture;
 	string 					texture_lit;
+	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
 	ObjPointPool			geo_tri;
 	ObjPointPool			geo_lines;

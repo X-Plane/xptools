@@ -77,8 +77,8 @@ struct	XObjLOD8;
 	void	AccumRotateEnd(void);	
  
 	// A few status checks
-	inline string	IsHard(void) const		{ return hard;		}
-	inline int		IsCockpit(void) const	{ return cockpit;	}
+	inline string	IsHard(void) const		{ return hard;			}
+	inline int		IsCockpit(void) const	{ return cockpit > -2;	}
  
  private:
  
