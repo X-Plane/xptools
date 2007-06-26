@@ -22,7 +22,7 @@ public:
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual void			ToDB(sqlite3 * db);	
 
-			void			Import(const AptMarking_t& x);
+			void			Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 			void			Export(		 AptMarking_t& x) const;
 
 private:

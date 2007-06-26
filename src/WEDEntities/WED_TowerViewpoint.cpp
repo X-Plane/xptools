@@ -18,7 +18,7 @@ void	WED_TowerViewpoint::SetHeight(double h)
 	height = h;
 }
 
-void		WED_TowerViewpoint::Import(const AptTowerPt_t& x)
+void		WED_TowerViewpoint::Import(const AptTowerPt_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
 	height = x.height_ft * FT_TO_MTR;

@@ -34,9 +34,15 @@ int			WED_Taxiway::GetSurface(void) const
 	return surface.value;
 }
 
-void		WED_Taxiway::Import(const AptTaxiway_t& x)
+void		WED_Taxiway::Import(const AptTaxiway_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	surface = ENUM_Import(Surface_Type, x.surface_code);
+	if (surface == -1)
+	{
+		print_func(ref,"Error importing taxiway: surface code %d is illegal (not a member of type %s).\n", x.surface_code, DOMAIN_Fetch(surface.domain));
+		surface = surf_Concrete;
+	}	
+	
 	roughness = x.roughness_ratio;
 	heading = x.heading;
 	SetName(x.name);

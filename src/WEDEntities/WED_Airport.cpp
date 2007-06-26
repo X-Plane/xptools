@@ -32,9 +32,15 @@ void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
 
 
-void		WED_Airport::Import(const AptInfo_t& info)
+void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	airport_type = ENUM_Import(Airport_Type, info.kind_code);
+	if (airport_type == -1)
+	{
+		print_func(ref,"Error importing airport: airport type code %d is illegal (not a member of type %s).\n", info.kind_code, DOMAIN_Fetch(airport_type.domain));
+		airport_type = type_Airport;
+	}	
+	
 	elevation = info.elevation_ft * FT_TO_MTR;
 	has_atc = info.has_atc_twr;
 	icao = info.icao;

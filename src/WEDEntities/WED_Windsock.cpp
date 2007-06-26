@@ -17,7 +17,7 @@ void	WED_Windsock::SetLit(int l)
 	lit = l;
 }
 
-void	WED_Windsock::Import(const AptWindsock_t& x)
+void	WED_Windsock::Import(const AptWindsock_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
 	SetName(x.name);

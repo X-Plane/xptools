@@ -253,7 +253,7 @@ double		WED_Runway::GetBlas2(void) const { return blas2.value; }
 	void		WED_Runway::SetREIL2(int x) { reil2 = x; }
 
 
-void		WED_Runway::Import(const AptRunway_t& x)
+void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	GetSource()->SetLocation(x.ends.p1  );
 	GetTarget()->SetLocation(x.ends.p2  );
@@ -265,6 +265,22 @@ void		WED_Runway::Import(const AptRunway_t& x)
 	center_lites	=								x.has_centerline		 ;
 	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code		);
 	remaining_signs =								x.has_distance_remaining ;
+
+	if (surface == -1)
+	{
+		print_func(ref,"Error importing runway: surface code %d is illegal (not a member of type %s).\n", x.surf_code, DOMAIN_Fetch(surface.domain));
+		surface = surf_Concrete;
+	}	
+	if (shoulder == -1)
+	{
+		print_func(ref,"Error importing runway: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Fetch(shoulder.domain));
+		shoulder = shoulder_None;
+	}	
+	if (edge_lites == -1)
+	{
+		print_func(ref,"Error importing runway: edge light code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Fetch(edge_lites.domain));
+		edge_lites = edge_MIRL;
+	}	
 	
 	string	full = x.id[0] + string("/") + x.id[1];
 	SetName(full);
@@ -275,6 +291,21 @@ void		WED_Runway::Import(const AptRunway_t& x)
 	appl1 = ENUM_Import(Light_App,			x.app_light_code[0]);
 	tdzl1 =									x.has_tdzl		[0] ;
 	reil1 = ENUM_Import(REIL_Lights,		x.reil_code		[0]);
+	if (mark1 == -1)
+	{
+		print_func(ref,"Error importing runway: low-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[0], DOMAIN_Fetch(mark1.domain));
+		mark1 = mark_NonPrecis;
+	}	
+	if (appl1 == -1)
+	{
+		print_func(ref,"Error importing runway: low-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[0], DOMAIN_Fetch(appl1.domain));
+		appl1 = app_None;
+	}	
+	if (reil1 == -1)
+	{
+		print_func(ref,"Error importing runway: low-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[0], DOMAIN_Fetch(reil1.domain));
+		reil1 = reil_None;
+	}	
 
 	disp2 =									x.disp_mtr		[1] ;
 	blas2 =									x.blas_mtr		[1] ;
@@ -282,6 +313,25 @@ void		WED_Runway::Import(const AptRunway_t& x)
 	appl2 = ENUM_Import(Light_App,			x.app_light_code[1]);
 	tdzl2 =									x.has_tdzl		[1] ;
 	reil2 = ENUM_Import(REIL_Lights,		x.reil_code		[1]);
+
+	if (mark2 == -1)
+	{
+		print_func(ref,"Error importing runway: high-end marking code %d is illegal (not a member of type %s).\n", x.marking_code[1], DOMAIN_Fetch(mark2.domain));
+		mark2 = mark_NonPrecis;
+	}	
+	if (appl2 == -1)
+	{
+		print_func(ref,"Error importing runway: high-end approach lights code %d is illegal (not a member of type %s).\n", x.app_light_code[1], DOMAIN_Fetch(appl2.domain));
+		appl2 = app_None;
+	}	
+	if (reil2 == -1)
+	{
+		print_func(ref,"Error importing runway: high-end reil code %d is illegal (not a member of type %s).\n", x.reil_code[1], DOMAIN_Fetch(reil2.domain));
+		reil2 = reil_None;
+	}	
+	
+	
+	
 }
 
 void		WED_Runway::Export(		 AptRunway_t& x) const

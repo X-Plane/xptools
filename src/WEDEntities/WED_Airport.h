@@ -19,7 +19,7 @@ public:
 	void		SetHasATC(int has_atc);
 	void		SetICAO(const string& icao);
 
-	void		Import(const AptInfo_t& info);
+	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
 private:

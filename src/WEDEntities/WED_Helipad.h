@@ -19,7 +19,7 @@ public:
 
 		int			GetSurface(void) const;
 		
-	void	Import(const AptHelipad_t& x);
+	void	Import(const AptHelipad_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptHelipad_t& x) const;
 			
 private:

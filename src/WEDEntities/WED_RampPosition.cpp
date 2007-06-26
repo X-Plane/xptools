@@ -11,7 +11,7 @@ WED_RampPosition::~WED_RampPosition()
 {
 }
 
-void	WED_RampPosition::Import(const AptGate_t& x)
+void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
 	SetHeading(x.heading);

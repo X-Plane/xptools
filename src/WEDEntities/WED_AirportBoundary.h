@@ -11,7 +11,7 @@ DECLARE_PERSISTENT(WED_AirportBoundary)
 
 public:
 	
-		void	Import(const AptBoundary_t& x);
+		void	Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void	Export(		 AptBoundary_t& x) const;
 
 };

@@ -11,7 +11,7 @@ WED_AirportBoundary::~WED_AirportBoundary()
 {
 }
 
-void WED_AirportBoundary::Import(const AptBoundary_t& x)
+void WED_AirportBoundary::Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(x.name);
 }

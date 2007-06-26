@@ -105,7 +105,7 @@ void			WED_AirportChain::ToDB(sqlite3 * db)
 }
 
 
-void	WED_AirportChain::Import(const AptMarking_t& x)
+void	WED_AirportChain::Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(x.name);
 }

@@ -38,11 +38,17 @@ WED_ATCFrequency::~WED_ATCFrequency()
 {
 }
 
-void	WED_ATCFrequency::Import(const AptATCFreq_t& info)
+void	WED_ATCFrequency::Import(const AptATCFreq_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
 	freq = (double) info.freq / 100.0;
 	freq_type = ENUM_Import(ATCFrequency, info.atc_type);
+	if (freq_type == -1)
+	{
+		print_func(ref,"Error importing runway: ATC frequecny code %d is illegal (not a member of type %s).\n", info.atc_type, DOMAIN_Fetch(freq_type.domain));
+		freq_type = atc_Tower;
+	}	
+	
 }
 
 void	WED_ATCFrequency::Export(		 AptATCFreq_t& info) const

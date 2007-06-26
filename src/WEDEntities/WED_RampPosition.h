@@ -11,7 +11,7 @@ DECLARE_PERSISTENT(WED_RampPosition)
 
 public:
 
-	void	Import(const AptGate_t& x);
+	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;
 
 };

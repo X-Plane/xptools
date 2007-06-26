@@ -13,7 +13,7 @@ public:
 
 	void		SetHeight(double);
 	
-	void		Import(const AptTowerPt_t& x);
+	void		Import(const AptTowerPt_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTowerPt_t& x) const;
 
 private:

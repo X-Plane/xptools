@@ -11,7 +11,7 @@ DECLARE_PERSISTENT(WED_AirportBeacon)
 
 public:
 
-	void	Import(const AptBeacon_t& x);
+	void	Import(const AptBeacon_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptBeacon_t& x) const;
 
 	void			SetKind(int kind);

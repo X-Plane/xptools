@@ -13,7 +13,7 @@ public:
 
 		void		SetLit(int);
 
-		void		Import(const AptWindsock_t& x);
+		void		Import(const AptWindsock_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void		Export(		 AptWindsock_t& x) const;
 
 private:

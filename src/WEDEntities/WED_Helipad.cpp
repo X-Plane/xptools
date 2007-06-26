@@ -48,7 +48,7 @@ int			WED_Helipad::GetSurface(void) const
 	return surface.value;
 }
 
-void	WED_Helipad::Import(const AptHelipad_t& x)
+void	WED_Helipad::Import(const AptHelipad_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(x.id);
 	SetLocation(x.location);
@@ -56,10 +56,30 @@ void	WED_Helipad::Import(const AptHelipad_t& x)
 	SetWidth(x.width_mtr);
 	SetLength(x.length_mtr);
 	surface = ENUM_Import(Surface_Type, x.surface_code);
+	if (surface == -1)
+	{
+		print_func(ref,"Error importing helipad: surface code %d is illegal (not a member of type %s).\n", x.surface_code, DOMAIN_Fetch(surface.domain));
+		surface = surf_Concrete;
+	}	
 	markings = ENUM_Import(Helipad_Markings, x.marking_code);
+	if (markings == -1)
+	{
+		print_func(ref,"Error importing helipad: markings code %d is illegal (not a member of type %s).\n", x.marking_code, DOMAIN_Fetch(markings.domain));
+		markings = heli_Mark_Default;
+	}	
 	shoulder = ENUM_Import(Shoulder_Type, x.shoulder_code);
-	roughness = x.roughness_ratio;
+	if (shoulder == -1)
+	{
+		print_func(ref,"Error importing helipad: shoulder code %d is illegal (not a member of type %s).\n", x.shoulder_code, DOMAIN_Fetch(shoulder.domain));
+		shoulder = shoulder_None;
+	}	
 	edgelights = ENUM_Import(Heli_Lights, x.edge_light_code);
+	if (edgelights == -1)
+	{
+		print_func(ref,"Error importing helipad: edge-lights code %d is illegal (not a member of type %s).\n", x.edge_light_code, DOMAIN_Fetch(edgelights.domain));
+		edgelights = heli_Yellow;
+	}	
+	roughness = x.roughness_ratio;	
 }
 
 

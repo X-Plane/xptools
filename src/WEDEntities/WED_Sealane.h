@@ -13,7 +13,7 @@ public:
 
 	void		SetBuoys(int);
 	
-	void		Import(const AptSealane_t& x);
+	void		Import(const AptSealane_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptSealane_t& x) const;
 
 private:

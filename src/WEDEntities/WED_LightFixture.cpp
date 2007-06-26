@@ -1,6 +1,7 @@
 #include "WED_LightFixture.h"
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
+#include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_LightFixture)
 
@@ -24,12 +25,18 @@ void	WED_LightFixture::SetAngle(double x)
 	angle = x;
 }
 
-void	WED_LightFixture::Import(const AptLight_t& x)
+void	WED_LightFixture::Import(const AptLight_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
 	SetHeading(x.heading);
 	angle = x.angle;
 	light_type = ENUM_Import(Light_Fixt, x.light_code);
+	if (light_type == -1)
+	{
+		print_func(ref,"Error importing light fixture: light type code %d is illegal (not a member of type %s).\n", x.light_code, DOMAIN_Fetch(light_type.domain));
+		light_type = light_VASI;
+	}	
+	
 	SetName(x.name);
 }
 

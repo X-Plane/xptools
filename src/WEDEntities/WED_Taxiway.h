@@ -16,7 +16,7 @@ public:
 
 	int			GetSurface(void) const;
 	
-	void		Import(const AptTaxiway_t& x);
+	void		Import(const AptTaxiway_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTaxiway_t& x) const;
 	
 private:

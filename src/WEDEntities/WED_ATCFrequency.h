@@ -34,7 +34,7 @@ DECLARE_PERSISTENT(WED_ATCFrequency)
 
 public:
 
-	void	Import(const AptATCFreq_t& info);
+	void	Import(const AptATCFreq_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptATCFreq_t& info) const;
 
 private:

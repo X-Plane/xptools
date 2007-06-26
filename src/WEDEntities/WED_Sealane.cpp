@@ -17,7 +17,7 @@ void	WED_Sealane::SetBuoys(int x)
 	buoys = x;
 }
 
-void	WED_Sealane::Import(const AptSealane_t& x)
+void	WED_Sealane::Import(const AptSealane_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	GetSource()->SetLocation(x.ends.p1  );
 	GetTarget()->SetLocation(x.ends.p2  );

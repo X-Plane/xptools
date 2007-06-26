@@ -53,7 +53,7 @@ public:
 	void		SetBlas1(double blas1);
 	void		SetBlas2(double blas2);
 
-	void		Import(const AptRunway_t& x);
+	void		Import(const AptRunway_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptRunway_t& x) const;
 
 private:
