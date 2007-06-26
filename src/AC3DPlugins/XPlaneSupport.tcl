@@ -1,9 +1,18 @@
+#Import combo-box from AC3D for datarefs
 catch {namespace import combobox::*}
 
+#These constants cannot be changed - they match mirror constants inside the C plugin; changing them will probably cause hard crashes.
+# Note: the key-frame RFC doesn't post a max number of keyframes, but more than 50 seems like a lot.
+# Note: the sub-panel RFC does postulate a max-region count of 4!
 set MAX_KEYFRAMES 50
 set MAX_SEL 5
+set SUBPANEL_DIM 4
 
-set USE_KEYFRAMES 0
+#These turn on editing features that are based on posted or in-progress RFCs -- X-Plane doesn't support these yet!
+set USE_KEYFRAMES 1
+set USE_PANEL_EDIT 1
+
+
 
 ##########################################################################################################################################################
 # UTILS
@@ -706,12 +715,110 @@ for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 }
 
 ##########################################################################################################################################################
+# PANEL SUB-REGION SYSTEM
+##########################################################################################################################################################
+
+proc eval_panel_dialog {} {
+	global SUBPANEL_DIM
+	
+	global xplane_panel_sub_count
+	global xplane_panel_sub_enable
+	
+	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+		global xplane_panel_sub_l$x
+		global xplane_panel_sub_r$x
+		global xplane_panel_sub_b$x
+		global xplane_panel_sub_t$x
+	}
+	if ![winfo exists .xp_panel] return
+	
+	pack forget .xp_panel.sub_label
+	pack forget .xp_panel.sub_count
+	pack forget .xp_panel.go
+	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+		pack forget .xp_panel.region$x
+	}
+	
+	if {$xplane_panel_sub_enable} {
+		pack .xp_panel.sub_label
+		pack .xp_panel.sub_count
+		for {set x 0} {$x < $xplane_panel_sub_count} {incr x} {
+			pack .xp_panel.region$x
+		}			
+		pack .xp_panel.go		
+	}
+}
+
+proc sync_panel_dialog { name1 name2 op } {
+	eval_panel_dialog
+}
+
+	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+		trace add variable xplane_panel_sub_l$x write sync_panel_dialog
+		trace add variable xplane_panel_sub_r$x write sync_panel_dialog
+		trace add variable xplane_panel_sub_b$x write sync_panel_dialog
+		trace add variable xplane_panel_sub_t$x write sync_panel_dialog
+	}
+
+trace add variable xplane_panel_sub_count write sync_panel_dialog
+trace add variable xplane_panel_sub_enable write sync_panel_dialog
+
+ac3d add_pref window_geom_xplane_panel_dialog ""
+
+proc xplane_panel_dialog {} {
+	global SUBPANEL_DIM
+	
+	global xplane_panel_sub_count
+	global xplane_panel_sub_enable
+	
+	for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+		global xplane_panel_sub_l$x
+		global xplane_panel_sub_r$x
+		global xplane_panel_sub_b$x
+		global xplane_panel_sub_t$x
+	}
+	
+	if ![winfo exists .xp_panel] {
+
+		new_toplevel_tracked .xp_panel "X-Plane Panel Prefs" prefs_window_geom_xplane_panel_dialog
+		
+		checkbutton		.xp_panel.enable -variable xplane_panel_sub_enable -text "Enable sub-panels" -command "eval_panel_dialog"	
+		pack			.xp_panel.enable
+		label			.xp_panel.sub_label -text "Number of sub-panels:"
+		pack			.xp_panel.sub_label
+		spinbox			.xp_panel.sub_count -from 1 -increment 1 -to $SUBPANEL_DIM -textvariable xplane_panel_sub_count -command "eval_panel_dialog"	
+		pack			.xp_panel.sub_count
+		for {set x 0} {$x < $SUBPANEL_DIM} {incr x} {
+			labelframe .xp_panel.region$x -text "Region $x:"
+		
+			make_labeled_entry .xp_panel.region$x "Region $x left" xplane_panel_sub_l$x
+			make_labeled_entry .xp_panel.region$x "Region $x bottom" xplane_panel_sub_b$x
+			make_labeled_entry .xp_panel.region$x "Region $x right" xplane_panel_sub_r$x
+			make_labeled_entry .xp_panel.region$x "Region $x top" xplane_panel_sub_t$x
+			
+			pack .xp_panel.region$x
+		}
+
+		button	.xp_panel.go -command "ac3d xplane_make_subpanel" -text "Make Subpanel..."
+		pack	.xp_panel.go
+	}
+
+	wm deiconify			.xp_panel
+	raise			        .xp_panel
+	
+	eval_panel_dialog
+}
+
+
+
+##########################################################################################################################################################
 # ANIMATION BAR
 ##########################################################################################################################################################
 
 proc clean_anim {} {
+	global ANIM_INNER
 	if [winfo exists .xp_anim] {
-		set children [winfo children .xp_anim.drefs]
+		set children [winfo children $ANIM_INNER]
 		foreach c $children {
 			destroy $c
 		}
@@ -719,18 +826,19 @@ proc clean_anim {} {
 }
 
 proc sync_dataref { dref name now minv maxv } {
+	global ANIM_INNER
 	if [winfo exists .xp_anim] {
 
-		if ![winfo exists .xp_anim.drefs.label_$dref] {
-			label .xp_anim.drefs.label_$dref -text $dref
-			scale .xp_anim.drefs.$dref -command "ac3d xplane_set_anim_now $dref" -from 0 -to 360 -orient horiz -length 150 -width 10 -resolution 0
-			button .xp_anim.drefs.sel_$dref -command "ac3d xplane_anim_select $dref" -text "Select"
-			grid .xp_anim.drefs.label_$dref .xp_anim.drefs.$dref .xp_anim.drefs.sel_$dref -sticky news
+		if ![winfo exists $ANIM_INNER.label_$dref] {
+			label $ANIM_INNER.label_$dref -text $dref
+			scale $ANIM_INNER.$dref -command "ac3d xplane_set_anim_now $dref" -from 0 -to 360 -orient horiz -length 150 -width 10 -resolution 0
+			button $ANIM_INNER.sel_$dref -command "ac3d xplane_anim_select $dref" -text "Select"
+			grid $ANIM_INNER.label_$dref $ANIM_INNER.$dref $ANIM_INNER.sel_$dref -sticky news
 		}
 
-		.xp_anim.drefs.label_$dref configure -text $name
-		.xp_anim.drefs.$dref configure -from $minv -to $maxv
-		.xp_anim.drefs.$dref set $now
+		$ANIM_INNER.label_$dref configure -text $name
+		$ANIM_INNER.$dref configure -from $minv -to $maxv
+		$ANIM_INNER.$dref set $now		
 	}
 }
 
@@ -741,18 +849,49 @@ proc xplane_anim_sync {} {
 
 ac3d add_pref window_geom_xplane_anim ""
 
+proc ScrolledVertCanvas_hack { c width height region } {
+	frame $c
+	canvas $c.canvas -width $width -height $height \
+		-yscrollcommand "$c.yscroll set" \
+		-scrollregion $region 
+
+	scrollbar $c.yscroll -orient vertical  \
+		-command "$c.canvas yview" 
+
+
+	pack $c.yscroll -side right -fill y
+	pack $c.canvas -side left -fill both -expand true
+
+	set f [frame $c.canvas.f -bd 0]
+
+	$c.canvas create window 0 0 -anchor nw -window $f
+
+	return $f
+}
+
+
 proc xplane_anim_window {} {
 	global xplane_anim_enable
-	
+	global ANIM_INNER
+
 	if ![winfo exists .xp_anim] {
 		new_toplevel_tracked .xp_anim "X-Plane Animation" prefs_window_geom_xplane_anim
+
 		checkbutton .xp_anim.enable -text "Show Animation" -variable xplane_anim_enable		
 		button	.xp_anim.sync -text "Resync" -command "ac3d xplane_resync_anim"
-		grid  .xp_anim.enable .xp_anim.sync
+		grid .xp_anim.enable .xp_anim.sync -sticky nw
 
-		frame .xp_anim.drefs
-		grid .xp_anim.drefs -sticky news
-		
+#		frame .xp_anim.drefs
+		set ANIM_INNER [ ScrolledVertCanvas_hack .xp_anim.drefs 300 500 { 0 0 300 10000 } ]
+		grid .xp_anim.drefs -columnspan 2 -sticky news
+		 
+		grid rowconfigure .xp_anim 0 -weight 0 -pad 0
+		grid rowconfigure .xp_anim 1 -weight 100 -pad 0
+
+		grid columnconfigure .xp_anim 1 -weight 0 -pad 0
+		grid columnconfigure .xp_anim 1 -weight 100 -pad 0
+
+		 
 		set xplane_anim_enable 1
 		
 		xplane_anim_sync
@@ -785,9 +924,14 @@ set UI(menu_xplane) .mbar.xplane.menu
 
 
 .mbar.xplane.menu add command -label "X-Plane Object Properties..." -command "xplane_inspector"
-.mbar.xplane.menu add command -label "Calculate X-Plane LOD" -command "ac3d xplane_calc_lod"
-# No make LOD group cmd needed - LOD grop is a group
-#.mbar.xplane.menu add command -label "Make LOD Group" -command "ac3d xplane_make_named_group LOD"
+if {$USE_PANEL_EDIT} {
+  .mbar.xplane.menu add command -label "X-Plane Panel Properties..." -command "xplane_panel_dialog"
+}
+.mbar.xplane.menu add command -label "Calculate X-Plane LOD..." -command "ac3d xplane_calc_lod"
+.mbar.xplane.menu add command -label "Make LOD Group" -command "ac3d xplane_make_named_group LOD"
+.mbar.xplane.menu add command -label "Calculate Batches For a Selection..." -command "ac3d xplane_optimize_selection 0"
+.mbar.xplane.menu add command -label "Optimize Selection..." -command "ac3d xplane_optimize_selection 1"
+
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Remap Texture Coordinates..." -command "xplane_tex_rescale_dialog"
 .mbar.xplane.menu add command -label "Change Texture..." -command "ac3d xplane_change_texture"
