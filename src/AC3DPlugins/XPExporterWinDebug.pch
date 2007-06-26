@@ -4,7 +4,6 @@
 
 #define WINDOWS 1
 
-#define WINDOWS_LEAN_AND_MEAN 1
 
 #define IBM 1
 #define APL 0
@@ -15,6 +14,7 @@
 
 #include <map>
 
+#include <winsock2.h>
 #include <windows.h>
 
 #include <commdlg.h>
