@@ -17,6 +17,7 @@
 #include <string.h>
 #include "prefs.h"
 #include "obj_model.h"
+#include "obj_panel.h"
 
 /* Plugin main routines */
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d);
@@ -35,6 +36,8 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 
 	/* This code is taken from an example...if we had TCL scripts to provide us with a 
 	   user interface, we would use the below code to point AC3D's TCL interpreter at them. */
+
+	register_panel_vars();
 
 	char *path = (char *)strdup(d->plugin_dir_path);
 	#ifdef WINDOWS
@@ -74,6 +77,10 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_add_command_full("xplane_reload_texes", CAST_CMD(do_reload_all_texes), 0, NULL, "ac3d xplane_reload_texes", "Reload all texes.");
 	ac_add_command_full("xplane_uv_copy", CAST_CMD(do_uv_copy), 0, NULL, "ac3d xplane_uv_copy", "Copy UV map from an object.");
 	ac_add_command_full("xplane_uv_paste", CAST_CMD(do_uv_paste), 0, NULL, "ac3d xplane_uv_paste", "Project UV map onto a new object.");
+
+	ac_add_command_full("xplane_make_subpanel", CAST_CMD(do_make_panel_subtexes), 0, NULL, "ac3d xplane_make_subpanel", "Make sub-panel texes from main panel.");
+
+	ac_add_command_full("xplane_optimize_selection", CAST_CMD(do_optimize_selection), 1, "f", "ac3d xplane_optimize_selection", "Optimize selection for x-plane.");
 
 	setup_obj_anim();
 	register_updater();
