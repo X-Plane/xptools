@@ -537,7 +537,7 @@ void do_optimize_selection(float do_optimize)
 	
 	if (state_post == state_pre)
 	{
-		message_dialog("I cannot further optimize this selection.  It will reqiure %d TRIS commands to draw.", state_pre);
+		message_dialog("I cannot further optimize this selection.  It will require %d batches to draw.", state_pre);
 		return;
 	}
 	
@@ -552,7 +552,7 @@ void do_optimize_selection(float do_optimize)
 		object_add_child(parent,*o);
 	}
 		
-	message_dialog("X-Plane used to need %d TRIS commands for this set of objects, now we need %d TRIS commands.",state_pre,state_post);
+	message_dialog("X-Plane used to need %d batches for this set of objects, now we need %d batches.",state_pre,state_post);
 	
 	redraw_all();
 	tcl_command("hier_update");
