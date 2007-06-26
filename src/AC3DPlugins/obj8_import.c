@@ -41,6 +41,7 @@ attributes.
 #include "ObjConvert.h"
 #include "obj_model.h"
 #include "obj_anim.h"
+#include "obj_panel.h"
 
 #include <list>
 using std::list;
@@ -66,6 +67,7 @@ ACObject *	do_obj8_load(char *filename)
 		int			tex_id = -1;
 		char *		panel_full_name = NULL;
 		int			panel_id = -1;
+		int			panel_reg_id[4] = { -1, -1, -1, -1 };
 
 //		char		anim_cmd[1024];
 		string		anim_dat;
@@ -110,6 +112,12 @@ ACObject *	do_obj8_load(char *filename)
 	
 		Obj7ToObj8(obj7, obj8);
 	} 
+
+	set_std_panel();
+	for (int n = 0; n < obj8.regions.size(); ++n)
+	{
+		add_sub_panel(obj8.regions[n].left,obj8.regions[n].bottom,obj8.regions[n].right,obj8.regions[n].top);
+	}
 		
     group_obj = new_object(OBJECT_GROUP);	
     
@@ -127,14 +135,12 @@ ACObject *	do_obj8_load(char *filename)
     string panelNameBmp = "cockpit/-PANELS-/panel.bmp";
         
     bool	has_cockpit_cmd = false;
+	bool	has_cockpit_reg = false;
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
 	for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 	{
-    	if (cmd->cmd == attr_Tex_Cockpit)
-    	{
-    		has_cockpit_cmd = true;
-    		break;
-    	}
+    	if (cmd->cmd == attr_Tex_Cockpit)    		has_cockpit_cmd = true;
+		if (cmd->cmd == attr_Tex_Cockpit_Subregion)	has_cockpit_reg = true;
     }
     object_set_name(group_obj,(char *) justName.c_str());
     
@@ -148,7 +154,7 @@ ACObject *	do_obj8_load(char *filename)
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNameBmp.c_str());
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
 	}	
-	if (has_cockpit_cmd)
+	if (has_cockpit_cmd || has_cockpit_reg)
 	{
 		printf("Trying cockpit cmds.\n");
 		printf("panel name = %s\n", panelNamePng.c_str());
@@ -158,6 +164,11 @@ ACObject *	do_obj8_load(char *filename)
 		printf("tex id = %d\n", panel_id);
 		if (panel_id == -1)			panel_full_name = search_texture(filename, (char *) panelNameBmp.c_str());
 		if (panel_full_name != NULL)panel_id = add_new_texture_opt(panel_full_name,panel_full_name);
+	}
+	
+	if (has_cockpit_reg && panel_id != -1)
+	{	
+		do_make_panel_subtexes_auto(panel_id,panel_reg_id);
 	}
         
     for(vector<XObjLOD8>::iterator lod = obj8.lods.begin(); lod != obj8.lods.end(); ++lod)
@@ -178,7 +189,7 @@ ACObject *	do_obj8_load(char *filename)
     	
     	bool	shade_flat = false;
     	bool	two_side = false;
-    	bool	panel_tex = false;
+    	int		panel_tex = tex_id;
 
     	float	no_blend = -1.0;
     	string	hard_poly;
@@ -192,13 +203,8 @@ ACObject *	do_obj8_load(char *filename)
 				if (stuff_obj == NULL)
 				{
 					stuff_obj = new_object(OBJECT_NORMAL);
-					if (panel_tex)
-					{
-						if (panel_id != -1) object_texture_set(stuff_obj, panel_id);
-					} else 
-					{
-						if (tex_id != -1) object_texture_set(stuff_obj, tex_id);
-					}
+					if (panel_tex != -1)object_texture_set(stuff_obj, panel_tex);
+
 					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), stuff_obj);
 					OBJ_set_poly_os(stuff_obj, offset);
 					OBJ_set_blend(stuff_obj, no_blend);
@@ -273,12 +279,16 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			
 			case attr_Tex_Normal:
-				if (panel_tex)	stuff_obj = NULL;
-				panel_tex = false;
+				if (panel_tex != tex_id)	stuff_obj = NULL;
+				panel_tex = tex_id;
 				break;
 			case attr_Tex_Cockpit:
-				if (!panel_tex)	stuff_obj = NULL;
-				panel_tex = true;
+				if (panel_tex != panel_id)	stuff_obj = NULL;
+				panel_tex = panel_id;
+				break;
+			case attr_Tex_Cockpit_Subregion:
+				if (panel_tex != panel_reg_id[(int) cmd->params[0]])	stuff_obj = NULL;
+				panel_tex = panel_reg_id[(int) cmd->params[0]];
 				break;
 			case attr_No_Blend:
 				if (!no_blend != cmd->params[0]) stuff_obj = NULL;

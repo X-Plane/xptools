@@ -37,6 +37,7 @@ attributes.
 #include "ac_utils.h"
 #include "obj_anim.h"
 #include "obj_model.h"
+#include "obj_panel.h"
 
 #include "XObjDefs.h"
 #include "XObjReadWrite.h"
@@ -366,17 +367,20 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->SetAttribute1(attr_No_Blend, now_blend);
 
 			bool bad_obj = false;
-			int has_panel = 0;
+			int panel_reg;
 			int has_real_tex = 0;
 			
 			if (ac_object_has_texture(obj))
 			{	
 				string tex = texture_id_to_name(ac_object_get_texture_index(obj));
 				gHasTexNow = true;
-				has_panel = strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel.") != NULL;
-				if (has_panel)
+//				has_panel = strstrnocase(tex.c_str(), "cockpit/-PANELS-/panel.") != NULL;
+				if (is_panel_tex(ac_object_get_texture_index(obj)))
 				{
 					builder->SetAttribute(attr_Tex_Cockpit);
+				} else if ((panel_reg = is_panel_subtex(ac_object_get_texture_index(obj))) >= 0)
+				{
+					builder->SetAttribute1(attr_Tex_Cockpit_Subregion,panel_reg);
 				} else {
 					has_real_tex = 1;
 					builder->SetAttribute(attr_Tex_Normal);
@@ -512,6 +516,14 @@ int do_obj8_save_common(char * fname, ACObject * obj, bool convert, int do_prefi
 	if (do_prefix)
 		export_path.insert(export_filename_idx+1,string(get_export_prefix()));
 
+	for (int n = 0; n < get_sub_panel_count(); ++n)
+	{
+		obj8.regions.push_back(XObjPanelRegion8());
+		obj8.regions.back().left  = get_sub_panel_l(n);
+		obj8.regions.back().right = get_sub_panel_r(n);
+		obj8.regions.back().bottom= get_sub_panel_b(n);
+		obj8.regions.back().top   = get_sub_panel_t(n);
+	}
 	builder.Finish();
 
 	if (convert)
