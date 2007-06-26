@@ -1220,8 +1220,6 @@ inline int cubic_formula(double a, double b, double c, double d, double roots[3]
 	double g = ((2.0 * b * b * b) / (a * a * a) - (9.0 * b * c) / (a * a) + (27.0 * d) / (a)) / 27.0;	
 	double h = g * g / 4.0 + f * f * f / 27.0;
 	
-	double root;
-	
 	if (f == 0.0 && g == 0.0 && h == 0.0)
 	{
 		roots[0] = -cbrt(d / a);
