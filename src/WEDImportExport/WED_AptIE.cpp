@@ -259,7 +259,7 @@ void	WED_DoExportApt(IResolver * resolver)
 	}
 }
 
-static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive * archive, WED_Thing * parent, vector<WED_AirportChain *> * chains)
+static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive * archive, WED_Thing * parent, vector<WED_AirportChain *> * chains, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	WED_AirportChain * chain = NULL;
 	WED_AirportChain * ret = NULL;
@@ -291,13 +291,23 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		Point2	lo_pt;
 		if (has_lo) lo_pt = recip(cur->pt, cur->ctrl);
 
+		printf("Low pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
+
 		// 2. Iterate forward: run until our point changes or we hit a span that forms a non-zero-length curve.
-		AptPolygon_t::const_iterator next = cur, orig = cur;
+		AptPolygon_t::const_iterator next = cur, orig = cur, prev = cur;
 		++next;
 		while (next != path.end() && next->pt == cur->pt &&
-			(!is_curved(cur->code) || !is_curved(next->code))) ++next;
+			(!is_curved(prev->code) || !is_curved(next->code)))
+		{
+			prev = next;
+			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
+			++next;
+		}
+		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
 		--next;			
 		cur = next;
+		printf("hi-end pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
+
 		
 		// 3. High side control point.
 		bool has_hi = is_curved(cur->code);
@@ -307,8 +317,12 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		// Convert attributes
 		set<int>	attrs;
 		for (set<int>::const_iterator e = cur->attributes.begin(); e != cur->attributes.end(); ++e)
-			attrs.insert(ENUM_Import(LinearFeature, *e));
-		
+		{
+			int i = ENUM_Import(LinearFeature, *e);
+			if (i != -1)
+			attrs.insert(i);
+			else if (i != 0) print_func(ref,"Ignoring unknown airport line attribute %d.\n", i);
+		}
 		//	Now we can form a node.
 		WED_AirportNode * n = WED_AirportNode::CreateTyped(archive);
 		n->SetParent(chain, chain->CountChildren());
@@ -332,6 +346,20 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 	return ret;
 }
 
+struct	LazyLog_t {
+	const char *	path;
+	FILE *			fi;
+};
+
+void LazyPrintf(void * ref, const char * fmt, ...)
+{
+	va_list	arg;
+	va_start(arg, fmt);
+	LazyLog_t * l = (LazyLog_t *) ref;
+	if (l->fi == NULL) l->fi = fopen(l->path,"w");
+	if (l->fi) vfprintf(l->fi,fmt,arg);
+}
+
 void	WED_AptImport(
 				WED_Archive *	archive,
 				WED_Thing *		container,
@@ -340,13 +368,19 @@ void	WED_AptImport(
 	AptVector	apts;
 	ReadAptFile(file_path, apts);
 	
+	char path[1024];
+	strcpy(path,file_path);
+	strcat(path,".log");
+	
+	LazyLog_t log = { path, NULL };
+	
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
 		ConvertForward(*apt);
 		
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
-		new_apt->Import(*apt);
+		new_apt->Import(*apt, LazyPrintf, &log);
 
 		for (AptRunwayVector::iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
@@ -356,7 +390,7 @@ void	WED_AptImport(
 			new_rwy->SetParent(new_apt,new_apt->CountChildren());
 			source->SetParent(new_rwy,0);
 			target->SetParent(new_rwy,1);
-			new_rwy->Import(*rwy);
+			new_rwy->Import(*rwy, LazyPrintf, &log);
 		}
 
 		for (AptSealaneVector::iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
@@ -367,23 +401,23 @@ void	WED_AptImport(
 			new_sea->SetParent(new_apt,new_apt->CountChildren());
 			source->SetParent(new_sea,0);
 			target->SetParent(new_sea,1);
-			new_sea->Import(*sea);
+			new_sea->Import(*sea, LazyPrintf, &log);
 		}
 
 		for (AptHelipadVector::iterator hel = apt->helipads.begin(); hel != apt->helipads.end(); ++hel)
 		{
 			WED_Helipad * new_hel = WED_Helipad::CreateTyped(archive);
 			new_hel->SetParent(new_apt,new_apt->CountChildren());
-			new_hel->Import(*hel);
+			new_hel->Import(*hel, LazyPrintf, &log);
 		}
 
 		for (AptTaxiwayVector::iterator tax = apt->taxiways.begin(); tax != apt->taxiways.end(); ++tax)
 		{
 			WED_Taxiway * new_tax = WED_Taxiway::CreateTyped(archive);
 			new_tax->SetParent(new_apt,new_apt->CountChildren());
-			new_tax->Import(*tax);
+			new_tax->Import(*tax, LazyPrintf, &log);
 			
-			if (!ImportLinearPath(tax->area, archive, new_tax, NULL))
+			if (!ImportLinearPath(tax->area, archive, new_tax, NULL, LazyPrintf, &log))
 			{
 				new_tax->SetParent(NULL,0);
 				new_tax->Delete();
@@ -394,9 +428,9 @@ void	WED_AptImport(
 		{
 			WED_AirportBoundary * new_bou = WED_AirportBoundary::CreateTyped(archive);
 			new_bou->SetParent(new_apt,new_apt->CountChildren());
-			new_bou->Import(*bou);
+			new_bou->Import(*bou, LazyPrintf, &log);
 			
-			if (!ImportLinearPath(bou->area, archive, new_bou, NULL))
+			if (!ImportLinearPath(bou->area, archive, new_bou, NULL, LazyPrintf, &log))
 			{
 				new_bou->SetParent(NULL,0);
 				new_bou->Delete();
@@ -406,60 +440,65 @@ void	WED_AptImport(
 		for (AptMarkingVector::iterator lin = apt->lines.begin(); lin != apt->lines.end(); ++lin)
 		{			
 			vector<WED_AirportChain *> new_lin;
-			ImportLinearPath(lin->area, archive, new_apt, &new_lin);
+			ImportLinearPath(lin->area, archive, new_apt, &new_lin, LazyPrintf, &log);
 			for (vector<WED_AirportChain *>::iterator li = new_lin.begin(); li != new_lin.end(); ++li)
-				(*li)->Import(*lin);
+				(*li)->Import(*lin, LazyPrintf, &log);
 		}
 
 		for (AptLightVector::iterator lit = apt->lights.begin(); lit != apt->lights.end(); ++lit)
 		{
 			WED_LightFixture * new_lit = WED_LightFixture::CreateTyped(archive);
 			new_lit->SetParent(new_apt,new_apt->CountChildren());
-			new_lit->Import(*lit);
+			new_lit->Import(*lit, LazyPrintf, &log);
 		}
 		
 		for (AptSignVector::iterator sin = apt->signs.begin(); sin != apt->signs.end(); ++sin)
 		{
 			WED_AirportSign * new_sin = WED_AirportSign::CreateTyped(archive);
 			new_sin->SetParent(new_apt,new_apt->CountChildren());
-			new_sin->Import(*sin);
+			new_sin->Import(*sin, LazyPrintf, &log);
 		}
 
 		for (AptGateVector::iterator gat = apt->gates.begin(); gat != apt->gates.end(); ++gat)
 		{
 			WED_RampPosition * new_gat = WED_RampPosition::CreateTyped(archive);
 			new_gat->SetParent(new_apt,new_apt->CountChildren());
-			new_gat->Import(*gat);
+			new_gat->Import(*gat, LazyPrintf, &log);
 		}
 		
 		if (apt->tower.draw_obj != -1)
 		{
 			WED_TowerViewpoint * new_twr = WED_TowerViewpoint::CreateTyped(archive);
 			new_twr->SetParent(new_apt,new_apt->CountChildren());
-			new_twr->Import(apt->tower);
+			new_twr->Import(apt->tower, LazyPrintf, &log);
 		}
 		
 		if (apt->beacon.color_code != apt_beacon_none)
 		{
 			WED_AirportBeacon * new_bea = WED_AirportBeacon::CreateTyped(archive);
 			new_bea->SetParent(new_apt,new_apt->CountChildren());
-			new_bea->Import(apt->beacon);
+			new_bea->Import(apt->beacon, LazyPrintf, &log);
 		}
 	
 		for (AptWindsockVector::iterator win = apt->windsocks.begin(); win != apt->windsocks.end(); ++win)
 		{
 			WED_Windsock * new_win = WED_Windsock::CreateTyped(archive);
 			new_win->SetParent(new_apt,new_apt->CountChildren());
-			new_win->Import(*win);
+			new_win->Import(*win, LazyPrintf, &log);
 		}
 
 		for (AptATCFreqVector::iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
 		{
 			WED_ATCFrequency * new_atc = WED_ATCFrequency::CreateTyped(archive);
 			new_atc->SetParent(new_apt,new_apt->CountChildren());
-			new_atc->Import(*atc);
+			new_atc->Import(*atc, LazyPrintf, &log);
 		}
-
+	}
+	
+	if (log.fi)
+	{
+		fclose(log.fi);
+		DoUserAlert("There were problems during the import.  A log file has been created in the same file as the apt.dat file.");
 	}
 }
 
