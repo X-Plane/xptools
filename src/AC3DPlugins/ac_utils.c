@@ -18,7 +18,7 @@ int		is_parent_of(ACObject * parent, ACObject * child)
 void	find_all_objects(ACObject * root, vector<ACObject *>& output)
 {
 	List *kids = ac_object_get_childrenlist(root);
-
+	printf("Find all objs called on %s\n",ac_object_get_name(root));
 	output.push_back(root);
 
     for (List * p = kids; p != NULL; p = p->next)
@@ -34,11 +34,29 @@ void	find_all_selected_objects(vector<ACObject *>& output)
 	{	
 		for (List * i = objs; i; i=i->next)
 		{
+			printf("  sel list has: %s  \n", ac_object_get_name((ACObject *) i->data));
 			find_all_objects((ACObject *) i->data, output);
 		}
 		list_free(&objs);
 	}
 }
+
+void	find_all_selected_objects_stable(vector<ACObject *>& output)
+{
+	vector<ACObject *> sel;
+	find_all_selected_objects(sel);
+	set<ACObject *> sel_set;
+	for (vector<ACObject *>::iterator s = sel.begin(); s != sel.end(); ++s) 
+		sel_set.insert(*s);
+		
+	sel.clear();
+	vector<ACObject *> world;
+	find_all_objects(ac_get_world(),world);
+	for (vector<ACObject *>::iterator s = world.begin(); s != world.end(); ++s)
+	if (sel_set.count(*s))
+		output.push_back(*s);
+}
+
 
 void	find_all_selected_objects_flat(vector<ACObject *>& output)
 {
@@ -281,4 +299,50 @@ void	get_all_used_texes(ACObject * obj, set<int>& out_texes)
     for (List * p = kids; p != NULL; p = p->next)
         get_all_used_texes((ACObject *)p->data, out_texes);
 
+}
+
+void		get_lineage(ACObject * obj, vector<ACObject *>& ancestors)
+{
+	ACObject * wrl = ac_get_world();
+	ancestors.clear();
+
+	do {
+		obj = object_parent(obj);
+		ancestors.insert(ancestors.begin(), obj);
+	} while (obj != wrl);
+//	printf("Lineage of %s is: ",ac_object_get_name(obj));
+//	for(vector<ACObject *>::iterator i = ancestors.begin(); i != ancestors.end(); ++i)
+//		printf("    %s   ", ac_object_get_name(*i));
+//	printf("\n");
+}
+
+
+ACObject *	get_common_parent(const vector<ACObject *>& objs)
+{
+	if (objs.empty()) return NULL;
+	
+	vector<ACObject *>	total_lineage;
+	get_lineage(objs.front(),total_lineage);
+
+//	printf("Based on %s, the parent is %s.\n", ac_object_get_name(objs.front()),ac_object_get_name(total_lineage.back()));
+
+	
+	for (int n = 1; n < objs.size(); ++n)
+	{
+		vector<ACObject *>	local_lineage;
+		get_lineage(objs[n],local_lineage);
+		
+		vector<ACObject *>::iterator tot, loc;
+		for(tot = total_lineage.begin(), loc = local_lineage.begin();
+			tot != total_lineage.end() && loc != local_lineage.end();
+			++tot, ++loc)
+		{
+			if (*tot != *loc)	
+				break;
+		}
+		total_lineage.erase(tot, total_lineage.end());
+//		printf("Based on %s, the parent is now %s.\n", ac_object_get_name(objs[n]),ac_object_get_name(total_lineage.back()));
+	}
+	
+	return total_lineage.back();
 }

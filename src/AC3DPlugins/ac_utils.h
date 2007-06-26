@@ -16,6 +16,7 @@ int		is_parent_of(ACObject * parent, ACObject * child);
 
 void	find_all_objects(ACObject * root, vector<ACObject *>& output);
 void	find_all_selected_objects(vector<ACObject *>& output);
+void	find_all_selected_objects_stable(vector<ACObject *>& output);
 void	find_all_selected_objects_flat(vector<ACObject *>& output);
 void	find_all_selected_objects_parents(vector<ACObject *>& output);
 
@@ -42,5 +43,8 @@ void move_child_to_head(ACObject * parent, ACObject * child);
 Surface * obj_get_first_surf(ACObject * obj);
 
 void	get_all_used_texes(ACObject * obj, set<int>& out_texes);
+
+void		get_lineage(ACObject * obj, vector<ACObject *>& ancestors);
+ACObject *	get_common_parent(const vector<ACObject *>& obj);
 
 #endif
