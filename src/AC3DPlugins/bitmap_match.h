@@ -17,4 +17,12 @@ int make_transparent(ACImage * im);
 
 void	tex_reload(int tex_id);
 
+void bitmap_subcopy(
+		ACImage * src,
+		ACImage * dst,
+		int l,
+		int b,
+		int r,
+		int t);
+
 #endif

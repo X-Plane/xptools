@@ -226,11 +226,12 @@ int make_transparent(ACImage * im)
 void	tex_reload(int tex_id)
 {
 	char * fname = texture_id_to_name(tex_id);
-	int im_width, im_height, im_depth;
+//	int im_width, im_height, im_depth;
 	
-	add_new_texture_reload(fname,fname);
+	texture_build_for_all_windows(texture_id_to_image(add_new_texture_reload(fname,fname)));
+	redraw_all();
 	return;
-	
+/*	
 	ACImage * old_image = texture_id_to_image(tex_id);
 	ACImage * new_image = new_acimage(fname);
 	if (new_image == NULL)
@@ -251,4 +252,39 @@ void	tex_reload(int tex_id)
 	free_acimage(new_image);
 	texture_build_for_all_windows(old_image);
 	redraw_all();
+*/
+}
+
+void bitmap_subcopy(
+		ACImage * src,
+		ACImage * dst,
+		int l,
+		int b,
+		int r,
+		int t)
+{
+	int im_width, im_height, im_depth;
+	ac_image_get_dim(src, &im_width, &im_height, &im_depth);
+	
+	void * new_mem = myalloc((r-l) * (t-b) * im_depth);
+
+	unsigned char * srcd = get_image_data(src);
+	unsigned char * dstd = (unsigned char *) new_mem;
+	
+	for (int y = b; y < t; ++y)
+	for (int x = l; x < r; ++ x)
+	{
+		unsigned char * srcp = srcd +  x    * im_depth +  y    * im_width * im_depth;
+		unsigned char * dstp = dstd + (x-l) * im_depth + (y-b) * (r-l)    * im_depth;
+
+		int c = im_depth;
+		while(c--)
+			*dstp++ = *srcp++;		
+	}
+	
+	ac_image_set_dim(dst, r-l, t-b, im_depth);
+	ac_image_set_data(dst, dstd);	
+	texture_build_for_all_windows(dst);
+	redraw_all();
+
 }
