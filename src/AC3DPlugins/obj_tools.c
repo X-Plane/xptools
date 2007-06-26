@@ -81,7 +81,7 @@ void do_change_tex(void)
 	find_all_selected_objects(all);
 	if (!all.empty())
 	{	
-		char *filter[] = { "BMP files", "*.bmp", "PNG files", "*.png", "All files", "*", NULL };
+		char *filter[] = { "PNG files", "*.png", "BMP files", "*.bmp", "All files", "*", NULL };
 	    char *filename = ac_get_load_filename("Pick a bitman to use for your models...", filter);
 	    if (STRINGISEMPTY(filename))
 	        return;
@@ -470,4 +470,90 @@ void do_reload_all_texes(void)
 	{
 		tex_reload(*i);
 	}
+}
+
+struct sort_by_ac_state {
+	bool operator()(ACObject * lhs, ACObject *rhs) const {
+
+		float poly_l = OBJ_get_poly_os(lhs);
+		float poly_r = OBJ_get_poly_os(rhs);
+		if (poly_l == 0.0f) poly_l += 1000.0f;			// hack to put poly_offset of 0 last.
+		if (poly_r == 0.0f) poly_r += 1000.0f;		
+		if (poly_l != poly_r) return poly_l < poly_r;
+		
+		float blend_l = OBJ_get_blend(lhs);
+		float blend_r = OBJ_get_blend(rhs);
+		if (blend_l < 0.0f) blend_l = -1.0f;			// hack to ignore negative blends, which are a way of "remembering" what our blend was.
+		if (blend_r < 0.0f) blend_r = -1.0f;
+		if (blend_l != blend_r) return blend_l < blend_r;
+		
+		return false;
+	}
+};
+
+void do_optimize_selection(float do_optimize)
+{
+	vector<ACObject *>	objs;
+	find_all_selected_objects_stable(objs);
+	
+	if (objs.empty())
+	{
+		if (do_optimize)	message_dialog("Select one or more objects to optimize their order.");
+		else				message_dialog("Select one or more objects to count their batches.");
+		return;
+	}
+	ACObject * parent = do_optimize ? get_common_parent(objs) : NULL;
+	if (parent == NULL && do_optimize)
+	{
+		message_dialog("Internal error - selected objects do not appear to be part of the hierarchy.");
+		return;
+	}
+
+	sort_by_ac_state functor;
+	int state_pre = 1, state_post = 1;
+
+	for (int n = 1; n < objs.size(); ++n)
+	{
+		if (functor(objs[n-1],objs[n]) ||
+			functor(objs[n],objs[n-1]))
+				++ state_pre;
+	}
+
+	if (!do_optimize)
+	{
+		message_dialog("Selection will take %d batches to draw.",state_pre);
+		return;
+	}
+
+	stable_sort(objs.begin(), objs.end(), functor);
+
+	for (int n = 1; n < objs.size(); ++n)
+	{
+		if (functor(objs[n-1],objs[n]) ||
+			functor(objs[n],objs[n-1]))
+				++ state_post;
+				
+	}
+	
+	if (state_post == state_pre)
+	{
+		message_dialog("I cannot further optimize this selection.  It will reqiure %d TRIS commands to draw.", state_pre);
+		return;
+	}
+	
+	add_undoable_all("Optimize Selection");
+	
+	for (vector<ACObject *>::iterator o = objs.begin(); o != objs.end(); ++o)
+	{
+		object_remove_child_nocleanup(object_parent(*o),*o);
+	}
+	for (vector<ACObject *>::iterator o = objs.begin(); o != objs.end(); ++o)
+	{
+		object_add_child(parent,*o);
+	}
+		
+	message_dialog("X-Plane used to need %d TRIS commands for this set of objects, now we need %d TRIS commands.",state_pre,state_post);
+	
+	redraw_all();
+	tcl_command("hier_update");
 }

@@ -14,6 +14,7 @@ void do_make_onesided(void);
 void do_make_upnormal(void);
 void do_rescale_tex(const char * s);
 void do_reload_all_texes(void);
+void do_optimize_selection(float do_it);
 
 
 #endif
