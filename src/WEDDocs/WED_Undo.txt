@@ -1,6 +1,6 @@
 UNDO:
 
-Everything is undoable in WED, mostly.
+Everything is undoable in WED, mostly.  WED saves 20 levels of undo.
 
 - Undo is tracked for each tile you work on separately.
 - Any operation that changes your data is undoable.
