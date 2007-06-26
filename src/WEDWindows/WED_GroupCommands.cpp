@@ -35,8 +35,13 @@
 int		WED_CanGroup(IResolver * inResolver)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
+	WED_Thing * wrl = WED_GetWorld(inResolver);
 	DebugAssert(sel != NULL);
 
+	// Can't group the world itself!
+	if (sel->IterateSelection(Iterate_MatchesThing,wrl)) return 0;
+
+	// Can't group a piece of a structured object - would break its internal make-up.
 	if (sel->IterateSelection(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 	
 	int has_airport = sel->IterateSelection(Iterate_IsAirport, NULL);
