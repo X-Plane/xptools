@@ -56,7 +56,7 @@ public:
 
 private:
 
-	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent) { return ent_AtomicOrContainer; }
+	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent, int pt_sel) { return ent_AtomicOrContainer; }
 
 //				void	GetEntityInternal(vector<IGISEntity *>& e);
 				bool	GetTotalBounds(void) const;

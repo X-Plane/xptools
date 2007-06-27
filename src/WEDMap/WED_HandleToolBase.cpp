@@ -320,7 +320,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		if (thang->GetHidden()) return 0;
 	}
 	
-	EntityHandling_t choice = TraverseEntity(entity);
+	EntityHandling_t choice = TraverseEntity(entity,pt_sel);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
 	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);

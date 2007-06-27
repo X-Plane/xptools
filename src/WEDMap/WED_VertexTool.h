@@ -56,7 +56,7 @@ public:
 
 private:
 
-	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent);
+	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent,int pt_sel);
 
 			void		GetEntityInternal(void) const;
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;

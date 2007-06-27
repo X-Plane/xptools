@@ -634,7 +634,7 @@ void	WED_VertexTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 {
 }
 
-WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent)
+WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)
 {
 	// Ben says: we tried always selecting INTO "fake" composite entities - that is, entities that are
 	// not technically composite but have a hierarchy.  So we would always selected polygon nodes and not
@@ -643,17 +643,16 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	// 1.	if we select the whole poly, we can STILL drag each vertex, that works automagically as part of
 	//		the object-decomposition we do.
 	// 2.	it is weird to the user to marquee an object and NOT get the whole thing selected.
-	return ent_AtomicOrContainer;
-	/*
 	switch(ent->GetGISClass()) {
-	case gis_Composite:		return	ent_AtomicOrContainer;
-	case gis_Polygon:		return	ent_Container;
+	case gis_Composite:		return	ent_Container;
+	case gis_Polygon:		return	pt_sel ? ent_AtomicOrContainer : ent_Container;
 	case gis_PointSequence: return	ent_Container;
 	case gis_Ring:			return	ent_Container;
 	case gis_Chain:			return	ent_Container;
+	case gis_Line:			return	ent_AtomicOrContainer;
+	case gis_Line_Width:	return	ent_AtomicOrContainer;
 	default:				return	ent_Atomic;
 	}
-	*/
 }
 
 void WED_VertexTool::GetEntityInternal(void) const

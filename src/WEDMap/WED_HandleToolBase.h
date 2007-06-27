@@ -54,7 +54,7 @@ protected:
 	virtual	void				CreationDrag(const Point2& start_pt, const Point2& now_pt) { }
 	virtual	void				CreationUp(const Point2& start_pt, const Point2& now_pt) { }
 	
-	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent)  { return ent_Skip; }
+	virtual	EntityHandling_t	TraverseEntity(IGISEntity * ent, int pt_sel)  { return ent_Skip; }
 			void				SetCanSelect(int can_select);
 			void				SetControlProvider(IControlHandles * provider);
 
