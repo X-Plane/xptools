@@ -22,7 +22,7 @@ public:
 	virtual void			Refresh(void);	
 	virtual	void			PopupMenu(GUI_Menu menu, int x, int y);
 	virtual	int				PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);
-	virtual	bool			IsDragClick(int x, int y);								// Returns true if the click is a drag, false if it is just a mouse release.
+	virtual	bool			IsDragClick(int x, int y, int button);								// Returns true if the click is a drag, false if it is just a mouse release.
 	virtual	GUI_DragOperation	
 							DoDragAndDrop(
 									int						x, 
@@ -101,8 +101,7 @@ private:
 	float			mClearColorRGBA[4];
 	bool			mClearDepth;
 	bool			mClearColor;
-	GUI_Pane *		mMouseFocusPane;
-	int				mMouseFocusButton;
+	GUI_Pane *		mMouseFocusPane[BUTTON_DIM];
 	int				mInDrag;
 	int				mLastDragX;
 	int				mLastDragY;
