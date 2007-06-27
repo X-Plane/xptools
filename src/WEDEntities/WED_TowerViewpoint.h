@@ -18,7 +18,7 @@ public:
 
 private:
 
-	WED_PropDoubleText		height;
+	WED_PropDoubleTextMeters		height;
 	
 };
 

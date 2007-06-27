@@ -65,21 +65,21 @@ private:
 	WED_PropIntEnum			edge_lites;
 	WED_PropBoolText		remaining_signs;
 	
-//	WED_PropStringText		id1;
-	WED_PropDoubleText		disp1;
-	WED_PropDoubleText		blas1;
-	WED_PropIntEnum			mark1;
-	WED_PropIntEnum			appl1;
-	WED_PropBoolText		tdzl1;
-	WED_PropIntEnum			reil1;
+//	WED_PropStringText			id1;
+	WED_PropDoubleTextMeters	disp1;
+	WED_PropDoubleTextMeters	blas1;
+	WED_PropIntEnum				mark1;
+	WED_PropIntEnum				appl1;
+	WED_PropBoolText			tdzl1;
+	WED_PropIntEnum				reil1;
 
-//	WED_PropStringText		id2;
-	WED_PropDoubleText		disp2;
-	WED_PropDoubleText		blas2;
-	WED_PropIntEnum			mark2;
-	WED_PropIntEnum			appl2;
-	WED_PropBoolText		tdzl2;
-	WED_PropIntEnum			reil2;	
+//	WED_PropStringText			id2;
+	WED_PropDoubleTextMeters	disp2;
+	WED_PropDoubleTextMeters	blas2;
+	WED_PropIntEnum				mark2;
+	WED_PropIntEnum				appl2;
+	WED_PropBoolText			tdzl2;
+	WED_PropIntEnum				reil2;	
 
 };
 

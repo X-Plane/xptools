@@ -22,7 +22,7 @@ public:
 
 private:
 
-	WED_PropDoubleText		width;
+	WED_PropDoubleTextMeters		width;
 	
 };
 

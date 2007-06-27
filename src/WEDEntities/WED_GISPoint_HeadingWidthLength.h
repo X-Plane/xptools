@@ -22,8 +22,8 @@ public:
 
 private:
 
-		WED_PropDoubleText		width;
-		WED_PropDoubleText		length;
+		WED_PropDoubleTextMeters		width;
+		WED_PropDoubleTextMeters		length;
 
 };
 

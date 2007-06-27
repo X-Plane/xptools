@@ -24,10 +24,10 @@ public:
 
 private:
 
-	WED_PropIntEnum			airport_type;
-	WED_PropDoubleText		elevation;
-	WED_PropBoolText		has_atc;
-	WED_PropStringText		icao;
+	WED_PropIntEnum				airport_type;
+	WED_PropDoubleTextMeters	elevation;
+	WED_PropBoolText			has_atc;
+	WED_PropStringText			icao;
 	
 };
 
