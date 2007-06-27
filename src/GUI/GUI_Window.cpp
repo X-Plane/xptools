@@ -485,7 +485,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	mBounds[0] = 0;
 	mBounds[1] = 0;
 	XWinGL::GetBounds(mBounds+2,mBounds+3);
-	mMouseFocusPane = NULL;
+	memset(mMouseFocusPane,0,sizeof(mMouseFocusPane));
 	mVisible = inAttributes & xwin_style_visible;
 	mClearColorRGBA[0] = 1.0;
 	mClearColorRGBA[1] = 1.0;
@@ -527,8 +527,7 @@ GUI_Window::~GUI_Window()
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
-	mMouseFocusPane = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
-	mMouseFocusButton = inButton;
+	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
 //					until we find out what the hell needed this!
@@ -546,18 +545,18 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 	// this case the mouse up hasn't happened, so it isn't eaten.  When we hit escape we post a
 	// synthetic mouse up (which is probably good) and then the real one later hits.  But it no-ops
 	// because there is no focus pain.
-	if (mMouseFocusPane)
+	if (mMouseFocusPane[inButton])
 	{
-		mMouseFocusPane->MouseUp(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
+		mMouseFocusPane[inButton]->MouseUp(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 		SetTimerInterval(0.0);
 	}
-	mMouseFocusPane = NULL;
+	mMouseFocusPane[inButton] = NULL;
 }
 
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
 {
-	if (mMouseFocusPane)
-		mMouseFocusPane->MouseDrag(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
+	if (mMouseFocusPane[inButton])
+		mMouseFocusPane[inButton]->MouseDrag(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 }
 
 void		GUI_Window::ClickMove(int inX, int inY)
@@ -906,10 +905,11 @@ void		GUI_Window::Timer(void)
 {
 		int	x, y;
 
-	if (mMouseFocusPane)
+	for(int btn=0;btn<BUTTON_DIM;++btn)
+	if (mMouseFocusPane[btn])
 	{
 		XWinGL::GetMouseLoc(&x, &y);
-		mMouseFocusPane->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), mMouseFocusButton);
+		mMouseFocusPane[btn]->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), btn);
 	}
 
 	// BEN SAYS: Mac D&D mgr does not call us back during drag if the mouse is still.  So use a timer to tell us
@@ -948,7 +948,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 	return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);	
 }
 
-bool				GUI_Window::IsDragClick(int x, int y)
+bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
 	#if APL
 	
@@ -978,7 +978,7 @@ bool				GUI_Window::IsDragClick(int x, int y)
 		// Ben says: if we are NOT detecting a drag, it means the user either let go of the mouse or hit
 		// escape.  Good enough for me - pretend it's an up-click (if it was, DragDetect ate it.)
 		if (!ret)
-			PostMessage(mWindow, mMouseFocusButton ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
+			PostMessage(mWindow, button ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
 
 		return ret;
 			
