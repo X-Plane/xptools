@@ -435,7 +435,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
-		glShape2v(GL_LINE_STRIP, pts, count);		
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-5);		
 		break;
 	case line_HoldLights:
 	
@@ -473,7 +473,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
-		glShape2v(GL_LINE_STRIP, pts, count);		
+		glShapeOffset2v(GL_LINE_STRIP, pts, count, -5);		
 		break;
 	}
 	
