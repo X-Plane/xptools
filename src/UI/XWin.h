@@ -42,6 +42,8 @@
 #define xmenu HMENU
 #endif
 
+#define	BUTTON_DIM 16
+
 enum {
 	xwin_style_thin				= 0,			// Thin window - just a rectangle
 	xwin_style_movable			= 1,			// Movable - but no machinery to resize
@@ -128,10 +130,10 @@ protected:
 
 		WindowRef				mWindow;
 		EventLoopTimerRef		mTimer;
-		int						mInDrag;
+		int						mInDrag[BUTTON_DIM];
 		int						mLastMouseX;
 		int						mLastMouseY;
-		int						mLastMouseButton;
+//		int						mLastMouseButton;
 public:
 		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 		static pascal OSErr		MacTrackingHandler(DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);

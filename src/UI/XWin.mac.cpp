@@ -34,7 +34,7 @@ static EventLoopTimerUPP		mTimerHandler = NewEventLoopTimerUPP(XWin::MacTimer);
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	mInDrag = 0;
+	memset(mInDrag, 0, sizeof(mInDrag));
 	
 		Rect	bounds;
 		
@@ -100,7 +100,7 @@ XWin::XWin(
 	int				inHeight)
 {
 	sIniting = true;
-	mInDrag = 0;
+	memset(mInDrag,0,sizeof(mInDrag));
 	
 		Rect	bounds;
 	
@@ -328,25 +328,32 @@ pascal OSStatus	XWin::MacEventHandler(
 	SetPortWindowPort(me->mWindow);
 	GlobalToLocal(&pt);
 	
+	int bcount;
+	
 	switch(clss) {
 	case kEventClassMouse:
 		if ((btn == 1) && (modifiers & controlKey))	btn = 2;
 		switch(kind) {
 		case kEventMouseUp:
-			if (me->mInDrag)
+			if (me->mInDrag[btn-1])
 				me->ClickUp(pt.h, pt.v, btn - 1);
-			me->mInDrag = false;
+			me->mInDrag[btn-1] = false;
 			return noErr;
 		case kEventMouseDragged:
 		case kEventMouseMoved:
-			if (me->mInDrag)
-				me->ClickDrag(pt.h, pt.v, btn - 1);	
-			else
+			bcount=0;
+			for(btn=0;btn<BUTTON_DIM;++btn)
+			if (me->mInDrag[btn])
+			{
+				++bcount;
+				me->ClickDrag(pt.h, pt.v, btn);	
+			}
+			if(bcount==0)
 				me->ClickMove(pt.h, pt.v);	
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
-			if (kind == kEventMouseDragged)
-				me->mLastMouseButton = btn-1;
+//			if (kind == kEventMouseDragged)
+//				me->mLastMouseButton = btn-1;
 			return noErr;
 		case kEventMouseWheelMoved:
 			me->MouseWheel(pt.h, pt.v, delta, (axis == kEventMouseWheelAxisY) ? 0 : 1);
@@ -365,10 +372,10 @@ pascal OSStatus	XWin::MacEventHandler(
 			return noErr;			
 		case kEventWindowHandleContentClick:
 			if ((btn == 1) && (modifiers & controlKey))	btn = 2;
-			me->mInDrag = true;
+			me->mInDrag[btn-1] = true;
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
-			me->mLastMouseButton =btn-1;
+//			me->mLastMouseButton =btn-1;
 			me->ClickDown(pt.h, pt.v, btn - 1);
 			return noErr;
 		case kEventWindowDrawContent:
@@ -409,9 +416,15 @@ pascal OSStatus	XWin::MacEventHandler(
 			}
 			return noErr;
 		case kEventRawKeyModifiersChanged:
-			if(me->mInDrag)				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,me->mLastMouseButton);
-			else						me->ClickMove(me->mLastMouseX, me->mLastMouseY					   );
-				
+			bcount=0;
+			for(btn=0;btn<BUTTON_DIM;++btn)
+			if (me->mInDrag[btn])
+			{
+				++bcount;
+				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,btn);
+			}
+			if(bcount==0)
+				me->ClickMove(me->mLastMouseX, me->mLastMouseY);				
 			return noErr;
 		default:
 			return eventNotHandledErr;
