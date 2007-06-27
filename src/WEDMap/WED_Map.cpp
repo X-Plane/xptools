@@ -20,7 +20,6 @@ WED_Map::WED_Map(IResolver * in_resolver) :
 {
 	mTool = NULL;
 	mIsToolClick = 0;
-	mIsMapDrag = 0;
 	
 }
 
@@ -206,14 +205,13 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 int			WED_Map::MouseDown(int x, int y, int button)
 {
-	mIsToolClick = 1;
-	mIsMapDrag = 0;
-	if (mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { Refresh(); return 1; }
-	if (button == 0) return 1;
-	mIsToolClick = 0;
-	mIsMapDrag = 1;
-	mX = x;
-	mY = y;
+	if(button==0) mIsToolClick = 0;
+	if(button==0 && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mIsToolClick=1; }
+	if(button==1)
+	{
+		mX = x;
+		mY = y;
+	}
 	// Refresh - map tools don't have access to a GUI_Pane and can't force refreshes.  But they are likely to do per-gesture drawing.
 	Refresh();
 	return 1;
@@ -221,8 +219,8 @@ int			WED_Map::MouseDown(int x, int y, int button)
 
 void		WED_Map::MouseDrag(int x, int y, int button)
 {
-	if (mIsToolClick && mTool) mTool->HandleClickDrag(x,y,button, GetModifiersNow());
-	if (mIsMapDrag)
+	if (button==0 && mIsToolClick && mTool) mTool->HandleClickDrag(x,y,button, GetModifiersNow());
+	if (button==1)
 	{
 		this->PanPixels(mX, mY, x, y);
 		mX = x; 
@@ -233,9 +231,9 @@ void		WED_Map::MouseDrag(int x, int y, int button)
 
 void		WED_Map::MouseUp  (int x, int y, int button)
 {
-	if (mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button, GetModifiersNow());
-	if (mIsMapDrag)				this->PanPixels(mX, mY, x, y);
-	mIsToolClick = mIsMapDrag = 0;
+	if (button==0&&mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button, GetModifiersNow());
+	if (button==1)				this->PanPixels(mX, mY, x, y);
+	if(button==0)mIsToolClick = 0;
 	Refresh();
 }
 

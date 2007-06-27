@@ -53,7 +53,6 @@ private:
 	IResolver *						mResolver;
 
 	int				mIsToolClick;
-	int				mIsMapDrag;
 	int				mX;
 	int				mY;
 
