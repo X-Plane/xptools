@@ -11,7 +11,9 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
-
+Versoin 3.0b3 6/25/07
+	- Optimization utils
+	- Animation window scrolls
 Version 3.0b2 5/15/07
 	- Prefix can be provided for texture export.
 	- Workspace can be epxorted by texture.
@@ -485,20 +487,73 @@ message box will suggest an LOD such as "Recommended LOD Distance: 1134
 meters."   This is just a recommendation; you may want to increase or decrease
 this  distance for your preferences.
 
-To actually apply the level of detail, create a group around your object with
-a name like "LOD xxxx/yyyyy" where xxxx and yyyy are the distances in meters.
-If you have multiple top level groups you will have multiple versions of your
-object.  Make sure that no two LOD ranges overlap, the first number is smaller
-than the second, and that the smallest LOD start at 0.  For example;
+To actually apply the level of detail, create a a new LOD group using the 
+X-Plane menu and use the X-Plane Properties dialog box to edit the LOD 
+distances.
 
-- World
-   - Group 'jetway_747.obj'
-      - Object 'LOD 0.0000/3000.0'
-      - Object 'LOD 0.0300/6000.0'
+-------------------------------------------------------------------------------
+CALCULATING BATCHES
+-------------------------------------------------------------------------------
 
-This hierarchy window shows an object with two versions, one visible from 0-3
-km and one from 3-6 km.  After 6 km the object will not be drawn, even if the
-atmospheric visibility is better than 6 km.
+A batch is a set of triangles or lines that all have the same properties, and
+thus can be drawn by the GPU without CPU intervention.  Generally speaking,
+more batches means lower framerate - the number of batches of triangles
+X-Plane can submit to the graphics card is a limiting factor on fps.
+
+The ac3d plugin can estimate the number of batches for a selected set of 
+objects.  Simply select some or all of your model and pick "Calculate Batches
+For Selection." 
+
+This prediction has some limitations:
+
+- It does not count batches caused by changes between 1-sided and two-sided
+  geometry, or flat-smooth shading.  To avoid extra batches, set your entire
+  workspace to 1-sided or 2-sided (if 1-sided, you can duplicate and flip
+  triangles to make two-sided geometry).  Keep all objects smooth-shaded and
+  use crease-angles to control the smoothnes of objects.
+- It does not count batches caused by changes from lines to triangles.
+- It doe not cause batches caused by animation.
+- If you select multiple LODs, it will count them all as if they would all be
+  drawn at once.
+- If you select objects that are not adjacent in the hierarchy, the estimate
+  will not take into account the (possibly quite negative) effect of 
+  unselected surfaces.
+  
+Generally the most accurate way to count batches is to export your object and
+count TRIS and LINES statements.  But this command can give you a quick
+indication of problems; often copying and pasting can result in very 
+inefficient ordering of objects and state changes.
+
+The ac3d OBJ exporter will try to optimize state change when it saves your
+model (and x-plane will further optimize state change if possible) but neither
+the exporter nor X-Plane will change the draw order of your object, which
+comes from the hierarchy.  Thus a hierarchy order that changes state a lot will
+directly lead to low framerate.
+
+You can use the "Optimize Selection" command to reorganize the selected objects
+to minimize the number of batches.  The optimize selection command will only
+reorder objects if the number of batches can be reduced.  Objects will be 
+shifted the minimum amount to optimize.  However, a number of serious warnings:
+
+- The heuristic for optimization is based on the batch count above, so every
+  one of the confounding factors that (animation, unselected objects) can
+  lead to false optimizations, or a refusal to optimize.
+- Objects are moved into the most specific group that contains the entire
+  selection; this can ruin a carefully organized large project.
+- The optimization command doesn't understand animation - usually it will
+  pull geometry out of aniation groups, effectively ruining animation.
+
+The optimzier will not change unselected geometry, allowing you to optimize
+parts of your geometry.
+
+I recommend using the optimizer as follows:
+
+1. First, organize your object into major groups, based on animated vs.
+   static geomertry.  Keep translucent geometry (that must be at the end)
+   and polygon offset geometry (that must be at the beginning) separate.
+   
+2. Then select each homogenous sub-group and use the optimizer to minimize
+   changes in blending control.
 
 -------------------------------------------------------------------------------
 CHANGE TEXTURE COMMAND
