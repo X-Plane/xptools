@@ -414,7 +414,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		mEditInfo.content_type = gui_Cell_None;
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 		
-		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y))
+		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 		{
 			mContent->SelectionEnd();
 			mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
@@ -424,7 +424,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}	
 
-	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y))
+	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 	{
 		mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
 		return 0;
