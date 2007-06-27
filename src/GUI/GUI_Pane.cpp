@@ -602,9 +602,9 @@ GUI_DragOperation		GUI_Pane::InternalDrop		(int x, int y, GUI_DragData * drag, G
 }
 
 
-bool				GUI_Pane::IsDragClick(int x, int y)
+bool				GUI_Pane::IsDragClick(int x, int y, int button)
 {
-	if (mParent)	return mParent->IsDragClick(x,y);
+	if (mParent)	return mParent->IsDragClick(x,y,button);
 	else			return false;
 }
 

@@ -142,7 +142,7 @@ public:
 	virtual	void		PopupMenu(GUI_Menu menu, int x, int y);											// Pop up a menu - useful for providing main or fixed menus contextually
 	virtual	int			PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);		// Pop up dynamic content.  No nesting, built on fly.  For enums, etc.
 
-	virtual	bool		IsDragClick(int x, int y);								// Returns true if the click is a drag, false if it is just a mouse release.
+	virtual	bool		IsDragClick(int x, int y, int button);								// Returns true if the click is a drag, false if it is just a mouse release.
 	virtual	GUI_DragOperation	
 						DoDragAndDrop(
 							int						x, 
