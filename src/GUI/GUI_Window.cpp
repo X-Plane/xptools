@@ -979,7 +979,8 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 		// escape.  Good enough for me - pretend it's an up-click (if it was, DragDetect ate it.)
 		if (!ret)
 			PostMessage(mWindow, button ? WM_RBUTTONUP : WM_LBUTTONUP, 0, MAKELONG(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow)));
-
+		else
+			mMouseFocusButton = button;
 		return ret;
 			
 	#else
