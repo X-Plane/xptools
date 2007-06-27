@@ -33,6 +33,8 @@ enum {
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,
+	wed_UnitFeet,
+	wed_UnitMeters,
 	wed_ToggleLines,	
 	wed_PickOverlay,
 	wed_ToggleOverlay,

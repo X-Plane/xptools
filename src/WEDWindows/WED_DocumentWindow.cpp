@@ -18,6 +18,7 @@
 #include "WED_Colors.h"
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
+#include "WED_PropertyHelper.h"
 
 int kDefaultDocSize[4] = { 0, 0, 512,384 };
 
@@ -219,6 +220,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	
+	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
+	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
+	
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
@@ -258,6 +262,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
+	
+	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
+	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
+	
 	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }
