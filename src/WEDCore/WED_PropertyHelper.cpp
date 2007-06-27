@@ -3,7 +3,10 @@
 #include "WED_Errors.h"
 #include "IODefs.h"
 #include "SQLUtils.h"
+#include "XESConstants.h"
 #include "WED_EnumSystem.h"
+
+int gIsFeet = 0;
 
 inline int remap(const map<int,int>& m, int v)
 {
@@ -323,7 +326,20 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_double));
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+void		WED_PropDoubleTextMeters::GetProperty(PropertyVal_t& val)
+{
+	WED_PropDoubleText::GetProperty(val);	
+	if(gIsFeet)val.double_val *= MTR_TO_FT;
+}
+
+void		WED_PropDoubleTextMeters::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	PropertyVal_t	ft_val(val);
+	if(gIsFeet)ft_val.double_val *= FT_TO_MTR;
+	WED_PropDoubleText::SetProperty(ft_val,parent);
+}
 
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------

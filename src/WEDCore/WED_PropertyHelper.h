@@ -20,6 +20,8 @@
 
 using std::vector;
 
+extern	int	gIsFeet;
+
 class	WED_PropertyHelper;
 class	IOWriter;
 class	IOReader;
@@ -158,6 +160,16 @@ public:
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
+
+class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
+public:
+	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, table, column, initial, digits, decimals) { }
+
+	WED_PropDoubleText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
+
+	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+};
 
 class	WED_PropStringText : public WED_PropertyItem {
 public:
