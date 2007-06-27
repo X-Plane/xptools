@@ -147,7 +147,7 @@ public:
 		CDropTarget *	mDropTarget;
 		POINT			mMouse;
 		POINT			mSizeMin;
-		int				mDragging;
+		int				mDragging[BUTTON_DIM];
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
