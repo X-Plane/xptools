@@ -595,7 +595,7 @@ static void add_keyframe(int argc, char * argv[])
 		{
 			int n = atoi(argv[1]);
 			int m = OBJ_get_anim_keyframe_count(obj);
-			if (n < m && n >= 0)
+			if (n < m && n >= (OBJ_get_anim_type(obj) == anim_trans ? 1 : 0))
 			{
 				add_undoable_all("Add Keyframe");			
 				if (OBJ_get_anim_type(obj) == anim_trans)
@@ -605,7 +605,7 @@ static void add_keyframe(int argc, char * argv[])
 					Vertex * v1 = (n > 0) ? surface_get_vertex(obj_get_first_surf(obj), n-1) : v2;					
 					if (v1 == NULL || v2 == NULL) 
 						return;
-					surface_insert_vertex(obj_get_first_surf(obj), v1, v2, &made);							
+					surface_insert_vertex(obj_get_first_surf(obj), v1, v2, &made);
 				}
 				int kf = n-1;
 				int ks = n;
@@ -639,7 +639,7 @@ static void delete_keyframe(int argc, char * argv[])
 		{
 			int n = atoi(argv[1]);
 			int m = OBJ_get_anim_keyframe_count(obj);
-			if (n < m && n >= 0 && m > 1)
+			if (n < m && n >= 0 && m > 2)
 			{
 				add_undoable_all("Add Keyframe");			
 				if (OBJ_get_anim_type(obj) == anim_trans)
@@ -806,6 +806,65 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 	}	
 }
 
+void	rescale_keyframes			(ACObject * obj, float new_lo, float new_hi)
+{
+	float old_lo, old_hi;
+	get_keyframe_range(obj,old_lo,old_hi);
+
+	int kk = OBJ_get_anim_keyframe_count(obj);
+	for(int k = 0; k < kk; ++k)
+		OBJ_set_anim_nth_value(obj,k,extrap(old_lo,new_lo,old_hi,new_hi,
+			OBJ_get_anim_nth_value(obj,k)));
+}
+
+int		get_keyframe_range			(ACObject * obj, float& lo, float& hi)
+{
+	int at = OBJ_get_anim_type(obj);
+	if(at != anim_trans && at != anim_rotate) return 0;
+	int kk = OBJ_get_anim_keyframe_count(obj);
+	if (kk < 1) return 0;
+	
+	lo = hi = OBJ_get_anim_nth_value(obj,0);
+	for(int k = 1; k < kk; ++k)
+	{
+		lo = min(lo,OBJ_get_anim_nth_value(obj,k));
+		hi = max(hi,OBJ_get_anim_nth_value(obj,k));
+	}	
+	return 1;
+}
+
+void	reverse_sel(void)
+{
+	vector<ACObject *>	objs;
+	find_all_selected_objects(objs);
+	if (objs.empty()) return;
+	add_undoable_all("Reverse Keyframes");			
+	for (int n = 0; n < objs.size(); ++n)
+	{
+		float lo, hi;
+		if (get_keyframe_range(objs[n],lo,hi))
+			rescale_keyframes(objs[n],hi,lo);
+	}
+}
+
+void	rescale_sel(int argc, char * argv[])
+{
+	if (argc < 3) return;
+	float lo = atof(argv[1]);
+	float hi = atof(argv[2]);
+
+	vector<ACObject *>	objs;
+	find_all_selected_objects(objs);
+	if (objs.empty()) return;
+
+	add_undoable_all("Rescale Keyframes");			
+	for (int n = 0; n < objs.size(); ++n)
+	{
+		float old_lo, old_hi;
+		if (get_keyframe_range(objs[n],old_lo,old_hi))
+			rescale_keyframes(objs[n],lo,hi);
+	}
+}
 
 void setup_obj_anim(void)
 {
@@ -819,6 +878,9 @@ void setup_obj_anim(void)
 	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
+
+	ac_add_command_full("xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, "ac3d xplane_reverse_keyframe", "reverse key frames of selection");	
+	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 3, "argv", "ac3d xplane_rescale_keyframe <lo> <hi>", "rescale key frames of selection");		
 
 	ac_add_command_full("xplane_resync_anim", CAST_CMD(do_resync_anim), 0, NULL, "ac3d xplane_resync_anim", "resync animation with model");
 

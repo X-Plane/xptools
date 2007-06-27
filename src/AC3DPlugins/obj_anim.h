@@ -47,19 +47,20 @@ void anim_add_hide(
 				const char *				name);
 
 
-float *	axis_for_rotation(ACObject * obj, float buf[3]);
-float * center_for_rotation(ACObject * obj, float buf[3]);
+float *	axis_for_rotation			(ACObject * obj, float buf[3]);
+float * center_for_rotation			(ACObject * obj, float buf[3]);
 float * center_for_rotation_negative(ACObject * obj, float buf[3]);
-float *	anim_trans_nth(ACObject * obj, int n, float buf[3]);
-float *	anim_trans_nth_relative(ACObject * obj, int n, float buf[3]);
+float *	anim_trans_nth				(ACObject * obj, int n, float buf[3]);
+float *	anim_trans_nth_relative		(ACObject * obj, int n, float buf[3]);
 
-void	bake_static_transitions(ACObject * object);
-void	purge_datarefs(void);
-void	gather_datarefs(ACObject * obj);
-void	sync_datarefs(void);
+void	bake_static_transitions		(ACObject * object);
+void	purge_datarefs				(void);
+void	gather_datarefs				(ACObject * obj);
+void	sync_datarefs				(void);
+void	rescale_keyframes			(ACObject * obj, float new_lo, float new_hi);
+int		get_keyframe_range			(ACObject * obj, float& lo, float& hi);
 
-void	setup_obj_anim(void);
-
+void	setup_obj_anim				(void);
 
 #endif
 

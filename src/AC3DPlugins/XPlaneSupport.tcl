@@ -144,6 +144,45 @@ proc xplane_tex_rescale_dialog {} {
 	raise        .xp_rescale
 }
 
+
+##########################################################################################################################################################
+# TEXTURE COORDINATE REMAPPING!
+##########################################################################################################################################################
+
+ac3d add_pref window_geom_xplane_rescale_keyframe ""
+
+proc xplane_keyframe_rescale_dialog {} {
+	global lo
+	global hi
+
+	if ![winfo exists .xp_rescale_keyframe] {
+		set lo 0
+		set hi 1
+
+		new_toplevel_tracked .xp_rescale_keyframe "Rescale texture coordinates" prefs_window_geom_xplane_rescale_keyframe
+		label	.xp_rescale_keyframe.lo_new_label -text "Low Value:"
+		spinbox .xp_rescale_keyframe.lo_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable lo -width 15
+		label	.xp_rescale_keyframe.hi_new_label -text "High Value:"
+		spinbox .xp_rescale_keyframe.hi_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable hi -width 15
+
+		button	.xp_rescale_keyframe.apply -text "Remap Selected" -command {
+			ac3d xplane_rescale_keyframe $lo $hi
+			ac3d redraw_all
+		}
+		pack	.xp_rescale_keyframe.apply -side left
+		
+		grid 	.xp_rescale_keyframe.lo_new_label .xp_rescale_keyframe.lo_new_spinbox -sticky news
+		grid 	.xp_rescale_keyframe.hi_new_label .xp_rescale_keyframe.hi_new_spinbox -sticky news
+		grid 	.xp_rescale_keyframe.apply -columnspan 2 -sticky ns
+
+		grid	columnconfigure .xp_rescale_keyframe { 1 3 } -weight 1 -minsize 40
+
+	}
+
+	wm deiconify .xp_rescale_keyframe
+	raise        .xp_rescale_keyframe
+}
+
 ##########################################################################################################################################################
 # PREFS DIALOG
 ##########################################################################################################################################################
@@ -951,6 +990,12 @@ if {$USE_KEYFRAMES} {
 .mbar.xplane.menu add command -label "Make Hide" -command "ac3d xplane_make_anim_typed hide"
 # no need to bake static translations - it's done for us
 #.mbar.xplane.menu add command -label "Bake Static Transitions" -command "ac3d xplane_bake_static"
+
+if {$USE_KEYFRAMES} {
+.mbar.xplane.menu add command -label "Reverse Keyframes" -command "ac3d xplane_reverse_keyframe"
+.mbar.xplane.menu add command -label "Rescale Keyframes..." -command xplane_keyframe_rescale_dialog
+}
+
 .mbar.xplane.menu add command -label "Animation Time..." -command "xplane_anim_window"
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Make Trees" -command "ac3d xplane_make_tree"
