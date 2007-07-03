@@ -268,7 +268,7 @@ void FileSet_TarballClose(void * ref, void * fi)
 MFFileSet *		FileSet_Open(const char * inPath)
 {
 	MFFileSet * ns = NULL;
-	MF_FileType	pathType = MF_GetFileType(inPath, 0);
+	MF_FileType	pathType = MF_GetFileType(inPath, mf_CheckType);
 	if (pathType == mf_BadFile) return NULL;
 	
 	if (pathType == mf_Directory)
@@ -1078,7 +1078,7 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 #endif
 
 	// At this point we know we have a file.
-	if (analysis_level == 1)
+	if (analysis_level == mf_CheckHeaders)
 	{
 		// What kind of datafile is it?  Well, if its size is < 2 bytes and known, it must not 
 		// be some kind of zip.

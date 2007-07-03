@@ -136,6 +136,17 @@ enum {
 };
 typedef int	MF_FileType;
 
+/* MF_AnalysisLevel tells us how hard to look at a file.
+ * Level 0 = just see if we have a file, dir or bad file.
+ * Level 1 = identify compressed archives by their headers.
+ * Level 2 = do enough decompression to distinguish number of zip files and tar balls. */
+enum {
+	mf_CheckType = 0,
+	mf_CheckHeaders = 1,
+	mf_CheckContents = 2
+};
+typedef int MF_AnalysisLevel;
+
 /* Macros to tell if the file makes sense as a single or plural entity. */
 inline bool	MF_IsCollection(MF_FileType f) { return f == mf_Directory || f == mf_ZipFile || f == mf_ZipFiles || f == mf_GZTarBall; }
 inline bool	MF_IsSingle(MF_FileType f) 	   { return f == mf_DataFile || f == mf_ZipFile || f == mf_GZFile; }
@@ -159,15 +170,12 @@ MF_IterateDirectory(
  * MF_GetFileType
  *
  * Examine a path to determine what it points to. Three levels of analysis: 
- * Level 0 = just see if we have a file, dir or bad file.
- * Level 1 = identify compressed archives by their headers.
- * Level 2 = do enough decompression to distinguish number of zip files and tar balls.
  *
  */
 MF_FileType	
 MF_GetFileType(
-		const char * 	path, 
-		int 			analysis_level);
+		const char *		path, 
+		MF_AnalysisLevel 	analysis_level);
 
 
 /*
