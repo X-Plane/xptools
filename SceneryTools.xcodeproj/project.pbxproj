@@ -489,6 +489,9 @@
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
+		D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E60C39840400BD789F /* GUI_Prefs.cpp */; };
+		D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */; };
+		D6E023EE0C39842700BD789F /* WED_PackageListAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */; };
 		D6E0645A0BDD2E020070E31C /* GUI_ToolBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */; };
 		D6E064820BDD32010070E31C /* map_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E064810BDD32010070E31C /* map_tools.png */; };
 		D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */; };
@@ -1461,6 +1464,12 @@
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
+		D6E023E60C39840400BD789F /* GUI_Prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Prefs.cpp; sourceTree = "<group>"; };
+		D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageMgr.cpp; sourceTree = "<group>"; };
+		D6E023E90C39841200BD789F /* WED_PackageMgr.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageMgr.h; sourceTree = "<group>"; };
+		D6E023EB0C39841C00BD789F /* GUI_Prefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Prefs.h; sourceTree = "<group>"; };
+		D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageListAdapter.cpp; sourceTree = "<group>"; };
+		D6E023ED0C39842700BD789F /* WED_PackageListAdapter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageListAdapter.h; sourceTree = "<group>"; };
 		D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ToolBar.cpp; sourceTree = "<group>"; };
 		D6E064590BDD2E020070E31C /* GUI_ToolBar.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_ToolBar.h; sourceTree = "<group>"; };
 		D6E064810BDD32010070E31C /* map_tools.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_tools.png; sourceTree = "<group>"; };
@@ -1936,6 +1945,8 @@
 		D6BC36770AB22C84003949C5 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				D6E023EB0C39841C00BD789F /* GUI_Prefs.h */,
+				D6E023E60C39840400BD789F /* GUI_Prefs.cpp */,
 				D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */,
 				D6E064590BDD2E020070E31C /* GUI_ToolBar.h */,
 				D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */,
@@ -2331,6 +2342,8 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */,
+				D6E023E90C39841200BD789F /* WED_PackageMgr.h */,
 				D6ED40370B6AD47300D5484E /* WED_Archive.cpp */,
 				D6ED40380B6AD47300D5484E /* WED_Archive.h */,
 				D6ED40390B6AD47300D5484E /* WED_Buffer.cpp */,
@@ -2418,6 +2431,8 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
+				D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */,
+				D6E023ED0C39842700BD789F /* WED_PackageListAdapter.h */,
 				D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */,
 				D6BC37EA0AB22C85003949C5 /* WED_DocumentWindow.h */,
 				D6BC37ED0AB22C85003949C5 /* WED_Menus.cpp */,
@@ -3690,6 +3705,9 @@
 				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
 				D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */,
 				D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */,
+				D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */,
+				D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */,
+				D6E023EE0C39842700BD789F /* WED_PackageListAdapter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
