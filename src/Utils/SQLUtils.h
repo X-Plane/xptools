@@ -180,8 +180,8 @@ public:
 	template <typename B, typename R>
 	int simple_exec(const B& binding, R& row)
 	{
-		set_params(binding);
 		begin();
+		set_params(binding);
 		int rc;
 		do {
 			rc = get_row(row);
