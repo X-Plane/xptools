@@ -12,6 +12,7 @@ enum {
 	// File Menu
 	wed_NewPackage = GUI_APP_MENUS,
 	wed_OpenPackage,
+	wed_ChangeSystem,
 	wed_ImportApt,
 	wed_ExportApt,
 	// Edit Menu,

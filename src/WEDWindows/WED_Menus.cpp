@@ -14,6 +14,8 @@ static const GUI_MenuItem_t	kAppMenu[] = {
 static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&New Package...",		'N',	gui_ControlFlag,				0,	wed_NewPackage		},
 {	"&Open Package...",		'O',	gui_ControlFlag,				0,	wed_OpenPackage		},
+{	"Chan&ge X-System Folder...",0,	0,								0,	wed_ChangeSystem	},
+{	"-",					0,  	0,								0,	0					},
 {	"&Close",				'W',	gui_ControlFlag,				0,	gui_Close			},
 {	"&Save",				'S',	gui_ControlFlag,				0,	gui_Save			},
 {	"&Revert To Saved",		0,		0,								0,	gui_Revert			},

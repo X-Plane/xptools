@@ -28,6 +28,10 @@
 #include "GUI_Listener.h"
 
 class	GUI_Button;
+class	GUI_ScrollerPane;
+class	GUI_TextTable;
+class	GUI_Table;
+class	WED_PackageListAdapter;
 
 class WED_StartWindow : public GUI_Window, public GUI_Listener  {
 public:
@@ -46,13 +50,27 @@ public:
 							int						inMsg,
 							int						inParam);
 
+	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
+	virtual	int				HandleCommand(int command) 									;
+	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck) ;
+
+	virtual void			Activate(int inActive);
+
 private:
+
+			void			RecomputeButtonEnables();
 
 	string				mCaption;
 
 	GUI_Button *		mNew;
 	GUI_Button *		mOpen;
+	GUI_Button *		mChange;
+	GUI_ScrollerPane *	mScroller;
 	
+	GUI_Table *			mTable;
+	GUI_TextTable *					mTextTable;
+	
+	WED_PackageListAdapter *		mPackageList;
 };
 
 #endif /* WED_StartWindow_H */
