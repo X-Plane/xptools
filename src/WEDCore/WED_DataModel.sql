@@ -23,14 +23,16 @@ CREATE TABLE IF NOT EXISTS WED_things(
 );
 
 CREATE TABLE IF NOT EXISTS WED_selection(
-	id				integer		PRIMARY KEY	,
-	item			integer		NOT NULL
+	id				integer		NOT NULL,
+	item			integer		NOT NULL,
+	PRIMARY KEY(id,item)	
 );
 
 CREATE TABLE IF NOT EXISTS WED_key_objects(
-	id				integer		PRIMARY KEY	,
+	id				integer		NOT NULL,
 	key				string		NOT NULL,
-	value			integer		NOT NULL
+	value			integer		NOT NULL,
+	PRIMARY KEY(id,key)
 );
 
 -- ENTITIES AND GIS
@@ -75,8 +77,8 @@ CREATE TABLE IF NOT EXISTS GIS_lines_heading(
 
 -- Specific Types
 
-CREATE TABLE IF NOT EXISTS æ(
-	id				integer		PRIMARY KEY	,
+CREATE TABLE IF NOT EXISTS WED_objects(
+	id				integer			PRIMARY KEY	,
 	model_id		integer			REFERENCES WED_models(id)
 );
 
