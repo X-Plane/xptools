@@ -591,14 +591,10 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 	
 	if (!value.empty())
 	{
-		#if OPTIMIZE
-			Ben says - I could not get an insert to work with variable bindings.  Reparsing the statement is real inefficient.
-		#endif
+		sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
+		sql_command cmd2(db,cmd_buf,"@e");
 		for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
-		{
-			sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mTable, id_col, mColumn, id_val);
-			sql_command cmd2(db,cmd_buf,"@e");
-			
+		{			
 			sql_row1<int>	p;
 
 			p.a = *i;
