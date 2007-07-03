@@ -61,6 +61,9 @@ static ACObject * get_sel_single_light(int n)
 
 /****************************************************************************************************************/
 
+#define	SIMPLE_PROPERTY_MAPPINGS_ALL	\
+	SIMPLE_PROPERTY_STR(obj_name,get_sel_single_obj,OBJ_set_name,OBJ_get_name,"","")
+
 #define	SIMPLE_PROPERTY_MAPPINGS_OBJ	\
 	SIMPLE_PROPERTY_STR(hard_surf,get_sel_single_obj,OBJ_set_hard,OBJ_get_hard,"","none") \
 	SIMPLE_PROPERTY_FLT(poly_os,get_sel_single_obj,OBJ_set_poly_os,OBJ_get_poly_os) \
@@ -119,6 +122,7 @@ static ACObject * get_sel_single_light(int n)
 	static void xplane_##prop_name##_cb(double value, int idx, void * ref, TCL_linked_vardv * who) { \
 		 APPLY_SET_ONE_OR_MANY(obj_func(idx),set_func(obj,value))  }
 
+SIMPLE_PROPERTY_MAPPINGS_ALL
 SIMPLE_PROPERTY_MAPPINGS_OBJ
 SIMPLE_PROPERTY_MAPPINGS_LGT
 SIMPLE_PROPERTY_MAPPINGS_GRP
@@ -313,6 +317,7 @@ static void OBJ_editor_sync(ACObject * changed)
 			if (seltype == sel_obj && (changed == obj || changed == NULL))
 			{
 				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_OBJ
 				blend_enable_var->set(idx, OBJ_get_blend(obj) <= 0.0);
 				blend_level_var->set(idx, fabs(OBJ_get_blend(obj)));
@@ -326,11 +331,13 @@ static void OBJ_editor_sync(ACObject * changed)
 			if (seltype == sel_light && (changed == obj || changed == NULL))
 			{
 				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_LGT
 			}
 			if (seltype == sel_group && (changed == obj || changed == NULL))
 			{
 				if (obj == NULL) message_dialog("internal err - null obj!\n");
+				SIMPLE_PROPERTY_MAPPINGS_ALL
 				SIMPLE_PROPERTY_MAPPINGS_GRP
 			}
 				
@@ -362,6 +369,7 @@ void	OBJ_editor_init(void)
 	#define	SIMPLE_PROPERTY_FLT(prop_name,obj_func,set_func,get_func)	\
 		prop_name##_var = new TCL_linked_vardv(ac_get_tcl_interp(),"xplane_" #prop_name, MAX_MULTI_COUNT, xplane_##prop_name##_cb, NULL, 0.0);
 
+	SIMPLE_PROPERTY_MAPPINGS_ALL
 	SIMPLE_PROPERTY_MAPPINGS_OBJ
 	SIMPLE_PROPERTY_MAPPINGS_LGT
 	SIMPLE_PROPERTY_MAPPINGS_GRP

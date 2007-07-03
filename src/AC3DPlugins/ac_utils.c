@@ -104,6 +104,39 @@ void	find_all_selected_objects_parents(vector<ACObject *>& output)
 	}
 }
 
+Surface *	find_single_selected_surface(void)
+{
+	if(ac_get_select_mode()!=SELECT_SURFACE) return NULL;
+	List * s = ac_selection_get_surfaces();
+	if (s)
+	{
+		if (s->next == NULL)
+		{
+			Surface * ret = (Surface *) s->data;
+			list_free(&s);
+			return ret;
+		}
+	}
+	return NULL;
+}
+
+ACObject *	find_single_selected_object(void)
+{
+	if(ac_get_select_mode()!=SELECT_OBJECT && ac_get_select_mode() != SELECT_GROUP) return NULL;
+	List * s = ac_selection_get_objects();
+	if (s)
+	{
+		if (s->next == NULL)
+		{
+			ACObject * ret = (ACObject *) s->data;
+			list_free(&s);
+			return ret;
+		}
+	}
+	return NULL;
+}
+
+
 void	offset_object_textures(ACObject * ob, double dx, double dy, double sx, double sy)
 {
 	List * surfaces = ac_object_get_surfacelist(ob);

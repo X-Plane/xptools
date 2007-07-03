@@ -14,6 +14,8 @@ KNOWN BUGS:
 Versoin 3.0b3 6/25/07
 	- Optimization utils
 	- Animation window scrolls
+	- LOD group name label was wrong in property editor
+	- Objects can be renamed directly in the X-Plane Properties Editor
 Version 3.0b2 5/15/07
 	- Prefix can be provided for texture export.
 	- Workspace can be epxorted by texture.

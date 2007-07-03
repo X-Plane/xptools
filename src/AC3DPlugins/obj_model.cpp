@@ -190,6 +190,22 @@ void		OBJ_unregister_change_cb(OBJ_change_f func)
 	void		OBJ_set_##x(ACObject * obj, float v) {		  OBJ_set_property_flt(obj, #y, v); }	\
 	float		OBJ_get_##x(ACObject * obj		   ) { return OBJ_get_property_flt(obj, #y   ); }
 
+void		OBJ_set_name(ACObject * obj, const char * name)
+{
+	ac_object_set_name(obj,(char*)name);
+	
+	redraw_all();
+	tcl_command("hier_update");	
+	for (set<OBJ_change_f>::iterator f = gChangeFuncs.begin(); f != gChangeFuncs.end(); ++f)
+		(*f)(obj);	
+	
+}
+const char *	OBJ_get_name(ACObject * obj, char * buf)
+{
+	strcpy(buf,ac_object_get_name(obj));
+	return buf;
+}
+
 
 STR_PROP(hard,hard_surf)
 FLT_PROP(blend,blend)

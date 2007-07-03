@@ -156,22 +156,30 @@ proc xplane_keyframe_rescale_dialog {} {
 	global hi
 
 	if ![winfo exists .xp_rescale_keyframe] {
-		set lo 0
-		set hi 1
+		set old_lo 0
+		set old_hi 1
+		set new_lo 1
+		set new_hi 0
 
 		new_toplevel_tracked .xp_rescale_keyframe "Rescale texture coordinates" prefs_window_geom_xplane_rescale_keyframe
-		label	.xp_rescale_keyframe.lo_new_label -text "Low Value:"
-		spinbox .xp_rescale_keyframe.lo_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable lo -width 15
-		label	.xp_rescale_keyframe.hi_new_label -text "High Value:"
-		spinbox .xp_rescale_keyframe.hi_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable hi -width 15
+		label	.xp_rescale_keyframe.lo_old_label -text "Old Low Value:"
+		spinbox .xp_rescale_keyframe.lo_old_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable old_lo -width 15
+		label	.xp_rescale_keyframe.lo_new_label -text "New Low Value:"
+		spinbox .xp_rescale_keyframe.lo_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable new_lo -width 15
+		label	.xp_rescale_keyframe.hi_old_label -text "Old High Value:"
+		spinbox .xp_rescale_keyframe.hi_old_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable old_hi -width 15
+		label	.xp_rescale_keyframe.hi_new_label -text "New High Value:"
+		spinbox .xp_rescale_keyframe.hi_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable new_hi -width 15
 
 		button	.xp_rescale_keyframe.apply -text "Remap Selected" -command {
-			ac3d xplane_rescale_keyframe $lo $hi
+			ac3d xplane_rescale_keyframe $old_lo $new_lo $old_hi $new_hi
 			ac3d redraw_all
 		}
 		pack	.xp_rescale_keyframe.apply -side left
 		
+		grid 	.xp_rescale_keyframe.lo_old_label .xp_rescale_keyframe.lo_old_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.lo_new_label .xp_rescale_keyframe.lo_new_spinbox -sticky news
+		grid 	.xp_rescale_keyframe.hi_old_label .xp_rescale_keyframe.hi_old_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.hi_new_label .xp_rescale_keyframe.hi_new_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.apply -columnspan 2 -sticky ns
 
@@ -378,13 +386,13 @@ proc xplane_inspector_sync {} {
 		if {$sel_type == 1} { 
 			pack $container.light 
 			global xplane_obj_name$x
-			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]			
+#			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]			
 			xplane_light_sync $x $container
 		}
 		if {$sel_type == 2} { 
 			pack $container.obj 
 			global xplane_obj_name$x
-			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]
+#			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]
 #			pack forget $container.obj.anim_type_btn
 #			if {$anim_type == 1} { pack $container.obj.anim_type_btn -anchor nw }
 			xplane_obj_sync $x $container
@@ -392,7 +400,7 @@ proc xplane_inspector_sync {} {
 		if {$sel_type == 3} { 
 			pack $container.grp 
 			global xplane_obj_name$x
-			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]
+#			set xplane_obj_name$x [ac3d object_get_name [lindex [ac3d get_selected_objects] $x] ]
 		}
 		if {$sel_type == 4} { pack $container.multi }
 	}
@@ -578,7 +586,7 @@ proc xplane_inspector {} {
 			
 			label $container.obj.name_label -text "Name:"
 			global xplane_obj_name$idx
-			label $container.obj.name -textvariable xplane_obj_name$idx
+			entry $container.obj.name -textvariable xplane_obj_name$idx -width 20
 			pack $container.obj.name_label $container.obj.name
 
 			# Ben says: this would make a static label showing the animation type - not needed since the group that surrounds the animation type handles this.

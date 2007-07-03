@@ -20,6 +20,9 @@ void	find_all_selected_objects_stable(vector<ACObject *>& output);
 void	find_all_selected_objects_flat(vector<ACObject *>& output);
 void	find_all_selected_objects_parents(vector<ACObject *>& output);
 
+Surface *	find_single_selected_surface(void);
+ACObject *	find_single_selected_object(void);
+
 void	offset_object_textures(ACObject * ob, double dx, double dy, double sx, double sy);
 
 void 	add_tri_to_obj(ACObject * obj, Vertex * v1, Vertex * v2, Vertex * v3);

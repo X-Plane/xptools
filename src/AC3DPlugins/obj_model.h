@@ -13,6 +13,7 @@ enum {
 	anim_hide = 5
 };
 
+void		OBJ_set_name(ACObject * obj, const char * name);
 void		OBJ_set_hard(ACObject * obj, const char * surf);
 void		OBJ_set_blend(ACObject * obj, float cutoff);	// -1 for smooth
 void		OBJ_set_poly_os(ACObject * obj, float offset);
@@ -54,6 +55,7 @@ void		OBJ_set_anim_keyframe_root(ACObject * obj, int n);
 
 // TODO: materials, show/hide animation, smoke puffs, custom lights, rgb lights
 
+const char *	OBJ_get_name(ACObject * obj, char * buf);
 const char *	OBJ_get_hard(ACObject * obj, char * buf);
 float			OBJ_get_blend(ACObject * obj);
 float			OBJ_get_poly_os(ACObject * obj);

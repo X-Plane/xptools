@@ -363,13 +363,13 @@ void	sync_datarefs()
 	for (map<string,dataref_info>::iterator dref = g_datarefs.begin(); dref != g_datarefs.end(); ++dref)
 	{
 		char buf[10];
-		sprintf(buf,"%c", 'a' + n);
+		sprintf(buf,"dr%d", n);
 		string tcl_name(buf);
-		char debug[120];
+//		char debug[120];
 		string dref_q(dref->first);
 		quote_dref(dref_q);
 		tcl_command("sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
-		sprintf(debug,"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+//		sprintf(debug,"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}
@@ -447,7 +447,7 @@ static void make_anim_of_type(int argc, char * argv[])
 {
 	add_undoable_all("Make Animation");
 
-	List * objs_l = ac_selection_get_objects();
+	List * objs_l = ac_selection_get_part_selected_objects();
 	if (objs_l == NULL) return;
 	vector<ACObject *> 	objs;
 	set<ACObject *>		parents;
@@ -481,6 +481,54 @@ static void make_anim_of_type(int argc, char * argv[])
 	
 	float a1[3] = { 0.0, 0.0, 0.0 };
 	float a2[3] = { 0.0, 10.0, 0.0 };
+
+	Surface *	surf;
+	ACObject *	obj;
+	surf=find_single_selected_surface();
+
+	if (surf==NULL && (obj=find_single_selected_object())!=NULL)
+	{
+		surf = obj_get_first_surf(obj);
+	}
+	
+	if(surf!=NULL && surf->numvert > 0)
+	{
+		List * v;
+		for(v=surf->vertlist;v;v=v->next)
+		{
+			a1[0] += SVERTEX(v->data)->x;
+			a1[1] += SVERTEX(v->data)->y;
+			a1[2] += SVERTEX(v->data)->z;
+		}
+		
+		a1[0] /= (float) surf->numvert;
+		a1[1] /= (float) surf->numvert;
+		a1[2] /= (float) surf->numvert;
+		
+		float len=0;
+		for(v=surf->vertlist;v;v=v->next)
+		{
+			len+=sqrt(sqr(a1[0]-SVERTEX(v->data)->x)+
+					  sqr(a1[1]-SVERTEX(v->data)->y)+
+					  sqr(a1[2]-SVERTEX(v->data)->z));
+		}
+		
+		len /= (float) surf->numvert;
+
+		if (strcmp(argv[1],"rotate")!=0)
+		{
+			keys[0].v[0] = a1[0];
+			keys[0].v[1] = a1[1];
+			keys[0].v[2] = a1[2];
+			keys[1].v[0] = a1[0] + surf->normal.x * len;
+			keys[1].v[1] = a1[1] + surf->normal.y * len;
+			keys[1].v[2] = a1[2] + surf->normal.z * len;
+		} else {
+			a2[0] = surf->normal.x * len;
+			a2[1] = surf->normal.y * len;
+			a2[2] = surf->normal.z * len;
+		}
+	}
 	
 	if (strcmp(argv[1],"translate")==0)
 		anim_add_translate(*parents.begin(), 1, keys, "none", "translation");
@@ -684,7 +732,7 @@ static void anim_exit_cb(void * data)
 	g_anim_inited = 0;
 }
 
-static void build_key_table(ACObject * ob, vector<XObjKey>& table)
+static void build_key_table(ACObject * ob, vector<XObjKey>& table, int * root)
 {
 	int anim_type = OBJ_get_anim_type(ob);
 	table.resize(OBJ_get_anim_keyframe_count(ob));
@@ -697,6 +745,11 @@ static void build_key_table(ACObject * ob, vector<XObjKey>& table)
 		}
 		else if (anim_type == anim_rotate)
 			table[n].v[0] = OBJ_get_anim_nth_angle(ob, n);
+	}
+	if (table.size() > 1 && table.front().key > table.back().key)
+	{
+		if (root) *root = table.size()-*root-1;
+		reverse(table.begin(),table.end());
 	}
 }
 
@@ -749,8 +802,8 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 		switch(anim_t) {
 		case anim_trans:
 			{
-				build_key_table(ob, table);
 				int root = OBJ_get_anim_keyframe_root(ob);
+				build_key_table(ob, table,&root);
 				if (root >= table.size()) root = (table.size()-1);
 				if (!table.empty())
 					glTranslatef(key_extrap(now_v,table,0) - table[root].v[0],
@@ -770,7 +823,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			break;
 		case anim_rotate:
 			{
-				build_key_table(ob, table);				
+				build_key_table(ob, table,NULL);
 				if (!table.empty())
 				{
 					axis_for_rotation(ob, axis);
@@ -806,11 +859,8 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 	}	
 }
 
-void	rescale_keyframes			(ACObject * obj, float new_lo, float new_hi)
+void	rescale_keyframes			(ACObject * obj, float old_lo, float new_lo, float old_hi, float new_hi)
 {
-	float old_lo, old_hi;
-	get_keyframe_range(obj,old_lo,old_hi);
-
 	int kk = OBJ_get_anim_keyframe_count(obj);
 	for(int k = 0; k < kk; ++k)
 		OBJ_set_anim_nth_value(obj,k,extrap(old_lo,new_lo,old_hi,new_hi,
@@ -837,21 +887,40 @@ void	reverse_sel(void)
 {
 	vector<ACObject *>	objs;
 	find_all_selected_objects(objs);
-	if (objs.empty()) return;
+	int n,ctr=0;
+	vector<float>	old_lo(objs.size()),old_hi(objs.size());
+	
+	for(n=0;n < objs.size(); ++n)
+	if(get_keyframe_range(objs[n],old_lo[n],old_hi[n]))		++ctr;
+	else													objs[n]=NULL;
+
+	if (ctr==0) return;
+
 	add_undoable_all("Reverse Keyframes");			
-	for (int n = 0; n < objs.size(); ++n)
+
+	float lo=old_lo[0];
+	float hi=old_hi[0];
+	for(n=1;n<objs.size();++n)
+	if(objs[n])
 	{
-		float lo, hi;
-		if (get_keyframe_range(objs[n],lo,hi))
-			rescale_keyframes(objs[n],hi,lo);
+		lo=min(lo,old_lo[n]);
+		hi=max(hi,old_hi[n]);
+	}
+	
+	for (n = 0; n < objs.size(); ++n)
+	if(objs[n])
+	{
+		rescale_keyframes(objs[n],lo,hi,hi,lo);
 	}
 }
 
 void	rescale_sel(int argc, char * argv[])
 {
-	if (argc < 3) return;
-	float lo = atof(argv[1]);
-	float hi = atof(argv[2]);
+	if (argc < 5) return;
+	float old_lo = atof(argv[1]);
+	float new_lo = atof(argv[2]);
+	float old_hi = atof(argv[3]);
+	float new_hi = atof(argv[4]);
 
 	vector<ACObject *>	objs;
 	find_all_selected_objects(objs);
@@ -860,9 +929,9 @@ void	rescale_sel(int argc, char * argv[])
 	add_undoable_all("Rescale Keyframes");			
 	for (int n = 0; n < objs.size(); ++n)
 	{
-		float old_lo, old_hi;
-		if (get_keyframe_range(objs[n],old_lo,old_hi))
-			rescale_keyframes(objs[n],lo,hi);
+		float l,h;
+		if (get_keyframe_range(objs[n],l,h))
+			rescale_keyframes(objs[n],old_lo,new_lo,old_hi,new_hi);
 	}
 }
 
@@ -880,7 +949,7 @@ void setup_obj_anim(void)
 	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 
 	ac_add_command_full("xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, "ac3d xplane_reverse_keyframe", "reverse key frames of selection");	
-	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 3, "argv", "ac3d xplane_rescale_keyframe <lo> <hi>", "rescale key frames of selection");		
+	ac_add_command_full("xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, "argv", "ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", "rescale key frames of selection");		
 
 	ac_add_command_full("xplane_resync_anim", CAST_CMD(do_resync_anim), 0, NULL, "ac3d xplane_resync_anim", "resync animation with model");
 

@@ -57,7 +57,7 @@ void	bake_static_transitions		(ACObject * object);
 void	purge_datarefs				(void);
 void	gather_datarefs				(ACObject * obj);
 void	sync_datarefs				(void);
-void	rescale_keyframes			(ACObject * obj, float new_lo, float new_hi);
+void	rescale_keyframes			(ACObject * obj, float old_lo, float new_lo, float old_hi, float new_hi);
 int		get_keyframe_range			(ACObject * obj, float& lo, float& hi);
 
 void	setup_obj_anim				(void);
