@@ -218,6 +218,9 @@ void		GUI_Pane::ParentResized(int inOldBounds[4], int inNewBounds[4])
 			new_bounds[2] = mBounds[2] + (inNewBounds[2] - inOldBounds[2]);
 		else
 			new_bounds[2] = mBounds[2] + (inNewBounds[0] - inOldBounds[0]);
+	} else {
+		new_bounds[0] += ((inNewBounds[2] - inNewBounds[0]) - (inOldBounds[2] - inOldBounds[0])) / 2;
+		new_bounds[2] += ((inNewBounds[2] - inNewBounds[0]) - (inOldBounds[2] - inOldBounds[0])) / 2;
 	}
 
 	if (mSticky[1] || mSticky[3])
@@ -231,6 +234,9 @@ void		GUI_Pane::ParentResized(int inOldBounds[4], int inNewBounds[4])
 			new_bounds[3] = mBounds[3] + (inNewBounds[3] - inOldBounds[3]);
 		else
 			new_bounds[3] = mBounds[3] + (inNewBounds[1] - inOldBounds[1]);
+	} else {
+		new_bounds[1] += ((inNewBounds[3] - inNewBounds[1]) - (inOldBounds[3] - inOldBounds[1])) / 2;
+		new_bounds[3] += ((inNewBounds[3] - inNewBounds[1]) - (inOldBounds[3] - inOldBounds[1])) / 2;
 	}
 	
 	SetBounds(new_bounds);

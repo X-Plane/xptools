@@ -35,6 +35,26 @@ GUI_Button::~GUI_Button()
 {
 }
 
+void	GUI_Button::SetTiles(
+		int					off_regular[4],
+		int					off_hilite[4],
+		int					on_regular[4],
+		int					on_hilite[4])
+{
+	for (int n = 0; n < 4; ++n)
+	{
+		mCellOffReg[n] = off_regular[n];
+		mCellOffHilite[n] = off_hilite[n];
+		mCellOnReg[n] = on_regular[n];
+		mCellOnHilite[n] = on_hilite[n];
+	}
+}
+
+void		GUI_Button::AddRadioFriend(GUI_Button * who)
+{
+	mRadios.push_back(who);
+}
+
 void		GUI_Button::SetValue(float inValue)
 {
 	GUI_Control::SetValue(inValue);
@@ -46,6 +66,8 @@ int		GUI_Button::MouseMove(int x, int y)
 	if (mBehavior == btn_Web)
 	{
 		mHilite = 1;
+		for(int n = 0; n <mRadios.size(); ++n)
+			mRadios[n]->SetHilite(0);
 		Refresh();
 	}
 	return 1;
@@ -87,6 +109,8 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 			break;
 		case btn_Radio:
 			SetValue(1.0);
+			for (int n = 0; n < mRadios.size(); ++n)
+				mRadios[n]->SetValue(0);
 			break;
 		}
 	}

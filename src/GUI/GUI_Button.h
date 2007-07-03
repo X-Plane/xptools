@@ -5,10 +5,10 @@
 
 enum GUI_ButtonType {
 
-	btn_Web,
-	btn_Push,
-	btn_Check,
-	btn_Radio
+	btn_Web,		// Hilites when mouse-over...you need to dehilite when in the parent window -- radio-friends dehilite each other.  On click, resets val to 0
+	btn_Push,		// Push: hilites while mouse down and in, resets val to 0 on a click.
+	btn_Check,		// Toggles itself on a click between 0 and 1.
+	btn_Radio		// Sets itself to 1, sets radio friends to 0.
 
 };
 
@@ -23,6 +23,16 @@ public:
 								int					on_hilite[4]);								
 	virtual				~GUI_Button();
 
+			void		SetTiles(											// You can change the tiles on the fly, effectively changing the look or behavior
+								int					off_regular[4],			// of the button.
+								int					off_hilite[4],
+								int					on_regular[4],
+								int					on_hilite[4]);										
+
+			void		AddRadioFriend(GUI_Button * who);					// Each button knows its peers in the radio-button or web-button group.
+
+			void		SetHilite(int hilite);								// Manually set hilite state - needed for parent to turn off web-button hilite
+
 	virtual	void		SetValue(float inValue);
 
 	virtual	int			MouseMove(int x, int y);
@@ -31,8 +41,9 @@ public:
 	virtual	void		MouseUp  (int x, int y, int button);
 	virtual	void		Draw(GUI_GraphState * state);
 
-			void		SetHilite(int hilite);
 private:
+		vector<GUI_Button *>	mRadios;
+
 
 		GUI_ButtonType		mBehavior;
 		string				mResource;
