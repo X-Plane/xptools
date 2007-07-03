@@ -229,9 +229,9 @@ void		ENUM_write(sqlite3 * db)
 	}
 	
 	{
+		sql_command add_item(db,"INSERT INTO WED_enum_system VALUES(@i,@n,@s,@d,@e);","@i,@n,@s,@d,@e");
 		for(int i = 0; i < sEnums.size(); ++i)
 		{
-			sql_command add_item(db,"INSERT INTO WED_enum_system VALUES(@i,@n,@s,@d,@e);","@i,@n,@s,@d,@e");
 			sql_row5<int,string,string,int,int>	r;
 		
 			r.a = i;
