@@ -14,7 +14,10 @@ enum {
 
 	msg_SelectionChanged,
 	
-	msg_ArchiveChanged
+	msg_ArchiveChanged,
+	
+	msg_SystemFolderChanged,
+	msg_SystemFolderUpdated	
 
 };
 
