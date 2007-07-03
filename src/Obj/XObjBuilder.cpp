@@ -307,6 +307,11 @@ void	XObjBuilder::AccumTranslateKey(float v, float xyz[3])
 
 void	XObjBuilder::AccumTranslateEnd(void)
 {
+	if (obj->animation.back().keyframes.size() > 1 &&
+		obj->animation.back().keyframes.front().key > obj->animation.back().keyframes.back().key)
+	{
+		reverse(obj->animation.back().keyframes.begin(),obj->animation.back().keyframes.end());
+	}
 }
 
 void	XObjBuilder::AccumRotateBegin(float axis[3], const char * ref)
@@ -332,6 +337,11 @@ void	XObjBuilder::AccumRotateKey(float v, float a)
 
 void	XObjBuilder::AccumRotateEnd(void)
 {
+	if (obj->animation.back().keyframes.size() > 1 &&
+		obj->animation.back().keyframes.front().key > obj->animation.back().keyframes.back().key)
+	{
+		reverse(obj->animation.back().keyframes.begin(),obj->animation.back().keyframes.end());
+	}
 }
 
 
