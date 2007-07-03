@@ -38,10 +38,11 @@
 #include "GUI_Resources.h"
 #include "WED_Application.h"
 #include "WED_AboutBox.h"
-
+#include "WED_PackageMgr.h"
 #include "GUI_Pane.h"
 #include "GUI_Fonts.h"
 #include "GUI_Window.h"
+#include "GUI_Prefs.h"
 
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
@@ -106,6 +107,7 @@ int main(int argc, const char * argv[])
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
 	WED_Application	app;
+	WED_PackageMgr	pMgr(NULL);
 	
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold
 	// our textures, and WED cannot handle the textures being thrown away and needing a reload.  So logically we must have
@@ -124,7 +126,13 @@ int main(int argc, const char * argv[])
 	
 	start->ShowMessage("Initializing...");
 	XESInit();
-
+	
+	start->ShowMessage("Reading Prefs...");
+	GUI_Prefs_Read("WED");
+	
+	start->ShowMessage("Scanning X-System Folder...");
+	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
+	
 	start->ShowMessage("Loading DEM tables...");
 	LoadDEMTables();
 	start->ShowMessage("Loading OBJ tables...");
@@ -157,6 +165,12 @@ int main(int argc, const char * argv[])
 	
 	delete about;
 	GUI_MemoryHog::RemoveNewHandler();
+
+	string xsys;
+	pMgr.GetXPlaneFolder(xsys);
+	GUI_SetPrefString("packages","xsystem",xsys.c_str());
+
+	GUI_Prefs_Write("WED");
 	
 	return 0;
 }
