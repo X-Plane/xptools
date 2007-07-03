@@ -134,6 +134,7 @@ protected:
 		int						mLastMouseX;
 		int						mLastMouseY;
 //		int						mLastMouseButton;
+		int						mIsControlClick;
 public:
 		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 		static pascal OSErr		MacTrackingHandler(DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);

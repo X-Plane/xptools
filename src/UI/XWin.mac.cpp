@@ -332,7 +332,7 @@ pascal OSStatus	XWin::MacEventHandler(
 	
 	switch(clss) {
 	case kEventClassMouse:
-		if ((btn == 1) && (modifiers & controlKey))	btn = 2;
+		if (btn == 1 && me->mIsControlClick) btn = 2;
 		switch(kind) {
 		case kEventMouseUp:
 			if (me->mInDrag[btn-1])
@@ -371,7 +371,8 @@ pascal OSStatus	XWin::MacEventHandler(
 			me->Activate(false);
 			return noErr;			
 		case kEventWindowHandleContentClick:
-			if ((btn == 1) && (modifiers & controlKey))	btn = 2;
+			me->mIsControlClick = ((btn == 1) && (modifiers & controlKey));
+			if (me->mIsControlClick) btn=2;
 			me->mInDrag[btn-1] = true;
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
