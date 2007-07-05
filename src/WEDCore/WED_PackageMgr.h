@@ -45,6 +45,10 @@ public:
 	
 	int			CreateNewPackage(void);
 	void		Rescan(void);
+	
+	string		ComputePath(const string& package, const string& rel_file) const;
+	string		ReducePath(const string& package, const string& full_file) const;
+	
 private:
 
 	string			system_path;

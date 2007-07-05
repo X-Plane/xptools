@@ -1,6 +1,7 @@
 #include "WED_Document.h"
 #include "WED_Progress.h"
 #include "GUI_Resources.h"
+#include "WED_PackageMgr.h"
 #include "FileUtils.h"
 #include "XESIO.h"
 #include "AptIO.h"
@@ -16,24 +17,15 @@
 // migrate all old stuff
 // wire dirty to obj persistence
 
-static string	process_path(const string& package_path)
-{
-	string ret(package_path);
-	FILE_make_dir_exist(ret.c_str());
-	ret += DIR_STR "WED";
-	FILE_make_dir_exist(ret.c_str());
-	ret += DIR_STR "earth.wed";
-	return ret;
-}
 
 static set<WED_Document *> sDocuments;
 
 WED_Document::WED_Document(
-								const string& 		path, 
+								const string& 		package, 
 								double				inBounds[4]) :
 //	mProperties(mDB.get()),
-	mPackagePath(path),
-	mFilePath(process_path(path)),
+	mPackage(package),
+	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
 	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
 	mUndo(&mArchive)
@@ -129,7 +121,7 @@ bool	WED_Document::TryClose(void)
 {
 	if (IsDirty())
 	{
-		string msg = string("Save changes to document ") + mPackagePath + string(" before closing?");
+		string msg = string("Save changes to scenery package ") + mPackage + string(" before closing?");
 	
 		switch(DoSaveDiscardDialog("Save changes before closing...",msg.c_str())) {
 		case close_Save:	Save();	break;
@@ -146,6 +138,8 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 {
 	const char * sp = in_path;
 	const char * ep;
+	
+	if (strcmp(in_path,"librarian")==0) return (ILibrarian *) this;
 	
 	IBase * who = mArchive.Fetch(1);
 	
@@ -204,4 +198,15 @@ bool	WED_Document::TryCloseAll(void)
 	return true;
 }
 
+
+
+void	WED_Document::LookupPath(string& io_path)
+{
+	io_path = gPackageMgr->ComputePath(mPackage, io_path);
+}
+
+void	WED_Document::ReducePath(string& io_path)
+{
+	io_path = gPackageMgr->ReducePath(mPackage, io_path);
+}
 

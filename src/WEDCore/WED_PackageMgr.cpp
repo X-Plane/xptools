@@ -155,3 +155,29 @@ void		WED_PackageMgr::Rescan(void)
 	}
 	BroadcastMessage(msg_SystemFolderChanged,0);
 }
+
+string		WED_PackageMgr::ComputePath(const string& package, const string& rel_file) const
+{
+	return system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + package + DIR_STR + rel_file;
+}
+
+string		WED_PackageMgr::ReducePath(const string& package, const string& full_file) const
+{	
+	string prefix = ComputePath(package,string());
+	string partial(full_file);
+	
+	int n = 0;
+	while(n < prefix.size() && n < partial.size() && prefix[n] == partial[n]) ++n;
+	
+	prefix.erase(0,n);
+	partial.erase(0,n);
+	
+	while(!prefix.empty())
+	{	
+		string::size_type chop = prefix.find_first_of("\\/:");
+		if (chop == prefix.npos) break;
+		prefix.erase(0,chop+1);
+		partial = string("../") + partial;
+	}
+	return partial;
+}

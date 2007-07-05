@@ -5,6 +5,7 @@
 #include "GUI_Destroyable.h"
 #include "MeshDefs.h"
 #include "AptDefs.h"
+#include "ILibrarian.h"
 #include "MapDefs.h"
 #include "DEMDefs.h"
 //#include "WED_Properties.h"
@@ -35,11 +36,11 @@ typedef struct sqlite3 sqlite3;
 */
 
 
-class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver {
+class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian {
 public:
 
 						WED_Document(
-								const string& 		path, 
+								const string& 		package,
 								double				inBounds[4]);
 						~WED_Document();
 
@@ -54,6 +55,9 @@ public:
 
 //	virtual void *		QueryInterface(const char * class_id);
 	virtual	IBase *		Resolver_Find(const char * path);
+	virtual void		LookupPath(string& io_path);		// Input: a relative or library path
+	virtual void		ReducePath(string& io_path);		// Output: actual disk location
+	
 
 	bool				TryClose(void);
 	void				Save(void);
@@ -75,7 +79,7 @@ private:
 	double				mBounds[4];
 
 	string				mFilePath;
-	string				mPackagePath;
+	string				mPackage;
 	
 	sql_db				mDB;
 	WED_Archive			mArchive;
