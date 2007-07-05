@@ -75,7 +75,9 @@
 	_R(WED_Taxiway) \
 	_R(WED_TowerViewpoint) \
 	_R(WED_Windsock) \
-	_R(WED_ATCFrequency)
+	_R(WED_ATCFrequency) \
+	_R(WED_TextureNode) \
+	_R(WED_OverlayImage)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

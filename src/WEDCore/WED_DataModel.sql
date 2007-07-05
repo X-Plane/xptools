@@ -177,6 +177,17 @@ CREATE TABLE IF NOT EXISTS WED_airportnode(
 	PRIMARY KEY(id,attributes)	
 );
 
+CREATE TABLE IF NOT EXISTS WED_texturenode(
+	id				integer		PRIMARY KEY,
+	s				double		NOT NULL,
+	t				double		NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS WED_overlayimage(
+	id				integer		PRIMARY KEY,
+	file			string		NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS WED_enum_system(
 	value			integer		PRIMARY KEY,
 	name			string		NOT NULL,
