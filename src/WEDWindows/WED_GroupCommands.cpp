@@ -30,7 +30,15 @@
 #include "WED_ATCFrequency.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
-
+#include "BitmapUtils.h"
+#include "GISUtils.h"
+#include "PlatformUtils.h"
+#include "WED_UIDefs.h"
+#include "ILibrarian.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_OverlayImage.h"
+#include "WED_AirportChain.h"
+#include "WED_TextureNode.h"
 
 int		WED_CanGroup(IResolver * inResolver)
 {
@@ -135,6 +143,120 @@ void	WED_DoUngroup(IResolver * inResolver)
 	}
 	
 	op->CommitOperation();
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#pragma mark -
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
+{
+	char buf[1024];
+	if (GetFilePathFromUser(getFile_Open, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
+	{
+	
+		Point2	coords[4];
+		double c[8];
+	
+		if (FetchTIFFCorners(buf, c))
+		{
+			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+			coords[3].x = c[0];
+			coords[3].y = c[1];
+			coords[0].x = c[2];
+			coords[0].y = c[3];
+			coords[2].x = c[4];
+			coords[2].y = c[5];
+			coords[1].x = c[6];
+			coords[1].y = c[7];
+		}
+		else
+		{
+			ImageInfo	inf;
+			
+			if (CreateBitmapFromPNG(buf,&inf,false) != 0)
+			if (CreateBitmapFromJPEG(buf,&inf) != 0)
+			if (CreateBitmapFromTIF(buf,&inf) != 0)
+			if (CreateBitmapFromFile(buf,&inf) != 0)
+			{
+				#if !DEV
+				better reporting
+				#endif
+				DoUserAlert("Unable to open image file.");
+				return;
+			}
+			
+			double	nn,ss,ee,ww;
+			zoomer->GetPixelBounds(ww,ss,ee,nn);
+			
+			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+							
+			double grow_x = 0.5*(ee-ww)/((double) inf.width);
+			double grow_y = 0.5*(nn-ss)/((double) inf.height);
+			
+			double pix_w, pix_h;
+			
+			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+			
+			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+			
+			DestroyBitmap(&inf);
+			
+			WED_Thing * wrl = WED_GetWorld(inResolver);
+			ISelection * sel = WED_GetSelect(inResolver);
+			
+			wrl->StartOperation("Add Overlay Image");
+			sel->Clear();
+			
+			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
+			WED_AirportChain * rng = WED_AirportChain::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			
+			p1->SetParent(rng,0);
+			p2->SetParent(rng,1);
+			p3->SetParent(rng,2);
+			p4->SetParent(rng,3);
+			rng->SetParent(img,0);
+			img->SetParent(wrl,0);
+			sel->Select(img);
+			
+			p1->SetLocation(coords[0]);
+			p2->SetLocation(coords[1]);
+			p3->SetLocation(coords[2]);
+			p4->SetLocation(coords[3]);
+			
+			
+			string img_path(buf);
+			WED_GetLibrarian(inResolver)->ReducePath(img_path);			
+			img->SetImage(img_path);
+			
+			p1->SetName("Corner 1");
+			p1->SetName("Corner 2");
+			p1->SetName("Corner 3");
+			p1->SetName("Corner 4");
+			rng->SetName("Image Boundary");
+			rng->SetClosed(1);
+			const char * p = buf;
+			const char * n = buf;
+			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+			img->SetName(n);
+			
+			p1->SetTextCoord(Point2(1,0));
+			p2->SetTextCoord(Point2(1,1));
+			p3->SetTextCoord(Point2(0,1));
+			p4->SetTextCoord(Point2(0,0));
+			
+			wrl->CommitOperation();
+			
+		}
+	}
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------

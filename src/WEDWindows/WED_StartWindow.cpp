@@ -309,9 +309,9 @@ int			WED_StartWindow::HandleCommand(int command)
 		if (!gPackageMgr->HasSystemFolder()) return 1;	
 		if (mPackageList->HasSelection())
 		{		
-			string path, name;
+			string name;
 			int n = mPackageList->GetSelection(&name);
-			gPackageMgr->GetNthCustomPackagePath(n,path);
+//			gPackageMgr->GetNthCustomPackagePath(n,path);
 			
 			for(int i = 0; i < sDocs.size(); ++i)
 			if (sDocs[i].n == name)
@@ -324,7 +324,7 @@ int			WED_StartWindow::HandleCommand(int command)
 					open_doc_t nd;
 					double b[4] = { -180, -90, 180, 90 };
 					nd.n = name;
-					nd.d = new WED_Document(path.c_str(), b);				
+					nd.d = new WED_Document(name.c_str(), b);				
 					nd.w = new WED_DocumentWindow(name.c_str(), this->GetCmdParent(), nd.d);
 					sDocs.push_back(nd);
 					mPackageList->LockPackage(nd.n);

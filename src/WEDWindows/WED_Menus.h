@@ -38,7 +38,7 @@ enum {
 	wed_UnitMeters,
 	wed_ToggleLines,	
 	wed_PickOverlay,
-	wed_ToggleOverlay,
+//	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleTerraserver,
 	// Select Menu
