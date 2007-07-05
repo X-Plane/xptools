@@ -65,6 +65,11 @@ void			WED_GISPoint::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds
 
 void	WED_GISPoint::GetLocation(      Point2& p) const
 {
+	#if !DEV
+		eval whether this is a good solution?
+	#endif
+	CacheBuild();
+
 	p.x = longitude.value;
 	p.y = latitude.value;
 }
