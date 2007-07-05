@@ -15,7 +15,6 @@
 #include "WED_CreateLineTool.h"
 #include "WED_StructureLayer.h"
 #include "WED_WorldMapLayer.h"
-#include "WED_ImageOverlayTool.h"
 #include "WED_VertexTool.h"
 //#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
@@ -25,7 +24,7 @@
 #include "GUI_Resources.h"
 #include "WED_ToolInfoAdapter.h"
 #include "WED_UIMeasurements.h"
-
+#include "WED_GroupCommands.h"
 char	kToolKeys[] = { 
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
@@ -87,7 +86,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_CreatePointTool("Helipad", mMap, mMap, resolver, archive, create_Helipad));
 	mTools.push_back(					new WED_CreateLineTool("Sealane", mMap, mMap, resolver, archive, create_Sealane));
 	mTools.push_back(					new WED_CreateLineTool("Runway", mMap, mMap, resolver, archive, create_Runway));
-	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Overlay Picture",mMap, mMap, resolver));
+//	mTools.push_back(mImageOverlay = 	new WED_ImageOverlayTool("Overlay Picture",mMap, mMap, resolver));
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
@@ -220,9 +219,9 @@ int		WED_MapPane::Map_HandleCommand(int command)
 {
 	Bbox2 box;
 	switch(command) {
-	case wed_PickOverlay:	mImageOverlay->PickFile();	return 1;
+	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
-	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
+//	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
 	case wed_ToggleTerraserver:	mTerraserver->ToggleVis(); return 1;
 //	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
 
@@ -248,7 +247,7 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	switch(command) {
 	case wed_PickOverlay:																	return 1;
 	case wed_ToggleWorldMap:ioCheck = mWorldMap->IsVisible();								return 1;
-	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
+//	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { ioCheck = mImageOverlay->IsVisible(); return 1; }	break;
 	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVis();							return 1;
 //	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
 	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;

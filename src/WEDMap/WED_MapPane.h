@@ -13,7 +13,6 @@ class GUI_Table;
 class GUI_TextTable;
 class WED_ToolInfoAdapter;
 
-class	WED_ImageOverlayTool;
 class	WED_TerraserverLayer;
 class	WED_StructureLayer;
 class	WED_WorldMapLayer;
@@ -58,7 +57,6 @@ private:
 	vector<WED_MapLayer *>	mLayers;
 	vector<WED_MapToolNew *>mTools;
 	
-	WED_ImageOverlayTool *	mImageOverlay;
 	WED_TerraserverLayer *	mTerraserver;
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;

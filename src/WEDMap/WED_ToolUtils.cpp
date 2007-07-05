@@ -3,6 +3,7 @@
 #include "WED_Thing.h"
 #include "GUI_Pane.h"
 #include "IResolver.h"
+#include "ILibrarian.h"
 #include "WED_Airport.h"
 #include <list>
 
@@ -133,6 +134,12 @@ WED_Thing *	WED_GetWorld(IResolver * resolver)
 {
 	return SAFE_CAST(WED_Thing,resolver->Resolver_Find("world"));
 }
+
+ILibrarian *	WED_GetLibrarian(IResolver * resolver)
+{
+	return SAFE_CAST(ILibrarian,resolver->Resolver_Find("librarian"));
+}
+
 
 static void	WED_GetSelectionInOrderRecursive(ISelection * sel, WED_Thing * who, vector<WED_Thing *>& out_sel)
 {
