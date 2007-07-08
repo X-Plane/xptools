@@ -138,6 +138,7 @@ int		WED_PackageListAdapter::SelectDisclose(
 			int							open_it,
 			int							all)
 {
+	return 0;
 }
 
 int		WED_PackageListAdapter::TabAdvance(
