@@ -51,28 +51,28 @@ WED_DocumentWindow::WED_DocumentWindow(
 	****************************************************************************************************************************************************************/
 
 //	int		splitter_b[4];	
-	GUI_Splitter * main_splitter = new GUI_Splitter(gui_Split_Horizontal);
-	if (WED_UIMeasurement("one_big_gradient"))		main_splitter->SetImage ("gradient.png");
-	else											main_splitter->SetImage1("gradient.png");
-	main_splitter->SetParent(packer);
-	main_splitter->Show();
+	mMainSplitter = new GUI_Splitter(gui_Split_Horizontal);
+	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
+	else											mMainSplitter->SetImage1("gradient.png");
+	mMainSplitter->SetParent(packer);
+	mMainSplitter->Show();
 //	GUI_Pane::GetBounds(splitter_b);
-//	main_splitter->SetBounds(splitter_b);
-	main_splitter->SetSticky(1,1,1,1);
+//	mMainSplitter->SetBounds(splitter_b);
+	mMainSplitter->SetSticky(1,1,1,1);
 		
 	double	lb[4];
 	mDocument->GetBounds(lb);
 	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive());
-	mMapPane->SetParent(main_splitter);
+	mMapPane->SetParent(mMainSplitter);
 	mMapPane->Show();
-	mMapPane->SetSticky(1,1,0,1);
+	mMapPane->SetSticky(1,1,0.5,1);
 	
 	GUI_Pane * top_bar = mMapPane->GetTopBar();
 	top_bar->SetParent(packer);
 	top_bar->Show();
 	packer->PackPane(top_bar, gui_Pack_Top);
 	top_bar->SetSticky(1,0,1,1);
-	packer->PackPane(main_splitter, gui_Pack_Center);
+	packer->PackPane(mMainSplitter, gui_Pack_Center);
 	
 
 	/****************************************************************************************************************************************************************
@@ -81,21 +81,21 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- Splitter and tabs ---------------
 	
-	GUI_Splitter * prop_splitter = new GUI_Splitter(gui_Split_Vertical);
+	mPropSplitter = new GUI_Splitter(gui_Split_Vertical);
 	if (!WED_UIMeasurement("one_big_gradient")) {
-		prop_splitter->SetImage1("gradient.png");
-		prop_splitter->SetImage2("gradient.png");
+		mPropSplitter->SetImage1("gradient.png");
+		mPropSplitter->SetImage2("gradient.png");
 	}
-	prop_splitter->SetParent(main_splitter);
-	prop_splitter->Show();
+	mPropSplitter->SetParent(mMainSplitter);
+	mPropSplitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
-	prop_splitter->SetBounds(splitter_b);
-	prop_splitter->SetSticky(1,1,1,1);
+	mPropSplitter->SetBounds(splitter_b);
+	mPropSplitter->SetSticky(0.5,1,1,1);
 
 	GUI_TabPane * prop_tabs = new GUI_TabPane(this);
-	prop_tabs->SetParent(prop_splitter);
+	prop_tabs->SetParent(mPropSplitter);
 	prop_tabs->Show();
-	prop_tabs->SetSticky(1,1,1,0);
+	prop_tabs->SetSticky(1,1,1,0.5);
 	prop_tabs->SetTextColor(WED_Color_RGBA(wed_Tabs_Text));
 
 	// --------------- Selection ---------------
@@ -162,17 +162,23 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static int widths[] =			{ 50,		50,		200		};
 
 	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);	
-	prop_pane->SetParent(prop_splitter);
+	prop_pane->SetParent(mPropSplitter);
 	prop_pane->Show();
-	prop_pane->SetSticky(1,1,1,1);
+	prop_pane->SetSticky(1,0.5,1,1);
 
 	/****************************************************************************************************************************************************************
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
-	main_splitter->AlignContentsAt(512);
-	prop_splitter->AlignContentsAt(300);	
+	int zw[4];
+	GUI_Pane::GetBounds(zw);
+
+	mMainSplitter->AlignContentsAt(inDocument->ReadIntPref("window/main_split",(zw[2]+zw[0]) * 0.5f));
+	mPropSplitter->AlignContentsAt(inDocument->ReadIntPref("window/prop_split",(zw[1]+zw[3]) * 0.5f));
 	mMapPane->ZoomShowAll();
+	
+	mMapPane->FromPrefs(inDocument);	
+	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()
@@ -277,6 +283,20 @@ void	WED_DocumentWindow::ReceiveMessage(
 {
 	if(inMsg == msg_DocumentDestroyed)
 		delete this;
+	if (inMsg == msg_DocWillSave)
+	{
+		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
+		mMapPane->ToPrefs(prefs);
+		prefs->WriteIntPref("doc/use_feet",gIsFeet);
+		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
+		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
+	}
+	if (inMsg == msg_DocLoaded)
+	{
+		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
+		mMapPane->FromPrefs(prefs);
+		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
+	}
 }
 
 bool	WED_DocumentWindow::Closed(void)

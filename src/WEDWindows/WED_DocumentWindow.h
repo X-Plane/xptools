@@ -14,6 +14,7 @@ class	WED_MapPane;
 class	WED_Document;
 class	WED_PropertyTable;
 class	WED_PropertyTableHeader;
+class	GUI_Splitter;
 
 class	WED_DocumentWindow : public GUI_Window, public GUI_Listener {
 public:
@@ -39,6 +40,10 @@ private:
 
 	WED_Document *				mDocument;
 	WED_MapPane *				mMapPane;
+
+
+	GUI_Splitter *				mMainSplitter;
+	GUI_Splitter *				mPropSplitter;
 
 //	WED_PropertyTable *			mTestTable;	
 //	WED_PropertyTableHeader *	mTestTableHeader;
