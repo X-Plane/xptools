@@ -37,6 +37,7 @@ enum {
 	wed_UnitFeet,
 	wed_UnitMeters,
 	wed_ToggleLines,	
+	wed_ToggleVertices,
 	wed_PickOverlay,
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
