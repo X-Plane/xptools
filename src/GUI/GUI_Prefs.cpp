@@ -29,6 +29,9 @@
 #if APL
 	#include <Carbon/Carbon.h>
 #endif
+#if IBM
+	#include <shlobj.h>
+#endif
 
 typedef map<string,string>				GUI_PrefSection_t;
 typedef map<string,GUI_PrefSection_t>	GUI_Prefs_t;
@@ -76,7 +79,12 @@ bool			GUI_GetPrefsDir(string& path)
 		return true;
 	#endif
 	#if IBM
-		NOT YET DONE
+		char buf[MAX_PATH];
+		HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf);
+		if (!SUCCEEDED(res))
+			return false;
+		path = buf;
+		return true;
 	#endif 
 	#if LIN
 		NOT YET DONE
