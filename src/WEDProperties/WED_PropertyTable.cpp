@@ -4,8 +4,11 @@
 #include "ISelection.h"
 #include "IOperation.h"
 #include "IGIS.h"
+#include "ILibrarian.h"
 #include "WED_Entity.h"
 #include "WED_Messages.h"
+#include "PlatformUtils.h"
+#include "WED_UIDefs.h"
 #include "GUI_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
@@ -114,6 +117,10 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_EditText;
 		the_content.text_val = val.string_val;
 		break;
+	case prop_FilePath:
+		the_content.content_type = gui_Cell_FileText;
+		the_content.text_val = val.string_val;
+		break;
 	case prop_Bool:
 		the_content.content_type = gui_Cell_CheckBox;
 		the_content.int_val = val.int_val;
@@ -181,6 +188,23 @@ void	WED_PropertyTable::AcceptEdit(
 						int							apply_all)
 {
 	vector<WED_Thing *>	apply_vec;
+
+	GUI_CellContent content(the_content);
+
+	
+	if (content.content_type == gui_Cell_FileText)
+	{
+		ILibrarian * librarian = WED_GetLibrarian(mResolver);
+		librarian->LookupPath(content.text_val);
+
+		char fbuf[2048];
+		strcpy(fbuf,content.text_val.c_str());
+		if (!GetFilePathFromUser(getFile_Open,"Pick file", "Open", FILE_DIALOG_PROPERTY_TABLE, fbuf,sizeof(fbuf)))
+			return;
+		content.text_val = fbuf;
+		librarian->ReducePath(content.text_val);
+	}
+	
 	if (apply_all)
 	{
 		ISelection * sel = WED_GetSelect(mResolver);
@@ -204,37 +228,42 @@ void	WED_PropertyTable::AcceptEdit(
 		PropertyVal_t	val;
 		t->GetNthPropertyInfo(idx,inf);	
 		
-		if (inf.prop_kind == prop_Int		&& the_content.content_type != gui_Cell_Integer	)	continue;
-		if (inf.prop_kind == prop_Double	&& the_content.content_type != gui_Cell_Double	)	continue;
-		if (inf.prop_kind == prop_String	&& the_content.content_type != gui_Cell_EditText)	continue;
-		if (inf.prop_kind == prop_Bool		&& the_content.content_type != gui_Cell_CheckBox)	continue;
-		if (inf.prop_kind == prop_Enum		&& the_content.content_type != gui_Cell_Enum	)	continue;
-		if (inf.prop_kind == prop_EnumSet	&& the_content.content_type != gui_Cell_EnumSet	)	continue;
+		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
+		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
+		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
+		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
+		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
+		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
+		if (inf.prop_kind == prop_EnumSet	&& content.content_type != gui_Cell_EnumSet	)	continue;
 		
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
-			val.int_val = the_content.int_val;
+			val.int_val = content.int_val;
 			break;
 		case prop_Double:
 			val.prop_kind = prop_Double;
-			val.double_val = the_content.double_val;
+			val.double_val = content.double_val;
 			break;
 		case prop_String:
 			val.prop_kind = prop_String;
-			val.string_val = the_content.text_val;
+			val.string_val = content.text_val;
+			break;
+		case prop_FilePath:
+			val.prop_kind = prop_FilePath;
+			val.string_val = content.text_val;
 			break;
 		case prop_Bool:
 			val.prop_kind = prop_Bool;
-			val.int_val = the_content.int_val;
+			val.int_val = content.int_val;
 			break;
 		case prop_Enum:
 			val.prop_kind = prop_Enum;
-			val.int_val = the_content.int_val;
+			val.int_val = content.int_val;
 			break;
 		case prop_EnumSet:	
 			val.prop_kind = prop_EnumSet;
-			val.set_val = the_content.int_set_val;
+			val.set_val = content.int_set_val;
 			break;			
 		}
 		string foo = string("Change ") + inf.prop_name;
