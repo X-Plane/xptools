@@ -20,6 +20,8 @@ public:
 			void		SetImage1(const char * image_res);
 			void		SetImage2(const char * image_res);
 	
+			int			GetSplitPoint(void);
+	
 	virtual	void		Draw(GUI_GraphState * state);	
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);

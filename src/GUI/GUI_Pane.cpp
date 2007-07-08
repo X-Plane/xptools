@@ -174,7 +174,7 @@ void		GUI_Pane::SetBounds(int inBounds[4])
 	}	
 }
 
-void		GUI_Pane::GetSticky(int outSticky[4])
+void		GUI_Pane::GetSticky(float outSticky[4])
 {
 	outSticky[0] = mSticky[0];
 	outSticky[1] = mSticky[1];
@@ -182,7 +182,7 @@ void		GUI_Pane::GetSticky(int outSticky[4])
 	outSticky[3] = mSticky[3];
 }
 
-void		GUI_Pane::SetSticky(int x1, int y1, int x2, int y2)
+void		GUI_Pane::SetSticky(float x1, float y1, float x2, float y2)
 {
 	mSticky[0] = x1;
 	mSticky[1] = y1;
@@ -190,7 +190,7 @@ void		GUI_Pane::SetSticky(int x1, int y1, int x2, int y2)
 	mSticky[3] = y2;
 }
 
-void		GUI_Pane::SetSticky(int inSticky[4])
+void		GUI_Pane::SetSticky(float inSticky[4])
 {
 	mSticky[0] = inSticky[0];
 	mSticky[1] = inSticky[1];
@@ -207,38 +207,16 @@ void		GUI_Pane::ParentResized(int inOldBounds[4], int inNewBounds[4])
 	
 	int new_bounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
 	
-	if (mSticky[0] || mSticky[2])
-	{		
-		if (mSticky[0])
-			new_bounds[0] = mBounds[0] + (inNewBounds[0] - inOldBounds[0]);
-		else
-			new_bounds[0] = mBounds[0] + (inNewBounds[2] - inOldBounds[2]);
+	int delta[4] = {	inNewBounds[0] - inOldBounds[0], 
+						inNewBounds[1] - inOldBounds[1], 
+						inNewBounds[2] - inOldBounds[2], 
+						inNewBounds[3] - inOldBounds[3] };
+						
+	new_bounds[0] += (delta[0] * mSticky[0] + delta[2] * (1.0 - mSticky[0]));
+	new_bounds[2] += (delta[2] * mSticky[2] + delta[0] * (1.0 - mSticky[2]));
+	new_bounds[1] += (delta[1] * mSticky[1] + delta[3] * (1.0 - mSticky[1]));
+	new_bounds[3] += (delta[3] * mSticky[3] + delta[1] * (1.0 - mSticky[3]));	
 
-		if (mSticky[2])
-			new_bounds[2] = mBounds[2] + (inNewBounds[2] - inOldBounds[2]);
-		else
-			new_bounds[2] = mBounds[2] + (inNewBounds[0] - inOldBounds[0]);
-	} else {
-		new_bounds[0] += ((inNewBounds[2] - inNewBounds[0]) - (inOldBounds[2] - inOldBounds[0])) / 2;
-		new_bounds[2] += ((inNewBounds[2] - inNewBounds[0]) - (inOldBounds[2] - inOldBounds[0])) / 2;
-	}
-
-	if (mSticky[1] || mSticky[3])
-	{		
-		if (mSticky[1])
-			new_bounds[1] = mBounds[1] + (inNewBounds[1] - inOldBounds[1]);
-		else
-			new_bounds[1] = mBounds[1] + (inNewBounds[3] - inOldBounds[3]);
-
-		if (mSticky[3])
-			new_bounds[3] = mBounds[3] + (inNewBounds[3] - inOldBounds[3]);
-		else
-			new_bounds[3] = mBounds[3] + (inNewBounds[1] - inOldBounds[1]);
-	} else {
-		new_bounds[1] += ((inNewBounds[3] - inNewBounds[1]) - (inOldBounds[3] - inOldBounds[1])) / 2;
-		new_bounds[3] += ((inNewBounds[3] - inNewBounds[1]) - (inOldBounds[3] - inOldBounds[1])) / 2;
-	}
-	
 	SetBounds(new_bounds);
 }
 

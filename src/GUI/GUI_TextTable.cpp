@@ -2,6 +2,8 @@
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
 #include "GUI_Messages.h"
+#include "WED_UIDefs.h"
+#include "PlatformUtils.h"
 #include "GUI_DrawUtils.h"
 #include <math.h>
 #include "GUI_TextField.h"
@@ -438,6 +440,12 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	
 	char  buf[256];
 	switch(mEditInfo.content_type) {
+	case gui_Cell_FileText:
+		{
+			mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+			mEditInfo.content_type = gui_Cell_None;			
+		}
+		break;
 	case gui_Cell_CheckBox:
 		{
 			mTrackLeft = cell_bounds[0];
@@ -672,6 +680,7 @@ int			GUI_TextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, 
 	mContent->GetCellContent(cell_x,cell_y,c);
 	switch(c.content_type) { 
 	case gui_Cell_EditText:
+	case gui_Cell_FileText:
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
 	case gui_Cell_Enum:

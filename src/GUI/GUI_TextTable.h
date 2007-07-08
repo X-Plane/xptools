@@ -29,6 +29,7 @@ enum GUI_CellContentType {
 	gui_Cell_None,
 	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
 	gui_Cell_EditText,			// string&string		string
+	gui_Cell_FileText,			// string&string		string
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val

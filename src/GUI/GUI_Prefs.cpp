@@ -189,6 +189,16 @@ void			GUI_Prefs_Write(const char * app_name)
 	fclose(fi);
 }
 
+void			GUI_EnumSection(const char * section, void (* cb)(const char * key, const char * value, void * ref), void * ref)
+{
+	GUI_Prefs_t::iterator sec=sPrefs.find(string(section));
+	if (sec != sPrefs.end())
+	for(GUI_PrefSection_t::iterator pref = sec->second.begin(); pref != sec->second.end(); ++pref)
+	{
+		cb(pref->first.c_str(),pref->second.c_str(),ref);
+	}
+}
+
 const char *	GUI_GetPrefString(const char * section, const char * key, const char * def)
 {
 	GUI_Prefs_t::iterator sec=sPrefs.find(string(section));

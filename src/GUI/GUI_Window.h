@@ -10,7 +10,7 @@
 class	GUI_Window_DND;
 #endif
 
-class	GUI_Window : public GUI_Pane, public GUI_Commander, public XWinGL {
+class	GUI_Window : public XWinGL, public GUI_Pane, public GUI_Commander {
 public:
 	
 							GUI_Window(const char * inTitle, int inAttributes, int inBounds[4],GUI_Commander * inCommander);

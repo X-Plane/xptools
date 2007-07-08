@@ -217,6 +217,25 @@ void		GUI_Splitter::AlignContentsAt(int split)
 
 }
 
+int		GUI_Splitter::GetSplitPoint(void)
+{
+	if (CountChildren() > 1)
+	{
+		int b1[4], b2[4];
+		GetNthChild(0)->GetBounds(b1);
+		GetNthChild(1)->GetBounds(b2);
+		
+		if (mDirection == gui_Split_Horizontal)
+		{
+			return b1[2];
+		} else {
+			return b2[1];
+		}
+	}
+	return 0;
+}
+
+
 int		GUI_Splitter::GetSplitSize(void)
 {
 	if (mDirection == gui_Split_Vertical)

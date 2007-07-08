@@ -114,9 +114,9 @@ public:
 			void		GetVisibleBounds(int outBounds[4]);	// the subset of our extent that is not clipped by parents!
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
-			void		GetSticky(int outSticky[4]);
-			void		SetSticky(int inSticky[4]);
-			void		SetSticky(int x1, int y1, int x2, int y2);
+			void		GetSticky(float outSticky[4]);
+			void		SetSticky(float inSticky[4]);
+			void		SetSticky(float x1, float y1, float x2, float y2);
 
 			int			GetID(void) const;
 			void		SetID(int id);
@@ -205,7 +205,7 @@ private:
 			GUI_DragOperation			InternalDrop		(int x, int y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 
 		int					mBounds[4];
-		int					mSticky[4];
+		float				mSticky[4];
 		GUI_Pane *			mParent;
 		vector<GUI_Pane *>	mChildren;
 		int					mID;
