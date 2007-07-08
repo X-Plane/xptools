@@ -953,12 +953,12 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 #elif IBM
 
-	char path[MAX_PATH], SearchPath[MAX_PATH], FilePath[MAX_PATH];
+	char path[MAX_PATH], SearchPath[MAX_PATH];
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;		
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
-	strcat(path, "*.*");
+	strcat(path, "\\*.*");
 
 	hFind = FindFirstFile(path, &FindFileData);
 
@@ -968,9 +968,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	{
 		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 		{
-			strcpy(FilePath, SearchPath);
-			strcat(FilePath, FindFileData.cFileName);
-			if (cbFunc(FilePath, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
+			if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
 				return true;
 		}
 
@@ -978,9 +976,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 		{
 			if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 			{
-				strcpy(FilePath, SearchPath);
-				strcat(FilePath, FindFileData.cFileName);
-				if (cbFunc(FilePath, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
+				if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
 					return true;
 			}
 		}
@@ -1066,12 +1062,21 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	file_size = pb.hFileInfo.ioFlLgLen;
 
 #elif IBM
-	struct stat ss;
+/*	struct stat ss;
 	if (stat(path, &ss) < 0)
 		return mf_BadFile;
 //	if (ss.st_mode & S_IFDIR) return mf_Directory;
 	if (S_ISDIR(ss.st_mode) != 0) 
+		return mf_Directory;
 	file_size = ss.st_size;
+*/
+	struct stat ss;
+	if (stat(path, &ss) < 0)
+		return mf_BadFile;
+	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
+	file_size = ss.st_size;
+
+
 
 #else
 	#error PLATFORM NOT KNOWN
