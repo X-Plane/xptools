@@ -16,6 +16,7 @@ enum {
 	prop_Int,
 	prop_Double,
 	prop_String,	
+	prop_FilePath,
 	prop_Bool,			// Returns as int
 	prop_Enum,			// Returns as int
 	prop_EnumSet
