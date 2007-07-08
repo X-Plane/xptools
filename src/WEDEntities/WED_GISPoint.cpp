@@ -65,9 +65,9 @@ void			WED_GISPoint::Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds
 
 void	WED_GISPoint::GetLocation(      Point2& p) const
 {
-	#if !DEV
-		eval whether this is a good solution?
-	#endif
+	// Bit of a hack: a client can call this to build its own bounding box cache.
+	// So re-validate OUR cache here.  (Otherwise our change of location won't
+	// start a cache-inval cascade.)
 	CacheBuild();
 
 	p.x = longitude.value;
