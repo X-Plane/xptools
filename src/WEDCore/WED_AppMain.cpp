@@ -131,6 +131,7 @@ int main(int argc, const char * argv[])
 	
 	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
+	WED_Document::ReadGlobalPrefs();
 	
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
@@ -172,6 +173,7 @@ int main(int argc, const char * argv[])
 	pMgr.GetXPlaneFolder(xsys);
 	GUI_SetPrefString("packages","xsystem",xsys.c_str());
 
+	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");
 	
 	return 0;

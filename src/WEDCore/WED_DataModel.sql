@@ -196,6 +196,11 @@ CREATE TABLE IF NOT EXISTS WED_enum_system(
 	export			integer		NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS WED_doc_prefs(
+	key				string		PRIMARY KEY,
+	value			string
+);
+
 INSERT OR REPLACE INTO WED_things VALUES(1,0,0,"root",0);
 INSERT OR REPLACE INTO WED_things VALUES(2,1,0,"selection",1);
 INSERT OR REPLACE INTO WED_things VALUES(3,1,1,"choices",2);

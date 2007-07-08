@@ -6,6 +6,7 @@
 #include "MeshDefs.h"
 #include "AptDefs.h"
 #include "ILibrarian.h"
+#include "IDocPrefs.h"
 #include "MapDefs.h"
 #include "DEMDefs.h"
 //#include "WED_Properties.h"
@@ -14,6 +15,7 @@
 #include "WED_UndoMgr.h"
 
 class	WED_Thing;
+class	WED_TexMgr;
 
 typedef struct sqlite3 sqlite3;
 
@@ -36,13 +38,16 @@ typedef struct sqlite3 sqlite3;
 */
 
 
-class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian {
+class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian, public IDocPrefs {
 public:
 
 						WED_Document(
 								const string& 		package,
 								double				inBounds[4]);
 						~WED_Document();
+
+	static		void	ReadGlobalPrefs(void);
+	static		void	WriteGlobalPrefs(void);
 
 	// Management
 	string				GetFilePath(void) const;
@@ -57,6 +62,10 @@ public:
 	virtual	IBase *		Resolver_Find(const char * path);
 	virtual void		LookupPath(string& io_path);		// Input: a relative or library path
 	virtual void		ReducePath(string& io_path);		// Output: actual disk location
+	virtual	int			ReadIntPref(const char * in_key, int in_default);
+	virtual	void		WriteIntPref(const char * in_key, int in_value);
+	virtual	double		ReadDoublePref(const char * in_key, double in_default);
+	virtual	void		WriteDoublePref(const char * in_key, double in_value);
 	
 
 	bool				TryClose(void);
@@ -85,11 +94,15 @@ private:
 	WED_Archive			mArchive;
 	WED_UndoMgr			mUndo;
 
+	WED_TexMgr *		mTexMgr;
+
 //	WED_Properties	mProperties;
 
 	WED_Document();
 	WED_Document(const WED_Document&);
 	WED_Document& operator=(const WED_Document&);
+
+	map<string,string>	mDocPrefs;
 
 };
 

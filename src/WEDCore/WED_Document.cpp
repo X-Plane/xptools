@@ -12,13 +12,17 @@
 #include <sqlite3.h>
 #include "WED_Errors.h"
 #include "GUI_Resources.h"
+#include "GUI_Prefs.h"
 #include "PlatformUtils.h"
+#include "WED_TexMgr.h"
 // TODO: 
 // migrate all old stuff
 // wire dirty to obj persistence
 
 
 static set<WED_Document *> sDocuments;
+
+static map<string,string>	sGlobalPrefs;
 
 WED_Document::WED_Document(
 								const string& 		package, 
@@ -30,6 +34,7 @@ WED_Document::WED_Document(
 //	mPackage(inPackage),
 	mUndo(&mArchive)
 {
+	mTexMgr = new WED_TexMgr(package);
 	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
 	
@@ -48,17 +53,14 @@ WED_Document::WED_Document(
 	mBounds[2] = inBounds[2];
 	mBounds[3] = inBounds[3];	
 	
-	mUndo.StartCommand("Load from disk.");
-	enum_map_t	mapping;
-	ENUM_read(mDB.get(), mapping);
-	mArchive.LoadFromDB(mDB.get(),mapping);
-	mUndo.CommitCommand();
+	Revert();
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
 }
 
 WED_Document::~WED_Document()
 {
+	delete mTexMgr;
 	sDocuments.erase(this);
 	BroadcastMessage(msg_DocumentDestroyed, 0);
 }
@@ -91,6 +93,7 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 
 void	WED_Document::Save(void)
 {
+	BroadcastMessage(msg_DocWillSave, reinterpret_cast<int>(static_cast<IDocPrefs *>(this)));
 	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
 	#if ERROR_CHECK
 	hello
@@ -98,6 +101,26 @@ void	WED_Document::Save(void)
 
 	mArchive.SaveToDB(mDB.get());
 	ENUM_write(mDB.get());
+	
+	int err;
+	{
+		sql_command	clear_table(mDB.get(),"DELETE FROM WED_doc_prefs WHERE 1;",NULL);
+		err = clear_table.simple_exec();
+		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
+	}
+	
+	{
+		sql_command add_item(mDB.get(),"INSERT INTO WED_doc_prefs VALUES(@k,@v);","@k,@v");
+		for(map<string,string>::iterator i = mDocPrefs.begin(); i != mDocPrefs.end(); ++i)
+		{
+			sql_row2<string,string>	r;
+			r.a = i->first;
+			r.b = i->second;
+			err = add_item.simple_exec(r);
+			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);			
+		}
+	}
+	
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 }
 
@@ -110,6 +133,24 @@ void	WED_Document::Revert(void)
 	mArchive.ClearAll();
 	mArchive.LoadFromDB(mDB.get(), mapping);
 	mUndo.CommitCommand();
+	
+	mDocPrefs.clear();
+	int err;
+	{
+		sql_command	get_prefs(mDB.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
+
+		sql_row2<string, string>	p;
+		get_prefs.begin();
+		while((err = get_prefs.get_row(p)) == SQLITE_ROW)
+		{
+			mDocPrefs[p.a] = p.b;
+			sGlobalPrefs[p.a] = p.b;
+		}
+		if (err != SQLITE_DONE)	
+			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
+	}
+	
+	BroadcastMessage(msg_DocLoaded, reinterpret_cast<int>(static_cast<IDocPrefs *>(this)));	
 }
 
 bool	WED_Document::IsDirty(void)
@@ -140,6 +181,8 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 	const char * ep;
 	
 	if (strcmp(in_path,"librarian")==0) return (ILibrarian *) this;
+	if (strcmp(in_path,"texmgr")==0) return (ITexMgr *) mTexMgr;
+	if (strcmp(in_path,"docprefs")==0) return (IDocPrefs *) this;
 	
 	IBase * who = mArchive.Fetch(1);
 	
@@ -210,3 +253,64 @@ void	WED_Document::ReducePath(string& io_path)
 	io_path = gPackageMgr->ReducePath(mPackage, io_path);
 }
 
+
+int			WED_Document::ReadIntPref(const char * in_key, int in_default)
+{
+	string key(in_key);
+	map<string,string>::iterator i = mDocPrefs.find(key);
+	if (i == mDocPrefs.end()) 
+	{
+		i = sGlobalPrefs.find(key);
+		if (i == sGlobalPrefs.end())
+			return in_default;
+		return atoi(i->second.c_str());
+	}
+	return atoi(i->second.c_str());
+}
+
+void		WED_Document::WriteIntPref(const char * in_key, int in_value)
+{
+	char buf[256];
+	sprintf(buf,"%d",in_value);
+	mDocPrefs[in_key] = buf;
+	sGlobalPrefs[in_key] = buf;
+}
+
+double			WED_Document::ReadDoublePref(const char * in_key, double in_default)
+{
+	string key(in_key);
+	map<string,string>::iterator i = mDocPrefs.find(key);
+	if (i == mDocPrefs.end()) 
+	{
+		i = sGlobalPrefs.find(key);
+		if (i == sGlobalPrefs.end())
+			return in_default;
+		return atof(i->second.c_str());
+	}
+	return atof(i->second.c_str());
+}
+
+void		WED_Document::WriteDoublePref(const char * in_key, double in_value)
+{
+	char buf[256];
+	sprintf(buf,"%lf",in_value);
+	mDocPrefs[in_key] = buf;
+	sGlobalPrefs[in_key] = buf;
+}
+
+static void PrefCB(const char * key, const char * value, void * ref)
+{
+	sGlobalPrefs[key] = value;
+}
+
+
+void	WED_Document::ReadGlobalPrefs(void)
+{
+	GUI_EnumSection("doc_prefs", PrefCB, NULL);
+}
+
+void	WED_Document::WriteGlobalPrefs(void)
+{
+	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)	
+		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
+}
