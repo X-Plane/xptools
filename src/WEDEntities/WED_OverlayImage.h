@@ -37,7 +37,7 @@ public:
 
 private:
 
-	WED_PropStringText			mImageFile;
+	WED_PropFileText			mImageFile;
 
 };
 
