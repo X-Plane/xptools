@@ -116,7 +116,7 @@ int WED_PackageMgr::CreateNewPackage(void)
 		
 		int found_in_our_list = 0;
 		for(int p = 0; p < custom_package_names.size(); ++p)
-		if (strcasecmp(name.c_str(), custom_package_names[n].c_str()) == 0)
+		if (strcasecmp(name.c_str(), custom_package_names[p].c_str()) == 0)
 		{
 			found_in_our_list = 1;
 			break;
