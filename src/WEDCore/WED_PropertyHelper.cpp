@@ -418,6 +418,82 @@ void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
 }
 
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
+{
+	info.can_edit = 1;
+	info.prop_kind = prop_FilePath;
+	info.prop_name = mTitle;
+}
+
+void		WED_PropFileText::GetPropertyDict(PropertyDict_t& dict)
+{
+	DebugAssert(!"Illegal method.");
+}
+
+void		WED_PropFileText::GetPropertyDictItem(int e, string& item)
+{
+	DebugAssert(!"Illegal method.");
+}
+
+void		WED_PropFileText::GetProperty(PropertyVal_t& val)
+{
+	val.string_val = value;
+	val.prop_kind = prop_FilePath;
+}
+
+void		WED_PropFileText::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	DebugAssert(val.prop_kind == prop_FilePath);
+	if (value != val.string_val)
+	{
+		parent->PropEditCallback(1);	
+		value = val.string_val;
+		parent->PropEditCallback(0);
+	}
+}
+
+void 		WED_PropFileText::ReadFrom(IOReader * reader)
+{
+	int sz;
+	reader->ReadInt(sz);
+	vector<char> buf(sz);
+	reader->ReadBulk(&*buf.begin(),sz,false);
+	value = string(buf.begin(),buf.end());
+}
+
+void 		WED_PropFileText::WriteTo(IOWriter * writer)
+{
+	writer->WriteInt(value.size());
+	writer->WriteBulk(value.c_str(),value.size(),false);
+}
+
+
+void		WED_PropFileText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
+{
+	char cmd_buf[1000];
+	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
+	sql_command cmd(db, cmd_buf,NULL);
+	sql_row0			k;
+	sql_row1<string>	v;	
+	int err = cmd.simple_exec(k,v);
+	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
+	value = v.a;	
+}
+
+void		WED_PropFileText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
+{
+}
+
+void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
+{
+	string quoted("'");
+	quoted += value;
+	quoted += '\'';
+	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
+}
+
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
