@@ -179,7 +179,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			if (CreateBitmapFromTIF(buf,&inf) != 0)
 			if (CreateBitmapFromFile(buf,&inf) != 0)
 			{
-				#if !DEV
+				#if ERROR_CHECK
 				better reporting
 				#endif
 				DoUserAlert("Unable to open image file.");
@@ -348,6 +348,27 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+static bool WED_NoLongerViable(WED_Thing * t)
+{
+	IGISPointSequence * sq = dynamic_cast<IGISPointSequence *>(t);
+	if (sq)
+	{
+		int min_children = 2;
+		WED_Thing * parent = t->GetParent();
+		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
+			min_children = 4;
+		
+		if (t->CountChildren() < min_children)
+			return true;
+	}
+	
+	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
+	if (p && t->CountChildren() == 0)
+		return true;
+		
+	return false;
+}
+
 int		WED_CanClear(IResolver * resolver)
 {
 	ISelection * s = WED_GetSelect(resolver);
@@ -383,16 +404,8 @@ void	WED_DoClear(IResolver * resolver)
 		who.clear();
 		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
 		{
-			IGISPointSequence * l = dynamic_cast<IGISPointSequence *>(*i);
-			if (l)
-			{
-				if ((*i)->CountChildren() < 2)
-					who.insert(*i);
-			}
-			IGISPolygon * p = dynamic_cast<IGISPolygon *>(*i);
-			if (p && (*i)->CountChildren() == 0)
+			if (WED_NoLongerViable(*i))
 				who.insert(*i);
-				
 		}
 		
 		chain.clear();
@@ -468,14 +481,7 @@ void	WED_DoCrop(IResolver * resolver)
 		nuke_em.clear();
 		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
 		{
-			IGISPointSequence * l = dynamic_cast<IGISPointSequence *>(*i);
-			if (l)
-			{
-				if ((*i)->CountChildren() < 2)
-					nuke_em.insert(*i);
-			}
-			IGISPolygon * p = dynamic_cast<IGISPolygon *>(*i);
-			if (p && (*i)->CountChildren() == 0)
+			if (WED_NoLongerViable(*i))
 				nuke_em.insert(*i);
 		}
 		
