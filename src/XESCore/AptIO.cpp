@@ -46,9 +46,9 @@ static void	print_apt_poly(FILE * fi, const AptPolygon_t& poly)
 {
 	for (AptPolygon_t::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
-		fprintf(fi,"%d % 010.6lf % 011.6lf", s->code,s->pt.y,s->pt.x);
+		fprintf(fi,"%d % 012.8lf % 013.8lf", s->code,s->pt.y,s->pt.x);
 		if (s->code == apt_lin_crv || s->code == apt_rng_crv || s-> code == apt_end_crv)
-		fprintf(fi," % 010.6lf % 011.6lf", s->ctrl.y,s->ctrl.x);
+		fprintf(fi," % 012.8lf % 013.8lf", s->ctrl.y,s->ctrl.x);
 		if (s->code != apt_end_seg && s->code != apt_end_crv)
 		for (set<int>::const_iterator a = s->attributes.begin(); a != s->attributes.end(); ++a)
 			fprintf(fi," %d",*a);
@@ -644,8 +644,8 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 		for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
 			fprintf(fi,"%d %4.0f %d %d %.2f %d %d %d "
-						"%s % 010.6lf % 011.6lf %4.0f %4.0f %d %d %d %d "
-						"%s % 010.6lf % 011.6lf %4.0f %4.0f %d %d %d %d" CRLF,
+						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d "
+						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr, rwy->surf_code, rwy->shoulder_code, rwy->roughness_ratio, rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
 						rwy->id[0].c_str(),rwy->ends.p1.y,rwy->ends.p1.x, rwy->disp_mtr[0],rwy->blas_mtr[0], rwy->marking_code[0],rwy->app_light_code[0], rwy->has_tdzl[0], rwy->reil_code[0],
 						rwy->id[1].c_str(),rwy->ends.p2.y,rwy->ends.p2.x, rwy->disp_mtr[1],rwy->blas_mtr[1], rwy->marking_code[1],rwy->app_light_code[1], rwy->has_tdzl[1], rwy->reil_code[1]);
@@ -653,7 +653,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for(AptSealaneVector::const_iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
 		{
-			fprintf(fi,"%d %4.0f %d %s % 010.6lf % 011.6lf %s % 010.6lf % 011.6lf" CRLF,
+			fprintf(fi,"%d %4.0f %d %s % 012.8lf % 013.8lf %s % 012.8lf % 013.8lf" CRLF,
 					apt_sea_new, sea->width_mtr, sea->has_buoys,
 					sea->id[0].c_str(), sea->ends.p1.y, sea->ends.p1.x,
 					sea->id[1].c_str(), sea->ends.p2.y, sea->ends.p2.x);
@@ -664,7 +664,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 			double heading, len;
 			Point2	center;
 			EndsToCenter(pav->ends, center, len, heading);
-			fprintf(fi,"%2d % 010.6lf % 011.6lf %s %6.2lf %6.0lf %4d.%04d %4d.%04d %4.0f "
+			fprintf(fi,"%2d % 012.8lf % 013.8lf %s %6.2lf %6.0lf %4d.%04d %4d.%04d %4.0f "
 					   "%d%d%d%d%d%d %02d %d %d %3.2f %d" CRLF, apt_rwy_old,
 				center.y, center.x, pav->name.c_str(), heading, len * MTR_TO_FT,
 				pav->disp1_ft, pav->disp2_ft, pav->blast1_ft, pav->blast2_ft, pav->width_ft, 
@@ -683,7 +683,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for(AptHelipadVector::const_iterator heli = apt->helipads.begin(); heli != apt->helipads.end(); ++heli)
 		{
-			fprintf(fi,"%d %s % 010.6lf % 011.6lf %6.2lf %4.0f %4.0f %d %d %d %.2f %d" CRLF,
+			fprintf(fi,"%d %s % 012.8lf % 013.8lf %6.2lf %4.0f %4.0f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), heli->location.y, heli->location.x, heli->heading, heli->length_mtr, heli->width_mtr,
 						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);		
 		}
@@ -708,37 +708,37 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
-			fprintf(fi,"%d % 010.6lf % 011.6lf %d %6.4lf %3.1f %s" CRLF,
+			fprintf(fi,"%d % 012.8lf % 013.8lf %d %6.4lf %3.1f %s" CRLF,
 					apt_papi, light->location.y, light->location.x, light->light_code,
 					light->heading, light->angle, light->name.c_str());
 		}
 
 		for (AptSignVector::const_iterator sign = apt->signs.begin(); sign != apt->signs.end(); ++sign)
 		{
-			fprintf(fi,"%d % 010.6lf % 011.6lf %6.4lf %d %d %s" CRLF,
+			fprintf(fi,"%d % 012.8lf % 013.8lf %6.4lf %d %d %s" CRLF,
 					apt_sign, sign->location.y, sign->location.x, sign->heading,
 					sign->style_code, sign->size_code, sign->text.c_str());
 		}
 
 
 		if (apt->tower.draw_obj != -1)
-			fprintf(fi, "%2d % 010.6lf % 011.6lf %6.2f %d %s" CRLF, apt_tower_loc,
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %d %s" CRLF, apt_tower_loc,
 				apt->tower.location.y, apt->tower.location.x, apt->tower.height_ft,
 				apt->tower.draw_obj, apt->tower.name.c_str());
 			
 		for (AptGateVector::const_iterator gate = apt->gates.begin(); gate != apt->gates.end(); ++gate)
 		{
-			fprintf(fi, "%2d % 010.6lf % 011.6lf %6.2f %s" CRLF, apt_startup_loc,
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
 				gate->location.y, gate->location.x, gate->heading, gate->name.c_str());
 		}	
 		
 		if (apt->beacon.color_code != apt_beacon_none)
-			fprintf(fi, "%2d % 010.6lf % 011.6lf %d %s" CRLF, apt_beacon, apt->beacon.location.y,
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_beacon, apt->beacon.location.y,
 				apt->beacon.location.x, apt->beacon.color_code, apt->beacon.name.c_str());
 		
 		for (AptWindsockVector::const_iterator sock = apt->windsocks.begin(); sock != apt->windsocks.end(); ++sock)
 		{
-			fprintf(fi, "%2d % 010.6lf % 011.6lf %d %s" CRLF, apt_windsock, sock->location.y, sock->location.x,
+			fprintf(fi, "%2d % 012.8lf % 013.8lf %d %s" CRLF, apt_windsock, sock->location.y, sock->location.x,
 				sock->lit, sock->name.c_str());
 		}
 		
