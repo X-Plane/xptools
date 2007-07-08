@@ -507,6 +507,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDWindows\WED_PackageListAdapter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDWindows\WED_PackageListAdapter.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDWindows\WED_PackageStatusPane.cpp"
 					>
 				</File>
@@ -584,14 +592,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\WEDMap\WED_HandleToolBase.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\WEDMap\WED_ImageOverlayTool.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\WEDMap\WED_ImageOverlayTool.h"
 					>
 				</File>
 				<File
@@ -799,6 +799,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDCore\WED_PackageMgr.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDCore\WED_PackageMgr.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDCore\WED_Persistent.cpp"
 					>
 				</File>
@@ -820,6 +828,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\WEDCore\WED_PropertyHelper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDCore\WED_TexMgr.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDCore\WED_TexMgr.h"
 					>
 				</File>
 				<File
@@ -1039,6 +1055,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDEntities\WED_OverlayImage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDEntities\WED_OverlayImage.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDEntities\WED_RampPosition.cpp"
 					>
 				</File>
@@ -1092,6 +1116,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\WEDEntities\WED_Taxiway.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDEntities\WED_TextureNode.cpp"
 					>
 				</File>
 				<File
@@ -1680,6 +1708,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\GUI\GUI_PopupButton.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\GUI\GUI_Prefs.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\GUI\GUI_Prefs.h"
 					>
 				</File>
 				<File
