@@ -118,9 +118,9 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mNew->AddListener(this);						// We listen to all 3 buttons for clicks
 	mOpen->AddListener(this);
 	mChange->AddListener(this);
-	mNew->SetSticky(0,1,0,0);
-	mOpen->SetSticky(0,1,0,0);
-	mChange->SetSticky(0,1,0,0);
+	mNew->SetSticky(0.5f,1,0.5f,0);
+	mOpen->SetSticky(0.5f,1,0.5f,0);
+	mChange->SetSticky(0.5f,1,0.5f,0);
 	
 	mScroller = new GUI_ScrollerPane(false, true);
 	mScroller->SetParent(this);
