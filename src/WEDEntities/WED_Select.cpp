@@ -28,7 +28,6 @@ void 			WED_Select::ReadFrom(IOReader * reader)
 		mSelected.insert(id);
 	}
 	
-	BroadcastMessage(msg_SelectionChanged,0);
 }
 
 void 			WED_Select::WriteTo(IOWriter * writer)
@@ -99,7 +98,6 @@ void		WED_Select::Select(ISelectable * iwho)
 		StateChanged(wed_Change_Selection);
 		mSelected.clear();
 		mSelected.insert(id);
-		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
 
@@ -109,7 +107,6 @@ void		WED_Select::Clear(void)
 	{
 		StateChanged(wed_Change_Selection);
 		mSelected.clear();
-		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
 
@@ -122,7 +119,6 @@ void		WED_Select::Toggle(ISelectable * iwho)
 		mSelected.erase(id);
 	else
 		mSelected.insert(id);
-	BroadcastMessage(msg_SelectionChanged,0);
 }
 
 void		WED_Select::Insert(ISelectable * iwho)
@@ -133,7 +129,6 @@ void		WED_Select::Insert(ISelectable * iwho)
 	{
 		StateChanged(wed_Change_Selection);
 		mSelected.insert(id);
-		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
 
@@ -145,7 +140,6 @@ void		WED_Select::Erase(ISelectable * iwho)
 	{
 		StateChanged(wed_Change_Selection);
 		mSelected.erase(id);
-		BroadcastMessage(msg_SelectionChanged,0);
 	}
 }
 
