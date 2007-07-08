@@ -211,6 +211,7 @@
 		D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636819E0B8ACA1500091AFC /* WED_GISPolygon.cpp */; };
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
 		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
+		D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -870,6 +871,10 @@
 		D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GISComposite.cpp; sourceTree = "<group>"; };
 		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
 		D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_MemoryHog.cpp; sourceTree = "<group>"; };
+		D6536E950C3D7E3500005385 /* ITexMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ITexMgr.h; sourceTree = "<group>"; };
+		D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TexMgr.h; sourceTree = "<group>"; };
+		D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TexMgr.cpp; sourceTree = "<group>"; };
+		D653753C0C405CE100005385 /* IDocPrefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IDocPrefs.h; sourceTree = "<group>"; };
 		D656B11A0B51778F003FF84F /* ErrMsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ErrMsg.cpp; sourceTree = "<group>"; };
 		D656B11B0B51778F003FF84F /* ErrMsg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ErrMsg.h; sourceTree = "<group>"; };
 		D656B1260B51778F003FF84F /* MacSpec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MacSpec.cpp; sourceTree = "<group>"; };
@@ -2382,6 +2387,8 @@
 				D60C07E00C2328B700783179 /* WED_FastBuffer.h */,
 				D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */,
 				D6C37B880C2796850023B35C /* WED_Version.h */,
+				D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */,
+				D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -2864,6 +2871,8 @@
 				D629FBAB0B962E1100A2FB57 /* IResolver.h */,
 				D629FBC00B962F5F00A2FB57 /* ISelection.h */,
 				D6F8E4D20C3D4DB1007A2EA7 /* ILibrarian.h */,
+				D6536E950C3D7E3500005385 /* ITexMgr.h */,
+				D653753C0C405CE100005385 /* IDocPrefs.h */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -3722,6 +3731,7 @@
 				D6E023EE0C39842700BD789F /* WED_PackageListAdapter.cpp in Sources */,
 				D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */,
 				D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */,
+				D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
