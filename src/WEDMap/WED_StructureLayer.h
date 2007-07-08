@@ -14,6 +14,8 @@ public:
 			void		SetRealLinesShowing(bool show);
 			void		SetPavementTransparency(float alpha);
 			float		GetPavementTransparency(void) const;
+			bool		GetVerticesShowing(void) const;
+			void		SetVerticesShowing(bool show);
 
 	virtual	bool		DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g);
@@ -23,6 +25,7 @@ private:
 
 	bool							mRealLines;
 	float							mPavementAlpha;
+	bool							mVertices;
 
 	vector<int>			mAirportIconsX;
 	vector<int>			mAirportIconsY;

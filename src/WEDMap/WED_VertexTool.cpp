@@ -6,12 +6,15 @@
 #include "WED_Persistent.h"
 #include "WED_ToolUtils.h"
 #include "WED_RunwayNode.h"
+#include "WED_OverlayImage.h"
+#include "WED_TextureNode.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
 #include "XESConstants.h"
 
 #define	MIN_HANDLE_RECURSE_SIZE 20
+#define SNAP_RADIUS 4
 
 const double kCornerBlend0[6] = { 0.5, 0.5, 0.25, 0.0, 0.0, -0.25 };
 const double kCornerBlend1[6] = { 0.0, 0.5, 0.25, 0.0, 0.5,  0.75 };
@@ -22,6 +25,12 @@ const double kRunwayBlend0[4] = { 0.75,		0.0,	0.75,	0.0		};
 const double kRunwayBlend1[4] = { 0.0,		0.25,	0.0,	0.25	};
 const double kRunwayBlend2[4] = { 0.0,		0.75,	0.0,	0.75	};
 const double kRunwayBlend3[4] = { 0.25,		0.0,	0.25,	0.0		};
+
+static double kImageBlend0[10] = { 1.0,	0.0, 0.0, 0.0, 0.5,	0.0, 0.0, 0.5,  0.55, -0.05 };
+static double kImageBlend1[10] = { 0.0,	1.0, 0.0, 0.0, 0.5,	0.5, 0.0, 0.0, -0.05,  0.55 };
+static double kImageBlend2[10] = { 0.0,	0.0, 1.0, 0.0, 0.0,	0.5, 0.5, 0.0, -0.05,  0.55 };
+static double kImageBlend3[10] = { 0.0,	0.0, 0.0, 1.0, 0.0,	0.0, 0.5, 0.5,  0.55, -0.05 };
+
 
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
@@ -37,8 +46,11 @@ WED_VertexTool::WED_VertexTool(
 				int						sel_verts) :
 		WED_HandleToolBase(tool_name, host, zoomer, resolver),				
 		mSelVerts(sel_verts),
-		mCacheKeyArchive(-1),
-		mCacheKeyZoomer(-1)
+		mEntityCacheKeyArchive(-1),
+		mEntityCacheKeyZoomer(-1),
+		mSnapCacheKeyArchive(-1),
+		mSnapCacheKeyZoomer(-1),
+		mSnapToGrid(this,"Snap To Vertices", "", "", 0)		
 {
 	SetControlProvider(this);
 }
@@ -79,7 +91,8 @@ int		WED_VertexTool::GetNthEntityID(int n) const
 int		WED_VertexTool::CountControlHandles(int id						  ) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -90,12 +103,15 @@ int		WED_VertexTool::CountControlHandles(int id						  ) const
 	
 	Point2	dummy;
 	
-	if (rwy)
+	if (ovr)
+	{
+		return 10;
+	}
+	else if (rwy)
 	{
 		return 9;
 	}
-	else
-	switch(en->GetGISClass()) {
+	else switch(en->GetGISClass()) {
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
@@ -139,7 +155,8 @@ int		WED_VertexTool::CountControlHandles(int id						  ) const
 void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;
@@ -155,7 +172,26 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 	
 	Point2	dummy;
 	
-	if (rwy && n > 4)
+	if(ovr)
+	{
+		Point2	coords[4];
+		ovr->GetOuterRing()->GetNthPoint(0)->GetLocation(coords[0]);
+		ovr->GetOuterRing()->GetNthPoint(1)->GetLocation(coords[1]);
+		ovr->GetOuterRing()->GetNthPoint(2)->GetLocation(coords[2]);
+		ovr->GetOuterRing()->GetNthPoint(3)->GetLocation(coords[3]);
+		
+		if (p) *p = Point2(kImageBlend0[n] * coords[0].x + kImageBlend1[n] * coords[1].x + kImageBlend2[n] * coords[2].x + kImageBlend3[n] * coords[3].x,
+						   kImageBlend0[n] * coords[0].y + kImageBlend1[n] * coords[1].y + kImageBlend2[n] * coords[2].y + kImageBlend3[n] * coords[3].y);
+		if (con_type) *con_type = (n==9) ? handle_Arrow : handle_Square;
+		if (dir) *dir = (n==9) ? Vector2(
+												Point2(	kImageBlend0[5] * coords[0].x + kImageBlend1[5] * coords[1].x + kImageBlend2[5] * coords[2].x + kImageBlend3[5] * coords[3].x,
+														kImageBlend0[5] * coords[0].y + kImageBlend1[5] * coords[1].y + kImageBlend2[5] * coords[2].y + kImageBlend3[5] * coords[3].y),
+												Point2(	kImageBlend0[9] * coords[0].x + kImageBlend1[9] * coords[1].x + kImageBlend2[9] * coords[2].x + kImageBlend3[9] * coords[3].x,
+														kImageBlend0[9] * coords[0].y + kImageBlend1[9] * coords[1].y + kImageBlend2[9] * coords[2].y + kImageBlend3[9] * coords[3].y)) : Vector2();		
+		if (active) *active=1;	
+		return;
+	}
+	else if (rwy && n > 4)
 	{
 		Point2 corners[4];
 		switch(n) {
@@ -184,17 +220,16 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 		{
 			if (con_type || radius)
 			{
-				if (en->GetGISSubtype() == WED_RunwayNode::sClass && SAFE_CAST(WED_RunwayNode,en))
-				{
-					if (con_type) *con_type = handle_VertexSharp;
-				}
-				else
+				if (WED_IsIconic(en))
 				{
 					if (con_type) *con_type = handle_Icon;
 					if (radius) *radius = GetFurnitureIconRadius();
 				}
+				else
+				{
+					if (con_type) *con_type = handle_VertexSharp;
+				}
 			}
-
 			pt->GetLocation(*p);
 			return;
 		}
@@ -296,7 +331,8 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 int		WED_VertexTool::GetLinks		    (int id) const
 {	
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -307,7 +343,8 @@ int		WED_VertexTool::GetLinks		    (int id) const
 	
 	Point2	dummy;
 	
-	switch(en->GetGISClass()) {
+	if (ovr) return 4;
+	else switch(en->GetGISClass()) {
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
@@ -354,9 +391,15 @@ void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * 
 	if (ltype) *ltype = link_Solid;
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);	
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+
 	IGISPoint_Bezier * pt_b;
 	
-	switch(en->GetGISClass()) {
+	if (ovr) {
+		if (active) *active=1;
+		if (ltype) *ltype = link_Solid;
+	}
+	else switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
@@ -370,7 +413,8 @@ void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * 
 int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -381,6 +425,7 @@ int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 	
 	Point2	dummy;
 	
+	if (ovr) return n;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return 0;
 	case gis_Point_Heading:		return 0;
@@ -399,7 +444,8 @@ int		WED_VertexTool::GetNthLinkSourceCtl(int id, int n) const
 int		WED_VertexTool::GetNthLinkTarget   (int id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_Runway * rwy = SAFE_CAST(WED_Runway, en);
+	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -410,6 +456,7 @@ int		WED_VertexTool::GetNthLinkTarget   (int id, int n) const
 	
 	Point2	dummy;
 	
+	if (ovr) return (n+1)%4;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return n+1;
 	case gis_Point_Heading:		return 1;
@@ -427,17 +474,36 @@ int		WED_VertexTool::GetNthLinkTargetCtl(int id, int n) const
 
 bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 {
+	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	if (ovr) {
+		return ovr->PtWithin(p);
+	}
 	return false;
 }
 
 void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta)
 {
+	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	if (ovr)
+	{
+		Point2 p;
+		for (int n = 0; n < 4; ++n)
+		{
+			ovr->GetOuterRing()->GetNthPoint(n)->GetLocation(p);
+			p += delta;
+			ovr->GetOuterRing()->GetNthPoint(n)->SetLocation(p);
+		}
+	}
+	
 }
 
 void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -448,7 +514,98 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 	
 	Point2	dummy;
 	Point2	p;
-	if (rwy && n > 4)
+	if (ovr)
+	{
+		Point2	coords[4];
+		ovr->GetOuterRing()->GetNthPoint(0)->GetLocation(coords[0]);
+		ovr->GetOuterRing()->GetNthPoint(1)->GetLocation(coords[1]);
+		ovr->GetOuterRing()->GetNthPoint(2)->GetLocation(coords[2]);
+		ovr->GetOuterRing()->GetNthPoint(3)->GetLocation(coords[3]);
+
+		Point2 me(  coords[0].x * 0.25 + coords[1].x * 0.25 + coords[2].x * 0.25 + coords[3].x * 0.25,
+					coords[0].y * 0.25 + coords[1].y * 0.25 + coords[2].y * 0.25 + coords[3].y * 0.25);
+		if (n < 4)
+			coords[n] += delta;
+		if (n == 9)
+		{
+			Point2 p;
+			p.x =	coords[0].x * kImageBlend0[9] + coords[1].x * kImageBlend1[9] + coords[2].x * kImageBlend2[9] + coords[3].x * kImageBlend3[9];
+			p.y =	coords[0].y * kImageBlend0[9] + coords[1].y * kImageBlend1[9] + coords[2].y * kImageBlend2[9] + coords[3].y * kImageBlend3[9];
+			Vector2 old_dir(me,p);
+			p += delta;
+			Vector2 new_dir(me,p);
+
+			old_dir.normalize();
+			new_dir.normalize();
+			
+			double cos_v = old_dir.dot(new_dir);
+			double sin_v = sqrt(max(1.0 - cos_v * cos_v, 0.0));
+
+			me = GetZoomer()->LLToPixel(me);
+
+			for (int n = 0; n < 4; ++n)
+			{
+				coords[n] = GetZoomer()->LLToPixel(coords[n]);
+				coords[n] -= Vector2(me);
+
+				if (old_dir.right_turn(new_dir))
+					coords[n] = Point2(coords[n].y * sin_v + coords[n].x * cos_v,
+										coords[n].y * cos_v - coords[n].x * sin_v);
+				else
+					coords[n] = Point2(-coords[n].y * sin_v + coords[n].x * cos_v,
+										 coords[n].y * cos_v + coords[n].x * sin_v);
+
+				coords[n] += Vector2(me);
+				coords[n] = GetZoomer()->PixelToLL(coords[n]);			
+			}			
+		}
+		
+		if (n >= 4 && n < 9)
+		{
+			Vector2	dir(me,Point2(coords[0].x * kImageBlend0[n] + coords[1].x * kImageBlend1[n] + coords[2].x * kImageBlend2[n] + coords[3].x * kImageBlend3[n],
+								  coords[0].y * kImageBlend0[n] + coords[1].y * kImageBlend1[n] + coords[2].y * kImageBlend2[n] + coords[3].y * kImageBlend3[n]));
+			Vector2	radius(dir);
+			dir.normalize();
+
+			Vector2	move(dir.projection(delta));
+			
+			switch(n) {
+			case 4:	coords[0] += move; coords[1] += move; coords[2] -= move; coords[3] -= move; break;
+			case 5:	coords[0] -= move; coords[1] += move; coords[2] += move; coords[3] -= move; break;
+			case 6:	coords[0] -= move; coords[1] -= move; coords[2] += move; coords[3] += move; break;
+			case 7:	coords[0] += move; coords[1] -= move; coords[2] -= move; coords[3] += move; break;
+			case 8: 
+			
+				{
+					double old_rad = sqrt(radius.squared_length());
+					radius += move;
+					double new_rad = sqrt(radius.squared_length());
+					double rescale = new_rad / old_rad;
+				
+					me = GetZoomer()->LLToPixel(me);
+				
+					for (int n = 0; n < 4; ++n)
+					{
+						coords[n] = GetZoomer()->LLToPixel(coords[n]);
+						coords[n] -= Vector2(me);
+
+						coords[n].x *= rescale;
+						coords[n].y *= rescale;
+		
+						coords[n] += Vector2(me);
+						coords[n] = GetZoomer()->PixelToLL(coords[n]);
+					}
+				}
+			}		
+		}
+		ovr->GetOuterRing()->GetNthPoint(0)->SetLocation(coords[0]);
+		ovr->GetOuterRing()->GetNthPoint(1)->SetLocation(coords[1]);
+		ovr->GetOuterRing()->GetNthPoint(2)->SetLocation(coords[2]);
+		ovr->GetOuterRing()->GetNthPoint(3)->SetLocation(coords[3]);
+		
+		return;
+	}
+	else if (rwy && n > 4)
 	{
 		Point2	p1, p2;
 		rwy->GetSource()->GetLocation(p1);
@@ -473,7 +630,7 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
 			pt->GetLocation(p);
-			p += delta;
+			SnapMovePoint(p,delta, en);
 			pt->SetLocation(p);
 			return;
 		}
@@ -511,7 +668,10 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 			case 1:	if (!pt_b->GetControlHandleLo(p)) return;	break;
 			case 2: if (!pt_b->GetControlHandleHi(p)) return;	break;
 			}
-			p += delta;
+//			if (n==0)
+			SnapMovePoint(p,delta, en);
+//			else
+//			p += delta;
 			switch(n) {
 			case 0:	pt_b->SetLocation(p);	break;
 			case 1:	pt_b->SetControlHandleLo(p);	break;
@@ -526,7 +686,7 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 			pt_h->GetLocation(p);
 			if (n == 0)	
 			{
-				p += delta;
+				SnapMovePoint(p,delta, en);
 				pt_h->SetLocation(p);
 			} else {
 				Point2 me = p;
@@ -569,7 +729,7 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 				pt_wl->SetWidth(pt_wl->GetWidth() + 2.0 * dir.dot(delta_m));
 				break;			
 			case 2:
-				me += delta;
+				SnapMovePoint(me,delta, en);
 				pt_wl->SetLocation(me);
 				break;
 			case 5:
@@ -632,6 +792,19 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 
 void	WED_VertexTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 {
+	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
+	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	if (ovr)
+	{
+		Point2	p;
+		ovr->GetOuterRing()->GetNthPoint(c)->GetLocation(p);
+		p += delta;
+		ovr->GetOuterRing()->GetNthPoint(c)->SetLocation(p);
+		c = (c+1)%4;
+		ovr->GetOuterRing()->GetNthPoint(c)->GetLocation(p);
+		p += delta;
+		ovr->GetOuterRing()->GetNthPoint(c)->SetLocation(p);
+	}
 }
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)
@@ -661,10 +834,10 @@ void WED_VertexTool::GetEntityInternal(void) const
 	WED_Thing * wrl = WED_GetWorld(GetResolver());
 	long long key_a = wrl->GetArchive()->CacheKey();
 	long long key_z = GetZoomer()->CacheKey();
-	if (key_a == mCacheKeyArchive && key_z == mCacheKeyZoomer) return;
+	if (key_a == mEntityCacheKeyArchive && key_z == mEntityCacheKeyZoomer) return;
 
-	mCacheKeyArchive = key_a;
-	mCacheKeyZoomer = key_z;
+	mEntityCacheKeyArchive = key_a;
+	mEntityCacheKeyZoomer = key_z;
 	
 	DebugAssert(sel != NULL);
 	vector<ISelectable *>	iu;
@@ -733,8 +906,10 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 	case gis_Polygon:
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
-		
-		if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
+
+		if (e->GetGISSubtype() == WED_OverlayImage::sClass && SAFE_CAST(WED_OverlayImage, e))
+			mEntityCache.push_back(e);
+		else if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
 			AddEntityRecursive(poly->GetOuterRing(),vis_area);
 			c = poly->GetNumHoles();
@@ -755,3 +930,141 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 		break;
 	}
 }
+
+
+void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_area, ISelection * sel ) const
+{
+	WED_Entity * went = SAFE_CAST(WED_Entity,e);
+	if (went)
+	{
+		if (went->GetLocked()) return;
+		if (went->GetHidden()) return;
+	}
+
+	Bbox2	ent_bounds;
+	e->GetBounds(ent_bounds);
+	
+	if (!ent_bounds.overlap(vis_area))	return;
+	
+	ent_bounds.p1 = GetZoomer()->LLToPixel(ent_bounds.p1);
+	ent_bounds.p2 = GetZoomer()->LLToPixel(ent_bounds.p2);
+	
+	IGISPointSequence * ps;
+	IGISPolygon * poly;
+	IGISComposite * cmp;
+	int c, n;
+	IGISPoint * pt;
+	IGISPoint_Bezier * bt;
+	Point2	loc;
+	
+	switch(e->GetGISClass()) {
+	case gis_Point:
+	case gis_Point_Heading:
+	case gis_Point_HeadingWidthLength:
+		pt = SAFE_CAST(IGISPoint, e);
+		if (pt)
+		{
+			pt->GetLocation(loc);
+			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+		}
+		break;
+	case gis_Point_Bezier:
+		bt = SAFE_CAST(IGISPoint_Bezier, e);
+		if (bt)
+		{
+			bt->GetLocation(loc);
+			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			if (sel->IsSelected(e))
+			{
+				if (bt->GetControlHandleLo(loc))
+					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+				if (bt->GetControlHandleHi(loc))
+					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			}
+		}
+		break;	
+	case gis_Line:
+	case gis_Line_Width:
+	case gis_PointSequence:
+	case gis_Ring:
+	case gis_Chain:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+	
+		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
+		{
+			c = ps->GetNumPoints();
+			for (n = 0; n < c; ++n)
+				AddSnapPointRecursive(ps->GetNthPoint(n),vis_area, sel);
+		}
+		break;
+	case gis_Polygon:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+
+		if (e->GetGISSubtype() == WED_OverlayImage::sClass && SAFE_CAST(WED_OverlayImage, e))
+			mEntityCache.push_back(e);
+		else if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
+		{
+			AddSnapPointRecursive(poly->GetOuterRing(),vis_area, sel);
+			c = poly->GetNumHoles();
+			for (n = 0; n < c; ++n)
+				AddSnapPointRecursive(poly->GetNthHole(n),vis_area, sel);				
+		}
+		break;
+	case gis_Composite:
+		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
+			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
+	
+		if ((cmp = SAFE_CAST(IGISComposite, e)) != NULL)
+		{
+			c = cmp->GetNumEntities();
+			for (n = 0; n < c; ++n)
+				AddSnapPointRecursive(cmp->GetNthEntity(n),vis_area, sel);
+		}
+		break;
+	}
+}
+
+void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEntity * who)
+{
+	Point2	modi(io_pt+delta);
+	double smallest_dist=9.9e9;
+	Point2	best(modi);
+	if (mSnapToGrid)
+	{
+		ISelection * sel = WED_GetSelect(GetResolver());
+		WED_Thing * wrl = WED_GetWorld(GetResolver());
+		long long key_a = wrl->GetArchive()->CacheKey();
+		long long key_z = GetZoomer()->CacheKey();
+		if (key_a != mSnapCacheKeyArchive || key_z != mSnapCacheKeyZoomer)
+		{
+			mSnapCache.clear();
+			Bbox2	bounds;
+			GetZoomer()->GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
+	
+			AddSnapPointRecursive(dynamic_cast<IGISEntity *>(wrl), bounds, sel);
+		}
+
+		Point2  posi;
+		IGISPoint * pt;
+		GetEntityInternal();
+		for(int n = 0; n < mSnapCache.size(); ++n)
+		if (mSnapCache[n].second != who)
+		{
+			posi = mSnapCache[n].first;
+
+			double dist = Vector2(
+				GetZoomer()->LLToPixel(posi),
+				GetZoomer()->LLToPixel(modi)).squared_length();
+			if (dist < (SNAP_RADIUS * SNAP_RADIUS) &&
+				dist < smallest_dist)
+			{
+				smallest_dist = dist;
+				best = posi;
+			}
+		}
+	}
+	io_pt = best;
+}
+

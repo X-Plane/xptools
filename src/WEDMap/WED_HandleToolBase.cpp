@@ -20,8 +20,8 @@
 	#include <gl/gl.h>
 #endif
 
-#define LINE_DIST 3
-#define	HANDLE_RAD 4
+#define LINE_DIST 4
+#define	HANDLE_RAD 5
 
 // This util routine forms the line segment or bezier for a given "link" in a handles, converting from lat/lon to pixels.
 // returns true for bezier, false for segment.
@@ -219,14 +219,17 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
 	for (ei = 0; ei < ei_count; ++ei)
-	if (mHandles->PointOnStructure(ei, click_pt))
 	{
-		mDragType = drag_Move;
-		mHandleEntity = ei;
-		mHandles->BeginEdit();								
-		break;
+		eid = mHandles->GetNthEntityID(ei);	
+		if (mHandles->PointOnStructure(eid, click_pt))
+		{
+			mDragType = drag_Move;
+			mHandleEntity = eid;
+			mHandles->BeginEdit();								
+			break;
+		}
 	}
-
+		
 	//----------------------------------- CREATION DRAG ------------------------------------------------------------
 
 	if (mDragType == drag_None && this->CreationDown(click_pt))

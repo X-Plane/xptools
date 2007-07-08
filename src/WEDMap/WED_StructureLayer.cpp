@@ -4,6 +4,9 @@
 #include "WED_Colors.h"
 #include "GISUtils.h"
 #include "WED_UIDefs.h"
+#include "WED_ToolUtils.h"
+#include "WED_TextureNode.h"
+#include "ITexMgr.h"
 #include "WED_EnumSystem.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_AirportNode.h"
@@ -13,6 +16,7 @@
 #include "WED_Helipad.h"
 #include "WED_LightFixture.h"
 #include "WED_Taxiway.h"
+#include "WED_OverlayImage.h"
 #include "WED_Sealane.h"
 #include "WED_AirportSign.h"
 #include "WED_TowerViewpoint.h"
@@ -36,6 +40,7 @@ WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, 
 	WED_MapLayer(h, zoomer, resolver)
 {
 	mRealLines = true;
+	mVertices = true;
 	mPavementAlpha = 0.5;
 }
 
@@ -44,6 +49,7 @@ WED_StructureLayer::~WED_StructureLayer()
 }
 
 inline void glVertex2(const Point2& p) { glVertex2d(p.x,p.y); }
+inline void glTexCoord2(const Point2& p) { glTexCoord2d(p.x,p.y); }
 
 inline void	glVertex2v(const Point2 * p, int n) { while(n--) { glVertex2d(p->x,p->y); ++p; } }
 inline void glShape2v(GLenum mode,  const Point2 * p, int n) { glBegin(mode); glVertex2v(p,n); glEnd(); }
@@ -506,6 +512,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 	IGISPolygon *					poly;
 	
 	WED_Taxiway *					taxi;
+	WED_OverlayImage *				overlay;
 	WED_Sealane *					sea;
 	
 	WED_Runway *					rwy;
@@ -727,6 +734,9 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				Bezier2		b;
 				if (ps->GetSide(i,s,b))
 				{
+					s.p1 = b.p1;	
+					s.p2 = b.p2;	
+				
 					b.p1 = GetZoomer()->LLToPixel(b.p1);
 					b.p2 = GetZoomer()->LLToPixel(b.p2);
 					b.c1 = GetZoomer()->LLToPixel(b.c1);
@@ -740,6 +750,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					pts.reserve(point_count+1);					
 					for (int n = 0; n <= point_count; ++n)
 						pts.push_back(b.midpoint((float) n / (float) point_count));
+						
 				} 
 				else
 				{
@@ -747,7 +758,18 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					pts.push_back(GetZoomer()->LLToPixel(s.p2));
 				}
 				
-				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);				
+				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);	
+				if (mVertices)
+				{
+					glPointSize(3);
+					glColor4fv(WED_Color_RGBA(struct_color));
+					glBegin(GL_POINTS);
+					glVertex2(GetZoomer()->LLToPixel(s.p1));
+					if (!ps->IsClosed())
+						glVertex2(GetZoomer()->LLToPixel(s.p2));				
+					glEnd();
+					glPointSize(1);
+				}
 			}
 		}
 		break;
@@ -785,11 +807,53 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/		
 		taxi = NULL;
+		overlay = NULL;
 		if (sub_class == WED_Taxiway::sClass && (taxi = SAFE_CAST(WED_Taxiway, entity)) != NULL) poly = taxi;
+		else if (sub_class == WED_OverlayImage::sClass && (overlay = SAFE_CAST(WED_OverlayImage, entity)) != NULL) poly = overlay;
 		else								     poly = SAFE_CAST(IGISPolygon,entity);
 		
 		if (poly)
 		{
+			if (overlay)
+			{
+				IGISPointSequence * oring = overlay->GetOuterRing();
+				WED_TextureNode * tn1 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(0));
+				WED_TextureNode * tn2 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(1));
+				WED_TextureNode * tn3 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(2));
+				WED_TextureNode * tn4 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(3));
+				Point2 st1,st2,st3,st4, v1,v2,v3,v4;
+				tn1->GetTexCoord(st1);	tn1->GetLocation(v1);
+				tn2->GetTexCoord(st2);	tn2->GetLocation(v2);
+				tn3->GetTexCoord(st3);	tn3->GetLocation(v3);
+				tn4->GetTexCoord(st4);	tn4->GetLocation(v4);
+				
+				
+				string img_file;
+				overlay->GetImage(img_file);
+				
+				ITexMgr * mgr = WED_GetTexMgr(GetResolver());
+				TexRef ref = mgr->LookupTexture(img_file.c_str());
+				g->SetState(0,ref ? 1 : 0,0, 0, 0, 0, 0);
+				if (ref) { g->BindTex(mgr->GetTexID(ref),0);
+				
+				int vis_x, vis_y, tot_x, tot_y;
+				mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
+				double sx = (double) vis_x / (double) tot_x;
+				double sy = (double) vis_y / (double) tot_y;
+				st1.x *= sx; st1.y *= sy;
+				st2.x *= sx; st2.y *= sy;
+				st3.x *= sx; st3.y *= sy;
+				st4.x *= sx; st4.y *= sy;
+				}
+				glColor3f(1,1,1);
+				glBegin(GL_QUADS);
+				glTexCoord2(st4);	glVertex2(GetZoomer()->LLToPixel(v4));
+				glTexCoord2(st3);	glVertex2(GetZoomer()->LLToPixel(v3));
+				glTexCoord2(st2);	glVertex2(GetZoomer()->LLToPixel(v2));
+				glTexCoord2(st1);	glVertex2(GetZoomer()->LLToPixel(v1));
+				glEnd();
+				
+			}
 			if (taxi && mPavementAlpha > 0.0f)
 			{
 				// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
@@ -843,6 +907,17 @@ void		WED_StructureLayer::SetPavementTransparency(float alpha)
 float		WED_StructureLayer::GetPavementTransparency(void) const
 {
 	return mPavementAlpha;
+}
+
+bool		WED_StructureLayer::GetVerticesShowing(void) const
+{
+	return mVertices;
+}
+
+void		WED_StructureLayer::SetVerticesShowing(bool show)
+{
+	mVertices = show;
+	GetHost()->Refresh();
 }
 
 void		WED_StructureLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)

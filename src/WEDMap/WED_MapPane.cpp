@@ -25,11 +25,12 @@
 #include "WED_ToolInfoAdapter.h"
 #include "WED_UIMeasurements.h"
 #include "WED_GroupCommands.h"
+#include "IDocPrefs.h"
 char	kToolKeys[] = { 
 	'b', 'w', 'e', 'o',
 	'a', 'f', 'g', 'l',
 	'k', 't', 'h', 's',
-	'r', 'p', 'm', 'v' 
+	'r', 'm', 'v' 
 };
 
 static void GetExtentAll(Bbox2& box, IResolver * resolver)
@@ -117,7 +118,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(1,16,"map_tools.png");
+	mToolbar = new GUI_ToolBar(1,15,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
@@ -231,6 +232,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_Pavement75:	mStructureLayer->SetPavementTransparency(0.75f);	return 1;
 	case wed_Pavement100:	mStructureLayer->SetPavementTransparency(1.0f);		return 1;
 	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
+	case wed_ToggleVertices:mStructureLayer->SetVerticesShowing(!mStructureLayer->GetVerticesShowing());				return 1;
 
 	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	return 1;
@@ -256,6 +258,7 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_Pavement75:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.75f;	return 1;
 	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
 	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
+	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
 	
 	case wed_ZoomWorld:		return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); return !box.is_empty()  && !box.is_null();
@@ -278,3 +281,40 @@ void	WED_MapPane::ReceiveMessage(
 	mMap->SetTool(t);		
 	mInfoAdapter->SetTool(t);
 }
+
+void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
+{
+	if ((mWorldMap->IsVisible() ? 1 : 0) != prefs->ReadIntPref("map/world_map_vis",  mWorldMap->IsVisible() ? 1 : 0))		mWorldMap->ToggleVisible();
+	if ((mTerraserver->IsVis () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVis()  ? 1 : 0))		mTerraserver->ToggleVis();
+
+	mStructureLayer->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4) * 0.25f);
+	mStructureLayer->SetRealLinesShowing(	 prefs->ReadIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0) != 0);
+	mStructureLayer->SetVerticesShowing(	 prefs->ReadIntPref("map/vertices_vis",	 mStructureLayer->GetVerticesShowing() ? 1 : 0) != 0);
+	
+	double w,s,e,n;
+	mMap->GetMapVisibleBounds(w,s,e,n);
+	mMap->ZoomShowArea(
+		prefs->ReadDoublePref("map/west" ,w),
+		prefs->ReadDoublePref("map/south",s),
+		prefs->ReadDoublePref("map/east", e),
+		prefs->ReadDoublePref("map/north",n));
+		
+}
+
+void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
+{
+	prefs->WriteIntPref("map/world_map_vis",mWorldMap->IsVisible() ? 1 : 0);
+	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVis() ? 1 : 0);
+	prefs->WriteIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4);
+	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
+	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);
+
+	double w,s,e,n;
+	mMap->GetMapVisibleBounds(w,s,e,n);
+	prefs->WriteDoublePref("map/west" ,w);
+	prefs->WriteDoublePref("map/south",s);
+	prefs->WriteDoublePref("map/east", e);
+	prefs->WriteDoublePref("map/north",n);
+	
+}
+

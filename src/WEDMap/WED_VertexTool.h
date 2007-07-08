@@ -6,6 +6,7 @@
 #include "IOperation.h"
 
 class	IGISEntity;
+class	ISelection;
 
 class	WED_VertexTool : public WED_HandleToolBase, public virtual IControlHandles {
 public:
@@ -60,13 +61,22 @@ private:
 
 			void		GetEntityInternal(void) const;
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
+			void		AddSnapPointRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
+			void		SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEntity * who);
 			
 		int						mSelVerts;
 		int						mInEdit;
+
+		WED_PropBoolText		mSnapToGrid;
 		
 		mutable vector<IGISEntity *>	mEntityCache;
-		mutable long long				mCacheKeyArchive;
-		mutable long long				mCacheKeyZoomer;
+		mutable long long				mEntityCacheKeyArchive;
+		mutable long long				mEntityCacheKeyZoomer;
+
+		mutable vector<pair<Point2,IGISEntity *> >		mSnapCache;
+		mutable long long								mSnapCacheKeyArchive;
+		mutable long long								mSnapCacheKeyZoomer;
+
 };
 
 

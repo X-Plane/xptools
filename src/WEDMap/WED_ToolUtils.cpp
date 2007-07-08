@@ -4,6 +4,7 @@
 #include "GUI_Pane.h"
 #include "IResolver.h"
 #include "ILibrarian.h"
+#include "ITexMgr.h"
 #include "WED_Airport.h"
 #include <list>
 
@@ -19,6 +20,7 @@
 #include "WED_RampPosition.h"
 #include "WED_Runway.h"
 #include "WED_RunwayNode.h"
+#include "WED_TextureNode.h"
 #include "WED_Sealane.h"
 #include "WED_Taxiway.h"
 #include "WED_TowerViewpoint.h"
@@ -138,6 +140,11 @@ WED_Thing *	WED_GetWorld(IResolver * resolver)
 ILibrarian *	WED_GetLibrarian(IResolver * resolver)
 {
 	return SAFE_CAST(ILibrarian,resolver->Resolver_Find("librarian"));
+}
+
+ITexMgr *		WED_GetTexMgr(IResolver * resolver)
+{
+	return SAFE_CAST(ITexMgr,resolver->Resolver_Find("texmgr"));
 }
 
 
@@ -418,7 +425,7 @@ bool			WED_IsIconic(IGISEntity * what)
 	switch(what->GetGISClass()) {
 	case gis_Point:
 	case gis_Point_Heading:
-		return what->GetGISSubtype() != WED_RunwayNode::sClass;
+		return what->GetGISSubtype() != WED_RunwayNode::sClass && what->GetGISSubtype() != WED_TextureNode::sClass;
 	case gis_Point_HeadingWidthLength:
 		return true;
 	default:

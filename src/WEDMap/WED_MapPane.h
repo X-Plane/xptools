@@ -19,6 +19,7 @@ class	WED_WorldMapLayer;
 //class	WED_TileServerLayer;
 
 class	IResolver;
+class	IDocPrefs;
 class	WED_Archive;
 class	GUI_Commander;
 
@@ -44,6 +45,9 @@ public:
 			int				Map_KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 			int				Map_HandleCommand(int command) 									;
 			int				Map_CanHandleCommand(int command, string& ioName, int& ioCheck) ;
+
+			void			FromPrefs(IDocPrefs * prefs);
+			void			ToPrefs(IDocPrefs * prefs);
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,

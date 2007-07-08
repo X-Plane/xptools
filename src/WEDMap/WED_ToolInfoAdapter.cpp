@@ -64,6 +64,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 			the_content.text_val = buf;
 			break;
 		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;		break;
+		case prop_FilePath:	the_content.content_type = gui_Cell_FileText;		the_content.text_val = val.string_val;		break;
 		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;			break;
 		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;			break;
 		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
@@ -128,6 +129,10 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		break;
 	case prop_String:
 		val.prop_kind = prop_String;
+		val.string_val = the_content.text_val;
+		break;
+	case prop_FilePath:
+		val.prop_kind = prop_FilePath;
 		val.string_val = the_content.text_val;
 		break;
 	case prop_Bool:
@@ -257,6 +262,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	case prop_Int:			
 	case prop_Double:		return inf.digits * GUI_MeasureRange(font_UI_Basic, zero,zero+1) + 10;
 	case prop_String:		return 100;
+	case prop_FilePath:		return 150;
 	case prop_Bool:			return 30;
 	case prop_Enum:			
 	case prop_EnumSet:		

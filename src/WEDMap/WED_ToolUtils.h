@@ -5,6 +5,7 @@
 
 class	GUI_Pane;
 class	ISelectable;
+class	ITexMgr;
 class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
@@ -28,6 +29,7 @@ void			WED_SetAnyAirport(IResolver * resolver);
 ISelection *	WED_GetSelect(IResolver * resolver);
 WED_Thing	*	WED_GetWorld(IResolver * resolver);
 ILibrarian *	WED_GetLibrarian(IResolver * resolver);
+ITexMgr *		WED_GetTexMgr(IResolver * resolver);
 
 bool			WED_IsIconic(IGISEntity * what);
 
