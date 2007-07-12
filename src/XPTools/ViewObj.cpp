@@ -241,7 +241,7 @@ void			XObjWin::GLDraw(void)
 {
 	SetGLContext();
 	if (mLit)
-		glClearColor(0.1, 0.2, 0.3, 0);
+		glClearColor(0.0, 0.0, 0.0, 0);
 	else
 		glClearColor(0.3, 0.5, 0.6, 0);
 
@@ -947,12 +947,12 @@ static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.8;		
 	}
 	if (inLit) {
-		lgt_dif[0] *= 0.1;
-		lgt_dif[1] *= 0.1;
-		lgt_dif[2] *= 0.1;
-		lgt_amb[0] *= 0.1;
-		lgt_amb[1] *= 0.1;
-		lgt_amb[2] *= 0.1;
+		lgt_dif[0] *= 0.01;
+		lgt_dif[1] *= 0.01;
+		lgt_dif[2] *= 0.01;
+		lgt_amb[0] *= 0.01;
+		lgt_amb[1] *= 0.01;
+		lgt_amb[2] *= 0.01;
 	}
 	
 	if (inShowCulled) { lgt_amb[1] = lgt_amb[2] = lgt_dif[1] = lgt_dif[2] = 0.0; }
@@ -961,6 +961,8 @@ static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 	glPushMatrix();
 	glLoadIdentity();
 	
+	GLfloat	wicked_dahk[4] = { 0.0, 0.0, 0.0, 0.0 };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, wicked_dahk);
 	glLightfv(GL_LIGHT0,GL_AMBIENT ,lgt_amb);
 	glLightfv(GL_LIGHT0,GL_DIFFUSE ,lgt_dif);
 	glLightfv(GL_LIGHT0,GL_POSITION,lgt_dir);
