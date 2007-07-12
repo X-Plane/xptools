@@ -86,7 +86,6 @@
 		D60BFCE20C03664F00AD5EB7 /* handle_vertexsharp.png in Resources */ = {isa = PBXBuildFile; fileRef = D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */; };
 		D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */; };
 		D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */; };
-		D613A0FB0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */; };
 		D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */; };
 		D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D80AB22C84003949C5 /* Terraserver.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -490,6 +489,7 @@
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
+		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
 		D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E60C39840400BD789F /* GUI_Prefs.cpp */; };
 		D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */; };
 		D6E023EE0C39842700BD789F /* WED_PackageListAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */; };
@@ -790,8 +790,6 @@
 		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
-		D613A0F90BD62B0F00D50803 /* WED_ImageOverlayTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ImageOverlayTool.h; sourceTree = "<group>"; };
-		D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ImageOverlayTool.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
 		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1471,6 +1469,7 @@
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
+		D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_rotatehead.png; sourceTree = "<group>"; };
 		D6E023E60C39840400BD789F /* GUI_Prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Prefs.cpp; sourceTree = "<group>"; };
 		D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageMgr.cpp; sourceTree = "<group>"; };
 		D6E023E90C39841200BD789F /* WED_PackageMgr.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_PackageMgr.h; sourceTree = "<group>"; };
@@ -1737,6 +1736,7 @@
 		D60BFCD40C03664F00AD5EB7 /* handles */ = {
 			isa = PBXGroup;
 			children = (
+				D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */,
 				D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */,
 				D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */,
 				D60BFCD70C03664F00AD5EB7 /* handle_control.png */,
@@ -2416,8 +2416,6 @@
 				D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */,
 				D6E0658B0BDE42240070E31C /* WED_VertexTool.h */,
 				D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */,
-				D613A0F90BD62B0F00D50803 /* WED_ImageOverlayTool.h */,
-				D613A0FA0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp */,
 				D62FCC940BD3C6C600ED6CF8 /* WED_CreateToolBase.h */,
 				D62FCC950BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp */,
 				D62FCDA90BD40E5400ED6CF8 /* WED_CreatePolygonTool.h */,
@@ -3134,6 +3132,7 @@
 				D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */,
 				D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */,
 				D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */,
+				D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3704,7 +3703,6 @@
 				D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */,
 				D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */,
 				D6139E200BD5793500D50803 /* WED_StructureLayer.cpp in Sources */,
-				D613A0FB0BD62B0F00D50803 /* WED_ImageOverlayTool.cpp in Sources */,
 				D613A2E00BD64C1800D50803 /* WED_TerraserverLayer.cpp in Sources */,
 				D613A3240BD6506F00D50803 /* Terraserver.cpp in Sources */,
 				D6E0645A0BDD2E020070E31C /* GUI_ToolBar.cpp in Sources */,
