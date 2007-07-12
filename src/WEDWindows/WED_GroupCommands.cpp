@@ -227,10 +227,10 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			img->SetParent(wrl,0);
 			sel->Select(img);
 			
-			p1->SetLocation(coords[0]);
-			p2->SetLocation(coords[1]);
-			p3->SetLocation(coords[2]);
-			p4->SetLocation(coords[3]);
+			p1->SetLocation(coords[3]);
+			p2->SetLocation(coords[2]);
+			p3->SetLocation(coords[1]);
+			p4->SetLocation(coords[0]);
 			
 			
 			string img_path(buf);
@@ -248,10 +248,10 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
 			img->SetName(n);
 			
-			p1->SetTextCoord(Point2(1,0));
-			p2->SetTextCoord(Point2(1,1));
-			p3->SetTextCoord(Point2(0,1));
-			p4->SetTextCoord(Point2(0,0));
+			p1->SetTextCoord(Point2(0,0));
+			p2->SetTextCoord(Point2(0,1));
+			p3->SetTextCoord(Point2(1,1));
+			p4->SetTextCoord(Point2(1,0));
 			
 			wrl->CommitOperation();
 			
