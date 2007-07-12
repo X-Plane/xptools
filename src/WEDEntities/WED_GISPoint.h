@@ -32,6 +32,7 @@ public:
 	virtual bool			PtWithin		(const Point2& p	 ) const;
 	virtual bool			PtOnFrame		(const Point2& p, double dist) const;
 	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);	
+	virtual	void			Rotate			(const Point2& center, double angle);
 	// IGISPoint
 	virtual	void	GetLocation(      Point2& p) const;
 	virtual	void	SetLocation(const Point2& p)      ;	

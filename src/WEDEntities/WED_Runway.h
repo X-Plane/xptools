@@ -11,7 +11,7 @@ DECLARE_PERSISTENT(WED_Runway)
 
 public:
 
-	virtual	bool			PtWithin		(const Point2& p	 ) const;
+//	virtual	bool			PtWithin		(const Point2& p	 ) const;
 
 
 	// These routines return a rectangle for the given sub-rect of the runway.  Like all rects

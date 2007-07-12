@@ -83,6 +83,13 @@ void			WED_GISComposite::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds
 		GetNthEntity(i)->Rescale(old_bounds,new_bounds);
 }
 
+void			WED_GISComposite::Rotate(const Point2& ctr, double angle)
+{
+	int n = GetNumEntities();
+	for (int i = 0; i < n; ++i)
+		GetNthEntity(i)->Rotate(ctr, angle);
+}
+
 int				WED_GISComposite::GetNumEntities(void ) const
 {
 	if (CacheBuild())	RebuildCache();

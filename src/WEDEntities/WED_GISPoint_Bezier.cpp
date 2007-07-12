@@ -2,6 +2,7 @@
 #include "IODefs.h"
 #include "SQLUtils.h"
 #include "WED_Errors.h"
+#include "GISUtils.h"
 
 
 
@@ -163,4 +164,45 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 }
 
 
+
+void			WED_GISPoint_Bezier::Rotate			(const Point2& ctr, double a)
+{
+	if (a != 0.0)
+	{
+		Point2 p;
+		GetLocation(p);	
+		StateChanged();
+	
+		Point2	pt_old_lo(p.x + ctrl_lon_lo.value, p.y + ctrl_lat_lo.value);
+		Point2	pt_old_hi(p.x + ctrl_lon_hi.value, p.y + ctrl_lat_hi.value);
+		Vector2	v_old_lo = VectorLLToMeters(ctr, Vector2(ctr,pt_old_lo));
+		Vector2	v_old_hi = VectorLLToMeters(ctr, Vector2(ctr,pt_old_hi));
+		double old_len_lo = sqrt(v_old_lo.squared_length());
+		double old_len_hi = sqrt(v_old_hi.squared_length());
+		
+		double old_ang_lo = VectorMeters2NorthHeading(ctr,ctr,v_old_lo);
+		double old_ang_hi = VectorMeters2NorthHeading(ctr,ctr,v_old_hi);
+		Vector2	v_new_lo;
+		Vector2	v_new_hi;
+
+		NorthHeading2VectorMeters(ctr, ctr, old_ang_lo + a, v_new_lo);
+		NorthHeading2VectorMeters(ctr, ctr, old_ang_hi + a, v_new_hi);
+		v_new_lo.normalize();
+		v_new_hi.normalize();
+		v_new_lo *= old_len_lo;
+		v_new_hi *= old_len_hi;
+
+		v_new_lo = VectorMetersToLL(ctr,v_new_lo);
+		v_new_hi = VectorMetersToLL(ctr,v_new_hi);
+
+		WED_GISPoint::Rotate(ctr,a);
+		GetLocation(p);	
+
+		ctrl_lon_lo.value = ctr.x + v_new_lo.dx - p.x;
+		ctrl_lon_hi.value = ctr.x + v_new_hi.dx - p.x;
+		ctrl_lat_lo.value = ctr.y + v_new_lo.dy - p.y;
+		ctrl_lat_hi.value = ctr.y + v_new_hi.dy - p.y;
+		
+	}
+}
 

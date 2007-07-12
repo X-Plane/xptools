@@ -18,7 +18,8 @@ public:
 	virtual	bool			WithinBox		(const Bbox2&  bounds) const;
 	virtual bool			PtWithin		(const Point2& p	 ) const;
 	virtual bool			PtOnFrame		(const Point2& p, double d) const;
-	virtual	void			Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds);
+	virtual	void			Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds);
+	virtual	void			Rotate			(const Point2& center, double angle);
 	// IGISComposite
 	virtual	int				GetNumEntities(void ) const;
 	virtual	IGISEntity *	GetNthEntity  (int n) const;

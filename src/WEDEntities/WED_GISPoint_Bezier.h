@@ -12,6 +12,7 @@ public:
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 	virtual	void			Rescale			(const Bbox2& old_bounds, const Bbox2& new_bounds);	
+	virtual	void			Rotate			(const Point2& center, double angle);
 	// IGISPoint_Bezier
 	
 	virtual	bool	GetControlHandleLo (      Point2& p) const;

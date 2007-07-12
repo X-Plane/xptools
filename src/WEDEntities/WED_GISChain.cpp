@@ -105,6 +105,16 @@ void			WED_GISChain::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)
 	}
 }
 
+void			WED_GISChain::Rotate			(const Point2& ctr, double angle)
+{
+	int t = GetNumPoints();
+	for (int n = 0; n <  t; ++n)
+	{
+		IGISPoint * p = GetNthPoint(n);
+		p->Rotate(ctr, angle);
+	}
+}
+
 int					WED_GISChain::GetNumPoints(void ) const
 {
 	if (CacheBuild())	RebuildCache();

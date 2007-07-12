@@ -76,6 +76,13 @@ void	WED_GISLine::Rescale			(const Bbox2& old_bounds,const Bbox2& new_bounds)
 	GetTarget()->Rescale(old_bounds,new_bounds);
 }
 
+void	WED_GISLine::Rotate			(const Point2& ctr, double angle)
+{
+	GetSource()->Rotate(ctr,angle);
+	GetTarget()->Rotate(ctr,angle);
+}
+
+
 int					WED_GISLine::GetNumPoints(void ) const
 {
 	return 2;

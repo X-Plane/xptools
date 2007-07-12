@@ -2,7 +2,7 @@
 #include "IODefs.h"
 #include "SQLUtils.h"
 #include "WED_Errors.h"
-
+#include "GISUtils.h"
 
 
 WED_GISPoint::WED_GISPoint(WED_Archive * parent, int id) :
@@ -83,6 +83,32 @@ void	WED_GISPoint::SetLocation(const Point2& p)
 		latitude.value = p.y;
 		CacheInval();
 		CacheBuild();		
+	}
+}
+
+void			WED_GISPoint::Rotate			(const Point2& ctr, double a)
+{
+	if (a != 0.0)
+	{
+		StateChanged();
+		Point2	pt_old(longitude.value, latitude.value);
+		Vector2	v_old = VectorLLToMeters(ctr,Vector2(ctr,pt_old));
+		double old_len = sqrt(v_old.squared_length());
+		
+		double old_ang = VectorMeters2NorthHeading(ctr,ctr,v_old);
+		Vector2	v_new;
+
+		NorthHeading2VectorMeters(ctr, ctr, old_ang + a, v_new);
+		v_new.normalize();
+		v_new *= old_len;
+		
+		v_new = VectorMetersToLL(ctr,v_new);
+		
+		longitude.value = ctr.x + v_new.dx;
+		latitude.value = ctr.y + v_new.dy;
+		
+		CacheInval();
+		CacheBuild();
 	}
 }
 

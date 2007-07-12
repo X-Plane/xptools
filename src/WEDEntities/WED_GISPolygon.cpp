@@ -162,6 +162,17 @@ void			WED_GISPolygon::Rescale(const Bbox2& old_bounds,const Bbox2& new_bounds)
 	}
 }
 
+void			WED_GISPolygon::Rotate(const Point2& ctr, double angle)
+{
+	GetOuterRing()->Rotate(ctr, angle);
+	int h = GetNumHoles();
+	for (int n = 0; n < h; ++n)
+	{
+		GetNthHole(n)->Rotate(ctr, angle);
+	}
+}
+
+
 IGISPointSequence *		WED_GISPolygon::GetOuterRing(void )	const
 {
 	IGISPointSequence * sq = SAFE_CAST(IGISPointSequence,GetNthChild(0));

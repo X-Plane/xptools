@@ -12,8 +12,10 @@ public:
 
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 
-	virtual	double	GetHeading(void			) const;
+	virtual	double	GetHeading(void			 ) const;
 	virtual	void	SetHeading(double heading)      ;
+
+	virtual	void	Rotate			(const Point2& center, double angle);
 
 private:
 

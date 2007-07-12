@@ -36,3 +36,9 @@ void	WED_GISPoint_Heading::SetHeading(double h)
 		CacheBuild();
 	}
 }
+
+void	WED_GISPoint_Heading::Rotate			(const Point2& center, double angle)
+{
+	WED_GISPoint::Rotate(center,angle);
+	heading = heading.value + angle;
+}

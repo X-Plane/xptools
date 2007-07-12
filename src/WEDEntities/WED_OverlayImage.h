@@ -25,8 +25,9 @@
 #define WED_OverlayImage_H
 
 #include "WED_GISPolygon.h"
+#include "IGIS.h"
 
-class WED_OverlayImage : public WED_GISPolygon {
+class WED_OverlayImage : public WED_GISPolygon, public virtual IGISQuad {
 
 DECLARE_PERSISTENT(WED_OverlayImage)
 
@@ -34,6 +35,14 @@ public:
 
 	void		GetImage(string& image_file) const;
 	void		SetImage(const string& image_file);
+
+	virtual	void	GetCorners(Point2 corners[4]) const;
+
+	virtual	void	MoveCorner(int corner, const Vector2& delta);
+	virtual	void	MoveSide(int side, const Vector2& delta);
+
+	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric);
+	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric);
 
 private:
 

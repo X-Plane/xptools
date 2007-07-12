@@ -35,6 +35,7 @@ WED_Runway::~WED_Runway()
 {
 }
 
+/*
 bool			WED_Runway::PtWithin		(const Point2& p	 ) const
 {
 	if (WED_GISLine_Width::PtWithin(p)) return true;
@@ -48,6 +49,7 @@ bool			WED_Runway::PtWithin		(const Point2& p	 ) const
 		
 	return false;
 }
+*/
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
