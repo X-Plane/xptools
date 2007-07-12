@@ -29,4 +29,7 @@ selection:
 	cmd-a + down a lot selects all leafs	
 	cmd-shift down and cmd-shift-up jump in and out of polygons.
 	
-	
+quad edit:
+	option: rotate
+	shift: resize
+	option-shift: symetric resize
