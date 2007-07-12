@@ -31,7 +31,7 @@
 #include "WED_RunwayNode.h"
 #include "WED_Sealane.h"
 #include "XESConstants.h"
-
+#include "GISUtils.h"
 static const char * kCreateCmds[] = {
 	"Runway", "Sealane"
 };
@@ -154,4 +154,22 @@ const char *	WED_CreateLineTool::GetStatusText(void)
 bool		WED_CreateLineTool::CanCreateNow(void)
 {
 	return WED_GetCurrentAirport(GetResolver()) != NULL;
+}
+
+bool			WED_CreateLineTool::GetHeadingMeasure(double& h)
+{
+	Point2 p1, c1, p2, c2;
+	if (!HasDragNow(p2,c2)) return false;
+	if (!HasPrevNow(p1,c1)) return false;
+	h = VectorDegs2NorthHeading(p1, p1, Vector2(p1,p2));
+	return true;
+}
+
+bool			WED_CreateLineTool::GetDistanceMeasure(double& d)
+{
+	Point2 p1, c1, p2, c2;
+	if (!HasDragNow(p2,c2)) return false;
+	if (!HasPrevNow(p1,c1)) return false;
+	d = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	return true;
 }

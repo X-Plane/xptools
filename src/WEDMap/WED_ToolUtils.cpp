@@ -4,6 +4,7 @@
 #include "GUI_Pane.h"
 #include "IResolver.h"
 #include "ILibrarian.h"
+#include "GISUtils.h"
 #include "ITexMgr.h"
 #include "WED_Airport.h"
 #include <list>
@@ -426,9 +427,17 @@ bool			WED_IsIconic(IGISEntity * what)
 	case gis_Point:
 	case gis_Point_Heading:
 		return what->GetGISSubtype() != WED_RunwayNode::sClass && what->GetGISSubtype() != WED_TextureNode::sClass;
-	case gis_Point_HeadingWidthLength:
-		return true;
+//	case gis_Point_HeadingWidthLength:
+//		return true;
 	default:
 		return false;
 	}
+}
+
+double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector2& drag)
+{
+	Point2 handle_new = handle + drag;
+	double a1 = VectorDegs2NorthHeading(ctr, ctr, Vector2(ctr, handle));
+	double b1 = VectorDegs2NorthHeading(ctr, ctr, Vector2(ctr, handle_new));
+	return b1 - a1;
 }

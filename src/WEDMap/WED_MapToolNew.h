@@ -20,6 +20,8 @@ public:
 	virtual	void		KillOperation(bool mouse_is_down)=0;		// Called when another tool is picked.  If a shape is half built, ABORT!
 							
 	virtual	const char *	GetStatusText(void)=0;
+	virtual bool			GetHeadingMeasure(double& h)=0;
+	virtual bool			GetDistanceMeasure(double& d)=0;
 
 	virtual	void		PropEditCallback(int before);
 

@@ -39,7 +39,7 @@ public:
 	virtual		bool	PointOnStructure(int id, const Point2& p) const;
 	
 	virtual		void	ControlsMoveBy(int id, const Vector2& delta);			
-	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
+	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
 //	virtual	int			FindProperty(const char * in_prop) { return -1; }
@@ -52,6 +52,8 @@ public:
 //	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
+	virtual bool			GetHeadingMeasure(double& h) { return false; }
+	virtual bool			GetDistanceMeasure(double& d) { return false; }
 
 //	virtual void *		QueryInterface(const char * class_id);
 
@@ -66,6 +68,11 @@ private:
 			
 		int						mSelVerts;
 		int						mInEdit;
+		int						mIsRotate;
+		int						mIsScale;
+		int						mIsSymetric;
+		Point2					mRotateCtr;
+//		Point2					mRotateHan;
 
 		WED_PropBoolText		mSnapToGrid;
 		

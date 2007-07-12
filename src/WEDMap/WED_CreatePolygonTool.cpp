@@ -2,6 +2,7 @@
 #include "WED_AirportChain.h"
 #include "WED_Taxiway.h"
 #include "IResolver.h"
+#include "GISUtils.h"
 #include "ISelection.h"
 #include "WED_AirportNode.h"
 #include "WED_ToolUtils.h"
@@ -182,4 +183,22 @@ WED_Thing *		WED_CreatePolygonTool::GetHost()
 		return dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 	} else
 		return WED_GetCurrentAirport(GetResolver());
+}
+
+bool			WED_CreatePolygonTool::GetHeadingMeasure(double& h)
+{
+	Point2 p1, c1, p2, c2;
+	if (!HasDragNow(p2,c2)) return false;
+	if (!HasPrevNow(p1,c1)) return false;
+	h = VectorDegs2NorthHeading(p1, p1, Vector2(p1,p2));
+	return true;
+}
+
+bool			WED_CreatePolygonTool::GetDistanceMeasure(double& d)
+{
+	Point2 p1, c1, p2, c2;
+	if (!HasDragNow(p2,c2)) return false;
+	if (!HasPrevNow(p1,c1)) return false;
+	d = LonLatDistMeters(p1.x,p1.y,p2.x,p2.y);
+	return true;
 }

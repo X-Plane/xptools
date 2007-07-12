@@ -55,6 +55,11 @@ private:
 	int				mIsToolClick;
 	int				mX;
 	int				mY;
+	
+	int				mX_Orig;
+	int				mY_Orig;
+	int				mIsDownCount;
+	int				mIsDownExtraCount;
 
 };
 

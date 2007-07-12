@@ -2,7 +2,10 @@
 #include "WED_MapLayer.h"
 #include "WED_MapToolNew.h"
 #include "WED_Entity.h"
+#include "GUI_GraphState.h"
+#include "XESConstants.h"
 #include "IGIS.h"
+#include "GISUtils.h"
 #include "WED_Airport.h"
 #include "WED_Thing.h"
 #include "ISelection.h"
@@ -13,6 +16,12 @@
 #include "GUI_Fonts.h"
 #include <time.h>
 
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl/gl.h>
+#endif
+
 #define SHOW_FPS 0
 
 WED_Map::WED_Map(IResolver * in_resolver) :
@@ -20,7 +29,8 @@ WED_Map::WED_Map(IResolver * in_resolver) :
 {
 	mTool = NULL;
 	mIsToolClick = 0;
-	
+	mIsDownCount = 0;
+	mIsDownExtraCount = 0;
 }
 
 WED_Map::~WED_Map()
@@ -117,31 +127,79 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		(*l)->DrawSelected(cur == *l, state);
 	}
 	
+	int x, y;
+	GetMouseLocNow(&x,&y);
+	
+	
+	if (mIsDownExtraCount)
+	{
+		state->SetState(0,0,0,1,1,0,0);
+		glColor4f(1,1,1,0.4);
+		glBegin(GL_LINES);
+		glVertex2i(mX_Orig,mY_Orig);
+		glVertex2i(x,y);
+		glEnd();
+	}
+	
 	int b[4];
 	GetBounds(b);
 	float white[4] = { 1.0, 1.0, 1.0, 1.0 };
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 15, mTool ? mTool->GetToolName() : "");
 	
-	WED_Airport * apt = WED_GetCurrentAirport(mResolver);
-	string n = "(No current airport.)";
-	if (apt) 
 	{
-		string an, icao;
-		apt->GetName(an);
-		apt->GetICAO(icao);
-		n = an + string("(") + icao + string(")");
+		WED_Airport * apt = WED_GetCurrentAirport(mResolver);
+		string n = "(No current airport.)";
+		if (apt) 
+		{
+			string an, icao;
+			apt->GetName(an);
+			apt->GetICAO(icao);
+			n = an + string("(") + icao + string(")");
+		}
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 30, n.c_str());
 	}
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 30, n.c_str());
 	
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
 	
+	char mouse_loc[350];
+	char * p = mouse_loc;
+	Point2	o,n;
+	if (mIsDownCount)
+	{
+		o.x = XPixelToLon(mX_Orig);
+		o.y = YPixelToLat(mY_Orig);
+	}
+
+	n.x = XPixelToLon(x);
+	n.y = YPixelToLat(y);
+
+	if (mIsDownCount)
+		p += sprintf(p, "%+010.6lf %+011.6lf -> ", o.x,o.y);
+		p += sprintf(p, "%+010.6lf %+011.6lf",n.x,n.y);	
 	
-	char mouse_loc[50];
-	int x, y;
-	GetMouseLocNow(&x,&y);
-	sprintf(mouse_loc, "%+010.6lf %+011.6lf (ppm: %lf/%lf)", XPixelToLon(x),YPixelToLat(y), GetPPM(), mPixel2DegLat);
+	double dist, head;
+	bool has_dist = false;
+	bool has_head = false;
+	if (mTool) has_dist = mTool->GetDistanceMeasure(dist);
+	if (mTool) has_head = mTool->GetHeadingMeasure(head);
+	if (!has_dist && mIsDownCount)
+	{
+		has_dist = 1;
+		dist = LonLatDistMeters(o.x,o.y,n.x,n.y);
+	}
+	if (!has_head && mIsDownCount)
+	{
+		has_head = 1;
+		head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
+	}
+	
+	if (has_dist)
+	p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0),
+				gIsFeet? "feet" : "meters");
+	if (has_head)
+	p += sprintf(p," heading: %.1lf", head);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, mouse_loc);
 	
@@ -205,6 +263,13 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 
 int			WED_Map::MouseDown(int x, int y, int button)
 {
+	if (mIsDownCount++==0)
+	{
+		mX_Orig = x;
+		mY_Orig = y;
+	}
+	if (button > 1) ++mIsDownExtraCount;
+
 	if(button==0) mIsToolClick = 0;
 	if(button==0 && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mIsToolClick=1; }
 	if(button==1)
@@ -231,6 +296,9 @@ void		WED_Map::MouseDrag(int x, int y, int button)
 
 void		WED_Map::MouseUp  (int x, int y, int button)
 {
+	--mIsDownCount;
+	if (button > 1) --mIsDownExtraCount;
+	
 	if (button==0&&mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button, GetModifiersNow());
 	if (button==1)				this->PanPixels(mX, mY, x, y);
 	if(button==0)mIsToolClick = 0;

@@ -6,6 +6,7 @@
 #include "WED_Entity.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
+#include "GISUtils.h"
 
 //	HANDLES			LINKS
 // 2-3-4			+2-3+
@@ -39,7 +40,9 @@ WED_MarqueeTool::WED_MarqueeTool(
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver) :
 				WED_HandleToolBase(tool_name, host, zoomer, resolver),
-				mCacheKeyArchive(-1)
+				mCacheKeyArchive(-1),
+				mInEdit(0),
+				mIsRotate(0)
 {
 	SetControlProvider(this);
 }
@@ -54,6 +57,8 @@ void	WED_MarqueeTool::BeginEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->StartOperation("Marquee Drag");
+	mInEdit=0;
+	mIsRotate=0;
 }
 
 void	WED_MarqueeTool::EndEdit(void)
@@ -62,6 +67,8 @@ void	WED_MarqueeTool::EndEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->CommitOperation();
+	mIsRotate=0;
+	mInEdit=0;
 }
 
 int		WED_MarqueeTool::CountEntities(void) const
@@ -87,22 +94,40 @@ int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 
 void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-	if(active) *active=1;
-	if (con_type) *con_type = mCacheIconic ? handle_Icon : handle_Square;
-	if (radius && mCacheIconic) *radius = GetFurnitureIconRadius();
-	if (direction) *direction=Vector2();
-	if (p)
+	if (mIsRotate)
 	{
-		if (!GetTotalBounds())
+		if(p) *p = (n == 0) ? mRotateCtr : mRotatePt;
+		if(active) *active=(n<2);
+		if(con_type) *con_type = n==1 ? handle_Rotate : (n==0 ? handle_Square : handle_None);
+		if(direction) *direction=Vector2(mRotateCtr,mRotatePt);
+	}
+	else
+	{
+		int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag);
+		if(active) *active=1;
+		if (con_type) *con_type = mCacheIconic ? handle_Icon : ((could_rotate && n < 8) ? handle_RotateHead : handle_Square);
+		if (radius && mCacheIconic) *radius = GetFurnitureIconRadius();
+		if (direction) *direction=Vector2(0,1);
+		if (p)
 		{
-			*p = Point2(); return;
-		}
-		
-		if (mCacheBounds.is_point()) n = 8;
+			if (!GetTotalBounds())
+			{
+				*p = Point2(); return;
+			}
+			
+			if (mCacheBounds.is_point()) n = 8;
 
-		p->x = mCacheBounds.p1.x * kControlsX1[n] + mCacheBounds.p2.x * kControlsX2[n];
-		p->y = mCacheBounds.p1.y * kControlsY1[n] + mCacheBounds.p2.y * kControlsY2[n];
-	}	
+			p->x = mCacheBounds.p1.x * kControlsX1[n] + mCacheBounds.p2.x * kControlsX2[n];
+			p->y = mCacheBounds.p1.y * kControlsY1[n] + mCacheBounds.p2.y * kControlsY2[n];
+		}
+		if (p && direction && could_rotate)
+		{
+			Point2 ctr;
+			ctr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
+			ctr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];
+			*direction = Vector2(ctr,*p);
+		}	
+	}
 }
 
 
@@ -115,8 +140,17 @@ int		WED_MarqueeTool::GetLinks		    (int id) const
 
 void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
 {
-	if (active) *active=1;
-	if (ltype) *ltype = link_Marquee;
+	int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag);
+	if (could_rotate)
+	{
+		if (active) *active=1;
+		if (ltype) *ltype = link_Marquee;
+	}
+	else
+	{
+		if (active) *active=1;
+		if (ltype) *ltype = link_Marquee;
+	}
 }
 
 int		WED_MarqueeTool::GetNthLinkSource   (int id, int n) const
@@ -154,20 +188,57 @@ void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta)
 	ApplyRescale(mCacheBounds,new_b);	
 }
 
-void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta)
+void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
-	new_b = mCacheBounds;
 	
-	if (mCacheBounds.is_point()) c = 8;
+	if (mInEdit==0)
+	{
+		mInEdit=1;
+		GUI_KeyFlags flags = GetHost()->GetModifiersNow();
+		mIsRotate = (flags & gui_OptionAltFlag) && (c != 8);
+		
+		if (mIsRotate)
+		{
+			mRotateCtr.x = mCacheBounds.p1.x * kControlsX1[8] + mCacheBounds.p2.x * kControlsX2[8];
+			mRotateCtr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];		
+//			mRotatePt.x = mCacheBounds.p1.x * kControlsX1[c] + mCacheBounds.p2.x * kControlsX2[c];
+//			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];			
+		}
+	}
 	
-	new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
-	new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
-	new_b.p1.y += (delta.dy * kApplyCtrlY1[c]);
-	new_b.p2.y += (delta.dy * kApplyCtrlY2[c]);
+	if (mIsRotate)
+	{
+		#if !DEV
+			use WED_CalcDragAngle
+		#endif
+		Point2 new_p;
+		
+		new_p = io_pt + delta;
+		
+		double a1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, io_pt));
+		double b1 = VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr, new_p));
+		ApplyRotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr, io_pt, delta));
 
-	ApplyRescale(mCacheBounds,new_b);
+		io_pt = new_p;
+		mRotatePt = io_pt;
+		
+//		ApplyRotate(mRotateCtr, b1-a1);
+	}
+	else
+	{	
+		new_b = mCacheBounds;
+		
+		if (mCacheBounds.is_point()) c = 8;
+		
+		new_b.p1.x += (delta.dx * kApplyCtrlX1[c]);
+		new_b.p2.x += (delta.dx * kApplyCtrlX2[c]);
+		new_b.p1.y += (delta.dy * kApplyCtrlY1[c]);
+		new_b.p2.y += (delta.dy * kApplyCtrlY2[c]);
+
+		ApplyRescale(mCacheBounds,new_b);
+	}
 }
 
 void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
@@ -274,6 +345,32 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 		if (ent)
 		{
 			ent->Rescale(old_bounds,new_bounds);
+		}
+	}	
+
+}
+
+void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
+{
+	ISelection * sel = WED_GetSelect(GetResolver());
+	DebugAssert(sel != NULL);
+
+	vector<ISelectable *>	iu;
+	
+	sel->GetSelectionVector(iu);
+	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
+	{
+		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
+		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
+		if (went)
+		{
+			if (went->GetLocked()) continue;
+			if (went->GetHidden()) continue;
+		}
+		
+		if (ent)
+		{
+			ent->Rotate(ctr, angle);
 		}
 	}	
 

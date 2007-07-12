@@ -36,7 +36,7 @@ public:
 	virtual		bool	PointOnStructure(int id, const Point2& p) const;
 	
 	virtual		void	ControlsMoveBy(int id, const Vector2& delta);			
-	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);
+	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
 
@@ -51,6 +51,8 @@ public:
 //	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
+	virtual bool			GetHeadingMeasure(double& h) { return false; }
+	virtual bool			GetDistanceMeasure(double& d) { return false; }
 
 //	virtual void *		QueryInterface(const char * class_id);
 
@@ -61,6 +63,12 @@ private:
 //				void	GetEntityInternal(vector<IGISEntity *>& e);
 				bool	GetTotalBounds(void) const;
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
+				void	ApplyRotate(const Point2& ctr, double angle);
+
+			int			mInEdit;
+			bool		mIsRotate;
+			Point2		mRotateCtr;
+			Point2		mRotatePt;
 
 	mutable	Bbox2		mCacheBounds;
 	mutable long long	mCacheKeyArchive;

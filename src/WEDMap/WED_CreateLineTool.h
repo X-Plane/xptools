@@ -45,6 +45,8 @@ public:
 
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
+	virtual bool			GetHeadingMeasure(double& h);
+	virtual bool			GetDistanceMeasure(double& d);
 //	virtual void *		QueryInterface(const char * class_id);
 
 protected:

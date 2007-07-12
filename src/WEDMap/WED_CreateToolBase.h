@@ -48,7 +48,7 @@ public:
 	virtual		int		GetNthLinkTarget   (int id, int n) const;
 	virtual		int		GetNthLinkTargetCtl(int id, int n) const;
 	virtual		bool	PointOnStructure(int id, const Point2& p) const;
-	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta);			
+	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);			
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);			
 	virtual		void	ControlsMoveBy	 (int id,        const Vector2& delta);			
 
@@ -73,6 +73,13 @@ protected:
 	virtual	bool		CanCreateNow(void)=0;
 
 		inline WED_Archive * GetArchive(void) { return mArchive; }
+
+			bool		HasDragNow(
+							Point2&	p,
+							Point2& c);
+			bool		HasPrevNow(
+							Point2& p,
+							Point2& c);
 
 private:
 

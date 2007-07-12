@@ -4,6 +4,7 @@
 #include "IOperation.h"
 #include "AssertUtils.h"
 #include "WED_Persistent.h"
+#include "CompGeomDefs2.h"
 #include "WED_ToolUtils.h"
 #include "WED_RunwayNode.h"
 #include "WED_OverlayImage.h"
@@ -16,10 +17,10 @@
 #define	MIN_HANDLE_RECURSE_SIZE 20
 #define SNAP_RADIUS 4
 
-const double kCornerBlend0[6] = { 0.5, 0.5, 0.25, 0.0, 0.0, -0.25 };
-const double kCornerBlend1[6] = { 0.0, 0.5, 0.25, 0.0, 0.5,  0.75 };
-const double kCornerBlend2[6] = { 0.0, 0.0, 0.25, 0.5, 0.5,  0.75 };
-const double kCornerBlend3[6] = { 0.5, 0.0, 0.25, 0.5, 0.0, -0.25 };
+const double kCornerBlend0[5] = { 0.5, 0.5, 0.25, 0.0, 0.0 };
+const double kCornerBlend1[5] = { 0.0, 0.5, 0.25, 0.0, 0.5 };
+const double kCornerBlend2[5] = { 0.0, 0.0, 0.25, 0.5, 0.5 };
+const double kCornerBlend3[5] = { 0.5, 0.0, 0.25, 0.5, 0.0 };
 
 const double kRunwayBlend0[4] = { 0.75,		0.0,	0.75,	0.0		};
 const double kRunwayBlend1[4] = { 0.0,		0.25,	0.0,	0.25	};
@@ -30,6 +31,11 @@ static double kImageBlend0[10] = { 1.0,	0.0, 0.0, 0.0, 0.5,	0.0, 0.0, 0.5,  0.55
 static double kImageBlend1[10] = { 0.0,	1.0, 0.0, 0.0, 0.5,	0.5, 0.0, 0.0, -0.05,  0.55 };
 static double kImageBlend2[10] = { 0.0,	0.0, 1.0, 0.0, 0.0,	0.5, 0.5, 0.0, -0.05,  0.55 };
 static double kImageBlend3[10] = { 0.0,	0.0, 0.0, 1.0, 0.0,	0.0, 0.5, 0.5,  0.55, -0.05 };
+
+const double kQuadBlend0[9] = { 1.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.25 };
+const double kQuadBlend1[9] = { 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.25 };
+const double kQuadBlend2[9] = { 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.25 };
+const double kQuadBlend3[9] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.25 };
 
 
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
@@ -50,6 +56,10 @@ WED_VertexTool::WED_VertexTool(
 		mEntityCacheKeyZoomer(-1),
 		mSnapCacheKeyArchive(-1),
 		mSnapCacheKeyZoomer(-1),
+		mInEdit(0),
+		mIsRotate(0),
+		mIsSymetric(0),
+		mIsScale(0),		
 		mSnapToGrid(this,"Snap To Vertices", "", "", 0)		
 {
 	SetControlProvider(this);
@@ -62,6 +72,9 @@ WED_VertexTool::~WED_VertexTool()
 void	WED_VertexTool::BeginEdit(void)
 {
 	mInEdit = 0;
+	mIsRotate = 0;
+	mIsSymetric = 0;
+	mIsScale = 0;
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
@@ -74,6 +87,10 @@ void	WED_VertexTool::EndEdit(void)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
 	op->CommitOperation();
+	mInEdit = 0;	
+	mIsRotate = 0;
+	mIsSymetric = 0;
+	mIsScale = 0;
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -91,62 +108,28 @@ int		WED_VertexTool::GetNthEntityID(int n) const
 int		WED_VertexTool::CountControlHandles(int id						  ) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
 	
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
 	IGISLine * ln;
-	IGISLine_Width * ln_w;	
 	
-	Point2	dummy;
-	
-	if (ovr)
-	{
-		return 10;
-	}
-	else if (rwy)
-	{
-		return 9;
-	}
+	if (rwy)													return 13;
+	else if (quad)												return 9;
 	else switch(en->GetGISClass()) {
 	case gis_Point:
-		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
-		{
-			return 1;
-		}
+		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)				return 1;
 		break;
 	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
-		{
-			return 3;
-		}
+		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)	return 3;
 		break;
 	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
-		{
-			return 2;
-		}
-		break;
-	case gis_Point_HeadingWidthLength:
-		if ((pt_wl = SAFE_CAST(IGISPoint_WidthLength, en)) != NULL)
-		{
-			return 6;
-		}
+		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)	return 2;
 		break;
 	case gis_Line:
-		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
-		{
-			return 2;
-		}
-		break;
-	case gis_Line_Width:
-		if ((ln_w = SAFE_CAST(IGISLine_Width,en)) != NULL)
-		{
-			return 5;
-		}
+		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)				return 2;
 		break;
 	}
 	return 0;
@@ -156,7 +139,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	
 	if (active) *active=1;
 	if (con_type) *con_type = handle_Square;
@@ -166,54 +149,66 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
 	IGISLine * ln;
-	IGISLine_Width * ln_w;	
 	
-	Point2	dummy;
-	
-	if(ovr)
-	{
-		Point2	coords[4];
-		ovr->GetOuterRing()->GetNthPoint(0)->GetLocation(coords[0]);
-		ovr->GetOuterRing()->GetNthPoint(1)->GetLocation(coords[1]);
-		ovr->GetOuterRing()->GetNthPoint(2)->GetLocation(coords[2]);
-		ovr->GetOuterRing()->GetNthPoint(3)->GetLocation(coords[3]);
-		
-		if (p) *p = Point2(kImageBlend0[n] * coords[0].x + kImageBlend1[n] * coords[1].x + kImageBlend2[n] * coords[2].x + kImageBlend3[n] * coords[3].x,
-						   kImageBlend0[n] * coords[0].y + kImageBlend1[n] * coords[1].y + kImageBlend2[n] * coords[2].y + kImageBlend3[n] * coords[3].y);
-		if (con_type) *con_type = (n==9) ? handle_Arrow : handle_Square;
-		if (dir) *dir = (n==9) ? Vector2(
-												Point2(	kImageBlend0[5] * coords[0].x + kImageBlend1[5] * coords[1].x + kImageBlend2[5] * coords[2].x + kImageBlend3[5] * coords[3].x,
-														kImageBlend0[5] * coords[0].y + kImageBlend1[5] * coords[1].y + kImageBlend2[5] * coords[2].y + kImageBlend3[5] * coords[3].y),
-												Point2(	kImageBlend0[9] * coords[0].x + kImageBlend1[9] * coords[1].x + kImageBlend2[9] * coords[2].x + kImageBlend3[9] * coords[3].x,
-														kImageBlend0[9] * coords[0].y + kImageBlend1[9] * coords[1].y + kImageBlend2[9] * coords[2].y + kImageBlend3[9] * coords[3].y)) : Vector2();		
-		if (active) *active=1;	
-		return;
-	}
-	else if (rwy && n > 4)
+	if (rwy && n >= 9)
 	{
 		Point2 corners[4];
 		switch(n) {
-		case 5:	rwy->GetCornersBlas1(corners);	break;
-		case 6:	rwy->GetCornersDisp1(corners);	break;
-		case 7:	rwy->GetCornersDisp2(corners);	break;
-		case 8:	rwy->GetCornersBlas2(corners);	break;
+		case 9:	rwy->GetCornersBlas1(corners);		break;
+		case 10:	rwy->GetCornersDisp1(corners);	break;
+		case 11:	rwy->GetCornersDisp2(corners);	break;
+		case 12:	rwy->GetCornersBlas2(corners);	break;
 		}
-		p->x =	corners[0].x * kRunwayBlend0[n-5] + corners[1].x * kRunwayBlend1[n-5] + corners[2].x * kRunwayBlend2[n-5] + corners[3].x * kRunwayBlend3[n-5];
-		p->y =	corners[0].y * kRunwayBlend0[n-5] + corners[1].y * kRunwayBlend1[n-5] + corners[2].y * kRunwayBlend2[n-5] + corners[3].y * kRunwayBlend3[n-5];
+		p->x =	corners[0].x * kRunwayBlend0[n-9] + corners[1].x * kRunwayBlend1[n-9] + corners[2].x * kRunwayBlend2[n-9] + corners[3].x * kRunwayBlend3[n-9];
+		p->y =	corners[0].y * kRunwayBlend0[n-9] + corners[1].y * kRunwayBlend1[n-9] + corners[2].y * kRunwayBlend2[n-9] + corners[3].y * kRunwayBlend3[n-9];
 		
 		if (dir)
 		{
 			rwy->GetCorners(corners);
 			*dir = Vector2(Segment2(corners[0],corners[3]).midpoint(),Segment2(corners[1],corners[2]).midpoint());
-			if (n == 5 || n == 7) *dir = -*dir;
+			if (n == 9 || n == 11) *dir = -*dir;
 		}
 		if (con_type) *con_type = handle_ArrowHead;
 		
 		return;
 	}
-	
+	else if (quad)
+	{
+		Point2	corners[4];
+		quad->GetCorners(corners);
+		
+		Point2 ctr;
+		ctr.x =	corners[0].x * kQuadBlend0[8] + corners[1].x * kQuadBlend1[8] + corners[2].x * kQuadBlend2[8] + corners[3].x * kQuadBlend3[8];
+		ctr.y =	corners[0].y * kQuadBlend0[8] + corners[1].y * kQuadBlend1[8] + corners[2].y * kQuadBlend2[8] + corners[3].y * kQuadBlend3[8];
+
+		if(p)
+		{
+			p->x =	corners[0].x * kQuadBlend0[n] + corners[1].x * kQuadBlend1[n] + corners[2].x * kQuadBlend2[n] + corners[3].x * kQuadBlend3[n];
+			p->y =	corners[0].y * kQuadBlend0[n] + corners[1].y * kQuadBlend1[n] + corners[2].y * kQuadBlend2[n] + corners[3].y * kQuadBlend3[n];			
+		}
+		if (dir && p) *dir = Vector2(ctr,*p);
+		if (n < 8 && con_type)
+		{
+			if (mInEdit)
+			{
+				if (mIsRotate) *con_type = handle_RotateHead;
+				if (mIsScale) *con_type = mIsSymetric ? handle_Arrow : handle_ArrowHead;
+			}
+			else 
+			{
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+				if (mods & gui_OptionAltFlag)
+				{
+					if (mods & gui_ShiftFlag)	*con_type = handle_Arrow;
+					else						*con_type = handle_RotateHead;
+				} else {
+					if (mods & gui_ShiftFlag)	*con_type = handle_ArrowHead;
+				}
+			}
+		}
+		return;
+	}
 	else switch(en->GetGISClass()) {
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
@@ -274,33 +269,11 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 				*p += vdir * 15.0;
 				*p = GetZoomer()->PixelToLL(*p);				
 				if (dir) *dir = Vector2(orig, *p);
-				if (con_type) *con_type = handle_Arrow;
+				if (con_type) *con_type = handle_Rotate;
 			} else
 				if (con_type) *con_type = handle_Icon;
 				if (radius) *radius = GetFurnitureIconRadius();
 			
-			return;
-		}
-		break;
-	case gis_Point_HeadingWidthLength:
-		if ((pt_wl = SAFE_CAST(IGISPoint_WidthLength, en)) != NULL)
-		{
-			Point2 corners[4];
-			pt_wl->GetCorners(corners);
-			p->x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
-			p->y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
-			if (n==5)
-			{
-				Point2 c;
-				pt_wl->GetLocation(c);
-				if (dir) *dir = Vector2(c,*p);
-				if (con_type) *con_type = handle_Arrow;
-			}
-			if (n == 2)
-			{
-				if (con_type) *con_type = handle_Icon;
-				if (radius) *radius = GetFurnitureIconRadius();
-			}
 			return;
 		}
 		break;
@@ -309,16 +282,6 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 		{
 			if (n == 0) ln->GetSource()->GetLocation(*p);
 			else		ln->GetTarget()->GetLocation(*p);
-			return;
-		}
-		break;
-	case gis_Line_Width:
-		if ((ln_w = SAFE_CAST(IGISLine_Width,en)) != NULL)
-		{
-			Point2 corners[4];
-			ln_w->GetCorners(corners);
-			p->x =	corners[0].x * kCornerBlend0[n] + corners[1].x * kCornerBlend1[n] + corners[2].x * kCornerBlend2[n] + corners[3].x * kCornerBlend3[n];
-			p->y =	corners[0].y * kCornerBlend0[n] + corners[1].y * kCornerBlend1[n] + corners[2].y * kCornerBlend2[n] + corners[3].y * kCornerBlend3[n];
 			return;
 		}
 		break;
@@ -332,54 +295,22 @@ int		WED_VertexTool::GetLinks		    (int id) const
 {	
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	
-	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
 	IGISLine * ln;
-	IGISLine_Width * ln_w;	
 	
-	Point2	dummy;
-	
-	if (ovr) return 4;
+	if (quad)															return 4;
 	else switch(en->GetGISClass()) {
-	case gis_Point:
-		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
-		{
-			return 0;
-		}
-		break;
 	case gis_Point_Bezier:
-		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
-		{
-			return 2;
-		}
+		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)			return 2;
 		break;
 	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
-		{
-			return 1;
-		}
-		break;
-	case gis_Point_HeadingWidthLength:
-		if ((pt_wl = SAFE_CAST(IGISPoint_WidthLength, en)) != NULL)
-		{
-			return 5;
-		}
+		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)			return 1;
 		break;
 	case gis_Line:
-		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
-		{
-			return 1;
-		}
-		break;
-	case gis_Line_Width:
-		if ((ln_w = SAFE_CAST(IGISLine_Width,en)) != NULL)
-		{
-			return 4;
-		}
+		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)						return 1;
 		break;
 	}
 	return 0;
@@ -391,20 +322,13 @@ void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * 
 	if (ltype) *ltype = link_Solid;
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);	
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
-
 	IGISPoint_Bezier * pt_b;
 	
-	if (ovr) {
-		if (active) *active=1;
-		if (ltype) *ltype = link_Solid;
-	}
-	else switch(en->GetGISClass()) {
+	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
-		{
-			if (ltype) *ltype = link_BezierCtrl;
-		}
+		if (ltype) 
+			*ltype = link_BezierCtrl;
 		break;
 	}
 }
@@ -414,23 +338,13 @@ int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	
-	IGISPoint * pt;
-	IGISPoint_Bezier * pt_b;
-	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
-	IGISLine * ln;
-	IGISLine_Width * ln_w;	
-	
-	Point2	dummy;
-	
-	if (ovr) return n;
+	if (quad) return n;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return 0;
 	case gis_Point_Heading:		return 0;
 	case gis_Line:				return 0;
-	case gis_Point_HeadingWidthLength:	
 	case gis_Line_Width:		return kSourceIndex[n];
 	}
 	return 0;
@@ -445,24 +359,13 @@ int		WED_VertexTool::GetNthLinkTarget   (int id, int n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
 	
-	IGISPoint * pt;
-	IGISPoint_Bezier * pt_b;
-	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
-	IGISLine * ln;
-	IGISLine_Width * ln_w;	
-	
-	Point2	dummy;
-	
-	if (ovr) return (n+1)%4;
+	if (quad) return (n+1)%4;
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:		return n+1;
 	case gis_Point_Heading:		return 1;
 	case gis_Line:				return 1;
-	case gis_Point_HeadingWidthLength:	
-	case gis_Line_Width:		return kTargetIndex[n];
 	}
 	return 0;
 }
@@ -475,9 +378,12 @@ int		WED_VertexTool::GetNthLinkTargetCtl(int id, int n) const
 bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
-	if (ovr) {
-		return ovr->PtWithin(p);
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	if (quad)
+	{
+		Point2	corners[4];
+		quad->GetCorners(corners);
+		return inside_polygon_pt(corners,corners+4, p);
 	}
 	return false;
 }
@@ -485,144 +391,107 @@ bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
-	if (ovr)
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+	if (quad)
 	{
-		Point2 p;
-		for (int n = 0; n < 4; ++n)
-		{
-			ovr->GetOuterRing()->GetNthPoint(n)->GetLocation(p);
-			p += delta;
-			ovr->GetOuterRing()->GetNthPoint(n)->SetLocation(p);
-		}
-	}
-	
+		Bbox2	oldb, newb;
+		en->GetBounds(oldb);
+		newb = oldb;
+		newb.p1 += delta;
+		newb.p2 += delta;
+		en->Rescale(oldb,newb);		
+	}	
 }
 
-void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
+void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta, Point2& io_pt)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
-	
+	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
-	IGISPoint_WidthLength * pt_wl;
 	IGISLine * ln;
-	IGISLine_Width * ln_w;	
 	
-	Point2	dummy;
 	Point2	p;
-	if (ovr)
+	if (rwy && n >= 9)
 	{
-		Point2	coords[4];
-		ovr->GetOuterRing()->GetNthPoint(0)->GetLocation(coords[0]);
-		ovr->GetOuterRing()->GetNthPoint(1)->GetLocation(coords[1]);
-		ovr->GetOuterRing()->GetNthPoint(2)->GetLocation(coords[2]);
-		ovr->GetOuterRing()->GetNthPoint(3)->GetLocation(coords[3]);
-
-		Point2 me(  coords[0].x * 0.25 + coords[1].x * 0.25 + coords[2].x * 0.25 + coords[3].x * 0.25,
-					coords[0].y * 0.25 + coords[1].y * 0.25 + coords[2].y * 0.25 + coords[3].y * 0.25);
-		if (n < 4)
-			coords[n] += delta;
-		if (n == 9)
+		Point2	handle;
+		this->GetNthControlHandle(id, n, NULL, NULL, &handle, NULL, NULL);
+		if (!mInEdit)
 		{
-			Point2 p;
-			p.x =	coords[0].x * kImageBlend0[9] + coords[1].x * kImageBlend1[9] + coords[2].x * kImageBlend2[9] + coords[3].x * kImageBlend3[9];
-			p.y =	coords[0].y * kImageBlend0[9] + coords[1].y * kImageBlend1[9] + coords[2].y * kImageBlend2[9] + coords[3].y * kImageBlend3[9];
-			Vector2 old_dir(me,p);
-			p += delta;
-			Vector2 new_dir(me,p);
-
-			old_dir.normalize();
-			new_dir.normalize();
-			
-			double cos_v = old_dir.dot(new_dir);
-			double sin_v = sqrt(max(1.0 - cos_v * cos_v, 0.0));
-
-			me = GetZoomer()->LLToPixel(me);
-
-			for (int n = 0; n < 4; ++n)
-			{
-				coords[n] = GetZoomer()->LLToPixel(coords[n]);
-				coords[n] -= Vector2(me);
-
-				if (old_dir.right_turn(new_dir))
-					coords[n] = Point2(coords[n].y * sin_v + coords[n].x * cos_v,
-										coords[n].y * cos_v - coords[n].x * sin_v);
-				else
-					coords[n] = Point2(-coords[n].y * sin_v + coords[n].x * cos_v,
-										 coords[n].y * cos_v + coords[n].x * sin_v);
-
-				coords[n] += Vector2(me);
-				coords[n] = GetZoomer()->PixelToLL(coords[n]);			
-			}			
+			mInEdit = 1;
+			io_pt = handle;
 		}
-		
-		if (n >= 4 && n < 9)
-		{
-			Vector2	dir(me,Point2(coords[0].x * kImageBlend0[n] + coords[1].x * kImageBlend1[n] + coords[2].x * kImageBlend2[n] + coords[3].x * kImageBlend3[n],
-								  coords[0].y * kImageBlend0[n] + coords[1].y * kImageBlend1[n] + coords[2].y * kImageBlend2[n] + coords[3].y * kImageBlend3[n]));
-			Vector2	radius(dir);
-			dir.normalize();
-
-			Vector2	move(dir.projection(delta));
-			
-			switch(n) {
-			case 4:	coords[0] += move; coords[1] += move; coords[2] -= move; coords[3] -= move; break;
-			case 5:	coords[0] -= move; coords[1] += move; coords[2] += move; coords[3] -= move; break;
-			case 6:	coords[0] -= move; coords[1] -= move; coords[2] += move; coords[3] += move; break;
-			case 7:	coords[0] += move; coords[1] -= move; coords[2] -= move; coords[3] += move; break;
-			case 8: 
-			
-				{
-					double old_rad = sqrt(radius.squared_length());
-					radius += move;
-					double new_rad = sqrt(radius.squared_length());
-					double rescale = new_rad / old_rad;
-				
-					me = GetZoomer()->LLToPixel(me);
-				
-					for (int n = 0; n < 4; ++n)
-					{
-						coords[n] = GetZoomer()->LLToPixel(coords[n]);
-						coords[n] -= Vector2(me);
-
-						coords[n].x *= rescale;
-						coords[n].y *= rescale;
-		
-						coords[n] += Vector2(me);
-						coords[n] = GetZoomer()->PixelToLL(coords[n]);
-					}
-				}
-			}		
-		}
-		ovr->GetOuterRing()->GetNthPoint(0)->SetLocation(coords[0]);
-		ovr->GetOuterRing()->GetNthPoint(1)->SetLocation(coords[1]);
-		ovr->GetOuterRing()->GetNthPoint(2)->SetLocation(coords[2]);
-		ovr->GetOuterRing()->GetNthPoint(3)->SetLocation(coords[3]);
-		
-		return;
-	}
-	else if (rwy && n > 4)
-	{
+		Vector2	slop(handle, io_pt);
 		Point2	p1, p2;
 		rwy->GetSource()->GetLocation(p1);
 		rwy->GetTarget()->GetLocation(p2);
 		Vector2	axis(p1,p2);
 		Vector2 delta_m;
 		axis = VectorLLToMeters(p1,axis);
-		if (n == 5 || n == 7) axis = -axis;
+		if (n == 9 || n == 11) axis = -axis;
 		axis.normalize();
-		delta_m = VectorLLToMeters(p1,delta);
+		delta_m = VectorLLToMeters(p1,delta + slop);
 
 		switch(n) {
-		case 5:	rwy->SetBlas1(rwy->GetBlas1() + axis.dot(delta_m));	break;
-		case 6:	rwy->SetDisp1(rwy->GetDisp1() + axis.dot(delta_m));	break;
-		case 7:	rwy->SetDisp2(rwy->GetDisp2() + axis.dot(delta_m));	break;
-		case 8:	rwy->SetBlas2(rwy->GetBlas2() + axis.dot(delta_m));	break;
+		case 9 :	rwy->SetBlas1(rwy->GetBlas1() + axis.dot(delta_m));	break;
+		case 10:	rwy->SetDisp1(rwy->GetDisp1() + axis.dot(delta_m));	break;
+		case 11:	rwy->SetDisp2(rwy->GetDisp2() + axis.dot(delta_m));	break;
+		case 12:	rwy->SetBlas2(rwy->GetBlas2() + axis.dot(delta_m));	break;
 		}
+		
+		io_pt += delta;
+		return;
+	}
+	else if (quad)
+	{
+		if (!mInEdit)
+		{
+			mInEdit = 1;
+			if (n < 8)
+			{
+				GUI_KeyFlags mods = GetHost()->GetModifiersNow();			
+				mIsScale = mods & gui_ShiftFlag;
+				if (mods & gui_OptionAltFlag)
+				{
+					if (mIsScale)	mIsSymetric = 1;
+					else			mIsRotate = 1;
+				}
+				if (mIsRotate) 
+				{
+					Point2	corners[4];
+					quad->GetCorners(corners);
+					mRotateCtr.x = corners[0].x * 0.25 + corners[1].x * 0.25 + corners[2].x * 0.25 + corners[3].x * 0.25;
+					mRotateCtr.y = corners[0].y * 0.25 + corners[1].y * 0.25 + corners[2].y * 0.25 + corners[3].y * 0.25;
+					
+					GetNthControlHandle(id, n, NULL, NULL, &io_pt, NULL, NULL);
+				}
+			}
+		}
+		
+		if (mIsRotate)
+		{
+			quad->Rotate(mRotateCtr,WED_CalcDragAngle(mRotateCtr,io_pt,delta));
+			io_pt += delta;
+		}
+		else if (mIsScale)
+		{
+			if (n >= 4)				quad->ResizeSide(n-4, delta, mIsSymetric);
+			else					quad->ResizeCorner(n, delta, mIsSymetric);
+		}
+		else if (n >= 8)
+		{
+			Bbox2	oldb, newb;
+			quad->GetBounds(oldb);
+			newb = oldb;
+			newb.p1 += delta;
+			newb.p2 += delta;
+			quad->Rescale(oldb,newb);
+		}
+		else if (n >= 4)			quad->MoveSide(n-4, delta);
+		else						quad->MoveCorner(n,delta);
 		return;
 	}
 	else switch(en->GetGISClass()) {
@@ -668,10 +537,7 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 			case 1:	if (!pt_b->GetControlHandleLo(p)) return;	break;
 			case 2: if (!pt_b->GetControlHandleHi(p)) return;	break;
 			}
-//			if (n==0)
 			SnapMovePoint(p,delta, en);
-//			else
-//			p += delta;
 			switch(n) {
 			case 0:	pt_b->SetLocation(p);	break;
 			case 1:	pt_b->SetControlHandleLo(p);	break;
@@ -703,51 +569,6 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 			return;
 		}
 		break;
-	case gis_Point_HeadingWidthLength:
-		if ((pt_wl = SAFE_CAST(IGISPoint_WidthLength, en)) != NULL)
-		{
-			pt_wl->GetLocation(p);
-			Point2 me = p;
-			Vector2	dir;
-			Vector2	delta_m;
-			NorthHeading2VectorMeters(p,p,pt_wl->GetHeading(),dir);
-			
-			switch(n) {
-			case 0:
-			case 4:
-				if (n==0) dir = -dir;
-				dir.normalize();
-				delta_m = VectorLLToMeters(me, delta);
-				pt_wl->SetLength(pt_wl->GetLength() + 2.0 * dir.dot(delta_m));
-				break;
-			case 1:
-			case 3:
-				if (n==1)	dir = dir.perpendicular_ccw();
-				else		dir = dir.perpendicular_cw();
-				dir.normalize();
-				delta_m = VectorLLToMeters(me, delta);
-				pt_wl->SetWidth(pt_wl->GetWidth() + 2.0 * dir.dot(delta_m));
-				break;			
-			case 2:
-				SnapMovePoint(me,delta, en);
-				pt_wl->SetLocation(me);
-				break;
-			case 5:
-				{
-					Point2 corners[4];
-					pt_wl->GetCorners(corners);
-					p.x =	corners[0].x * kCornerBlend0[5] + corners[1].x * kCornerBlend1[5] + corners[2].x * kCornerBlend2[5] + corners[3].x * kCornerBlend3[5];
-					p.y =	corners[0].y * kCornerBlend0[5] + corners[1].y * kCornerBlend1[5] + corners[2].y * kCornerBlend2[5] + corners[3].y * kCornerBlend3[5];
-					p += delta;
-					dir = Vector2(me,p);
-//					dir.normalize();
-					pt_wl->SetHeading(VectorDegs2NorthHeading(me,me,dir));
-				}
-				break;
-			}
-			return;
-		}
-		break;
 	case gis_Line:
 		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)
 		{
@@ -759,32 +580,6 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 			return;
 		}
 		break;
-	case gis_Line_Width:
-		if ((ln_w = SAFE_CAST(IGISLine_Width,en)) != NULL)
-		{
-			Point2	p1, p2;
-			ln_w->GetSource()->GetLocation(p1);
-			ln_w->GetTarget()->GetLocation(p2);
-			Vector2	axis(p1,p2);
-			Vector2 delta_m;
-			switch(n) {
-			case 0: p1 += delta; ln_w->GetSource()->SetLocation(p1);													break;
-			case 2: p1 += delta; ln_w->GetSource()->SetLocation(p1); p2 += delta; ln_w->GetTarget()->SetLocation(p2);	break;
-			case 4:													 p2 += delta; ln_w->GetTarget()->SetLocation(p2);	break;
-			
-			case 1:
-			case 3:
-				axis = VectorLLToMeters(p1,axis);
-				if (n==1)	axis = axis.perpendicular_ccw();
-				else		axis = axis.perpendicular_cw();
-				axis.normalize();
-				delta_m = VectorLLToMeters(p1,delta);
-				ln_w->SetWidth(ln_w->GetWidth() + 2.0 * axis.dot(delta_m));
-				break;
-			}
-			return;
-		}
-		break;
 	}
 	DebugAssert(!"Cast failed!");
 	return; 
@@ -792,19 +587,6 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta)
 
 void	WED_VertexTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 {
-	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	WED_OverlayImage * ovr = (en->GetGISSubtype() == WED_OverlayImage::sClass) ? SAFE_CAST(WED_OverlayImage, en) : NULL;
-	if (ovr)
-	{
-		Point2	p;
-		ovr->GetOuterRing()->GetNthPoint(c)->GetLocation(p);
-		p += delta;
-		ovr->GetOuterRing()->GetNthPoint(c)->SetLocation(p);
-		c = (c+1)%4;
-		ovr->GetOuterRing()->GetNthPoint(c)->GetLocation(p);
-		p += delta;
-		ovr->GetOuterRing()->GetNthPoint(c)->SetLocation(p);
-	}
 }
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)

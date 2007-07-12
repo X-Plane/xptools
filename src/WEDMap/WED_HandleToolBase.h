@@ -89,6 +89,7 @@ private:
 
 		int						mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
+		Point2					mTrackPoint;
 		
 };
 

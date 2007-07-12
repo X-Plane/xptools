@@ -123,7 +123,7 @@ void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, Handle
 	if (con_type && *con_type == handle_None && idx == 0 && mMaxPts==1 && kind == 2 && mMustCurve)
 	if (mPts[idx] != mControlHi[idx])
 	{
-		*con_type = handle_Arrow;
+		*con_type = handle_Rotate;
 		if (direction) *direction = Vector2(mPts[idx],mControlHi[idx]);
 	}
 	
@@ -209,7 +209,7 @@ bool	WED_CreateToolBase::PointOnStructure(int id, const Point2& p) const
 	return 0;
 }
 
-void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta)
+void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt)
 {
 	int idx = c / 3;
 	int kind = c % 3;
@@ -241,6 +241,8 @@ void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta)
 	case 1:		mControlLo[idx] += delta;	if (!mIsSplit[idx]) mControlHi[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
 	case 2:		mControlHi[idx] += delta;	if (!mIsSplit[idx]) mControlLo[idx] -= delta;	if (!mHasDirs[idx]) mControlHi[idx] = mControlLo[idx] = mPts[idx]; break;
 	}
+	
+	io_pt += delta;
 }
 
 void	WED_CreateToolBase::ControlsLinksBy	 (int id, int c, const Vector2& delta)
@@ -404,4 +406,27 @@ int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 		break;
 	}
 	return WED_HandleToolBase::HandleKeyPress(inKey, inVK, inFlags);
+}
+
+bool		WED_CreateToolBase::HasDragNow(
+				Point2&	p,
+				Point2& c)
+{
+	if (!mCreating || mPts.empty()) return false;
+	p = mPts.back();
+	c = mControlHi.back();
+	return true;
+}
+
+bool		WED_CreateToolBase::HasPrevNow(
+							Point2& p,
+							Point2& c)
+{
+	int idx_want = mPts.size();
+	--idx_want;
+	if (mCreating) --idx_want;
+	if (idx_want < 0) return false;
+	p = mPts[idx_want];
+	c = mControlHi[idx_want];
+	return true;
 }

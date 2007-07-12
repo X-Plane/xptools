@@ -3,6 +3,8 @@
 
 #include "GUI_Defs.h"
 
+struct Point2;
+struct Vector2;
 class	GUI_Pane;
 class	ISelectable;
 class	ITexMgr;
@@ -32,6 +34,8 @@ ILibrarian *	WED_GetLibrarian(IResolver * resolver);
 ITexMgr *		WED_GetTexMgr(IResolver * resolver);
 
 bool			WED_IsIconic(IGISEntity * what);
+
+double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector2& drag);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // FILTERS:

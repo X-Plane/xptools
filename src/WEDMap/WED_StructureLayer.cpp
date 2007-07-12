@@ -695,9 +695,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				glVertex2(Segment2(corners[0],corners[1]).midpoint(0.5));
 				glVertex2(Segment2(corners[2],corners[3]).midpoint(0.5));
 				glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
-				glVertex2(Segment2(
-							Segment2(corners[0],corners[1]).midpoint(1.5),
-							Segment2(corners[3],corners[2]).midpoint(1.5)).midpoint());
+				glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
 				glEnd();
 				
 				if (helipad)
@@ -705,7 +703,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					Point2	p;
 					helipad->GetLocation(p);
 					p = GetZoomer()->LLToPixel(p);
-					GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, 0,icon_scale);
+					GUI_PlotIcon(g, "map_helipad.png", p.x, p.y, ptwl->GetHeading(),icon_scale);
 				}
 			}
 		}
@@ -761,7 +759,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);	
 				if (mVertices)
 				{
-					glPointSize(3);
+					glPointSize(5);
 					glColor4fv(WED_Color_RGBA(struct_color));
 					glBegin(GL_POINTS);
 					glVertex2(GetZoomer()->LLToPixel(s.p1));
@@ -845,6 +843,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				st3.x *= sx; st3.y *= sy;
 				st4.x *= sx; st4.y *= sy;
 				}
+				glDisable(GL_CULL_FACE);
 				glColor3f(1,1,1);
 				glBegin(GL_QUADS);
 				glTexCoord2(st4);	glVertex2(GetZoomer()->LLToPixel(v4));
@@ -852,6 +851,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				glTexCoord2(st2);	glVertex2(GetZoomer()->LLToPixel(v2));
 				glTexCoord2(st1);	glVertex2(GetZoomer()->LLToPixel(v1));
 				glEnd();
+				glEnable(GL_CULL_FACE);
 				
 			}
 			if (taxi && mPavementAlpha > 0.0f)

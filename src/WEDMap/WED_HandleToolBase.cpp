@@ -152,15 +152,15 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		{
 			int active;
 			Point2	cloc;
+			Point2	cloc_pixels;
 			HandleType_t ht;
 			float radius = HANDLE_RAD;
 			mHandles->GetNthControlHandle(eid, n, &active, &ht, &cloc, NULL, &radius);
 			if (!active) continue;
 			
 			radius *= radius;
-			cloc.x = GetZoomer()->LonToXPixel(cloc.x);
-			cloc.y = GetZoomer()->LatToYPixel(cloc.y);
-			if ((this_dist=click_pt.squared_distance(cloc)) < best_dist)
+			cloc_pixels = GetZoomer()->LLToPixel(cloc);
+			if ((this_dist=click_pt.squared_distance(cloc_pixels)) < best_dist)
 			if (this_dist < radius)
 			{
 				mHandleEntity = eid;
@@ -169,6 +169,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				if (mDragType == drag_None)
 					mHandles->BeginEdit();			
 				mDragType = drag_Handles;	
+				mTrackPoint = cloc;
 			}
 		}
 	}
@@ -397,9 +398,9 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
 			switch(mDragType) {
-			case drag_Handles:				mHandles->ControlsHandlesBy(mHandleEntity,	mHandleIndex,	delta);	break;
-			case drag_Links:				mHandles->ControlsLinksBy(mHandleEntity,	mHandleIndex,	delta);	break;
-			case drag_Move:					mHandles->ControlsMoveBy(mHandleEntity,						delta);	break;
+			case drag_Handles:				mHandles->ControlsHandlesBy(mHandleEntity,	mHandleIndex,	delta, mTrackPoint);	break;
+			case drag_Links:				mHandles->ControlsLinksBy(mHandleEntity,	mHandleIndex,	delta			  );	break;
+			case drag_Move:					mHandles->ControlsMoveBy(mHandleEntity,						delta			  );	break;
 			}
 		}
 		break;
@@ -566,10 +567,10 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				glColor4fv(WED_Color_RGBA(wed_ControlHandle));
 
 				
-				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier) 
+				if (ht == handle_ArrowHead || ht == handle_Arrow || ht == handle_Bezier || ht == handle_RotateHead || ht == handle_Rotate)
 				{
 					Point2 bscrp = GetZoomer()->LLToPixel(cpt - dir);
-					if (ht == handle_Arrow)
+					if (ht == handle_Arrow || ht == handle_Rotate)
 					{
 						g->SetState(0,0,0,   0, 0, 0, 0);
 						glBegin(GL_LINES);
@@ -589,6 +590,8 @@ void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
 				case handle_Cross:			GUI_PlotIcon(g,"handle_cross.png", scrpt.x,scrpt.y,0,1.0);		break;
 				case handle_ArrowHead:		
 				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+				case handle_RotateHead:		
+				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x,scrpt.y,atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				}							
 			}						
 		}
