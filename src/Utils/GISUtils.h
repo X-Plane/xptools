@@ -64,5 +64,21 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts);
 //double VectorLengthMeters(const Point2& ref, const Vector2& vec);
 
 Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v);
+Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v);
+
+
+
+void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4]);
+void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr);
+void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_mtr, Point2 corners[4]);
+void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& len_mtr, double& width_mtr);
+
+void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_mtr);
+void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2]);
+void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped);
+
+void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& delta);
+void	Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool symetric);
+void	Quad_ResizeCorner1(Point2& ctr, double heading, double& l, double& w, int corner, const Vector2& move, bool symetric);
 
 #endif

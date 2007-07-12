@@ -245,3 +245,198 @@ Vector2 VectorLLToMeters(const Point2& ref, const Vector2& v)
 	return ret;
 }
 
+
+Vector2 VectorMetersToLL(const Point2& ref, const Vector2& v)
+{
+	Vector2	ret(v);
+	ret.dx /= (DEG_TO_MTR_LAT * cos(ref.y * DEG_TO_RAD) );
+	ret.dy /= (DEG_TO_MTR_LAT							);
+	return ret;
+}
+
+
+#pragma mark -
+
+void	Quad_2to4(const Point2 ends[2], double width_mtr, Point2 corners[4])
+{
+	Vector2	dir(ends[0],ends[1]);
+	dir.dx *= cos((ends[0].y + ends[1].y) * 0.5 * DEG_TO_RAD);
+	dir.normalize();
+	Vector2 right(dir.perpendicular_cw());
+	Point2 zero;
+		
+	corners[0] = zero - right * width_mtr * 0.5;
+	corners[1] = zero - right * width_mtr * 0.5;
+	corners[2] = zero + right * width_mtr * 0.5;
+	corners[3] = zero + right * width_mtr * 0.5;
+	
+	MetersToLLE(ends[0], 1, corners  );
+	MetersToLLE(ends[1], 2, corners+1);
+	MetersToLLE(ends[0], 1, corners+3);
+}
+
+void	Quad_4to2(const Point2 corners[4], Point2 ends[2], double& width_mtr)
+{
+	ends[0] = Segment2(corners[0],corners[3]).midpoint(0.5);
+	ends[1] = Segment2(corners[1],corners[2]).midpoint(0.5);
+	
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+	
+	width_mtr = sqrt(VectorLLToMeters(Segment2(side1,side2).midpoint(),Vector2(side1,side2)).squared_length());
+}
+
+void	Quad_1to4(const Point2& ctr, double heading, double len_mtr, double width_mtr, Point2 corners[4])
+{
+	Vector2		dir;
+	
+	NorthHeading2VectorMeters(ctr, ctr, heading,dir);	
+	dir.normalize();
+	Vector2 right(dir.perpendicular_cw());
+	
+	Point2	zero(0,0);	
+	corners[0] = zero - dir * len_mtr * 0.5 - right * width_mtr * 0.5;
+	corners[1] = zero + dir * len_mtr * 0.5 - right * width_mtr * 0.5;
+	corners[2] = zero + dir * len_mtr * 0.5 + right * width_mtr * 0.5;
+	corners[3] = zero - dir * len_mtr * 0.5 + right * width_mtr * 0.5;
+	
+	MetersToLLE(ctr, 4, corners);
+}
+
+void	Quad_4to1(const Point2 corners[4], Point2& ctr, double& heading, double& len_mtr, double& width_mtr)
+{
+	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
+	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
+	
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+
+	ctr.x = (corners[0].x  + corners[1].x  + corners[2].x + corners[3].x) * 0.25;
+	ctr.y = (corners[0].y  + corners[1].y  + corners[2].y + corners[3].y) * 0.25;
+	
+	heading = VectorDegs2NorthHeading(ctr,ends1,Vector2(ends1,ends2));
+	width_mtr = sqrt(VectorLLToMeters(ctr,Vector2(side1, side2)).squared_length());
+	len_mtr = sqrt(VectorLLToMeters(ctr,Vector2(ends1, ends2)).squared_length());
+
+}
+
+void	Quad_2to1(const Point2 ends[2], Point2& ctr, double& heading, double& len_mtr)
+{
+	heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
+	len_mtr = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
+	ctr.x = (ends[0].x + ends[1].x) * 0.5;
+	ctr.y = (ends[0].y + ends[1].y) * 0.5;
+}
+
+void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2])
+{
+	Vector2		dir;
+	
+	NorthHeading2VectorMeters(ctr, ctr, heading,dir);	
+	dir.normalize();
+	
+	Point2	zero(0,0);	
+	ends[0] = zero - dir * len_mtr * 0.5;
+	ends[1] = zero + dir * len_mtr * 0.5;
+	
+	MetersToLLE(ctr, 2, ends);	
+}
+
+void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped)
+{
+	double diag_len = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
+	len_mtr = sqrt(diag_len * diag_len - width_mtr * width_mtr);
+	
+	double diag_heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
+	
+	double offset = asin(width_mtr / diag_len) * RAD_TO_DEG;
+
+	if (swapped)
+		heading = diag_heading + offset;
+	else
+		heading = diag_heading - offset;
+	
+	ctr.x = (ends[0].x + ends[1].x) * 0.5;
+	ctr.y = (ends[0].y + ends[1].y) * 0.5;
+}
+
+void	Quad_MoveSide2(Point2 ends[2], double& width_mtr, int side, const Vector2& delta)
+{
+	if (side == 2 || side == 0)
+	{
+		// ccw
+		double h, len;
+		Point2 ctr;
+
+		Quad_2to1(ends, ctr, h, len);
+		swap(width_mtr,len);
+		h-= 90.0;
+		Quad_1to2(ctr,h,len,ends);		
+
+		Quad_MoveSide2(ends, width_mtr, side+1, delta);
+
+		Quad_2to1(ends, ctr, h, len);
+		swap(width_mtr,len);
+		h+= 90.0;
+		Quad_1to2(ctr,h,len,ends);		
+
+		return;
+	}
+	
+	if (side == 1) ends[1] += delta;
+	if (side == 3) ends[0] += delta;
+	
+}
+
+void Quad_ResizeSide4(Point2 corners[4], int side, const Vector2& move, bool symetric)
+{
+	Point2 ends1 = Segment2(corners[0],corners[3]).midpoint(0.5);
+	Point2 ends2 = Segment2(corners[1],corners[2]).midpoint(0.5);
+	
+	Point2 side1 = Segment2(corners[0],corners[1]).midpoint(0.5);
+	Point2 side2 = Segment2(corners[2],corners[3]).midpoint(0.5);
+
+	Vector2	dir;
+	switch(side) {
+	case 0: dir = Vector2(side2,side1);	break;
+	case 1: dir = Vector2(ends1,ends2);	break;
+	case 2: dir = Vector2(side1,side2);	break;
+	case 3: dir = Vector2(ends2,ends1);	break;
+	}
+	dir.normalize();
+	Vector2	real_move = dir.projection(move);
+	
+	corners[side] += real_move;
+	corners[(side+1)%4] += real_move;
+
+	if (symetric)
+	{
+		corners[(side+2)%4] -= real_move;
+		corners[(side+3)%4] -= real_move;
+	}
+	
+}
+
+void Quad_ResizeCorner1(Point2& ctr, double heading, double& l, double& w, int corner, const Vector2& move, bool symetric)
+{
+	if (!symetric) ctr += (move * 0.5);
+	
+	Vector2	move_mtrs = VectorLLToMeters(ctr, move);
+	Vector2	axis;
+	NorthHeading2VectorMeters(ctr, ctr, heading, axis);
+	Vector2	right = axis.perpendicular_cw();
+	
+	if (corner == 0 || corner == 3) axis = -axis;
+	if (corner == 0 || corner == 1) right = -right;
+	
+	Vector2	move_axis = axis.projection(move_mtrs);
+	Vector2	move_right = right.projection(move_mtrs);
+	
+	double ascale = symetric ? 2.0  : 1.0;
+	double rscale = symetric ? 2.0  : 1.0;
+	if (axis.dot(move_axis) < 0.0) ascale = -ascale;
+	if (right.dot(move_right) < 0.0) rscale = -rscale;
+	
+	l += (ascale * sqrt(move_axis.squared_length()));
+	w += (rscale * sqrt(move_right.squared_length()));
+}
