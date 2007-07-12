@@ -35,6 +35,8 @@ enum HandleType_t {
 	handle_Cross,		// Cross for precise placement
 	handle_ArrowHead,	// Arrow head, no stem
 	handle_Arrow,		// Arrow with stem
+	handle_RotateHead,	// Rotate head, no stem
+	handle_Rotate,		// Rotate with stem
 	handle_Icon			// Hande is an icon - icon is drawn by someone else!
 };
 
@@ -81,7 +83,7 @@ public:
 	virtual		bool	PointOnStructure(int id, const Point2& p) const=0;
 	
 	// Move ALL control handles (that is, the whole entity) by a delta.
-	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta)=0;			
+	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_handle)=0;			
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta)=0;			
 	virtual		void	ControlsMoveBy	 (int id,        const Vector2& delta)=0;			
 

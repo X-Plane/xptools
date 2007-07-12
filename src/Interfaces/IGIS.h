@@ -65,7 +65,23 @@ public:
 	virtual	void			Rescale(
 								const Bbox2& old_bounds,			// Defines a linear remappign of coordinates we can apply.
 								const Bbox2& new_bounds)=0;
+	virtual	void			Rotate(
+								const Point2& center,
+								double angle)=0;
 };
+
+class	IGISQuad : public virtual IGISEntity {
+public:
+
+	virtual	void	GetCorners(Point2 corners[4]) const=0;
+
+	virtual	void	MoveCorner(int corner, const Vector2& delta)=0;
+	virtual	void	MoveSide(int side, const Vector2& delta)=0;
+
+	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric)=0;
+	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric)=0;
+	
+};	
 
 //------------------------------------------------------------------------------------------------------------
 // POINT INTERFACES
@@ -105,15 +121,13 @@ public:
 };
 
 
-class	IGISPoint_WidthLength : public virtual IGISPoint_Heading {
+class	IGISPoint_WidthLength : public virtual IGISPoint_Heading, public virtual IGISQuad {
 public:
 
 	virtual	double	GetWidth (void		  ) const=0;
 	virtual	void	SetWidth (double width)      =0;
 	virtual	double	GetLength(void		  ) const=0;
 	virtual	void	SetLength(double width)      =0;
-	
-	virtual	void	GetCorners(Point2 corners[4]) const=0;
 	
 };
 
@@ -149,13 +163,12 @@ public:
 
 };
 
-class IGISLine_Width : public virtual IGISLine {
+class IGISLine_Width : public virtual IGISLine, public virtual IGISQuad {
 public:
 
 	virtual	double	GetWidth (void		  ) const=0;
 	virtual	void	SetWidth (double width)      =0;
 
-	virtual	void	GetCorners(Point2 corners[4]) const=0;
 };
 
 //------------------------------------------------------------------------------------------------------------
