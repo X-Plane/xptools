@@ -43,9 +43,10 @@ struct	MeshPrefs_t {
 };
 extern MeshPrefs_t	gMeshPrefs;
 
-void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc inFunc);
+void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc inFunc);
 void	AssignLandusesToMesh(	DEMGeoMap& inDems, 
 								CDT& ioMesh,
+								const char * mesh_folder, 
 								ProgressFunc inProg);
 
 void 	SetupWaterRasterizer(const Pmwx& inMap, const DEMGeo& inDEM, PolyRasterizer& outRasterizer);

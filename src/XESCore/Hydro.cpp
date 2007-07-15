@@ -20,7 +20,6 @@
 #define __DEBUGGING__
 #include "XUtils.h"
 #endif
-#define HYDRO_BORDER	"Hydro"
 
 // This is how high we can raise the waterlevel of a river (turning it into a lake) before we give up
 // and say 'heck, we have no idea what's going on'.  This prevents water from flowing massively uphill
@@ -1029,12 +1028,12 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 
 #pragma mark -
 
-void	ConformWater(DEMGeoMap& dems, bool inWrite)
+void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite)
 {
 	DEMGeo&	water_elev(dems[dem_HydroElevation]);
 	char	fname_left[1024], fname_bot[1024], fname_self[1024];
 
-	string border_loc = HYDRO_BORDER;
+	string border_loc = hydro_dir;
 #if APL && !defined(__MACH__)
 	string	appP;
 	AppPath(appP);
@@ -1043,9 +1042,9 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 	border_loc = appP + border_loc;
 #endif
 
-	sprintf(fname_self,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth), (int) (water_elev.mWest));
-	sprintf(fname_left,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth), (int) (water_elev.mWest - 1));
-	sprintf(fname_bot ,"%s%s%+03d%+04d.hydro.txt", border_loc.c_str(), DIR_STR, (int) (water_elev.mSouth - 1), (int) (water_elev.mWest));
+	sprintf(fname_self,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest  ));
+	sprintf(fname_left,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest-1),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest-1));
+	sprintf(fname_bot ,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth-1),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth-1),(int)(water_elev.mWest  ));
 	FILE * fi;
 	int n, w, h;
 	float e;
@@ -1109,10 +1108,10 @@ void	ConformWater(DEMGeoMap& dems, bool inWrite)
 	}
 }
 
-void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, ProgressFunc inFunc)
+void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, const char * hydro_dir, ProgressFunc inFunc)
 {
 	UpdateWaterWithMaskFile(ioMap, ioDem, mask_file, inFunc);
-	ConformWater(ioDem, false);
+	ConformWater(ioDem, hydro_dir, false);
 	BuildRivers		  (ioMap, ioDem, inFunc);
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
 	InterpDoubleDEM(foo, bar);
@@ -1140,7 +1139,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, Pro
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap.swap(water);
 	
-	ConformWater(ioDem, true);	
+	ConformWater(ioDem, hydro_dir, true);	
 }
 
 /******************************************************************************************************************************

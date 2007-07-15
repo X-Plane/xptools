@@ -49,7 +49,7 @@ static int DoCalcSlope(const vector<const char *>& args)
 static int DoCalcMesh(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating Mesh...\n");
-	TriangulateMesh(gMap, gTriangulationHi, gDem, gProgress);		
+	TriangulateMesh(gMap, gTriangulationHi, gDem, args[0], gProgress);		
 	return 0;
 }
 
@@ -70,7 +70,7 @@ static int DoZoning(const vector<const char *>& args)
 static int DoHydroReconstruct(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Rebuilding vectors from elevation...\n");
-	HydroReconstruct(gMap,  gDem,args.empty() ? NULL : args[0], gProgress);
+	HydroReconstruct(gMap,  gDem,(args.size() <= 1)? NULL : args[1], args[0], gProgress);
 	return 0;
 }
 
@@ -136,7 +136,7 @@ static int DoBuildRoads(const vector<const char *>& args)
 static int DoAssignLandUse(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Assigning land use...\n");
-	AssignLandusesToMesh(gDem,gTriangulationHi,gProgress);
+	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
 	return 0;
 }
 
@@ -155,17 +155,17 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
 { "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
-{ "-calcmesh", 		0, 0, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
+{ "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
-{ "-hydro",	 		0, 1, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
+{ "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 { "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
 { "-derivedems", 	0, 0, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
 { "-forests", 		0, 0, DoInstantiateForests, "Build 3-d Forests.",	 		  "" },
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
-{ "-assignterrain", 0, 0, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
+{ "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	1, 1, DoBuildDSF, 		"Build DSF file.", 					  "" },
 
 

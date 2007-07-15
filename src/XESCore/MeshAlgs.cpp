@@ -1,3 +1,4 @@
+
 /* 
  * Copyright (c) 2004, Laminar Research.
  *
@@ -40,8 +41,6 @@
 #define __DEBUGGING__
 #include "XUtils.h"
 #endif
-#define MESH_BORDER	"Border"
-
 #define PROFILE_PERFORMANCE 1
 
 #define LOW_RES_WATER_INTERVAL 40
@@ -1323,7 +1322,7 @@ void CalculateMeshNormals(CDT& ioMesh)
 
 
 
-void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc prog)
+void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc prog)
 {
 	TIMER(Total)
 	outMesh.clear();
@@ -1431,7 +1430,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		char	fname_left[512];
 		char	fname_bot[512];
 
-		string border_loc = MESH_BORDER;		
+		string border_loc = mesh_folder;		
 #if APL && !defined(__MACH__)
 		string	appP;
 		AppPath(appP);
@@ -1440,8 +1439,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 		border_loc = appP + border_loc;
 #endif
 
-		sprintf(fname_left,"%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
-		sprintf(fname_bot ,"%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) (deriv.mSouth - 1), (int) (deriv.mWest));
+		sprintf(fname_left,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest - 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
+		sprintf(fname_bot ,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth - 1),latlon_bucket(deriv.mWest), DIR_STR, (int) (deriv.mSouth - 1), (int) (deriv.mWest));
 		
 		mesh_match_t bot_junk, left_junk;
 		bool	has_left = gMeshPrefs.border_match ? load_match_file(fname_left, left_junk, gMatchLeft) : false;
@@ -1587,6 +1586,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, ProgressFunc 
 
 void	AssignLandusesToMesh(	DEMGeoMap& inDEMs, 
 								CDT& ioMesh, 
+								const char * mesh_folder, 
 								ProgressFunc	inProg)
 {
 
@@ -2187,7 +2187,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		double	north = inElevation.mNorth;
 		char	fname[512];
 
-		string border_loc = MESH_BORDER;		
+		string border_loc = mesh_folder;		
 #if APL && !defined(__MACH__)
 		string	appP;
 		AppPath(appP);
@@ -2196,7 +2196,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		border_loc = appP + border_loc;
 #endif
 		
-		sprintf(fname, "%s%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, (int) south, (int) west);
+		
+		sprintf(fname, "%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west);
 		
 		FILE * border = fopen(fname, "w");
 		if (border == NULL) AssertPrintf("Unable to open file %s for writing.", fname);
