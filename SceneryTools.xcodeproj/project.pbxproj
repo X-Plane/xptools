@@ -351,6 +351,7 @@
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D65E4C390B654908004D7887 /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
+		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
 		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
 		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
 		D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083020C1A4DBB00F33E06 /* earth_21.jpg */; };
@@ -910,6 +911,8 @@
 		D65E498D0B65117D004D7887 /* WED_MapZoomerNew.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_MapZoomerNew.h; sourceTree = "<group>"; };
 		D65E49AB0B651219004D7887 /* WED_MapZoomer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MapZoomer.cpp; sourceTree = "<group>"; };
 		D65E4B3A0B65427C004D7887 /* RenderFarm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RenderFarm; sourceTree = BUILT_PRODUCTS_DIR; };
+		D66864230C4F783C00DB3056 /* WED_DSFExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFExport.h; sourceTree = "<group>"; };
+		D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFExport.cpp; sourceTree = "<group>"; };
 		D67083000C1A4DBA00F33E06 /* earth_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_11.jpg; sourceTree = "<group>"; };
 		D67083010C1A4DBA00F33E06 /* earth_12.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_12.jpg; sourceTree = "<group>"; };
 		D67083020C1A4DBB00F33E06 /* earth_21.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_21.jpg; sourceTree = "<group>"; };
@@ -1712,6 +1715,8 @@
 			children = (
 				D60B10200C075B3700AD5EB7 /* WED_AptIE.h */,
 				D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */,
+				D66864230C4F783C00DB3056 /* WED_DSFExport.h */,
+				D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */,
 			);
 			path = WEDImportExport;
 			sourceTree = "<group>";
@@ -3730,6 +3735,7 @@
 				D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */,
 				D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */,
 				D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */,
+				D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
