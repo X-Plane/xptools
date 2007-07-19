@@ -83,7 +83,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 			if (!closed && last)
 			{
 				// Special case - write out the last point...that's all we have to do.
-				accum(poly, has_lo ? apt_end_crv : apt_end_seg, pt, lo, no_attrs);
+				accum(poly, has_lo ? apt_end_crv : apt_end_seg, pt, recip(pt,lo), no_attrs);
 			}
 			else
 			{
