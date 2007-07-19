@@ -25,7 +25,7 @@
 
 #define PROGRESS_START(__FUNC, __STAGE, __STAGECOUNT, __MSG)							if (__FUNC) __FUNC(__STAGE, __STAGECOUNT, __MSG, 0.0);
 #define PROGRESS_SHOW(__FUNC, __STAGE, __STAGECOUNT, __MSG, __NOW, __MAX)				if (__FUNC) __FUNC(__STAGE, __STAGECOUNT, __MSG, (float) (__NOW) / (float) (__MAX));
-#define PROGRESS_CHECK(__FUNC, __STAGE, __STAGECOUNT, __MSG, __NOW, __MAX, __INTERVAL)	if (__FUNC && (((__NOW) % (__INTERVAL)) == 0)) __FUNC(__STAGE, __STAGECOUNT, __MSG, (float) (__NOW) / (float) (__MAX));
+#define PROGRESS_CHECK(__FUNC, __STAGE, __STAGECOUNT, __MSG, __NOW, __MAX, __INTERVAL)	if (__FUNC && (__INTERVAL) && (((__NOW) % (__INTERVAL)) == 0)) __FUNC(__STAGE, __STAGECOUNT, __MSG, (float) (__NOW) / (float) (__MAX));
 #define PROGRESS_DONE(__FUNC, __STAGE, __STAGECOUNT, __MSG)								if (__FUNC) __FUNC(__STAGE, __STAGECOUNT, __MSG, 1.0);
 
 typedef	bool (* ProgressFunc)(

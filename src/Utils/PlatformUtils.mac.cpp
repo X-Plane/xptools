@@ -41,12 +41,16 @@ static	OSErr		FSRefToPathName(const FSRef * inFileSpec, char * outPathname, int 
 
 void	EndianFlipShort(short * ioShort)
 {
-	*ioShort = Endian16_Swap(*ioShort);
+	#if BIG
+		*ioShort = Endian16_Swap(*ioShort);
+	#endif
 }
 
 void	EndianFlipLong(long * ioLong)
 {
-	*ioLong = Endian32_Swap(*ioLong);
+	#if BIG
+		*ioLong = Endian32_Swap(*ioLong);
+	#endif
 }
 
 /* Get FilePathFromUser puts up a nav services dialog box and converts the results

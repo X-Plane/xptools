@@ -423,10 +423,12 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 #if APL && DEV && !defined(__MACH__)
 void BWImage::Debug()
 {
+	#if BIG
 	for (int i = 0; i < (mWidth * mHeight / 32); ++i)
 	{
 		mData[i] = Endian32_Swap(mData[i]);
 	}
+	#endif
 	XPLMSetGraphicsState(0, 0, 0,   0, 0,  0, 0);
 	glColor3f(0.0, 0.0, 0.0);
 	glBegin(GL_QUADS);
@@ -443,10 +445,12 @@ void BWImage::Debug()
 	while (!Button()) { }
 	while (Button()) { }
 	glPixelStorei(GL_UNPACK_LSB_FIRST, 0);
+	#if BIG
 	for (int i = 0; i < (mWidth * mHeight / 32); ++i)
 	{
 		mData[i] = Endian32_Swap(mData[i]);
 	}
+	#endif
 }
 #endif
 

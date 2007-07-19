@@ -34,12 +34,13 @@
 
 PlatformType	GetNativePlatformType(void)
 {
-#if APL
+#if BIG
 	return platform_BigEndian;
-#endif
-#if IBM	
+#elif LIL
 	return platform_LittleEndian;
-#endif	
+#else
+	#error BIG and LIL are both undefined.  Please define one macro to 1 to define platform endian-ness!
+#endif
 }
 
 void	EndianSwapBuffer(
