@@ -13,6 +13,31 @@
 #include "GISUtils.h"
 #include "AptIO.h"
 
+
+/*
+	This code "indexes" current objs - was never imported! :-(
+		if (!strcmp(argv[n], "-builddeg"))
+		{
+			char * fname = argv[++n];
+			for (int n = 0; n < marked_degrees.size(); ++n)
+			{
+				int x = marked_degrees[n].first;
+				int y = marked_degrees[n].second;
+
+				char buf[1024];
+				sprintf(buf,"%s%+03d%+04d.obs",fname, y, x);
+				if (!WriteDegFile(buf, x, y))
+				{
+					fprintf(stderr,"Couldn't write file %s\n", buf);
+					x = 1000; 
+					y = 1000;
+					
+				}
+			}
+		}
+
+*/
+
 // -obs <type> <files>
 static int DoObsImport(const vector<const char *>& args)
 {
@@ -195,12 +220,19 @@ static int DoBuildObjLib(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sObsCmds[] = {
-{ "-obs", 			2, -1, DoObsImport, 			"Import obstacles.", "" },
-{ "-apt", 			1, 1, DoAptImport, 				"Import airport data.", "" },
-{ "-aptwrite", 		1, 1, DoAptExport, 				"Export airport data.", "" },
-{ "-aptindex", 		1, 1, DoAptBulkExport, 			"Export airport data.", "" },
-{ "-apttest", 		0, 0, DoAptTest, 			"Export airport data.", "" },
-{ "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "" },
+{ "-obs", 			2, -1, DoObsImport, 		"Import obstacles.", "-obs faa|deg|old|apt|nav|asr|arsr <file>\nLoad an object file, NOT old ones, and import into current map.\n"
+			"faa    FAA digital obstacle file (DOF) text file.\n"
+			"deg    One-degree imported OBS files (this is the format we usually keep our files in.\n"
+			"old    Old binary format OBS files, sources to the old v6 render.  Used for Europe for now.\n"
+			"apt    Import an X-Plane apt.dat and create obstacles out of the airport furniture.\n"
+			"nav    Imoprt an X-Plane nav.dat and create obstacles out of the navaids.\n"
+			"asr    Import an FAA ASR file from the digital aero chart suplement (DAC) - pull out the asr data from asr.dat.\n"
+			"arsr   Import an FAA ARSR file from the digital aero chart suplement (DAC) - pull out the arsr data from asr.dat.\n" },
+{ "-apt", 			1, 1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
+{ "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.adt file." },
+{ "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
+{ "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
+{ "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "-obsrange\nPrints the range of heights of loaded objects, by type." },
 { "-makeobjlib",	1,	1,	DoBuildObjLib,		"Make a fake obj lib of placeholder objects.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
@@ -209,3 +241,5 @@ void	RegisterObsCmds(void)
 {
 	GISTool_RegisterCommands(sObsCmds);
 }
+
+
