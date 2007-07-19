@@ -47,7 +47,7 @@ static void InitFonts(void) {
 		sMgr = new FontMgr;
 		FontFuncs funcs = { MyGenerateTextures, MyBindTexture };
 		sMgr->InstallCallbacks(&funcs);
-		sFont = sMgr->LoadFont(/*"LucidaGrande.ttf"*/"Arial", NULL, NULL, UI_FONT_SIZE, true);
+		sFont = sMgr->LoadFont("Courier.ttf", NULL, NULL, UI_FONT_SIZE, true);
 }
 		
 void                 XPLMDrawString(
