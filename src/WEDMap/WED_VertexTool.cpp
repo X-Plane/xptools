@@ -784,9 +784,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		if (ent_bounds.xspan() < MIN_HANDLE_RECURSE_SIZE && 
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
 
-		if (e->GetGISSubtype() == WED_OverlayImage::sClass && SAFE_CAST(WED_OverlayImage, e))
-			mEntityCache.push_back(e);
-		else if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
+		if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
 			AddSnapPointRecursive(poly->GetOuterRing(),vis_area, sel);
 			c = poly->GetNumHoles();
