@@ -175,7 +175,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 //			TriangulateMesh(gMap, gTriangulationLo, gDem, WED_ProgressFunc, false);		
 //			break;
 		case procCmd_HiResTri:
-			TriangulateMesh(gMap, gTriangulationHi, gDem, WED_ProgressFunc);		
+			TriangulateMesh(gMap, gTriangulationHi, gDem, "../rendering_data/OUTPUT-border",WED_ProgressFunc);		
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
 		case procCmd_DoAirports:
@@ -204,7 +204,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				f1[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick a mask.zip file", "Preview", 6, f1, sizeof(f1))) break;
 						
-				HydroReconstruct(gMap,  gDem,f1,WED_ProgressFunc);
+				HydroReconstruct(gMap,  gDem,f1,"../rendering_data/OUTPUT-hydro",WED_ProgressFunc);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
 			}
@@ -309,7 +309,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],WED_ProgressFunc);
 			break;
 		case procCmd_AssignLUToMesh:
-			AssignLandusesToMesh(gDem,gTriangulationHi,WED_ProgressFunc);
+			AssignLandusesToMesh(gDem,gTriangulationHi,"../rendering_data/OUTPUT-border",WED_ProgressFunc);
 //			AssignLandusesToMesh(gDem,gTriangulationLo,false,WED_ProgressFunc);
 			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
 			break;
