@@ -65,6 +65,10 @@ static void strip_path(string& f)
 static void	DSF_ExportTileRecursive(WED_Thing * what, ILibrarian * pkg, const Bbox2& bounds, set<string>& io_resources, DSF_ResourceTable& io_table, const DSFCallbacks_t * cbs, void * writer)
 {
 	WED_OverlayImage * img;
+	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
+	if (!ent) return;
+	if (ent->GetHidden()) return;
+	
 	
 	if ((img = dynamic_cast<WED_OverlayImage *>(what)) != NULL)
 	{
