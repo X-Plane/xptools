@@ -22,6 +22,9 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"-",					0,  	0,								0,	0					},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
+#if DEV
+{	"Export &DSFs",			0,		0,								0,	wed_ExportDSF		},
+#endif
 #if IBM
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},

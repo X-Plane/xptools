@@ -767,6 +767,8 @@ static int	unsplittable(ISelectable * base, void * ref)
 	if (!t) return 1;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 1;
+	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+	if (!a) return 1;
 	
 	WED_Thing * parent = t->GetParent();
 	if (!parent) return 1;
@@ -802,6 +804,8 @@ static int	collect_splits(ISelectable * base, void * ref)
 	if (!t) return 0;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 0;
+	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+	if (!a) return 0;
 	
 	WED_Thing * parent = t->GetParent();
 	if (!parent) return 0;
@@ -855,7 +859,6 @@ void	WED_DoSplit(IResolver * resolver)
 		WED_Thing * parent = (*w)->GetParent();
 		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
 		WED_AirportNode * node = dynamic_cast<WED_AirportNode *>(*w);
-		
 		WED_AirportNode * new_node = WED_AirportNode::CreateTyped(parent->GetArchive());
 		Segment2	seg;
 		Bezier2		bez;

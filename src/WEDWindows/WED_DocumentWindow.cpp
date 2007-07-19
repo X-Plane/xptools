@@ -18,6 +18,7 @@
 #include "WED_Colors.h"
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
+#include "WED_DSFExport.h"
 #include "WED_PropertyHelper.h"
 
 int kDefaultDocSize[4] = { 0, 0, 512,384 };
@@ -224,6 +225,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
 	
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
+	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
@@ -267,6 +269,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
+	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;

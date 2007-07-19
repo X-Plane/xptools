@@ -15,6 +15,7 @@ enum {
 	wed_ChangeSystem,
 	wed_ImportApt,
 	wed_ExportApt,
+	wed_ExportDSF,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
