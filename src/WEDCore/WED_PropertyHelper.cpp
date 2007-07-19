@@ -322,7 +322,7 @@ void		WED_PropDoubleText::ToDB(sqlite3 * db, const char * id_col, const char * i
 void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 {
 	char as_double[1024];
-	sprintf(as_double,"%lf", value);
+	sprintf(as_double,"%.10lf", value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_double));
 }
 
