@@ -158,8 +158,8 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	char	rel_dir [512];
 	char	rel_path[512];
 	string full_dir, full_path;
-	sprintf(rel_dir ,"Earth nav data" DIR_STR "%+02d%+03d",							  latlon_bucket(y), latlon_bucket(x)	  );
-	sprintf(rel_path,"Earth nav data" DIR_STR "%+02d%+03d" DIR_STR "%+02d%+03d.dsf",  latlon_bucket(y), latlon_bucket(x), y, x);
+	sprintf(rel_dir ,"Earth nav data" DIR_STR "%+03d%+04d",							  latlon_bucket(y), latlon_bucket(x)	  );
+	sprintf(rel_path,"Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf",  latlon_bucket(y), latlon_bucket(x), y, x);
 	full_path = rel_path;
 	full_dir  = rel_dir ;
 	pkg->LookupPath(full_dir );
