@@ -831,7 +831,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 				
 				ITexMgr * mgr = WED_GetTexMgr(GetResolver());
 				TexRef ref = mgr->LookupTexture(img_file.c_str());
-				g->SetState(0,ref ? 1 : 0,0, 0, 0, 0, 0);
+				g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
 				if (ref) { g->BindTex(mgr->GetTexID(ref),0);
 				
 				int vis_x, vis_y, tot_x, tot_y;
