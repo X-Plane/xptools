@@ -231,10 +231,40 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
 			trunc_width -= GUI_GetImageResourceWidth("arrows.png");
 			
-		GUI_TruncateText(c.text_val, font_UI_Basic, trunc_width);
-		GUI_FontDraw(inState, font_UI_Basic, 
-			(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
-			cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());	
+		if (c.string_is_resource)
+		{
+			string::size_type s=0, e;
+			while(1)
+			{
+				string res;
+				e = c.text_val.find(',',s);
+				if (e==c.text_val.npos)
+				{
+					res = c.text_val.substr(s);
+				}
+				else
+				{
+					res = c.text_val.substr(s,e-s);
+					s=e+1;					
+				}
+		
+				int tile[4] = { 0, 0, 1, 1 };
+				glColor3f(1,1,1);
+				GUI_DrawCentered(inState, res.c_str(), cell_bounds, -1, 0, tile, NULL, NULL);
+				
+				cell_bounds[0] += 20;
+				
+				if (e == c.text_val.npos)
+					break;
+			}
+		}
+		else
+		{				
+			GUI_TruncateText(c.text_val, font_UI_Basic, trunc_width);
+			GUI_FontDraw(inState, font_UI_Basic, 
+				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
+				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());	
+		}
 	}
 	
 	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
@@ -521,10 +551,12 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].flags = 0;
 					items[i].cmd = 0;
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
+					if (mEditInfo.int_val == it->first && cur == -1) cur = i;					
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
+					mEditInfo.int_val=enum_vals[choice];
 					if(mEditInfo.int_set_val.count(enum_vals[choice]) > 0)
 						mEditInfo.int_set_val.erase(enum_vals[choice]);
 					else

@@ -34,7 +34,7 @@ enum GUI_CellContentType {
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
 	gui_Cell_Enum,				// string&int			int
-	gui_Cell_EnumSet			// string val&int set	int set
+	gui_Cell_EnumSet			// string val&int set	int set, int
 };
 
 enum GUI_BoolIcon {
@@ -60,6 +60,7 @@ struct	GUI_CellContent {
 	set<int>				int_set_val;
 	GUI_BoolIcon			bool_val;		// for get only - to pick check type!
 	int						bool_partial;	// for checks - if we are on but our parent is off...
+	int						string_is_resource;
 };
 
 struct GUI_HeaderContent {
