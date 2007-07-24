@@ -6,6 +6,7 @@
 #include "SQLUtils.h"
 #include "XESConstants.h"
 #include "WED_EnumSystem.h"
+#include <algorithm>
 
 int gIsFeet = 0;
 extern int gExclusion;
