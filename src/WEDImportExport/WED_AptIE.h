@@ -43,4 +43,6 @@ void	WED_DoExportApt(IResolver * resolver);
 int		WED_CanImportApt(IResolver * resolver);
 void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive);
 
+bool	WED_ValidateApt(IResolver * resolver);
+
 #endif /* WED_AptIE_H */
