@@ -298,7 +298,54 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 		prefs->ReadDoublePref("map/south",s),
 		prefs->ReadDoublePref("map/east", e),
 		prefs->ReadDoublePref("map/north",n));
-		
+
+
+	for (int t = 0; t < mTools.size(); ++t)
+	{
+		int pc = mTools[t]->CountProperties();
+		for (int p = 0; p < pc; ++p)
+		{
+			PropertyInfo_t	inf;
+			PropertyVal_t	val;
+			mTools[t]->GetNthPropertyInfo(p,inf);
+			string key = "map_";
+			key += mTools[t]->GetToolName();
+			key += "_";
+			key += inf.prop_name;
+			string v;
+			string::size_type s, e;
+			
+			v = prefs->ReadStringPref(key.c_str(),string());
+			if (!v.empty())
+			{
+				val.prop_kind = inf.prop_kind;
+				switch(inf.prop_kind) {
+				case prop_Int:
+				case prop_Bool:
+				case prop_Enum:
+					val.int_val = atoi(v.c_str());
+					break;
+				case prop_Double:
+					val.double_val = atoi(v.c_str());
+					break;			
+				case prop_String:	
+				case prop_FilePath:
+					val.string_val = v;
+					break;
+				case prop_EnumSet:
+					s = 0;
+					do {
+						e = v.find(',',s);
+						val.set_val.insert(atoi(v.c_str() + s));
+						if (e != v.npos)
+							s = e + 1;
+					} while (e != v.npos);					
+					break;
+				}
+				mTools[t]->SetNthProperty(p,val);
+			}
+		}
+	}	
 }
 
 void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
@@ -315,6 +362,51 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	prefs->WriteDoublePref("map/south",s);
 	prefs->WriteDoublePref("map/east", e);
 	prefs->WriteDoublePref("map/north",n);
-	
+
+	for (int t = 0; t < mTools.size(); ++t)
+	{
+		int pc = mTools[t]->CountProperties();
+		for (int p = 0; p < pc; ++p)
+		{
+			PropertyInfo_t	inf;
+			PropertyVal_t	val;
+			mTools[t]->GetNthPropertyInfo(p,inf);
+			mTools[t]->GetNthProperty(p,val);
+
+			string key = "map_";
+			key += mTools[t]->GetToolName();
+			key += "_";
+			key += inf.prop_name;
+
+			string v;
+			char buf[256];
+			switch(val.prop_kind) {
+			case prop_Int:
+			case prop_Bool:
+			case prop_Enum:
+				sprintf(buf,"%d",val.int_val);
+				v = buf;
+				break;
+			case prop_Double:
+				sprintf(buf,"%lf",val.double_val);
+				v = buf;
+				break;			
+			case prop_String:	
+			case prop_FilePath:
+				v = val.string_val;
+				break;
+			case prop_EnumSet:
+				for (set<int>::iterator it = val.set_val.begin(); it != val.set_val.end(); ++it)
+				{
+					if (!v.empty()) v += ",";
+					sprintf(buf,"%d",*it);
+					v += buf;
+				}
+				break;
+			}
+			
+			prefs->WriteStringPref(key.c_str(),v);
+		}
+	}	
 }
 
