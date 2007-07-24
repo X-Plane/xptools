@@ -83,7 +83,8 @@ void	WED_CreateLineTool::AcceptPath(
 
 	GetArchive()->StartCommand(buf);
 
-	WED_Airport * host = WED_GetCurrentAirport(GetResolver());
+	int idx;
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
 
 	WED_GISLine_Width * obj = NULL;
 	
@@ -127,8 +128,21 @@ void	WED_CreateLineTool::AcceptPath(
 	obj->SetWidth(50.0);
 	static int n = 0;
 	++n;
-	obj->SetParent(host, host->CountChildren());
-	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
+	obj->SetParent(host, idx);
+	
+	int h = obj->GetHeading();
+	if (h < 0) h += 360;
+	if (h > 180)
+	{
+		obj->GetSource()->SetLocation(pts[1]);
+		obj->GetTarget()->SetLocation(pts[0]);
+		h = obj->GetHeading();
+		if (h < 0) h += 360;
+	}
+	h /= 10;
+	if (h < 1) h = 1;
+	
+	sprintf(buf,"%d/%d",h,h+18);
 	obj->SetName(buf);
 
 	ISelection * sel = WED_GetSelect(GetResolver());

@@ -34,10 +34,12 @@ public:
 
 protected:
 
-		WED_PropIntEnum			mPavement;
-		WED_PropDoubleText		mRoughness;
-		WED_PropDoubleText		mHeading;
-		WED_PropIntEnumSet		mMarkings;
+		WED_PropIntEnum					mPavement;
+		WED_PropDoubleText				mRoughness;
+		WED_PropDoubleText				mHeading;
+		WED_PropIntEnumSet				mMarkings;
+		WED_PropIntEnumSetFilter		mMarkingsLines;
+		WED_PropIntEnumSetFilter		mMarkingsLights;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
@@ -49,7 +51,7 @@ protected:
 	virtual	bool		CanCreateNow(void);
 
 
-			WED_Thing *	GetHost(void);
+			WED_Thing *	GetHost(int& idx);
 			
 		CreateTool_t	mType;
 

@@ -98,7 +98,8 @@ void	WED_CreatePointTool::AcceptPath(
 
 	GetArchive()->StartCommand(buf);
 
-	WED_Airport * host = WED_GetCurrentAirport(GetResolver());
+	int idx;
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
 
 	WED_GISPoint * new_pt_obj = NULL;
 	WED_GISPoint_Heading * new_pt_h = NULL;
@@ -156,9 +157,12 @@ void	WED_CreatePointTool::AcceptPath(
 	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
 	
 	static int n = 0;
-	++n;
-	new_pt_obj->SetParent(host, host->CountChildren());
-	sprintf(buf,"New %s %d",kCreateCmds[mType],n);
+	static int h = 0;
+	new_pt_obj->SetParent(host, idx);
+	if (mType == create_Helipad)
+		sprintf(buf,"H%d",++n);
+	else
+		sprintf(buf,"New %s %d",kCreateCmds[mType],++n);
 	if (mType != create_Sign)
 		new_pt_obj->SetName(buf);
 		

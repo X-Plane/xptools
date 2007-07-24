@@ -32,7 +32,9 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mPavement(tool == create_Taxi ? this : NULL,"Pavement","","",Surface_Type,surf_Concrete),
 		mRoughness(tool == create_Taxi ? this : NULL,"Roughness","","",0.25,4,2),
 		mHeading(tool == create_Taxi ? this : NULL,"Heading","","",0,5,2),
-		mMarkings(this,"Markings", "", "", LinearFeature)
+		mMarkings(this,".Markings", "", "", LinearFeature),
+		mMarkingsLines(this,"Markings", "", "", ".Markings",line_SolidYellow,line_BWideBrokenDouble),
+		mMarkingsLights(this,"Lights", "", "", ".Markings",line_TaxiCenter,line_BoundaryEdge)
 {
 	mPavement.value = surf_Concrete;
 }	
@@ -51,7 +53,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 {
 		char buf[256];
 
-	WED_Thing * host = GetHost();
+	int idx;
+	WED_Thing * host = GetHost(idx);
 	if (host == NULL) return;
 
 	switch(mType) {
@@ -79,7 +82,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		{
 			WED_Taxiway *		tway = WED_Taxiway::CreateTyped(GetArchive());	
 			outer_ring->SetParent(tway,0);	
-			tway->SetParent(host, host->CountChildren());
+			tway->SetParent(host, idx);
 			
 			sprintf(buf,"New Taxiway %d",n);
 			tway->SetName(buf);
@@ -97,7 +100,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		{
 			WED_AirportBoundary *		bwy = WED_AirportBoundary::CreateTyped(GetArchive());	
 			outer_ring->SetParent(bwy,0);	
-			bwy->SetParent(host, host->CountChildren());
+			bwy->SetParent(host, idx);
 			
 			sprintf(buf,"Airport Boundary %d",n);
 			bwy->SetName(buf);
@@ -109,6 +112,15 @@ void	WED_CreatePolygonTool::AcceptPath(
 		}
 		break;
 	case create_Marks:
+		{
+			outer_ring->SetParent(host, idx);
+			sprintf(buf,"Linear Feature %d",n);
+			outer_ring->SetName(buf);
+			
+			if (mType != create_Hole)
+				sel->Select(outer_ring);			
+		}
+		break;
 	case create_Hole:
 		{
 			outer_ring->SetParent(host, host->CountChildren());
@@ -158,7 +170,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 const char *	WED_CreatePolygonTool::GetStatusText(void)
 {
 	static char buf[256];
-	if (GetHost() == NULL)
+	int n;
+	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
 			sprintf(buf,"You must selet a polygon before you can insert a hole into it.");
@@ -171,10 +184,11 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 
 bool		WED_CreatePolygonTool::CanCreateNow(void)
 {
-	return GetHost() != NULL;
+	int n;
+	return GetHost(n) != NULL;
 }
 
-WED_Thing *		WED_CreatePolygonTool::GetHost()
+WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 {
 	if (mType == create_Hole)
 	{
@@ -182,7 +196,7 @@ WED_Thing *		WED_CreatePolygonTool::GetHost()
 		if (sel->GetSelectionCount() != 1) return NULL;
 		return dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
 	} else
-		return WED_GetCurrentAirport(GetResolver());
+		return WED_GetCreateHost(GetResolver(), true, idx);
 }
 
 bool			WED_CreatePolygonTool::GetHeadingMeasure(double& h)
