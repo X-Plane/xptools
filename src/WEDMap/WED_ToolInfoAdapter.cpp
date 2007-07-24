@@ -2,9 +2,12 @@
 #include "WED_MapToolNew.h"
 #include "GUI_Messages.h"
 #include "GUI_Fonts.h"
+#include "WED_EnumSystem.h"
 #include "IPropertyObject.h"
 
 const int COL_WIDTH = 100;
+
+extern int gExclusion;
 
 WED_ToolInfoAdapter::WED_ToolInfoAdapter(int height) : mTool(NULL), mRowHeight(height)
 {
@@ -27,7 +30,8 @@ void	WED_ToolInfoAdapter::GetCellContent(
 {
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
-	
+
+	the_content.string_is_resource = 0;
 	the_content.content_type = gui_Cell_None;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
@@ -81,10 +85,18 @@ void	WED_ToolInfoAdapter::GetCellContent(
 			{
 				if (iter!=val.set_val.begin()) the_content.text_val += ",";
 				string label;
-				mTool->GetNthPropertyDictItem(cell_x/2,*iter,label);
+				mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
+				if(0)	// do not do this for now - looks ugly in the tool info adapter
+				if (ENUM_Domain(*iter) == LinearFeature)
+				{
+					label = ENUM_Fetch(*iter);
+					label += ".png";
+					the_content.string_is_resource = 1;
+				}
 				the_content.text_val += label;
 			}
 			if (the_content.text_val.empty())	the_content.text_val="none";
+			if(gExclusion && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		}
 
 	}
@@ -106,7 +118,8 @@ void	WED_ToolInfoAdapter::GetEnumDictionary(
 	
 	if (mTool)
 		mTool->GetNthPropertyDict(cell_x / 2, out_dictionary);
-
+	if(gExclusion)
+		out_dictionary.insert(map<int,string>::value_type(0,"None"));
 }			
 void	WED_ToolInfoAdapter::AcceptEdit(
 			int							cell_x,
@@ -145,8 +158,14 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		break;
 	case prop_EnumSet:	
 		val.prop_kind = prop_EnumSet;
-		val.set_val = the_content.int_set_val;
-		break;
+		if (gExclusion)
+		{
+			val.set_val.clear();
+			if (the_content.int_val != 0)
+				val.set_val.insert(the_content.int_val);
+		} else
+			val.set_val = the_content.int_set_val;
+		break;			
 	}
 	mTool->SetNthProperty(cell_x / 2, val);
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
@@ -256,6 +275,8 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 
 	PropertyDict_t	dict;
 	int w = 0;
+
+	if (!inf.prop_name.empty() && inf.prop_name[0] == '.') return 1;
 
 	if (n % 2) 
 	switch(inf.prop_kind) {
