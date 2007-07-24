@@ -13,8 +13,11 @@
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIMeasurements.h"
+#include "WED_EnumSystem.h"
 
 inline int count_strs(const char ** p) { if (!p) return 0; int n = 0; while(*p) ++p, ++n; return n; }
+
+int gExclusion=1;
 
 inline bool AnyLocked(WED_Thing * t)
 {
@@ -74,6 +77,7 @@ void	WED_PropertyTable::GetCellContent(
 	char buf[100], fmt[10];
 	
 	the_content.content_type = gui_Cell_None;
+	the_content.string_is_resource = 0;
 	the_content.can_edit = 0;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
@@ -143,9 +147,16 @@ void	WED_PropertyTable::GetCellContent(
 			if (iter!=val.set_val.begin()) the_content.text_val += ",";
 			string label;
 			t->GetNthPropertyDictItem(idx,*iter,label);
+			if (ENUM_Domain(*iter) == LinearFeature)
+			{
+				label = ENUM_Fetch(*iter);
+				label += ".png";
+				the_content.string_is_resource = 1;
+			}
 			the_content.text_val += label;
 		}		
 		if (the_content.text_val.empty())	the_content.text_val="none";
+		if(gExclusion && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		break;		
 	}
 	int unused_vis, unused_kids;
@@ -179,6 +190,8 @@ void	WED_PropertyTable::GetEnumDictionary(
 	if (idx == -1) return;	
 	
 	t->GetNthPropertyDict(idx, out_dictionary);
+	if(gExclusion)
+		out_dictionary.insert(map<int,string>::value_type(0,"None"));
 }
 
 void	WED_PropertyTable::AcceptEdit(
@@ -263,7 +276,13 @@ void	WED_PropertyTable::AcceptEdit(
 			break;
 		case prop_EnumSet:	
 			val.prop_kind = prop_EnumSet;
-			val.set_val = content.int_set_val;
+			if (gExclusion)
+			{
+				val.set_val.clear();
+				if (content.int_val != 0)
+					val.set_val.insert(content.int_val);
+			} else
+				val.set_val = content.int_set_val;
 			break;			
 		}
 		string foo = string("Change ") + inf.prop_name;
@@ -763,6 +782,7 @@ void	WED_PropertyTable::ReceiveMessage(
 					{
 						PropertyInfo_t info;
 						t->GetNthPropertyInfo(p,info);
+						if(!info.prop_name.empty() && info.prop_name[0] != '.')
 						if (cols.count(info.prop_name) == 0)
 						{
 							cols.insert(info.prop_name);
