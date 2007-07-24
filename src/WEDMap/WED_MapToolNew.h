@@ -23,7 +23,9 @@ public:
 	virtual bool			GetHeadingMeasure(double& h)=0;
 	virtual bool			GetDistanceMeasure(double& d)=0;
 
-	virtual	void		PropEditCallback(int before);
+	virtual	void				PropEditCallback(int before);
+	virtual	int					CountSubs(void);
+	virtual	IPropertyObject *	GetNthSub(int n);
 
 			const char *	GetToolName(void) const;
 			

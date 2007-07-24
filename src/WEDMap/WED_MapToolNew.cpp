@@ -13,6 +13,9 @@ void		WED_MapToolNew::PropEditCallback(int before)
 {
 }
 
+int					WED_MapToolNew::CountSubs(void) { return 0; }
+IPropertyObject *	WED_MapToolNew::GetNthSub(int n) { return NULL; }
+
 const char *	WED_MapToolNew::GetToolName(void) const
 {
 	return tool_name.c_str();
