@@ -399,6 +399,7 @@ bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 			return true;
 		}
 	}
+	return false;
 }
 
 void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_handle)

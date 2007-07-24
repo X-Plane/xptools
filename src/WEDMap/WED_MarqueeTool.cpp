@@ -216,9 +216,6 @@ void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Poi
 	
 	if (mIsRotate)
 	{
-		#if !DEV
-			use WED_CalcDragAngle
-		#endif
 		Point2 new_p;
 		
 		new_p = io_pt + delta;
@@ -230,7 +227,6 @@ void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Poi
 		io_pt = new_p;
 		mRotatePt = io_pt;
 		
-//		ApplyRotate(mRotateCtr, b1-a1);
 	}
 	else
 	{	
