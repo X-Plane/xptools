@@ -9,10 +9,18 @@
 #include "WED_RunwayNode.h"
 #include "WED_OverlayImage.h"
 #include "WED_TextureNode.h"
+#include "WED_Taxiway.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
 #include "XESConstants.h"
+#include "GUI_GraphState.h"
+
+#if APL
+	#include <OpenGL/gl.h>
+#else
+	#include <gl/gl.h>
+#endif
 
 #define	MIN_HANDLE_RECURSE_SIZE 20
 #define SNAP_RADIUS 4
@@ -59,6 +67,7 @@ WED_VertexTool::WED_VertexTool(
 		mInEdit(0),
 		mIsRotate(0),
 		mIsSymetric(0),
+		mIsTaxiSpin(0),
 		mIsScale(0),		
 		mSnapToGrid(this,"Snap To Vertices", "", "", 0)		
 {
@@ -91,6 +100,7 @@ void	WED_VertexTool::EndEdit(void)
 	mIsRotate = 0;
 	mIsSymetric = 0;
 	mIsScale = 0;
+	mIsTaxiSpin = 0;
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -378,28 +388,29 @@ int		WED_VertexTool::GetNthLinkTargetCtl(int id, int n) const
 bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	if (quad)
+	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
+	if (taxi)
 	{
-		Point2	corners[4];
-		quad->GetCorners(corners);
-		return inside_polygon_pt(corners,corners+4, p);
+		if (GetHost()->GetModifiersNow() & gui_ShiftFlag)
+		if (taxi->PtWithin(p))
+		{
+			mRotateCtr = p;
+			mTaxiDest = p;
+			return true;
+		}
 	}
-	return false;
 }
 
-void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta)
+void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_handle)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
-	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
-	if (quad)
+	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
+	io_handle += delta;
+	if (taxi)
 	{
-		Bbox2	oldb, newb;
-		en->GetBounds(oldb);
-		newb = oldb;
-		newb.p1 += delta;
-		newb.p2 += delta;
-		en->Rescale(oldb,newb);		
+		taxi->SetHeading(VectorDegs2NorthHeading(mRotateCtr, mRotateCtr, Vector2(mRotateCtr,io_handle)));
+		mIsTaxiSpin = 1;
+		mTaxiDest = io_handle;
 	}	
 }
 
@@ -693,6 +704,8 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 			mEntityCache.push_back(e);
 		else if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
+			if (e->GetGISSubtype() == WED_Taxiway::sClass && SAFE_CAST(WED_Taxiway, e))
+				mEntityCache.push_back(e);
 			AddEntityRecursive(poly->GetOuterRing(),vis_area);
 			c = poly->GetNumHoles();
 			for (n = 0; n < c; ++n)
@@ -848,3 +861,17 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 	io_pt = best;
 }
 
+
+void		WED_VertexTool::DrawSelected			(int inCurrent, GUI_GraphState * g)
+{
+	WED_HandleToolBase::DrawSelected(inCurrent, g);
+	if (mIsTaxiSpin)
+	{
+		g->SetState(false,false, false, true, true, false, false);
+		glColor4f(1,1,1,0.5);
+		glBegin(GL_LINES);
+		glVertex2f(GetZoomer()->LonToXPixel(mRotateCtr.x),GetZoomer()->LatToYPixel(mRotateCtr.y));
+		glVertex2f(GetZoomer()->LonToXPixel(mTaxiDest.x),GetZoomer()->LatToYPixel(mTaxiDest.y));
+		glEnd();
+	}	
+}

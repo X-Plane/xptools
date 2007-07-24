@@ -38,7 +38,7 @@ public:
 	
 	virtual		bool	PointOnStructure(int id, const Point2& p) const;
 	
-	virtual		void	ControlsMoveBy(int id, const Vector2& delta);			
+	virtual		void	ControlsMoveBy(int id, const Vector2& delta, Point2& io_handle);			
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
@@ -54,6 +54,9 @@ public:
 	virtual	const char *		GetStatusText(void) { return NULL; }
 	virtual bool			GetHeadingMeasure(double& h) { return false; }
 	virtual bool			GetDistanceMeasure(double& d) { return false; }
+	
+	virtual	void		DrawSelected			(int inCurrent, GUI_GraphState * g);
+
 
 //	virtual void *		QueryInterface(const char * class_id);
 
@@ -71,8 +74,9 @@ private:
 		int						mIsRotate;
 		int						mIsScale;
 		int						mIsSymetric;
-		Point2					mRotateCtr;
-//		Point2					mRotateHan;
+		int						mIsTaxiSpin;
+		mutable Point2			mRotateCtr;
+		mutable Point2			mTaxiDest;
 
 		WED_PropBoolText		mSnapToGrid;
 		
