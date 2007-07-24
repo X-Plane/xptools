@@ -33,6 +33,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "PlatformUtils.h"
+#include "WED_Ring.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
@@ -213,7 +214,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			sel->Clear();
 			
 			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
-			WED_AirportChain * rng = WED_AirportChain::CreateTyped(wrl->GetArchive());
+			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
@@ -242,7 +243,6 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			p1->SetName("Corner 3");
 			p1->SetName("Corner 4");
 			rng->SetName("Image Boundary");
-			rng->SetClosed(1);
 			const char * p = buf;
 			const char * n = buf;
 			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
@@ -894,4 +894,90 @@ void	WED_DoSplit(IResolver * resolver)
 	}
 	
 	op->CommitOperation();
+}
+
+static int IterateNonReversable(ISelectable * what, void * ref)
+{
+	if (dynamic_cast<IGISPolygon*>(what)) return 0;
+	if (dynamic_cast<IGISPointSequence*>(what)) return 0;
+	return 1;
+	
+}
+
+int		WED_CanReverse(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelection(IterateNonReversable, NULL)) return 0;
+	return 1;
+}
+
+static int IterateDoReverse(ISelectable * what, void * ref)
+{
+	IGISPolygon * p;
+	IGISPointSequence * ps;
+	if ((p =  dynamic_cast<IGISPolygon*      >(what))!= NULL) p->Reverse();
+	if ((ps = dynamic_cast<IGISPointSequence*>(what))!= NULL) ps->Reverse();
+	return 0;	
+}
+
+
+void	WED_DoReverse(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Reverse");
+	sel->IterateSelection(IterateDoReverse, NULL);
+	op->CommitOperation();
+}
+
+
+int		WED_CanDuplicate(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	return sel->GetSelectionCount() > 0 && !sel->IsSelected(wrl);
+}
+
+void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd)
+{
+	set<ISelectable *>	sel_set;
+	vector<WED_Thing *>	dupe_targs;
+	ISelection *		sel;
+	WED_Thing *			t;
+	sel = WED_GetSelect(resolver);
+	sel->GetSelectionSet(sel_set);
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	for (set<ISelectable *>::iterator s = sel_set.begin(); s != sel_set.end(); ++s)
+	if ((t = dynamic_cast<WED_Thing *>(*s)) != NULL)
+	{
+		if (t == wrl) continue;
+		bool par_sel = false;
+		WED_Thing * p = t->GetParent();
+		while(p)
+		{
+			if (sel->IsSelected(p))
+			{
+				par_sel = true;
+				break;
+			}
+			p = p->GetParent();
+		}
+		if (!par_sel) dupe_targs.push_back(t);		
+	}
+	
+	if (dupe_targs.empty()) return;
+	if (wrap_in_cmd)		wrl->StartOperation("Duplicate");		
+
+	sel->Clear();
+	for (vector<WED_Thing *>::iterator i = dupe_targs.begin(); i != dupe_targs.end(); ++i)
+	{
+		WED_Persistent * np = (*i)->Clone();
+		t = dynamic_cast<WED_Thing *>(np);
+		DebugAssert(t);
+		t->SetParent((*i)->GetParent(), (*i)->GetMyPosition());
+		sel->Insert(t);
+	}
+
+	if (wrap_in_cmd)		wrl->CommitOperation();
 }

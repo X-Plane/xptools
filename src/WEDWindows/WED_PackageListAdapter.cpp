@@ -47,6 +47,7 @@ void	WED_PackageListAdapter::GetCellContent(
 {
 	the_content.content_type = gui_Cell_EditText;
 	the_content.can_disclose = 0;
+	the_content.string_is_resource = 0;
 	the_content.can_select = 1;
 	the_content.can_drag = 0;	
 	the_content.is_disclosed = 0;

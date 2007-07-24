@@ -171,15 +171,22 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
-	int zw[4];
-	GUI_Pane::GetBounds(zw);
+	int zw[2];
+	XWin::GetBounds(zw,zw+1);
 
-	mMainSplitter->AlignContentsAt(inDocument->ReadIntPref("window/main_split",(zw[2]+zw[0]) * 0.5f));
-	mPropSplitter->AlignContentsAt(inDocument->ReadIntPref("window/prop_split",(zw[1]+zw[3]) * 0.5f));
+	int main_split = inDocument->ReadIntPref("window/main_split",(zw[0]) * 0.5f);
+	int prop_split = inDocument->ReadIntPref("window/prop_split",(zw[1]) * 0.5f);
+	
+	if (main_split > (zw[0])) main_split = (zw[0]) * 0.5f;
+	if (prop_split > (zw[1])) prop_split = (zw[1]) * 0.5f;
+
+	mMainSplitter->AlignContentsAt(main_split);
+	mPropSplitter->AlignContentsAt(prop_split);
 	mMapPane->ZoomShowAll();
 	
 	mMapPane->FromPrefs(inDocument);	
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
+
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()
@@ -203,6 +210,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
+	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
+	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
@@ -227,6 +236,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportDSF:		WED_DoExportDSF(mDocument);	return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
+	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 	
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
 	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
@@ -248,6 +258,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Crop:		return	WED_CanCrop(mDocument);
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
+	case wed_Reverse:	return WED_CanReverse(mDocument);
+	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
 	case wed_AddATCFreq:return WED_CanMakeNewATC(mDocument); 
@@ -271,6 +283,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportDSF:		return WED_CanExportDSF(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
+	case wed_Validate:		return 1;
 	
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
 	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;

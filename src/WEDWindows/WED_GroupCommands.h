@@ -54,6 +54,11 @@ void	WED_DoCrop(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
 void	WED_DoSplit(IResolver * resolver);
+int		WED_CanReverse(IResolver * resolver);
+void	WED_DoReverse(IResolver * resolver);
+int		WED_CanDuplicate(IResolver * resolver);
+void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd);
+
 
 int		WED_CanSelectAll(IResolver * resolver);
 void	WED_DoSelectAll(IResolver * resolver);

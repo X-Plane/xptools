@@ -20,6 +20,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Save",				'S',	gui_ControlFlag,				0,	gui_Save			},
 {	"&Revert To Saved",		0,		0,								0,	gui_Revert			},
 {	"-",					0,  	0,								0,	0					},
+{	"&Validate",			'V',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Validate		},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 #if DEV
@@ -42,16 +43,18 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Copy",				'C',	gui_ControlFlag,				0,	gui_Copy		},
 {	"&Paste",				'V',	gui_ControlFlag,				0,	gui_Paste		},
 {	"Cl&ear",				0,		0,								0,	gui_Clear		},	// we could use GUI_KEY_DELETE but having del as cmd key screws up text fields.
+{	"&Duplicate",			0,		0,								0,	gui_Duplicate	},
 {	"-",					0,  	0,								0,	0				},
 {	"&Group",				'G',	gui_ControlFlag,				0,	wed_Group		},
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
+{	"Reverse",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
-{	"Move &Down",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
+{	"Move Do&wn",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
 {	"Move &Last",			']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
 {	NULL,					0,		0,								0,	0				},
 };
