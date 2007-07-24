@@ -66,6 +66,8 @@ public:
 	virtual	void		WriteIntPref(const char * in_key, int in_value);
 	virtual	double		ReadDoublePref(const char * in_key, double in_default);
 	virtual	void		WriteDoublePref(const char * in_key, double in_value);
+	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
+	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
 	
 
 	bool				TryClose(void);

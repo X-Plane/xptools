@@ -298,6 +298,28 @@ void		WED_Document::WriteDoublePref(const char * in_key, double in_value)
 	sGlobalPrefs[in_key] = buf;
 }
 
+
+
+string			WED_Document::ReadStringPref(const char * in_key, const string& in_default)
+{
+	string key(in_key);
+	map<string,string>::iterator i = mDocPrefs.find(key);
+	if (i == mDocPrefs.end()) 
+	{
+		i = sGlobalPrefs.find(key);
+		if (i == sGlobalPrefs.end())
+			return in_default;
+		return i->second;
+	}
+	return i->second;
+}
+
+void		WED_Document::WriteStringPref(const char * in_key, const string& in_value)
+{
+	mDocPrefs[in_key] = in_value;
+	sGlobalPrefs[in_key] = in_value;
+}
+
 static void PrefCB(const char * key, const char * value, void * ref)
 {
 	sGlobalPrefs[key] = value;
