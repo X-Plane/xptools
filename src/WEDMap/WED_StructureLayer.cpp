@@ -65,8 +65,6 @@ inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offs
 		Vector2	dir1,dir2;
 		if (i > 0  ) dir1 = Vector2(pts[i-1],pts[i  ]);
 		if (i < n-1) dir2 = Vector2(pts[i  ],pts[i+1]);
-		dir1.normalize();
-		dir2.normalize();
 		Vector2	dir = dir1+dir2;
 		dir = dir.perpendicular_ccw();
 		dir.normalize();
@@ -444,7 +442,7 @@ static void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count,
 		glLineWidth(3);
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(1,0x7000);
-		glShapeOffset2v(GL_LINE_STRIP, pts, count,-5);		
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-5);
 		break;
 	case line_HoldLights:
 	
@@ -829,7 +827,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					pts.push_back(GetZoomer()->LLToPixel(s.p1));
 					pts.push_back(GetZoomer()->LLToPixel(s.p2));
 				}
-				
 				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);	
 				if (mVertices)
 				{
