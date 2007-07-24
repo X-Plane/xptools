@@ -145,13 +145,15 @@ public:
 
 	virtual	int					GetNumPoints(void ) const=0;	
 //	virtual	void				DeletePoint (int n)		 =0;
-	virtual		  IGISPoint *	SplitSide   (int n)		 =0;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
+//	virtual		  IGISPoint *	SplitSide   (int n)		 =0;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual		  IGISPoint *	GetNthPoint (int n)	const=0;
 
 	virtual	int					GetNumSides(void) const=0;
 	virtual	bool				GetSide(int n, Segment2& s, Bezier2& b) const=0;	// true for bezier
 	
 	virtual	bool				IsClosed(void) const=0;
+	
+	virtual	void				Reverse(void)=0;
 	
 };
 
@@ -187,7 +189,8 @@ public:
 
 	virtual			void					DeleteHole  (int n)					=0;
 	virtual			void					AddHole		(IGISPointSequence * r) =0;
-	
+
+	virtual			void					Reverse(void)=0;	
 
 };
 
