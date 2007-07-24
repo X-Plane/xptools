@@ -72,6 +72,8 @@ public: 															\
 	static __Class * CreateTyped(									\
 								WED_Archive *	parent);			\
 	virtual const char * 	GetClass(void) const;					\
+	virtual WED_Persistent*	Clone(void) const;						\
+			void			CopyFrom(const __Class * rhs);			\
 	static	const char *	sClass;									\
 protected:															\
 	__Class(WED_Archive * parent);									\
@@ -82,7 +84,8 @@ protected:															\
 protected:															\
 	__Class(WED_Archive * parent);									\
 	__Class(WED_Archive * parent, int inID);						\
-	virtual ~__Class();
+	virtual ~__Class();												\
+	void CopyFrom(const __Class * rhs);
 
 
 #define DEFINE_PERSISTENT(__Class)								\
@@ -91,6 +94,15 @@ WED_Persistent * __Class::Create(								\
 								WED_Archive * parent, int id)	\
 {																\
 	return new __Class(parent, id);								\
+}																\
+																\
+WED_Persistent*	__Class::Clone(void) const						\
+{																\
+	__Class * new_obj = new __Class(							\
+			GetArchive(),GetArchive()->NewID());				\
+	new_obj->PostCtor();										\
+	new_obj->CopyFrom(this);									\
+	return new_obj;												\
 }																\
 																\
 __Class * __Class::CreateTyped(									\
@@ -114,6 +126,11 @@ const char * __Class::GetClass(void) const						\
 																\
 const char * __Class::sClass = #__Class;
 
+#define TRIVIAL_COPY(__Class, __Base)							\
+void __Class::CopyFrom(const __Class * rhs)						\
+{																\
+	__Base::CopyFrom(rhs);										\
+}
 
 class	WED_Persistent : public virtual ISelectable {
 public:
@@ -152,6 +169,7 @@ public:
 	
 	// IO methods to read and write state of class to a data holder.  ReadFrom
 	// does NOT call StateChanged!  Subclasses must provide.
+	virtual WED_Persistent*	Clone(void) const=0;
 	virtual	void 			ReadFrom(IOReader * reader)=0;
 	virtual	void 			WriteTo(IOWriter * writer)=0;
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
