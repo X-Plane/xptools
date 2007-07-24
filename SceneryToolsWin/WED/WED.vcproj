@@ -718,6 +718,14 @@
 					RelativePath="..\..\src\WEDImportExport\WED_AptIE.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\src\WEDImportExport\WED_DSFExport.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDImportExport\WED_DSFExport.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="WEDCore"
@@ -1071,6 +1079,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\WEDEntities\WED_Ring.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\WEDEntities\WED_Ring.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\WEDEntities\WED_Root.cpp"
 					>
 				</File>
@@ -1324,6 +1340,14 @@
 				</File>
 				<File
 					RelativePath="..\..\src\Utils\SQLUtils.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\STLUtils.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\STLUtils.h"
 					>
 				</File>
 				<File
