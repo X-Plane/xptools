@@ -6,11 +6,13 @@
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
+#include "WED_Entity.h"
 #include "IControlHandles.h"
 #include "IResolver.h"
 #include "WED_Thing.h"
 #include "IGIS.h"
 #include "ISelection.h"
+#include "WED_GroupCommands.h"
 #include "IOperation.h"
 #include "WED_UIDefs.h"
 #include "MathUtils.h"
@@ -224,20 +226,113 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		eid = mHandles->GetNthEntityID(ei);	
 		if (mHandles->PointOnStructure(eid, click_pt))
 		{
-			mDragType = drag_Move;
+			mDragType = drag_Ent;
 			mHandleEntity = eid;
 			mHandles->BeginEdit();								
+			mTrackPoint = click_pt;
 			break;
 		}
 	}
 		
-	//----------------------------------- CREATION DRAG ------------------------------------------------------------
+	//----------------------------------- CREATION DRAG ----------------------------------------------------------
 
 	if (mDragType == drag_None && this->CreationDown(click_pt))
 	{
 		mDragType = drag_Create;
 	}
 	
+	//------------------------------------- SELECTION-DRAG -------------------------------------------------------
+
+	if (mDragType == drag_None && mCanSelect)
+	{
+		mSelManip.clear();
+		bool has_click = false;
+		ISelection * sel = WED_GetSelect(GetResolver());
+		set<ISelectable *> sel_set;
+		sel->GetSelectionSet(sel_set);
+		WED_Thing * t, *p;
+		IGISEntity * e;
+		for(set<ISelectable *>::iterator s = sel_set.begin(); s != sel_set.end(); ++s)
+		if ((t = dynamic_cast<WED_Thing *>(*s)) != NULL)
+		if ((e = dynamic_cast<IGISEntity *>(*s)) != NULL)
+		{
+			bool par_sel = false;
+			p = t->GetParent();
+			while (p)
+			{
+				if (sel_set.count(p)) { par_sel = true; break; }
+				p = p->GetParent();
+			}
+			if (!par_sel)
+			{
+				mSelManip.push_back(e);
+				if (!has_click)
+				{
+					WED_Entity * tt = SAFE_CAST(WED_Entity, t);				
+					if (tt)
+					if (!tt->GetLocked())
+					if (!tt->GetHidden())
+					{				
+						double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
+						double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));
+						double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(GetFurnitureIconRadius()));
+						double	max_slop_h = max(icon_dist_h,frame_dist);
+						double	max_slop_v = max(icon_dist_v,frame_dist);
+						if(WED_IsIconic(e))
+							frame_dist = max(icon_dist_h,icon_dist_v);
+					
+						Bbox2		ent_bounds;
+						e->GetBounds(ent_bounds);
+						ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
+						ent_bounds.p2 += Vector2(max_slop_h,max_slop_v);
+						if (ent_bounds.contains(click_pt))
+						{
+							if (e->PtWithin(click_pt) || e->PtOnFrame(click_pt, frame_dist))
+								has_click = true;
+						}				
+					}
+				}
+			}
+		}
+		if (has_click)
+		{
+			mDragType = drag_Move;
+			mTrackPoint = click_pt;
+			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+			if (GetHost()->GetModifiersNow() & gui_OptionAltFlag)
+			{
+				op->StartOperation("Copy");			
+				WED_DoDuplicate(GetResolver(), false);	// dupe does not keep command open!
+				
+				// Yuck - we have to rebuild our cache of selected things now!
+				mSelManip.clear();
+				sel_set.clear();
+				sel->GetSelectionSet(sel_set);
+				for(set<ISelectable *>::iterator s = sel_set.begin(); s != sel_set.end(); ++s)
+				if ((t = dynamic_cast<WED_Thing *>(*s)) != NULL)
+				if ((e = dynamic_cast<IGISEntity *>(*s)) != NULL)
+				{
+					bool par_sel = false;
+					p = t->GetParent();
+					while (p)
+					{
+						if (sel_set.count(p)) { par_sel = true; break; }
+						p = p->GetParent();
+					}
+					if (!par_sel)
+					{
+						mSelManip.push_back(e);
+					}
+				}				
+			}
+			else
+			op->StartOperation("Drag");			
+			
+		}
+		else
+			mSelManip.clear();
+	}
+
 	//------------------------------------- SELECTION ------------------------------------------------------------
 
 	if (mDragType == drag_None && mCanSelect)
@@ -391,7 +486,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 	switch(mDragType) {
 	case drag_Handles:
 	case drag_Links:
-	case drag_Move:
+	case drag_Ent:
 		{
 			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
@@ -400,7 +495,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			switch(mDragType) {
 			case drag_Handles:				mHandles->ControlsHandlesBy(mHandleEntity,	mHandleIndex,	delta, mTrackPoint);	break;
 			case drag_Links:				mHandles->ControlsLinksBy(mHandleEntity,	mHandleIndex,	delta			  );	break;
-			case drag_Move:					mHandles->ControlsMoveBy(mHandleEntity,						delta			  );	break;
+			case drag_Ent:					mHandles->ControlsMoveBy(mHandleEntity,						delta, mTrackPoint);	break;
 			}
 		}
 		break;
@@ -408,6 +503,22 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 		this->CreationDrag(
 					GetZoomer()->PixelToLL(Point2(mDragX, mDragY)),
 					GetZoomer()->PixelToLL(Point2(inX, inY)));
+		break;
+	case drag_Move:
+		{
+			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
+			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
+			Vector2 delta(op,np);
+			mDragX = inX; mDragY = inY;
+			Bbox2	old_b(0,0,1,1);
+			Bbox2	new_b(0,0,1,1);
+			new_b.p1 += delta;
+			new_b.p2 += delta;
+			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
+			{
+				(*e)->Rescale(old_b, new_b);
+			}			
+		}		
 		break;
 	case drag_Sel:
 		{	
@@ -449,6 +560,12 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	if (inButton > 0) return;
 
 	this->HandleClickDrag(inX, inY, inButton, modifiers);
+	if (mDragType == drag_Move)
+	{
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
+		if(op) op->CommitOperation();
+		mSelManip.clear();
+	}
 	if (mDragType == drag_Sel)
 	{
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
@@ -456,7 +573,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links || 
 				mDragType == drag_Handles ||
-				mDragType == drag_Move)
+				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
 	} else if ( mDragType == drag_Create )
@@ -482,7 +599,7 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links || 
 				mDragType == drag_Handles ||
-				mDragType == drag_Move)
+				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
 	} 
@@ -618,7 +735,7 @@ void		WED_HandleToolBase::PreCommandNotification(GUI_Commander * focus_target, i
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links || 
 				mDragType == drag_Handles ||
-				mDragType == drag_Move)
+				mDragType == drag_Ent)
 	{
 		mHandles->EndEdit();
 	} 

@@ -67,10 +67,11 @@ private:
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything
-		drag_Handles,		// We are dragging a single control handle
-		drag_Links,			// We are dragging a line/link
+		drag_Handles,		// Control handles: We are dragging a single control handle
+		drag_Links,			// Control handles: We are dragging a line/link
+		drag_Ent,			// Control handles: We are dragging an entire entity.
 		drag_Sel,			// We are selecting things
-		drag_Move,			// We are dragging an entire entity.
+		drag_Move,			// we are moving the selection
 		drag_Create
 	};
 
@@ -90,6 +91,8 @@ private:
 		int						mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
 		Point2					mTrackPoint;
+		
+		vector<IGISEntity *>	mSelManip;
 		
 };
 

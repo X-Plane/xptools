@@ -206,7 +206,7 @@ int		WED_CreateToolBase::GetNthLinkTargetCtl(int id, int n) const
 
 bool	WED_CreateToolBase::PointOnStructure(int id, const Point2& p) const
 {
-	return 0;
+	return false;
 }
 
 void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt)
@@ -259,7 +259,7 @@ void	WED_CreateToolBase::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 	mControlLo[c] += delta;
 }
 
-void	WED_CreateToolBase::ControlsMoveBy	 (int id,        const Vector2& delta)
+void	WED_CreateToolBase::ControlsMoveBy	 (int id,        const Vector2& delta, Point2& io_track)
 {
 }
 
