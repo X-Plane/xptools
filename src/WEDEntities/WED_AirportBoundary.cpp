@@ -2,6 +2,7 @@
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_AirportBoundary)
+TRIVIAL_COPY(WED_AirportBoundary, WED_GISPolygon)
 
 WED_AirportBoundary::WED_AirportBoundary(WED_Archive * a, int i) : WED_GISPolygon(a,i)
 {

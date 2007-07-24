@@ -2,18 +2,28 @@
 #include "WED_AirportNode.h"
 #include "IODefs.h"
 #include "SQLutils.h"
+#include "WED_EnumSystem.h"
 #include "WED_Errors.h"
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
-	closed(0)
+	closed(0),
+	lines(this,"Line Attributes","","","Line Attributes"),
+	lights(this,"Light Attributes","","","Light Attributes")
 {
 }
 
 WED_AirportChain::~WED_AirportChain()
 {
+}
+
+void WED_AirportChain::CopyFrom(const WED_AirportChain * rhs)
+{
+	WED_GISChain::CopyFrom(rhs);
+	StateChanged();
+	closed = rhs->closed;
 }
 
 void	WED_AirportChain::SetClosed(int closure)
@@ -24,7 +34,7 @@ void	WED_AirportChain::SetClosed(int closure)
 		closed = closure;
 	}
 }
-
+/*
 IGISPoint *	WED_AirportChain::SplitSide   (int n)
 {
 	int c = GetNumSides();
@@ -59,7 +69,7 @@ IGISPoint *	WED_AirportChain::SplitSide   (int n)
 	}
 	
 }
-
+*/
 bool	 WED_AirportChain::IsClosed	(void	) const
 {
 	return closed;

@@ -26,6 +26,7 @@
 #include "GISUtils.h"
 
 DEFINE_PERSISTENT(WED_OverlayImage)
+TRIVIAL_COPY(WED_OverlayImage, WED_GISPolygon)
 
 WED_OverlayImage::WED_OverlayImage(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	mImageFile(this, "File", "WED_overlayimage", "file", "")

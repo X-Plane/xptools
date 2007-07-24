@@ -24,6 +24,8 @@ private:
 	Bezier_Seq_Iterator();
 };
 
+TRIVIAL_COPY(WED_GISPolygon, WED_Entity)
+
 WED_GISPolygon::WED_GISPolygon(WED_Archive * archive, int id) : 
 	WED_Entity(archive, id)
 {
@@ -207,6 +209,15 @@ void				WED_GISPolygon::AddHole		(IGISPointSequence * r)
 	t->SetParent(this,CountChildren());
 }
 
+void WED_GISPolygon::Reverse(void)
+{
+	GetOuterRing()->Reverse();
+	int hh = GetNumHoles();
+	for (int h = 0; h < hh; ++h)
+	{	
+		GetNthHole(h)->Reverse();
+	}
+}
 Bezier_Seq_Iterator::Bezier_Seq_Iterator(IGISPointSequence * seq, int n) :
 	mSeq(seq), mIndex(n)
 {

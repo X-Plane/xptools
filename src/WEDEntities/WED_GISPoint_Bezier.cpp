@@ -4,6 +4,7 @@
 #include "WED_Errors.h"
 #include "GISUtils.h"
 
+TRIVIAL_COPY(WED_GISPoint_Bezier, WED_GISPoint)
 
 
 // NOTE: control lat/lon are positive vectors FROM the origin pt!
@@ -161,6 +162,16 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 		CacheInval();
 		CacheBuild();
 	}
+}
+
+void WED_GISPoint_Bezier::Reverse(void)
+{
+	StateChanged();
+	CacheInval();
+	CacheBuild();
+	swap(ctrl_lat_lo.value, ctrl_lat_hi.value);
+	swap(ctrl_lon_lo.value, ctrl_lon_hi.value);
+	
 }
 
 

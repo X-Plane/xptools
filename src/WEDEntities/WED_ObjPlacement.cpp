@@ -14,7 +14,12 @@ WED_ObjPlacement::~WED_ObjPlacement()
 {
 }
 
-
+void WED_ObjPlacement::CopyFrom(const WED_ObjPlacement * rhs)
+{
+	WED_GISPoint_Heading::CopyFrom(rhs);
+	StateChanged();
+	model_id = rhs->model_id;
+}
 
 void 			WED_ObjPlacement::ReadFrom(IOReader * reader)
 {

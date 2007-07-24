@@ -1,6 +1,6 @@
 #include "WED_GISChain.h"
 
-
+TRIVIAL_COPY(WED_GISChain, WED_Entity)
 
 WED_GISChain::WED_GISChain(WED_Archive * parent, int id) :
 	WED_Entity(parent, id)
@@ -216,5 +216,38 @@ void WED_GISChain::RebuildCache(void) const
 			mCacheBounds += s.p1;
 			mCacheBounds += s.p2;
 		}		
+	}
+}
+
+void WED_GISChain::Reverse(void)
+{
+	if (CacheBuild())	RebuildCache();
+	int n,t,np = GetNumPoints();
+	vector<Point2>	p(np);
+	vector<Point2>	p_l(np);
+	vector<Point2>	p_h(np);
+	vector<int>		split(np);
+	vector<int>		has_lo(np);
+	vector<int>		has_hi(np);
+
+	for(n = 0; n < np; ++n)
+	{
+		mCachePtsBezier[n]->GetLocation(p[n]);
+		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(p_l[n]);
+		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(p_h[n]);
+		split[n] = mCachePtsBezier[n]->IsSplit();
+	}
+	
+	for(n = 0; n < np; ++n)
+	{
+		t = np - n - 1;
+		mCachePtsBezier[t]->SetLocation(p[n]);
+		mCachePtsBezier[t]->SetSplit(split[n]);
+
+		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(p_l[n]);
+		else			mCachePtsBezier[t]->DeleteHandleHi();
+
+		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(p_h[n]);
+		else			mCachePtsBezier[t]->DeleteHandleLo();			
 	}
 }

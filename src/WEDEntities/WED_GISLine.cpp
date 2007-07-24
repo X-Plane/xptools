@@ -1,7 +1,7 @@
 #include "WED_GISLine.h"
 #include "AssertUtils.h"
 
-
+TRIVIAL_COPY(WED_GISLine, WED_Entity)
 
 WED_GISLine::WED_GISLine(WED_Archive * parent, int id) :
 	WED_Entity(parent, id)
@@ -93,11 +93,11 @@ int					WED_GISLine::GetNumPoints(void ) const
 //	Assert(!"You cannot delete points from a line.");
 //}
 
-IGISPoint *	WED_GISLine::SplitSide   (int n)
+/*IGISPoint *	WED_GISLine::SplitSide   (int n)
 {
 	Assert(!"You cannot split a line.");
 	return NULL;
-}
+}*/
 
 IGISPoint *	WED_GISLine::GetNthPoint (int n) const
 {
@@ -138,3 +138,11 @@ bool				WED_GISLine::GetSide(int n, Segment2& s, Bezier2& b) const
 	return false;
 }
 
+void WED_GISLine::Reverse(void)
+{
+	Point2	ends[2];
+	GetSource()->GetLocation(ends[0]);
+	GetTarget()->GetLocation(ends[1]);
+	GetSource()->SetLocation(ends[1]);
+	GetTarget()->SetLocation(ends[0]);
+}

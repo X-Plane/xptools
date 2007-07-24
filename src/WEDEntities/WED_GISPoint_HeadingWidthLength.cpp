@@ -7,7 +7,7 @@
 #include "GISUtils.h"
 #include "WED_Errors.h"
 
-
+TRIVIAL_COPY(WED_GISPoint_HeadingWidthLength, WED_GISPoint_Heading)
 
 WED_GISPoint_HeadingWidthLength::WED_GISPoint_HeadingWidthLength(WED_Archive * parent, int id) :
 	WED_GISPoint_Heading(parent, id),
@@ -99,7 +99,7 @@ double	WED_GISPoint_HeadingWidthLength::GetWidth (void		 ) const
 
 void	WED_GISPoint_HeadingWidthLength::SetWidth (double w)
 {
-	if (w < 0.0) w = 0.0;
+	if (w < 1.0) w = 1.0;
 	if (w != width.value)
 	{
 		StateChanged();
@@ -116,7 +116,7 @@ double	WED_GISPoint_HeadingWidthLength::GetLength(void		 ) const
 
 void	WED_GISPoint_HeadingWidthLength::SetLength(double l)
 {
-	if (l < 0.0) l = 0.0;
+	if (l < 1.0) l = 1.0;
 	if (l != length.value)
 	{
 		StateChanged();

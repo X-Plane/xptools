@@ -27,6 +27,7 @@
 
 
 DEFINE_PERSISTENT(WED_ATCFrequency)
+TRIVIAL_COPY(WED_ATCFrequency, WED_Thing)
 
 WED_ATCFrequency::WED_ATCFrequency(WED_Archive * a, int i) : WED_Thing(a, i),
 	freq_type	(this, "Type",		"WED_ATCFrequency",	"kind", ATCFrequency, atc_Tower),

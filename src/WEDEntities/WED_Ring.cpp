@@ -21,32 +21,59 @@
  *
  */
 
-#include "WED_TextureNode.h"
+#include "WED_Ring.h"
+//#include "WED_AirportNode.h"
 
-DEFINE_PERSISTENT(WED_TextureNode)
-TRIVIAL_COPY(WED_TextureNode, WED_GISPoint)
+DEFINE_PERSISTENT(WED_Ring)
+TRIVIAL_COPY(WED_Ring, WED_GISChain)
 
-WED_TextureNode::WED_TextureNode(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	mS(this,"S","WED_texturenode","s",0.0,5,4),
-	mT(this,"T","WED_texturenode","t",0.0,5,4)
+WED_Ring::WED_Ring(WED_Archive * a, int i) : WED_GISChain(a,i)
 {
 }
 
-WED_TextureNode::~WED_TextureNode()
+WED_Ring::~WED_Ring()
 {
 }
 
-void		WED_TextureNode::SetTextCoord(const Point2& st)
+/*
+IGISPoint *	WED_Ring::SplitSide   (int n)
 {
-	if (st.x != mS.value || st.y != mT.value)
+	int c = GetNumSides();
+	
+	if (n > c) return NULL;
+	
+	Bezier2		b;
+	Segment2	s;
+	
+	if (GetSide(n, s, b))
 	{
-		mS = st.x;
-		mT = st.y;
+		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
+		
+		Bezier2	b1, b2;
+		b.partition(b1,b2,0.5);
+		
+		node->SetLocation(b2.p1);
+		node->SetControlHandleHi(b2.c1);
+		
+		node->SetParent(this, n+1);		
+		return node;
+
+	} else {
+
+		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
+		
+		node->SetLocation(s.midpoint(0.5));
+		node->SetControlHandleHi(s.midpoint(0.5));
+		
+		node->SetParent(this, n+1);
+		return node;
 	}
+	
+}
+*/
+
+bool	 WED_Ring::IsClosed	(void	) const
+{
+	return true;
 }
 
-void		WED_TextureNode::GetTexCoord(	   Point2& st) const
-{
-	st.x = mS.value;
-	st.y = mT.value;
-}

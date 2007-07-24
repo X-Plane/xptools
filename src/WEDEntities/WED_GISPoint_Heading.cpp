@@ -3,8 +3,7 @@
 #include "SQLUtils.h"
 #include "WED_Errors.h"
 
-
-
+TRIVIAL_COPY(WED_GISPoint_Heading, WED_GISPoint)
 
 WED_GISPoint_Heading::WED_GISPoint_Heading(WED_Archive * parent, int id) :
 	WED_GISPoint(parent, id),

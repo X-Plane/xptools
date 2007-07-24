@@ -15,6 +15,8 @@ public:
 private:
 
 	WED_PropIntEnumSet			attrs;
+	WED_PropIntEnumSetFilter	lines;
+	WED_PropIntEnumSetFilter	lights;
 	
 };
 

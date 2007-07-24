@@ -39,6 +39,7 @@ public:
 
 	virtual			void					DeleteHole  (int n)					;
 	virtual			void					AddHole		(IGISPointSequence * r) ;
+	virtual			void					Reverse(void);
 
 
 };

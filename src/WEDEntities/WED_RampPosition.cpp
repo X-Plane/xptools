@@ -2,6 +2,7 @@
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_RampPosition)
+TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
 WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i)
 {

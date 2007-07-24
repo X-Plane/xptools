@@ -1,6 +1,6 @@
 #include "WED_GISComposite.h"
 
-
+TRIVIAL_COPY(WED_GISComposite, WED_Entity)
 
 WED_GISComposite::WED_GISComposite(WED_Archive * a, int i) : WED_Entity(a,i)
 {

@@ -2,7 +2,9 @@
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
 #include "XESConstants.h"
+
 DEFINE_PERSISTENT(WED_Airport)
+TRIVIAL_COPY(WED_Airport, WED_GISComposite)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				"WED_airport",	"kind",			Airport_Type, type_Airport),

@@ -4,6 +4,7 @@
 #include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_AirportSign)
+TRIVIAL_COPY(WED_AirportSign, WED_GISPoint_Heading)
 
 WED_AirportSign::WED_AirportSign(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	style(this,"Type","WED_airportsign","style",Sign_Style,style_Default),

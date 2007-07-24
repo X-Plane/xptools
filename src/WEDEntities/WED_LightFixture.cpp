@@ -4,6 +4,8 @@
 #include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_LightFixture)
+TRIVIAL_COPY(WED_LightFixture, WED_GISPoint_Heading)
+
 
 WED_LightFixture::WED_LightFixture(WED_Archive * a, int i) : WED_GISPoint_Heading(a, i),
 	light_type(this, "Type", "WED_lightfixture", "kind", Light_Fixt, light_VASI),

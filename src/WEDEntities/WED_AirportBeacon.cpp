@@ -4,6 +4,7 @@
 #include "WED_Errors.h"
 
 DEFINE_PERSISTENT(WED_AirportBeacon)
+TRIVIAL_COPY(WED_AirportBeacon, WED_GISPoint)
 
 WED_AirportBeacon::WED_AirportBeacon(WED_Archive * a, int i) : WED_GISPoint(a,i),
 	kind(this,"Type", "WED_beacons", "type", Airport_Beacon, beacon_Airport)

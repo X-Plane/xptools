@@ -4,6 +4,7 @@
 #include "WED_Errors.h"
 #include "GISUtils.h"
 
+TRIVIAL_COPY(WED_GISPoint, WED_Entity)
 
 WED_GISPoint::WED_GISPoint(WED_Archive * parent, int id) :
 	WED_Entity(parent, id), 

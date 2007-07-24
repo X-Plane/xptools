@@ -13,6 +13,7 @@ public:
 	void		SetSurface(int s);
 	void		SetRoughness(double r);
 	void		SetHeading(double h);
+	double		GetHeading(void) const;
 
 	int			GetSurface(void) const;
 	
@@ -25,6 +26,9 @@ private:
 	WED_PropDoubleText		roughness;
 	WED_PropDoubleText		heading;
 	
+	WED_PropIntEnumSetUnion	lines;
+	WED_PropIntEnumSetUnion	lights;
+		
 };
 
 #endif /* WED_TAXIWAY_H */

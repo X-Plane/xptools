@@ -53,6 +53,8 @@ public:
 	
 	// From WED_PropertyHelper...
 	virtual	void			PropEditCallback(int before);	
+	virtual	int					CountSubs(void);
+	virtual	IPropertyObject *	GetNthSub(int n);
 	
 	// IArray
 	virtual	int				Array_Count (void );

@@ -15,6 +15,26 @@ WED_Thing::~WED_Thing()
 {
 }
 
+void WED_Thing::CopyFrom(const WED_Thing * rhs)
+{
+	StateChanged();
+	int nn = rhs->CountChildren();
+	for (int n = 0; n < nn; ++n)
+	{
+		WED_Thing * child = rhs->GetNthChild(n);
+		WED_Thing * new_child = dynamic_cast<WED_Thing *>(child->Clone());
+		new_child->SetParent(this, n);		
+	}	
+	
+	int pc = rhs->CountProperties();
+	for (int p = 0; p < pc; ++p)
+	{
+		PropertyVal_t v;
+		rhs->GetNthProperty(p, v);
+		this->SetNthProperty(p, v);
+	}
+}
+
 void 			WED_Thing::ReadFrom(IOReader * reader)
 {
 	int ct;
@@ -203,6 +223,16 @@ void		WED_Thing::PropEditCallback(int before)
 		StateChanged(wed_Change_Properties);
 }
 
+int					WED_Thing::CountSubs(void)
+{
+	return CountChildren();
+}
+
+IPropertyObject *	WED_Thing::GetNthSub(int n)
+{
+	return GetNthChild(n);
+}
+
 int				WED_Thing::Array_Count (void )
 {
 	return CountChildren();
@@ -232,3 +262,4 @@ void	WED_Thing::AbortOperation(void)
 {
 	AbortCommand();
 }
+

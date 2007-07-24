@@ -2,11 +2,14 @@
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
 DEFINE_PERSISTENT(WED_Taxiway)
+TRIVIAL_COPY(WED_Taxiway, WED_GISPolygon)
 
 WED_Taxiway::WED_Taxiway(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	surface(this,		"Surface",			"WED_taxiway",	"surface",	Surface_Type,	surf_Concrete),
 	roughness(this,		"Roughness",		"WED_taxiway",	"roughness",	0.25,4,2),
-	heading(this,		"Texture Heading",	"WED_taxiway",	"heading",		0,6,2)
+	heading(this,		"Texture Heading",	"WED_taxiway",	"heading",		0,6,2),
+	lines(this,"Line Attributes","","","Line Attributes"),
+	lights(this,"Light Attributes","","","Light Attributes")
 {
 }
 
@@ -22,6 +25,11 @@ void		WED_Taxiway::SetSurface(int s)
 void		WED_Taxiway::SetRoughness(double r)
 {
 		roughness = r;
+}
+
+double		WED_Taxiway::GetHeading(void) const
+{
+	return heading.value;
 }
 
 void		WED_Taxiway::SetHeading(double h)

@@ -11,7 +11,7 @@ DECLARE_PERSISTENT(WED_AirportChain)
 
 public:
 	
-	virtual	IGISPoint *		SplitSide   (int n	)		;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
+//	virtual	IGISPoint *		SplitSide   (int n	)		;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual	bool			IsClosed	(void	) const	;
 	
 			void			SetClosed(int closure);
@@ -26,6 +26,9 @@ public:
 			void			Export(		 AptMarking_t& x) const;
 
 private:
+
+	WED_PropIntEnumSetUnion	lines;
+	WED_PropIntEnumSetUnion	lights;
 
 	int		closed;
 	

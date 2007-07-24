@@ -15,6 +15,13 @@ WED_Select::~WED_Select()
 {
 }
 
+void WED_Select::CopyFrom(const WED_Select * rhs)
+{
+	DebugAssert(!"We should not be copying selection objects.");
+	WED_Thing::CopyFrom(rhs);
+	StateChanged();
+	mSelected = rhs->mSelected;
+}
 
 void 			WED_Select::ReadFrom(IOReader * reader)
 {

@@ -15,6 +15,12 @@ WED_Entity::~WED_Entity()
 {
 }
 
+void WED_Entity::CopyFrom(const WED_Entity * rhs)
+{
+	WED_Thing::CopyFrom(rhs);
+	CacheInval();
+}
+
 int		WED_Entity::GetLocked(void) const
 {
 	return locked.value;

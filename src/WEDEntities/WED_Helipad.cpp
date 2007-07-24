@@ -3,6 +3,7 @@
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_Helipad)
+TRIVIAL_COPY(WED_Helipad, WED_GISPoint_HeadingWidthLength)
 
 WED_Helipad::WED_Helipad(WED_Archive * a, int i) : WED_GISPoint_HeadingWidthLength(a,i),
 

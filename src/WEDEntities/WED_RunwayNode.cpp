@@ -24,6 +24,7 @@
 #include "WED_RunwayNode.h"
 
 DEFINE_PERSISTENT(WED_RunwayNode)
+TRIVIAL_COPY(WED_RunwayNode, WED_GISPoint)
 
 WED_RunwayNode::WED_RunwayNode(WED_Archive * a, int i) : WED_GISPoint(a,i)
 {

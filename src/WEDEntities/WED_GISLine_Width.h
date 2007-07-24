@@ -10,6 +10,16 @@ DECLARE_INTERMEDIATE(WED_GISLine_Width)
 
 public:
 
+	// IPropertyObject
+	virtual	int			FindProperty(const char * in_prop);
+	virtual int			CountProperties(void) const;
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
+
+	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 
@@ -33,6 +43,11 @@ public:
 
 	virtual	void	ResizeSide(int side, const Vector2& delta, bool symetric);
 	virtual	void	ResizeCorner(int side, const Vector2& delta, bool symetric);
+
+	double		GetHeading(void) const;
+	double		GetLength(void) const;
+	Point2		GetCenter(void) const;
+
 
 private:
 

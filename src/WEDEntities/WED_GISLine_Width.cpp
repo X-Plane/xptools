@@ -2,7 +2,9 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "WED_ToolUtils.h"
+#include "GISUtils.h"
 
+TRIVIAL_COPY(WED_GISLine_Width, WED_GISLine)
 
 WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) : 
 	WED_GISLine(parent, id),
@@ -13,6 +15,174 @@ WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) :
 WED_GISLine_Width::~WED_GISLine_Width()
 {
 }
+
+#pragma mark -
+
+
+
+enum {
+	rwy_prop_length,
+	rwy_prop_heading,
+	rwy_prop_lat1,
+	rwy_prop_lon1,
+	rwy_prop_latc,
+	rwy_prop_lonc,
+	rwy_prop_lat2,
+	rwy_prop_lon2,
+	rwy_prop_count
+};
+
+const char * kRwyPropNames[rwy_prop_count] = { 
+	"Length",
+	"Heading",
+	"Latitude 1",
+	"Longitude 1",
+	"Latitude Ctr",
+	"Longitude Ctr",
+	"Latitude 2",
+	"Longitude 2" 
+};
+
+int			WED_GISLine_Width::FindProperty(const char * in_prop)
+{
+	for (int n = 0; n < rwy_prop_count; ++n)
+	{
+		if (strcmp(in_prop, kRwyPropNames[n])==0) return n;
+	}
+	int found = WED_GISLine::FindProperty(in_prop);
+	if (found == -1) return found;
+	return found + rwy_prop_count;
+}
+
+int			WED_GISLine_Width::CountProperties(void) const
+{
+	return WED_GISLine::CountProperties() + rwy_prop_count;
+}
+
+void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+{
+	if (n < rwy_prop_count)
+	{
+		info.can_edit = true;
+		info.prop_name = kRwyPropNames[n];
+		info.prop_kind = prop_Double;
+	}
+
+	switch(n) {
+	case rwy_prop_length:	info.digits = 5; info.decimals = 1; break;
+	case rwy_prop_heading:	info.digits = 5; info.decimals = 1; break;
+	case rwy_prop_lat1:		info.digits = 10; info.decimals = 6; break;
+	case rwy_prop_lon1:		info.digits = 11; info.decimals = 6; break;
+	case rwy_prop_latc:		info.digits = 10; info.decimals = 6; break;
+	case rwy_prop_lonc:		info.digits = 11; info.decimals = 6; break;
+	case rwy_prop_lat2:		info.digits = 10; info.decimals = 6; break;
+	case rwy_prop_lon2:		info.digits = 11; info.decimals = 6; break;
+	default: WED_GISLine::GetNthPropertyInfo(n-rwy_prop_count, info);
+	}	
+}
+
+void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict)
+{
+	WED_GISLine::GetNthPropertyDict(n-rwy_prop_count, dict);
+}
+
+void		WED_GISLine_Width::GetNthPropertyDictItem(int n, int e, string& item)
+{
+	WED_GISLine::GetNthPropertyDictItem(n-rwy_prop_count, e, item);
+}
+
+void		WED_GISLine_Width::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	Point2	ends[2], ctr;
+	double	l,h;
+	if (n < rwy_prop_count)
+	{
+		GetSource()->GetLocation(ends[0]);
+		GetTarget()->GetLocation(ends[1]);
+		Quad_2to1(ends, ctr, h, l);
+		if (gIsFeet) l *= MTR_TO_FT;
+	}
+	
+	val.prop_kind = prop_Double;
+	switch(n) {
+	case rwy_prop_length:	val.double_val = l;			break;
+	case rwy_prop_heading:	val.double_val = h;			break;
+	case rwy_prop_lat1:		val.double_val = ends[0].y;	break;
+	case rwy_prop_lon1:		val.double_val = ends[0].x;	break;
+	case rwy_prop_latc:		val.double_val = ctr.y;		break;
+	case rwy_prop_lonc:		val.double_val = ctr.x;		break;
+	case rwy_prop_lat2:		val.double_val = ends[1].y;	break;
+	case rwy_prop_lon2:		val.double_val = ends[1].x;	break;
+	default: WED_GISLine::GetNthProperty(n-rwy_prop_count, val);
+	}
+}
+
+void		WED_GISLine_Width::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	Point2	ends[2], ctr;
+	double	l,h;
+	if (n < rwy_prop_count)
+	{
+		GetSource()->GetLocation(ends[0]);
+		GetTarget()->GetLocation(ends[1]);
+		Quad_2to1(ends, ctr, h, l);
+	}
+	
+	switch(n) {
+	case rwy_prop_length:	
+		l = val.double_val;
+		if (gIsFeet) l *= FT_TO_MTR;
+		Quad_1to2(ctr, h, l, ends);
+		GetSource()->SetLocation(ends[0]);
+		GetTarget()->SetLocation(ends[1]);
+		break;		
+	case rwy_prop_heading:
+		h = val.double_val;
+		Quad_1to2(ctr, h, l, ends);
+		GetSource()->SetLocation(ends[0]);
+		GetTarget()->SetLocation(ends[1]);
+		break;
+			
+	case rwy_prop_lat1:		
+		ends[0].y = val.double_val;
+		GetSource()->SetLocation(ends[0]);
+		break;		
+	case rwy_prop_lon1:
+		ends[0].x = val.double_val;
+		GetSource()->SetLocation(ends[0]);
+		break;
+	
+	case rwy_prop_latc:
+		ctr.y = val.double_val;
+		Quad_1to2(ctr, h, l, ends);
+		GetSource()->SetLocation(ends[0]);
+		GetTarget()->SetLocation(ends[1]);
+		break;	
+	case rwy_prop_lonc:
+		ctr.x = val.double_val;
+		Quad_1to2(ctr, h, l, ends);
+		GetSource()->SetLocation(ends[0]);
+		GetTarget()->SetLocation(ends[1]);
+		break;
+
+	case rwy_prop_lat2:
+		ends[1].y = val.double_val;
+		GetTarget()->SetLocation(ends[1]);
+		break;
+	case rwy_prop_lon2:
+		ends[1].x = val.double_val;
+		GetTarget()->SetLocation(ends[1]);
+		break;
+	
+	default: 
+		WED_GISLine::SetNthProperty(n-rwy_prop_count, val);
+	}
+
+}
+
+#pragma mark -
+
+
 
 GISClass_t		WED_GISLine_Width::GetGISClass		(void				 ) const
 {
@@ -98,7 +268,7 @@ double	WED_GISLine_Width::GetWidth (void		 ) const
 
 void	WED_GISLine_Width::SetWidth (double w)
 {
-	if (w < 0.0) w = 0.0;
+	if (w < 1.0) w = 1.0;
 	if (w != width.value)
 	{
 		StateChanged();
@@ -183,5 +353,40 @@ void	WED_GISLine_Width::ResizeCorner(int corner, const Vector2& delta, bool syme
 	GetTarget()->SetLocation(ends[1]);
 	SetWidth(w);	
 	
+}
+
+
+double		WED_GISLine_Width::GetHeading(void) const
+{
+	Point2	ends[2];
+	Point2	ctr;
+	double h,l;
+	GetSource()->GetLocation(ends[0]);
+	GetTarget()->GetLocation(ends[1]);
+	Quad_2to1(ends, ctr, h, l);
+	return h;
+}
+
+Point2		WED_GISLine_Width::GetCenter(void) const
+{
+	Point2	ends[2];
+	Point2	ctr;
+	double h,l;
+	GetSource()->GetLocation(ends[0]);
+	GetTarget()->GetLocation(ends[1]);
+	Quad_2to1(ends, ctr, h, l);
+	return ctr;
+}
+
+
+double		WED_GISLine_Width::GetLength(void) const
+{
+	Point2	ends[2];
+	Point2	ctr;
+	double h,l;
+	GetSource()->GetLocation(ends[0]);
+	GetTarget()->GetLocation(ends[1]);
+	Quad_2to1(ends, ctr, h, l);
+	return l;
 }
 

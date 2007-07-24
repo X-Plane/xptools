@@ -2,6 +2,7 @@
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_Windsock)
+TRIVIAL_COPY(WED_Windsock, WED_GISPoint)
 
 WED_Windsock::WED_Windsock(WED_Archive * a, int i) : WED_GISPoint(a,i),
 	lit(this,"Lit","WED_windsocks", "lit",0)

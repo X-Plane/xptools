@@ -13,6 +13,14 @@ WED_KeyObjects::~WED_KeyObjects()
 {
 }
 
+void WED_KeyObjects::CopyFrom(const WED_KeyObjects * rhs)
+{
+	DebugAssert(!"We should not be copying the key object hash table.");
+	WED_Thing::CopyFrom(rhs);
+	StateChanged();
+	choices = rhs->choices;		// Copy ptrs, not dupe objs!
+}
+
 IBase *	WED_KeyObjects::Directory_Find(const char * name)
 {
 	map<string,int>::iterator i = choices.find(name);

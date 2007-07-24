@@ -1,9 +1,11 @@
 #include "WED_Runway.h"
 #include "WED_EnumSystem.h"
 #include "GISUtils.h"
+#include "XESConstants.h"
 #include "AptDefs.h"
 
 DEFINE_PERSISTENT(WED_Runway)
+TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
 
 WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	surface			(this,"Surface",					"WED_runway",	"surface",				Surface_Type,	surf_Concrete),
@@ -35,21 +37,6 @@ WED_Runway::~WED_Runway()
 {
 }
 
-/*
-bool			WED_Runway::PtWithin		(const Point2& p	 ) const
-{
-	if (WED_GISLine_Width::PtWithin(p)) return true;
-	
-	Point2	corners[8];
-	
-	if (GetCornersBlas1(corners) && inside_polygon_pt(corners,corners+4,p)) return true;
-	if (GetCornersBlas2(corners) && inside_polygon_pt(corners,corners+4,p)) return true;
-	if (GetCornersShoulders(corners) && 
-		(inside_polygon_pt(corners,corners+4,p) || inside_polygon_pt(corners+4,corners+8,p))) return true;
-		
-	return false;
-}
-*/
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
@@ -211,13 +198,19 @@ int			WED_Runway::GetShoulder(void) const
 
 void		WED_Runway::SetDisp1(double n)
 {
-	if (n < 0.0) n = 0.0;
+	if (n < 0.0) n = 0.0;	
+	double m = GetLength() - GetDisp2();
+	if (n > m) n = m;
+	
 	disp1 = n;
 }
 
 void		WED_Runway::SetDisp2(double n)
 {
 	if (n < 0.0) n = 0.0;
+	double m = GetLength() - GetDisp1();
+	if (n > m) n = m;
+	
 	disp2 = n;
 }
 

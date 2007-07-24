@@ -30,6 +30,7 @@ public:
 	virtual	bool				GetSide(int n, Segment2& s, Bezier2& b) const;	// true for bezier
 	
 //	virtual	bool				IsClosed(void) const;
+	virtual			void		Reverse(void);
 
 private:
 

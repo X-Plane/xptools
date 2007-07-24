@@ -21,32 +21,20 @@
  *
  */
 
-#include "WED_TextureNode.h"
+#ifndef WED_Ring_H
+#define WED_Ring_H
 
-DEFINE_PERSISTENT(WED_TextureNode)
-TRIVIAL_COPY(WED_TextureNode, WED_GISPoint)
+#include "WED_GISChain.h"
 
-WED_TextureNode::WED_TextureNode(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	mS(this,"S","WED_texturenode","s",0.0,5,4),
-	mT(this,"T","WED_texturenode","t",0.0,5,4)
-{
-}
+class WED_Ring  : public WED_GISChain {
 
-WED_TextureNode::~WED_TextureNode()
-{
-}
+DECLARE_PERSISTENT(WED_Ring)
 
-void		WED_TextureNode::SetTextCoord(const Point2& st)
-{
-	if (st.x != mS.value || st.y != mT.value)
-	{
-		mS = st.x;
-		mT = st.y;
-	}
-}
+public:
+	
+//	virtual	IGISPoint *		SplitSide   (int n	)		;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
+	virtual	bool			IsClosed	(void	) const	;
+	
+};
 
-void		WED_TextureNode::GetTexCoord(	   Point2& st) const
-{
-	st.x = mS.value;
-	st.y = mT.value;
-}
+#endif /* WED_Ring_H */
