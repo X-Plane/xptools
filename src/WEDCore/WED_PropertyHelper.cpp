@@ -2,11 +2,13 @@
 #include "AssertUtils.h"
 #include "WED_Errors.h"
 #include "IODefs.h"
+#include "STLUtils.h"
 #include "SQLUtils.h"
 #include "XESConstants.h"
 #include "WED_EnumSystem.h"
 
 int gIsFeet = 0;
+extern int gExclusion;
 
 inline int remap(const map<int,int>& m, int v)
 {
@@ -22,7 +24,7 @@ int		WED_PropertyHelper::FindProperty(const char * in_prop)
 	return -1;
 }
 
-int		WED_PropertyHelper::CountProperties(void)
+int		WED_PropertyHelper::CountProperties(void) const
 {
 	return mItems.size();
 }
@@ -42,7 +44,7 @@ void		WED_PropertyHelper::GetNthPropertyDictItem(int n, int e, string& item)
 	mItems[n]->GetPropertyDictItem(e, item);
 }
 
-void		WED_PropertyHelper::GetNthProperty(int n, PropertyVal_t& val)
+void		WED_PropertyHelper::GetNthProperty(int n, PropertyVal_t& val) const
 {
 	mItems[n]->GetProperty(val);
 }
@@ -134,7 +136,7 @@ void		WED_PropIntText::GetPropertyDictItem(int e, string& item)
 	DebugAssert(!"Illegal method.");
 }
 
-void		WED_PropIntText::GetProperty(PropertyVal_t& val)
+void		WED_PropIntText::GetProperty(PropertyVal_t& val) const
 {
 	val.int_val = value;
 	val.prop_kind = prop_Int;
@@ -204,7 +206,7 @@ void		WED_PropBoolText::GetPropertyDictItem(int e, string& item)
 	DebugAssert(!"Illegal method.");
 }
 
-void		WED_PropBoolText::GetProperty(PropertyVal_t& val)
+void		WED_PropBoolText::GetProperty(PropertyVal_t& val) const
 {
 	val.int_val = value;
 	val.prop_kind = prop_Bool;
@@ -276,7 +278,7 @@ void		WED_PropDoubleText::GetPropertyDictItem(int e, string& item)
 	DebugAssert(!"Illegal method.");
 }
 
-void		WED_PropDoubleText::GetProperty(PropertyVal_t& val)
+void		WED_PropDoubleText::GetProperty(PropertyVal_t& val) const
 {
 	val.double_val = value;
 	val.prop_kind = prop_Double;
@@ -328,7 +330,7 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void		WED_PropDoubleTextMeters::GetProperty(PropertyVal_t& val)
+void		WED_PropDoubleTextMeters::GetProperty(PropertyVal_t& val) const
 {
 	WED_PropDoubleText::GetProperty(val);	
 	if(gIsFeet)val.double_val *= MTR_TO_FT;
@@ -361,7 +363,7 @@ void		WED_PropStringText::GetPropertyDictItem(int e, string& item)
 	DebugAssert(!"Illegal method.");
 }
 
-void		WED_PropStringText::GetProperty(PropertyVal_t& val)
+void		WED_PropStringText::GetProperty(PropertyVal_t& val) const
 {
 	val.string_val = value;
 	val.prop_kind = prop_String;
@@ -437,7 +439,7 @@ void		WED_PropFileText::GetPropertyDictItem(int e, string& item)
 	DebugAssert(!"Illegal method.");
 }
 
-void		WED_PropFileText::GetProperty(PropertyVal_t& val)
+void		WED_PropFileText::GetProperty(PropertyVal_t& val) const
 {
 	val.string_val = value;
 	val.prop_kind = prop_FilePath;
@@ -514,7 +516,7 @@ void		WED_PropIntEnum::GetPropertyDictItem(int e, string& item)
 	item = ENUM_Desc(e);
 }
 
-void		WED_PropIntEnum::GetProperty(PropertyVal_t& val)
+void		WED_PropIntEnum::GetProperty(PropertyVal_t& val) const
 {
 	val.prop_kind = prop_Enum;
 	val.int_val = value;
@@ -588,7 +590,7 @@ void		WED_PropIntEnumSet::GetPropertyDictItem(int e, string& item)
 	item = ENUM_Desc(e);
 }
 
-void		WED_PropIntEnumSet::GetProperty(PropertyVal_t& val)
+void		WED_PropIntEnumSet::GetProperty(PropertyVal_t& val) const
 {
 	val.prop_kind = prop_EnumSet;
 	val.set_val = value;
@@ -683,3 +685,194 @@ void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * i
 void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
 {
 }
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
+{
+	int me = mParent->FindProperty(host);
+	mParent->GetNthPropertyInfo(me, info);
+	info.prop_name = mTitle;	
+}
+
+void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
+{
+	int me = mParent->FindProperty(host);
+	PropertyDict_t	d;
+	mParent->GetNthPropertyDict(me,d);
+	for (PropertyDict_t::iterator i = d.begin(); i != d.end(); ++i)
+	if (i->first >= minv && i->first <= maxv)
+		dict.insert(PropertyDict_t::value_type(i->first,i->second));
+}
+	
+void		WED_PropIntEnumSetFilter::GetPropertyDictItem(int e, string& item)
+{
+	int me = mParent->FindProperty(host);
+	mParent->GetNthPropertyDictItem(me, e,item);
+}
+
+void		WED_PropIntEnumSetFilter::GetProperty(PropertyVal_t& val) const
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	local;
+	mParent->GetNthProperty(me,local);
+	val = local;
+	val.set_val.clear();
+	for(set<int>::iterator i = local.set_val.begin(); i != local.set_val.end(); ++i)
+	if (*i >= minv && *i <= maxv)
+		val.set_val.insert(*i);
+	
+}
+
+void		WED_PropIntEnumSetFilter::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	clone(val), old;
+	clone.set_val.clear();
+	set<int>::const_iterator i;
+	mParent->GetNthProperty(me, old);	
+	for(i=old.set_val.begin();i!=old.set_val.end();++i)
+	if(*i < minv || *i > maxv)
+		clone.set_val.insert(*i);
+	for(i=val.set_val.begin();i!=val.set_val.end();++i)
+	if(*i >= minv && *i <= maxv)
+		clone.set_val.insert(*i);
+	mParent->SetNthProperty(me,clone);
+}
+
+void 		WED_PropIntEnumSetFilter::ReadFrom(IOReader * reader)
+{
+}
+
+void 		WED_PropIntEnumSetFilter::WriteTo(IOWriter * writer)
+{
+}
+
+void		WED_PropIntEnumSetFilter::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
+{
+}
+
+void		WED_PropIntEnumSetFilter::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
+{
+}
+
+void		WED_PropIntEnumSetFilter::GetUpdate(SQL_Update& io_update)
+{
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
+{
+	info.prop_name = host;
+	info.prop_kind = prop_EnumSet;
+	info.can_edit = 1;
+}
+
+void		WED_PropIntEnumSetUnion::GetPropertyDict(PropertyDict_t& dict)
+{
+	int nn = mParent->CountSubs();
+	for (int n = 0; n < nn; ++n)
+	{
+		IPropertyObject * inf = mParent->GetNthSub(n);
+		if (inf)
+		{
+			int idx = inf->FindProperty(host);
+			if (idx != -1)
+			{
+				inf->GetNthPropertyDict(idx, dict);
+				return;
+			}
+		}
+	}
+}
+
+void		WED_PropIntEnumSetUnion::GetPropertyDictItem(int e, string& item)
+{
+	item = ENUM_Desc(e);
+}
+
+void		WED_PropIntEnumSetUnion::GetProperty(PropertyVal_t& val) const
+{
+	val.prop_kind = prop_EnumSet;
+	val.set_val.clear();
+	int nn = mParent->CountSubs();
+	for (int n = 0; n < nn; ++n)
+	{
+		IPropertyObject * inf = mParent->GetNthSub(n);
+		if (inf)
+		{
+			PropertyVal_t	local;
+			int idx = inf->FindProperty(host);
+			if (idx != -1)
+			{
+				inf->GetNthProperty(idx, local);
+				copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+			}
+		}
+	}
+}
+
+void		WED_PropIntEnumSetUnion::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	PropertyVal_t	old_val;
+	this->GetProperty(old_val);
+	
+	set<int>	added, deleted;
+	set_difference(val.set_val.begin(),val.set_val.end(),
+					old_val.set_val.begin(),old_val.set_val.end(),
+					set_inserter(added));
+
+	set_difference(old_val.set_val.begin(),old_val.set_val.end(),
+					val.set_val.begin(),val.set_val.end(),					
+					set_inserter(deleted));
+
+	int nn = mParent->CountSubs();
+	for (int n = 0; n < nn; ++n)
+	{
+		IPropertyObject * inf = mParent->GetNthSub(n);
+		if (inf)
+		{
+			int idx = inf->FindProperty(host);
+			if (idx != -1)
+			{
+				if (gExclusion)
+				{
+					inf->SetNthProperty(idx, val);
+				}
+				else
+				{
+					PropertyVal_t	local, new_val;
+					inf->GetNthProperty(idx, local);
+					new_val = local;
+					copy(added.begin(),added.end(),set_inserter(local.set_val));
+					copy(deleted.begin(),deleted.end(),set_eraser(local.set_val));
+					inf->SetNthProperty(idx,local);
+				}
+			}
+		}
+	}
+}
+
+void 		WED_PropIntEnumSetUnion::ReadFrom(IOReader * reader)
+{
+}
+
+void 		WED_PropIntEnumSetUnion::WriteTo(IOWriter * writer)
+{
+}
+
+void		WED_PropIntEnumSetUnion::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
+{
+}
+
+void		WED_PropIntEnumSetUnion::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
+{
+}
+
+void		WED_PropIntEnumSetUnion::GetUpdate(SQL_Update& io_update)
+{
+}
+

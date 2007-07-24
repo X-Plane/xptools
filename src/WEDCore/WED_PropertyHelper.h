@@ -38,7 +38,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;	
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
 	virtual	void		GetPropertyDictItem(int e, string& item)=0;
-	virtual void		GetProperty(PropertyVal_t& val)=0;
+	virtual void		GetProperty(PropertyVal_t& val) const=0;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
@@ -58,14 +58,16 @@ class WED_PropertyHelper : public IPropertyObject {
 public:
 
 	virtual	int			FindProperty(const char * in_prop);
-	virtual int			CountProperties(void);
+	virtual int			CountProperties(void) const;
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);	
 	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
-	virtual void		GetNthProperty(int n, PropertyVal_t& val);
+	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
 	
-	virtual	void		PropEditCallback(int before)=0;
+	virtual	void				PropEditCallback(int before)=0;
+	virtual	int					CountSubs(void)=0;
+	virtual	IPropertyObject *	GetNthSub(int n)=0;
 
 
 	// Utility to help manage streaming
@@ -99,7 +101,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -123,7 +125,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -151,7 +153,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -167,7 +169,7 @@ public:
 
 	WED_PropDoubleText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 };
 
@@ -185,7 +187,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -209,7 +211,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -235,7 +237,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -260,7 +262,7 @@ public:
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
 	virtual	void		GetPropertyDictItem(int e, string& item);
-	virtual void		GetProperty(PropertyVal_t& val);
+	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
@@ -269,6 +271,52 @@ public:
 	virtual	void		GetUpdate(SQL_Update& io_update);
 	
 };	
+
+
+class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
+public:
+
+	const char *			host;
+	int						minv;
+	int						maxv;
+
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost, int iminv, int imaxv)  : WED_PropertyItem(parent, title, table, column), host(ihost), minv(iminv), maxv(imaxv) { }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val) const;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
+	
+};	
+
+class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
+public:
+
+	const char *			host;
+
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * table, const char * column, const char * ihost)  : WED_PropertyItem(parent, title, table, column), host(ihost) {}
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val) const;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		GetUpdate(SQL_Update& io_update);
+	
+};	
+
+
+
 
 
 #endif
