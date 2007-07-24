@@ -22,6 +22,7 @@ enum {
 	gui_Copy,
 	gui_Paste,
 	gui_Clear,
+	gui_Duplicate,
 	gui_SelectAll,
 	gui_SelectNone,
 	
