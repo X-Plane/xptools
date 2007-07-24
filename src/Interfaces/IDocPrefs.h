@@ -33,6 +33,8 @@ public:
 	virtual	void	WriteIntPref(const char * in_key, int in_value)=0;
 	virtual	double	ReadDoublePref(const char * in_key, double in_default)=0;
 	virtual	void	WriteDoublePref(const char * in_key, double in_value)=0;
+	virtual	string	ReadStringPref(const char * in_key, const string& in_default)=0;
+	virtual	void	WriteStringPref(const char * in_key, const string& in_value)=0;
 
 };
 
