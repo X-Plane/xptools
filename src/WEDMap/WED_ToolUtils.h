@@ -23,6 +23,7 @@ WED_Thing *		WED_FindParent(ISelection * isel,	// Selected objects
 void			WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel);
 void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel);
 bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there are parent-children who are selected!
+WED_Thing *		WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx);
 
 WED_Airport *	WED_GetCurrentAirport(IResolver * resolver);
 void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport);		// Does NOT create a command!!!!!!

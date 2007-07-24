@@ -148,6 +148,39 @@ ITexMgr *		WED_GetTexMgr(IResolver * resolver)
 	return SAFE_CAST(ITexMgr,resolver->Resolver_Find("texmgr"));
 }
 
+WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 1)
+	{
+		WED_Thing * obj = SAFE_CAST(WED_Thing, sel->GetNthSelection(0));
+		if (obj->GetParent())
+		if (!Iterate_IsPartOfStructuredObject(obj,NULL))
+		if (!require_airport || Iterate_IsOrParentAirport(obj->GetParent(), NULL))
+		{
+			idx = obj->GetMyPosition();
+			return obj->GetParent();
+		}
+	}
+	
+	idx = 0;
+	
+	WED_Thing *	parent_of_sel = WED_FindParent(sel, NULL, NULL);
+
+	if (Iterate_IsStructuredObject(parent_of_sel, NULL))	parent_of_sel = NULL;
+
+	if (parent_of_sel && require_airport && !Iterate_IsOrParentAirport(parent_of_sel, NULL))
+		parent_of_sel = NULL;
+		
+	if (parent_of_sel == NULL)
+	{
+		if (require_airport)
+			parent_of_sel = WED_GetCurrentAirport(resolver);
+		else
+			parent_of_sel = WED_GetWorld(resolver);
+	}
+	return parent_of_sel;
+}
 
 static void	WED_GetSelectionInOrderRecursive(ISelection * sel, WED_Thing * who, vector<WED_Thing *>& out_sel)
 {
@@ -441,3 +474,5 @@ double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector
 	double b1 = VectorDegs2NorthHeading(ctr, ctr, Vector2(ctr, handle_new));
 	return b1 - a1;
 }
+
+
