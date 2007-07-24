@@ -73,6 +73,46 @@ earth_32.jpg			GUI_RES		world\earth_32.jpg
 earth_11.jpg			GUI_RES		world\earth_11.jpg
 earth_42.jpg			GUI_RES		world\earth_42.jpg
 
+/* pavement texes */
+dirt.png				GUI_RES		pavement/dirt.png
+gravel.png				GUI_RES		pavement/gravel.png
+water.png				GUI_RES		pavement/water.png
+snow.png				GUI_RES		pavement/snow.png
+concrete.png			GUI_RES		pavement/concrete.png
+lake.png				GUI_RES		pavement/lake.png
+grass.png				GUI_RES		pavement/grass.png
+asphalt.png				GUI_RES		pavement/asphalt.png
+
+/* line icons */
+line_BDoubleSolidYellow.png		GUI_RES		line_types/line_BDoubleSolidYellow.png
+line_RunwayHold.png				GUI_RES		line_types/line_RunwayHold.png
+line_BSolidYellow.png			GUI_RES		line_types/line_BSolidYellow.png
+line_WideBrokenSingle.png		GUI_RES		line_types/line_WideBrokenSingle.png
+line_WideBrokenDouble.png		GUI_RES		line_types/line_WideBrokenDouble.png
+line_DoubleSolidYellow.png		GUI_RES		line_types/line_DoubleSolidYellow.png
+line_SolidYellow.png			GUI_RES		line_types/line_SolidYellow.png
+line_HoldLights.png				GUI_RES		line_types/line_HoldLights.png
+line_BoundaryEdge.png			GUI_RES		line_types/line_BoundaryEdge.png
+line_BrokenWhite.png			GUI_RES		line_types/line_BrokenWhite.png
+line_BrokenYellow.png			GUI_RES		line_types/line_BrokenYellow.png
+line_ILSHold.png				GUI_RES		line_types/line_ILSHold.png
+line_BWideBrokenDouble.png		GUI_RES		line_types/line_BWideBrokenDouble.png
+line_Chequered.png				GUI_RES		line_types/line_Chequered.png
+line_TaxiCenter.png				GUI_RES		line_types/line_TaxiCenter.png
+line_BILSHold.png				GUI_RES		line_types/line_BILSHold.png
+line_HoldShortCenter.png		GUI_RES		line_types/line_HoldShortCenter.png
+line_HoldLightsPulse.png		GUI_RES		line_types/line_HoldLightsPulse.png
+line_OtherHold.png				GUI_RES		line_types/line_OtherHold.png
+line_TaxiEdge.png				GUI_RES		line_types/line_TaxiEdge.png
+line_ILSCriticalCenter.png		GUI_RES		line_types/line_ILSCriticalCenter.png
+line_BBrokenYellow.png			GUI_RES		line_types/line_BBrokenYellow.png
+line_SolidWhite.png				GUI_RES		line_types/line_SolidWhite.png
+line_BRunwayHold.png			GUI_RES		line_types/line_BRunwayHold.png
+line_BOtherHold.png				GUI_RES		line_types/line_BOtherHold.png
+line_BWideBrokenSingle.png		GUI_RES		line_types/line_BWideBrokenSingle.png
+line_BILSCriticalCenter.png		GUI_RES		line_types/line_BILSCriticalCenter.png
+
+
 /* Versioning info */
 #include "..\WEDCore\WED_Version.h"
 #include <winver.h>
