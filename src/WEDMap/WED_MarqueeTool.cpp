@@ -6,6 +6,7 @@
 #include "WED_Entity.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
+#include "WED_GroupCommands.h"
 #include "GISUtils.h"
 
 //	HANDLES			LINKS
@@ -178,7 +179,7 @@ bool	WED_MarqueeTool::PointOnStructure(int id, const Point2& p) const
 	return false;
 }
 
-void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta)
+void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
@@ -205,6 +206,11 @@ void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Poi
 			mRotateCtr.y = mCacheBounds.p1.y * kControlsY1[8] + mCacheBounds.p2.y * kControlsY2[8];		
 //			mRotatePt.x = mCacheBounds.p1.x * kControlsX1[c] + mCacheBounds.p2.x * kControlsX2[c];
 //			mRotatePt.y = mCacheBounds.p1.y * kControlsY1[c] + mCacheBounds.p2.y * kControlsY2[c];			
+		}
+		
+		if ((flags & gui_OptionAltFlag) && (c == 8))
+		{
+			WED_DoDuplicate(GetResolver(), false);
 		}
 	}
 	

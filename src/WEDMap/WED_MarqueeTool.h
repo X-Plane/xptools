@@ -35,7 +35,7 @@ public:
 	
 	virtual		bool	PointOnStructure(int id, const Point2& p) const;
 	
-	virtual		void	ControlsMoveBy(int id, const Vector2& delta);			
+	virtual		void	ControlsMoveBy(int id, const Vector2& delta, Point2& io_pt);			
 	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);
 	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
 
