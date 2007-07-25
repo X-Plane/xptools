@@ -803,10 +803,10 @@ void	ConvertForward(AptInfo_t& io_apt)
 			taxi.area[3].code = apt_rng_seg;
 			Point2 corners[4];
 			CenterToCorners(center, heading, len, pav->width_ft * FT_TO_MTR, corners);
-			taxi.area[0].pt = corners[0];
-			taxi.area[1].pt = corners[1];
-			taxi.area[2].pt = corners[2];
-			taxi.area[3].pt = corners[3];
+			taxi.area[0].pt = corners[3];
+			taxi.area[1].pt = corners[2];
+			taxi.area[2].pt = corners[1];
+			taxi.area[3].pt = corners[0];
 			
 			io_apt.taxiways.push_back(taxi);
 		}
