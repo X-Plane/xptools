@@ -24,7 +24,7 @@ WED_Buffer::~WED_Buffer()
 	{
 		Storage * block = mStorage;
 		mStorage = mStorage->next;
-		delete [] mStorage;
+		delete [] block;
 	}
 }
 
