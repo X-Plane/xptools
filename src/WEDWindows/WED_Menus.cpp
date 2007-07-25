@@ -49,7 +49,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
-{	"Reverse",				0,		0,								0,	wed_Reverse		},
+{	"Rever&se",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
@@ -61,11 +61,11 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 
 static const GUI_MenuItem_t kViewMenu[] = {
 {	"Zoom Worl&d",				'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomWorld		},
-{	"Zoom &Package",			'/',gui_ControlFlag,						0,	wed_ZoomAll			},
+{	"&Zoom Package",			'/',gui_ControlFlag,						0,	wed_ZoomAll			},
 {	"Zoom &Selection",			'/',gui_ControlFlag+gui_ShiftFlag,			0,	wed_ZoomSelection	},
 {	"-",						0,	0,										0,	0					},
-{	"Feet",						0,	0,										0,	wed_UnitFeet		},
-{	"Meters",					0,	0,										0,	wed_UnitMeters		},
+{	"&Feet",						0,	0,										0,	wed_UnitFeet		},
+{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
