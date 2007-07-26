@@ -5,6 +5,7 @@ class	GUI_GraphState;
 enum {
 
 	font_UI_Basic = 0,
+	font_UI_Small,
 	font_Max,
 
 	align_Left = 0,
