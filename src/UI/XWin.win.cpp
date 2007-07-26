@@ -122,7 +122,7 @@ XWin::XWin(
 		mDropTarget = NULL;
 		
 	if (inAttributes & xwin_style_visible)
-		ShowWindow(mWindow, SW_SHOW);
+		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOW);
 	memset(mDragging,0,sizeof(mDragging));
 	mMouse.x = 0;
 	mMouse.y = 0;
