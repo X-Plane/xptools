@@ -3,6 +3,7 @@
 #include "GUI_DrawUtils.h"
 #include "GUI_Resources.h"
 #include "MathUtils.h"
+#include "GUI_GraphState.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -33,37 +34,61 @@ void	GUI_ToolBar::SetValue(float inValue)
 	Refresh();
 }
 
+static void tex_quad(int sx, int sy, int tx, int ty, int dx, int dy, float ttx, float tty)
+{
+	glTexCoord2f((float) (tx) / ttx, (float) (ty) / tty);
+	glVertex2f(sx,sy);
+
+	glTexCoord2f((float) (tx) / ttx, (float) (ty+dy) / tty);
+	glVertex2f(sx,sy+dy);
+
+	glTexCoord2f((float) (tx+dx) / ttx, (float) (ty+dy) / tty);
+	glVertex2f(sx+dx,sy+dy);
+
+	glTexCoord2f((float) (tx+dx) / ttx, (float) (ty) / tty);
+	glVertex2f(sx+dx,sy);
+
+}
+
 void		GUI_ToolBar::Draw(GUI_GraphState * state)
 {
 	int bounds[6];
 	GetBounds(bounds);
 	bounds[4] = bounds[2] - bounds[0];
 	bounds[5] = bounds[3] - bounds[1];
+		
+	GUI_TexPosition_t	metrics;
+
+	int tex_id = GUI_GetTextureResource(mResource.c_str(), 0, &metrics);
 	
-	int all_sel[4] = { 0, 0, 2, 1 };
+	int cell_h = (metrics.real_width  / 2) / mH;
+	int cell_v = (metrics.real_height    ) / mV;
+	int extra_h = (metrics.real_width  / 2) % mH;
+	int extra_v = (metrics.real_height    ) % mV;
 	
+	int offset_v = bounds[5] - (cell_v * mV + extra_v);
+	
+	state->SetState(0, 1, 0, 1, 1, 0, 0);
+	state->BindTex(tex_id, 0);
 	glColor3f(1,1,1);
+	glBegin(GL_QUADS);
 	
-	GUI_DrawStretched(state, mResource.c_str(), bounds, all_sel);
-	
-	int v = GetValue();
-	
-	if (v >= 0 && v < (mH * mV))
+	for (int y = 0; y < mV; ++y)
+	for (int x = 0; x < mH; ++x)
 	{
-		int x = v % mH;
-		int y = v / mH;
+		int sel = ((x + y * mH) == GetValue());
 		
-		int hilite_sel[4] = { x + mH, y, mH * 2, mV };
+		int tex_x_off = x * cell_h;
+		int tex_y_off = y * cell_v;
+		if (sel) tex_x_off += (metrics.real_width  / 2);
 		
-		int sub_bounds[4] = { 
-			interp(0,bounds[0],mH,bounds[2],x  ),
-			interp(0,bounds[1],mV,bounds[3],y  ),
-			interp(0,bounds[0],mH,bounds[2],x+1),
-			interp(0,bounds[1],mV,bounds[3],y+1) 
-		};
-			
-		GUI_DrawStretched(state, mResource.c_str(), sub_bounds, hilite_sel);
+		int scr_x_off = bounds[0] + x * cell_h;
+		int scr_y_off = bounds[1] + y * cell_v + offset_v;
+		
+		tex_quad(scr_x_off,scr_y_off,tex_x_off,tex_y_off,cell_h + extra_h, cell_v + extra_v, metrics.tex_width, metrics.tex_height);
 	}
+	glEnd();
+	
 }
 
 
