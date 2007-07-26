@@ -16,7 +16,8 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	GUI_Commander(parent),
 	mState(NULL),
 	mScrollH(scrollH),
-	mCaret(0)
+	mCaret(0),
+	mFont(font_UI_Basic)
 {
 	mColorText[0] = 0.0;	mColorText[1] = 0.0;	mColorText[2] = 0.0;	mColorText[3] = 1.0;
 	mColorHilite[0] = 1.0;	mColorHilite[1] = 1.0;	mColorHilite[2] = 0.0;	mColorHilite[3] = 1.0;
@@ -35,6 +36,11 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 
 GUI_TextField::~GUI_TextField()
 {
+}
+
+void		GUI_TextField::SetFont(int font)
+{
+	mFont = font;
 }
 
 void		GUI_TextField::SetColors(
@@ -353,14 +359,14 @@ void			GUI_TextField::ReplaceText(
 
 float			GUI_TextField::GetLineHeight(void)
 {
-	return GUI_GetLineHeight(font_UI_Basic);
+	return GUI_GetLineHeight(mFont);
 }
 
 float			GUI_TextField::MeasureString(
 						const char * 	tStart, 
 						const char * 	tEnd)
 {
-	return GUI_MeasureRange(font_UI_Basic, tStart, tEnd);
+	return GUI_MeasureRange(mFont, tStart, tEnd);
 }
 
 int				GUI_TextField::FitStringFwd(
@@ -368,7 +374,7 @@ int				GUI_TextField::FitStringFwd(
 						const char * 	tEnd, 
 						float 			space)
 {
-	return GUI_FitForward(font_UI_Basic, tStart, tEnd, space);
+	return GUI_FitForward(mFont, tStart, tEnd, space);
 }
 
 int				GUI_TextField::FitStringRev(
@@ -376,7 +382,7 @@ int				GUI_TextField::FitStringRev(
 						const char * 	tEnd, 
 						float 			space)
 {
-	return GUI_FitReverse(font_UI_Basic, tStart, tEnd, space);
+	return GUI_FitReverse(mFont, tStart, tEnd, space);
 
 }
 
@@ -387,8 +393,8 @@ void			GUI_TextField::DrawString(
 						float			y)
 {
 	int yy = y;
-	GUI_FontDrawScaled(mState, font_UI_Basic, mColorText,
-						x, yy, x + 10000, yy + GUI_GetLineHeight(font_UI_Basic),
+	GUI_FontDrawScaled(mState, mFont, mColorText,
+						x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
 						tStart, tEnd, align_Left);
 }
 

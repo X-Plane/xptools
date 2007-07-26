@@ -25,6 +25,7 @@ public:
 						 GUI_TextField(int h_scroll, GUI_Commander * parent);
 	virtual				~GUI_TextField();
 
+			void		SetFont(int font);
 			void		SetColors(float text_color[4],
 								  float hilite_color[4],
 								  float bkgnd_color[4],
@@ -106,6 +107,7 @@ private:
 	
 			void			ConstrainLogicalBounds(void);
 
+		int					mFont;
 		int					mCaret;
 		int					mScrollH;
 		float				mLogicalBounds[4];
