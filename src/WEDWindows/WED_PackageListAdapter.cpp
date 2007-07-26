@@ -25,6 +25,7 @@
 #include "WED_PackageMgr.h"
 #include "WED_Messages.h"
 #include "GUI_Messages.h"
+#include "WED_Menus.h"
 
 #define HACK_WIDTH 10
 #define HACK_HEIGHT 20
@@ -149,14 +150,23 @@ int		WED_PackageListAdapter::TabAdvance(
 			GUI_CellContent&			the_content)
 {
 	bool need_sync = mSel==io_y;
-	if (reverse) ++io_y;
-	else		 --io_y;
+		 if(reverse<0) ++io_y;
+	else if(reverse>0) --io_y;
 	if (io_y >= gPackageMgr->CountCustomPackages()) io_y = 0;
 	if (io_y < 0) io_y = gPackageMgr->CountCustomPackages()-1;
 	if (need_sync) mSel = io_y;
 	GetCellContent(io_x,io_y,the_content);
 	return 1;
 }
+
+int		WED_PackageListAdapter::DoubleClickCell(
+						int							cell_x,
+						int							cell_y)
+{
+	GUI_Commander::GetCommanderRoot()->DispatchHandleCommand(wed_OpenPackage);
+	return 1;
+}
+
 
 void					WED_PackageListAdapter::GetLegalDropOperations(
 								int&						allow_between_col,

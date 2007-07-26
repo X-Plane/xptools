@@ -45,6 +45,7 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleTerraserver,
+	wed_RestorePanes,
 	// Select Menu
 	wed_SelectParent,
 	wed_SelectChild,

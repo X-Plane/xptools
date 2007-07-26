@@ -69,12 +69,14 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
-{	"Pavement T&ransparency",	0,	0,										0,	0					},
+{	"Pavement Transparenc&y",	0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
+{	"-",						0,	0,										0,	0					},
+{	"&Restore Frames",			0,	0,										0,	wed_RestorePanes	},
 {	NULL,						0,	0,										0,	0					},
 };
 

@@ -157,6 +157,7 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mScroller->SetImage("gradient.png");
 	
 	gPackageMgr->AddListener(this);				// We listen to package mgr to know when x-system folder changed - hide whole list if needed.
+	mTextTable->FocusChain(false);
 }
 
 WED_StartWindow::~WED_StartWindow()
