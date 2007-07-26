@@ -205,6 +205,16 @@ int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
 	switch(command) {
+	case wed_RestorePanes:
+		{
+			int zw[2];
+			XWin::GetBounds(zw,zw+1);
+			int main_split = (zw[0]) * 0.5f;
+			int prop_split = (zw[1]) * 0.5f;
+			mMainSplitter->AlignContentsAt(main_split);
+			mPropSplitter->AlignContentsAt(prop_split);
+		}
+		return 1;
 	case gui_Undo:	if (um->HasUndo()) { um->Undo(); return 1; }	break;
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
@@ -250,6 +260,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
 	switch(command) {
+	case wed_RestorePanes:	return 1;
 	case gui_Undo:		if (um->HasUndo())	{ ioName = um->GetUndoName();	return 1; }
 						else				{								return 0; }
 	case gui_Redo:		if (um->HasRedo())	{ ioName = um->GetRedoName();	return 1; }
