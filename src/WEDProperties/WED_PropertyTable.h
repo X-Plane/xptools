@@ -76,6 +76,9 @@ public:
 						int&						io_y,
 						int							reverse,
 						GUI_CellContent&			the_content);
+	virtual	int		DoubleClickCell(
+						int							cell_x,
+						int							cell_y);
 
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,

@@ -336,10 +336,19 @@ int		WED_PropertyTable::SelectGetExtent(
 	ISelection * s = WED_GetSelect(mResolver);
 	
 	int num = mVertical ? GetColCount() : GetRowCount();
+	int op = mVertical ? GetRowCount() : GetColCount();
 
 	int has = 0;
-	low_x = low_y = num;
-	high_x = high_y = 0;
+	if (mVertical)
+	{
+		low_y = 0; high_y = op;
+		low_x = num; high_x = 0;
+	}
+	else
+	{
+		low_x = 0; high_x = op;
+		low_y = num; high_y = 0;
+	}
 	
 	for (int n = 0; n < num; ++n)
 	{
@@ -349,8 +358,18 @@ int		WED_PropertyTable::SelectGetExtent(
 			if (s->IsSelected(t))
 			{
 				has = 1;
-				low_x = low_y = min(low_x, n);
-				high_x = high_y = max(high_x, n);
+				
+				if (mVertical)
+				{
+					low_x = min(low_x, n);
+					high_x = max(high_x, n);
+				}
+				else 
+				{
+					low_y = min(low_y, n);
+					high_y = max(high_y, n);
+				}
+				
 			}
 		}
 	}
@@ -457,25 +476,54 @@ int		WED_PropertyTable::TabAdvance(
 	
 	if (height == 0 || width == 0) return 0;
 	
+	int tries = 0;
+	
 	do 
 	{
-		if (reverse)	--io_x;
-		else			++io_x;
-		if (io_x >= width) { io_x = 0; --io_y; }
-		if (io_x < 0	 ) { io_x = width-1; ++io_y; }
-		if (io_y >=height) { io_y = 0;		   }
-		if (io_y < 0	 ) { io_y = height-1;   }
-	
+		if (mVertical)
+		{
+				 if(reverse<0		   )	++io_y;
+			else if(reverse>0		   )	--io_y;
+			if (io_y >=height) { io_y = 0;		 --io_x;	}
+			if (io_y < 0	 ) { io_y = height-1;++io_x;	}
+			if (io_x >= width) { io_x = 0;					}
+			if (io_x < 0	 ) { io_x = width-1;			}
+		}
+		else
+		{
+				 if(reverse<0		   )	--io_x;
+			else if(reverse>0		   )	++io_x;
+			if (io_x >= width) { io_x = 0; --io_y; }
+			if (io_x < 0	 ) { io_x = width-1; ++io_y; }
+			if (io_y >=height) { io_y = 0;		   }
+			if (io_y < 0	 ) { io_y = height-1;   }
+		}
 		GetCellContent(io_x, io_y, the_content);
 		if (the_content.can_edit && (
 			the_content.content_type == gui_Cell_EditText ||
 			the_content.content_type == gui_Cell_Integer ||
 			the_content.content_type == gui_Cell_Double))
 		{
+			WED_Thing * t = FetchNth(mVertical ? io_x : io_y);
+			ISelection * sel = WED_GetSelect(mResolver);
+			if (!sel->IsSelected(t))
+			{
+				t->StartOperation("Select Next");
+				sel->Select(t);
+				t->CommitOperation();
+			}
 			return 1;
 		}
-	
-	} while (start_x != io_x || start_y != io_y);
+		if (reverse==0)reverse=1;
+		++tries;
+	} while (start_x != io_x || start_y != io_y || tries <= 1);
+	return 0;
+}
+
+int		WED_PropertyTable::DoubleClickCell(
+						int							cell_x,
+						int							cell_y)
+{
 	return 0;
 }
 
