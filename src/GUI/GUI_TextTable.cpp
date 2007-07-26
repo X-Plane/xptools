@@ -39,6 +39,7 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mSelStartY(-1),
 	mDragX(-1),
 	mDragY(-1),
+	mFont(font_UI_Basic),
 	mDragDest(gui_Table_None),
 	mDragPart(drag_WholeCell),
 	mCellIndent(indent),
@@ -93,6 +94,11 @@ void		GUI_TextTable::SetImage(const char * image, int alternations)
 	mImage = image;
 }
 
+void		GUI_TextTable::SetFont(int font)
+{
+	mFont = font;
+}
+
 void	GUI_TextTable::SetColors(
 							float		grid_lines[4],
 							float		select[4],
@@ -127,9 +133,9 @@ void		GUI_TextTable::SetTextFieldColors(
 	}
 }
 
-void	GUI_TextTable::KillEditing(void)
+void	GUI_TextTable::KillEditing(bool save_it)
 {
-	TerminateEdit(false, false);
+	TerminateEdit(save_it, false);
 }
 
 
@@ -221,8 +227,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	}
 	
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
-	float	line_h = GUI_GetLineHeight(font_UI_Basic);
-	int		descent = GUI_GetLineDescent(font_UI_Basic);	
+	float	line_h = GUI_GetLineHeight(mFont);
+	int		descent = GUI_GetLineDescent(mFont);	
 	float	cell2line = (cell_h - line_h + descent) * 0.5f;
 
 	if (mTextField == NULL || mClickCellX != cell_x || mClickCellY != cell_y)
@@ -260,8 +266,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		}
 		else
 		{				
-			GUI_TruncateText(c.text_val, font_UI_Basic, trunc_width);
-			GUI_FontDraw(inState, font_UI_Basic, 
+			GUI_TruncateText(c.text_val, mFont, trunc_width);
+			GUI_FontDraw(inState, mFont, 
 				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
 				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());	
 		}
@@ -352,9 +358,33 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	want_lock = 1;
 	mModifiers = flags;
 	mSelStartX = mSelStartY = -1;
-
-
 	mCellResize = -1;
+
+	static int last_cell_x = -1;
+	static int last_cell_y = -1;
+	static int last_mouse_x = -1;
+	static int last_mouse_y = -1;
+	static float last_time_now = -1.0;
+	float time_now = mParent->GetTimeNow();
+	bool did_double = false;
+	if (mContent &&
+		last_cell_x == cell_x &&
+		last_cell_y == cell_y &&
+		fabs(last_mouse_x - mouse_x) < 3.0 &&
+		fabs(last_mouse_y - mouse_y) < 3.0 &&
+		time_now - last_time_now < 0.1)
+	{
+		did_double = mContent->DoubleClickCell(cell_x,cell_y);	
+	}
+	
+	last_cell_x = cell_x;
+	last_cell_y = cell_y;
+	last_mouse_x = mouse_x;
+	last_mouse_y = mouse_y;
+	last_time_now = time_now;
+
+	if (did_double) return 1;
+	
 	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
 	{
 		mLastX = mouse_x;
@@ -495,6 +525,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	case gui_Cell_Double:
 		if (mParent)
 		{
+			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
 			CreateEdit(cell_bounds);
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
@@ -923,6 +954,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 	if (!mTextField) 
 	{
 		mTextField = new GUI_TextField(1,this); 
+		mTextField->SetFont(mFont);
 		mTextField->SetParent(mParent); 
 		mTextField->SetVKAllowed(GUI_VK_RETURN, false); 
 		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false); 
@@ -937,8 +969,8 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 	}
 	
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
-	float	line_h = GUI_GetLineHeight(font_UI_Basic);
-	int		descent = GUI_GetLineDescent(font_UI_Basic);	
+	float	line_h = GUI_GetLineHeight(mFont);
+	int		descent = GUI_GetLineDescent(mFont);	
 	float	cell2line = (cell_h - line_h + descent) * 0.5f;
 	
 	float pad_bottom = cell2line - descent;
@@ -947,7 +979,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 	mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
 	
 		
-	
+	cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
 	mTextField->SetBounds(cell_bounds);
 	mTextField->SetWidth(max(cell_bounds[2] - cell_bounds[0],2048));
 //	mTextField->SetWidth(1000);
@@ -1009,6 +1041,25 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 
 	if ((inFlags & gui_UpFlag) == 0 && inVK == GUI_VK_RIGHT)
 	if (mContent->SelectDisclose(1, inFlags & gui_OptionAltFlag))	return 1;
+
+
+	if ((inFlags & gui_UpFlag) == 0 && (inVK == GUI_VK_PRIOR || inVK == GUI_VK_NEXT || inVK == GUI_VK_END || inVK == GUI_VK_HOME))
+	{
+		float tb[4], vb[4];
+		mParent->GetScrollBounds(tb,vb);
+		float v = mParent->GetScrollV();
+		float d = vb[3] - vb[1];
+		float m = tb[3] - tb[1] - d;
+		if (inVK == GUI_VK_PRIOR) v += d;	// "page up is positive - y aaxis.
+		if (inVK == GUI_VK_NEXT ) v -= d;
+		if (inVK == GUI_VK_HOME ) v = m;
+		if (inVK == GUI_VK_END ) v = 0;
+		if (v < 0) v = 0;
+		if (v > m) v = m;
+		mParent->ScrollV(v);
+		mParent->BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
+		mParent->Refresh();
+	}
 	
 	if ((inFlags & gui_UpFlag) == 0)
 	switch(inKey) {
@@ -1060,14 +1111,13 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 
 	if(inKey == GUI_KEY_TAB && mTextField && mContent)
 	{
-		char buf[50];
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
 		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag);
 		if (mParent)
 		{
-			if (mContent->TabAdvance(x,y, inFlags & gui_ShiftFlag, mEditInfo))	
+			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))	
 			{
 				mParent->RevealCell(x,y);
 				mParent->CalcCellBounds(x,y,cell_bounds);
@@ -1085,6 +1135,25 @@ int			GUI_TextTable::KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)
 	{
 		TerminateEdit(true, inFlags & gui_OptionAltFlag);
 		return 1;
+	} 
+	else if (inVK == GUI_VK_RETURN && mContent && mParent)
+	{
+		int x1, y1, x2, y2;
+		if (mContent->SelectGetExtent(x1,y1,x2,y2))
+		{
+			int cell_bounds[4];
+			if (mContent->TabAdvance(x1,y2, 0, mEditInfo))	
+			{
+				mParent->RevealCell(x1,y2);
+				mParent->CalcCellBounds(x1,y2,cell_bounds);
+				mClickCellX = x1;
+				mClickCellY = y2;
+				CreateEdit(cell_bounds);
+				mTextField->SetDescriptor(mEditInfo.text_val);
+				mTextField->SetSelection(0,mEditInfo.text_val.size());
+				mTextField->Refresh();
+			}
+		}	
 	}
 
 	if(inKey == GUI_KEY_ESCAPE && mTextField)

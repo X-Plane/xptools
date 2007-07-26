@@ -124,8 +124,11 @@ public:
 	virtual	int		TabAdvance(
 						int&						io_x,
 						int&						io_y,
-						int							reverse,
+						int							dir,
 						GUI_CellContent&			the_content)=0;
+	virtual	int		DoubleClickCell(
+						int							cell_x,
+						int							cell_y)=0;
 
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,
@@ -195,6 +198,7 @@ public:
 			void		SetParentTable(GUI_Table * parent);
 
 			void		SetImage(const char * image, int alternations);
+			void		SetFont(int font);
 			void		SetColors(
 							float		grid_lines[4],
 							float		select[4],
@@ -218,7 +222,7 @@ public:
 	virtual	GUI_DragOperation	CellDragWithin	(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y);
 	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended);
-	virtual	void		KillEditing(void);
+	virtual	void		KillEditing(bool save_it);
 
 	virtual	int			KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			AcceptTakeFocus(void) 	{ return 1; }
@@ -287,6 +291,8 @@ private:
 	float					mTFColorHilite[4];
 	float					mTFColorBkgnd[4];
 	float					mTFColorBox[4];	
+
+	int						mFont;
 	
 	string					mImage;
 	int						mAlternate;
