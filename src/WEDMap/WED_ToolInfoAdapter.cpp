@@ -7,6 +7,8 @@
 
 const int COL_WIDTH = 100;
 
+#define OUR_FONT font_UI_Small
+
 extern int gExclusion;
 
 WED_ToolInfoAdapter::WED_ToolInfoAdapter(int height) : mTool(NULL), mRowHeight(height)
@@ -106,6 +108,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		the_content.content_type = gui_Cell_EditText;
 		the_content.can_edit = 0;
 		the_content.text_val = inf.prop_name;		
+		the_content.indent_level = 1;		
 	}
 }
 
@@ -238,6 +241,13 @@ int		WED_ToolInfoAdapter::TabAdvance(
 	return 0;
 }
 
+int		WED_ToolInfoAdapter::DoubleClickCell(
+						int							cell_x,
+						int							cell_y)
+{
+	return 0;
+}
+
 int			WED_ToolInfoAdapter::GetColCount(void)
 {
 	return mTool ? (mTool->CountProperties() * 2) + 1 : 1;
@@ -281,7 +291,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	if (n % 2) 
 	switch(inf.prop_kind) {
 	case prop_Int:			
-	case prop_Double:		return inf.digits * GUI_MeasureRange(font_UI_Basic, zero,zero+1) + 10;
+	case prop_Double:		return inf.digits * GUI_MeasureRange(OUR_FONT, zero,zero+1) + 10;
 	case prop_String:		return 100;
 	case prop_FilePath:		return 150;
 	case prop_Bool:			return 30;
@@ -289,12 +299,12 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	case prop_EnumSet:		
 		mTool->GetNthPropertyDict(n / 2, dict);
 		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
-			w = max(w,(int) GUI_MeasureRange(font_UI_Basic, &*d->second.begin(),&*d->second.end())+20);
+			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
 		return w;
 	default:				return 50;
 	}
 	else
-		return GUI_MeasureRange(font_UI_Basic, &*inf.prop_name.begin(), &*inf.prop_name.end()) + 15;
+		return GUI_MeasureRange(OUR_FONT, &*inf.prop_name.begin(), &*inf.prop_name.end()) + 18;
 }
 
 int			WED_ToolInfoAdapter::GetCellBottom(int n)

@@ -74,16 +74,18 @@ protected:
 
 		inline WED_Archive * GetArchive(void) { return mArchive; }
 
-			bool		HasDragNow(
-							Point2&	p,
-							Point2& c);
-			bool		HasPrevNow(
-							Point2& p,
-							Point2& c);
+//			bool		HasDragNow(
+//							Point2&	p,
+//							Point2& c);
+//			bool		HasPrevNow(
+//							Point2& p,
+//							Point2& c);
 
 private:
 
 			void		DoEmit(int close_it);
+
+			void		RecalcHeadings(void);
 
 	int					mEditStarted;
 

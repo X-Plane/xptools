@@ -190,20 +190,4 @@ bool		WED_CreatePointTool::CanCreateNow(void)
 	return WED_GetCurrentAirport(GetResolver()) != NULL;
 }
 
-bool	WED_CreatePointTool::GetHeadingMeasure(double& h)
-{
-	Point2	p,c;
-	if (!HasDragNow(p,c)) return false;
-	if (p == c) return false;
-	h = VectorDegs2NorthHeading(p, p, Vector2(p,c));
-	return true;	
-}
 
-bool	WED_CreatePointTool::GetDistanceMeasure(double& d)
-{
-	Point2 p,c;
-	if (!HasDragNow(p,c)) return false;
-	if (p == c) return false;
-	d = LonLatDistMeters(p.x,p.y,c.x,c.y);
-	return true;
-}

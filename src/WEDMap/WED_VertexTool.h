@@ -52,8 +52,6 @@ public:
 //	virtual void		SetNthProperty(int n, const PropertyVal_t& val) { }
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
-	virtual bool			GetHeadingMeasure(double& h) { return false; }
-	virtual bool			GetDistanceMeasure(double& d) { return false; }
 	
 	virtual	void		DrawSelected			(int inCurrent, GUI_GraphState * g);
 

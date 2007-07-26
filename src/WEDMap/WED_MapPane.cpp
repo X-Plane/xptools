@@ -18,6 +18,7 @@
 #include "WED_VertexTool.h"
 //#include "WED_TileServerLayer.h"
 #include "WED_TerraserverLayer.h"
+#include "GUI_Fonts.h"
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
 #include "WED_Colors.h"
@@ -92,7 +93,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
-	mTextTable = new GUI_TextTable(cmdr,WED_UIMeasurement("table_indent_width"));
+	mTextTable = new GUI_TextTable(cmdr,10);
 	mTable = new GUI_Table(1);
 	
 	mTextTable->SetColors(
@@ -102,6 +103,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 				WED_Color_RGBA(wed_PropertyBar_Text),
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
+	mTextTable->SetFont(font_UI_Small);
 	
 
 	mTable->SetGeometry(mInfoAdapter);
@@ -234,9 +236,9 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
 	case wed_ToggleVertices:mStructureLayer->SetVerticesShowing(!mStructureLayer->GetVerticesShowing());				return 1;
 
-	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	return 1;
-	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	return 1;
-	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	return 1;
+	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	mMap->Refresh(); return 1;
+	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	mMap->Refresh(); return 1;
+	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x,box.p1.y,box.p2.x,box.p2.y);	mMap->Refresh(); return 1;
 
 	default:		return 0;
 	}	

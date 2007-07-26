@@ -165,41 +165,46 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	
 	char mouse_loc[350];
 	char * p = mouse_loc;
-	Point2	o,n;
-	if (mIsDownCount)
+
+	bool	has_a1 = false, has_a2 = false, has_d = false, has_h = false;
+	double	head,dist;
+	Point2	anchor1, anchor2;
+	
+	if (mTool)
 	{
+		has_a1 = mTool->GetAnchor1(anchor1);
+		has_a2 = mTool->GetAnchor2(anchor2);
+		has_d = mTool->GetDistance(dist);
+		has_h = mTool->GetHeading(head);
+	}
+	
+	if (!has_a1 && !has_a2 && !has_d && !has_h)
+	{
+		Point2 o,n;
 		o.x = XPixelToLon(mX_Orig);
 		o.y = YPixelToLat(mY_Orig);
+		n.x = XPixelToLon(x);
+		n.y = YPixelToLat(y);
+
+		if (mIsDownExtraCount)
+		{
+			has_d = 1;	dist = LonLatDistMeters(o.x,o.y,n.x,n.y);
+			has_h = 1;	head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
+			has_a1 = 1; anchor1 = o;
+			has_a2 = 1; anchor2 = n;
+		}
+		else
+		{
+			has_a1 = 1; anchor1 = n;			
+		}
 	}
 
-	n.x = XPixelToLon(x);
-	n.y = YPixelToLat(y);
+	if (has_a1)				p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.x,anchor1.y);
+	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+	if (has_a2)				p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.x,anchor2.y);
 
-	if (mIsDownCount)
-		p += sprintf(p, "%+010.6lf %+011.6lf -> ", o.x,o.y);
-		p += sprintf(p, "%+010.6lf %+011.6lf",n.x,n.y);	
-	
-	double dist, head;
-	bool has_dist = false;
-	bool has_head = false;
-	if (mTool) has_dist = mTool->GetDistanceMeasure(dist);
-	if (mTool) has_head = mTool->GetHeadingMeasure(head);
-	if (!has_dist && mIsDownCount)
-	{
-		has_dist = 1;
-		dist = LonLatDistMeters(o.x,o.y,n.x,n.y);
-	}
-	if (!has_head && mIsDownCount)
-	{
-		has_head = 1;
-		head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
-	}
-	
-	if (has_dist)
-	p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0),
-				gIsFeet? "feet" : "meters");
-	if (has_head)
-	p += sprintf(p," heading: %.1lf", head);
+	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
+	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, mouse_loc);
 	

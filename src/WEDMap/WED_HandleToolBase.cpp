@@ -344,6 +344,9 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 		ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+		
+		SetAnchor1(Point2(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY)));
+		
 		if (sel && ent_base)
 		{
 			set<IGISEntity *>	sel_set;
@@ -524,6 +527,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 		{	
 			mSelX = inX;
 			mSelY = inY;
+			SetAnchor2(Point2(GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY)));			
 			IGISEntity * ent_base = SAFE_CAST(IGISEntity, WED_GetWorld(GetResolver()));
 			ISelection * sel = SAFE_CAST(ISelection, WED_GetSelect(GetResolver()));
 			if (sel && ent_base)
@@ -568,6 +572,8 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	}
 	if (mDragType == drag_Sel)
 	{
+		ClearAnchor1();
+		ClearAnchor2();
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));	
 		if(op) op->CommitOperation();
 		mSelSave.clear();

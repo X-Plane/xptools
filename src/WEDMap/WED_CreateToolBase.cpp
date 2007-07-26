@@ -2,7 +2,7 @@
 #include "WED_MapZoomerNew.h"
 #include "GUI_GraphState.h"
 #include "WED_ToolUtils.h"
-
+#include "GISUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -285,6 +285,8 @@ int			WED_CreateToolBase::CreationDown(const Point2& start_pt)
 		mCreating = 1;
 	}
 
+	RecalcHeadings();
+
 	mLastTime = now;
 	mLastPt = start_pt;
 	return 1;
@@ -305,6 +307,8 @@ void		WED_CreateToolBase::CreationDrag(const Point2& start_pt, const Point2& now
 		mControlHi.back() = now_pt;
 	else
 		mControlHi.back() = mPts.back() = now_pt;
+
+	RecalcHeadings();
 
 	mControlLo.back() = mPts.back() + (Vector2(mControlHi.back(), mPts.back()));
 
@@ -328,6 +332,8 @@ void		WED_CreateToolBase::CreationUp(const Point2& start_pt, const Point2& now_p
 		if (within_dist(mPts.front(), mPts.back(), GetZoomer(), kCloseLoopDist))
 			DoEmit(1);
 	}
+
+	RecalcHeadings();
 		
 	mCreating = 0;
 }
@@ -353,6 +359,12 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 	mControlLo.clear();
 	mControlHi.clear();
 
+	ClearAnchor1();
+	ClearAnchor2();
+	ClearDistance();
+	ClearHeading();
+	
+
 }
 
 void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
@@ -361,6 +373,7 @@ void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 		if (mPts.size() >= mMinPts)
 		{
 			DoEmit(0);
+			RecalcHeadings();
 		}
 	
 	mPts.clear();
@@ -401,6 +414,7 @@ int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 		if (mPts.size() >= mMinPts)
 		{
 			DoEmit(0);
+			RecalcHeadings();
 			return 1;
 		}
 		break;
@@ -408,6 +422,7 @@ int			WED_CreateToolBase::HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFl
 	return WED_HandleToolBase::HandleKeyPress(inKey, inVK, inFlags);
 }
 
+/*
 bool		WED_CreateToolBase::HasDragNow(
 				Point2&	p,
 				Point2& c)
@@ -429,4 +444,29 @@ bool		WED_CreateToolBase::HasPrevNow(
 	p = mPts[idx_want];
 	c = mControlHi[idx_want];
 	return true;
+}
+*/
+
+void		WED_CreateToolBase::RecalcHeadings(void)
+{
+	ClearHeading();
+	ClearDistance();
+	ClearAnchor1();
+	ClearAnchor2();
+
+	if (mPts.size() > 1)
+	{
+		SetAnchor1(mPts[mPts.size()-2]);
+		SetAnchor2(mPts[mPts.size()-1]);
+		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x,mPts[mPts.size()-2].y,mPts[mPts.size()-1].x,mPts[mPts.size()-1].y));
+		SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-2],mPts[mPts.size()-2],Vector2(mPts[mPts.size()-2],mPts[mPts.size()-1])));
+	} 
+	else if (mPts.size() > 0)
+	{
+		SetAnchor1(mPts[mPts.size()-1]);
+		if (mHasDirs[mPts.size()-1])
+		{
+			SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-1],mPts[mPts.size()-1],Vector2(mPts[mPts.size()-1],mControlHi[mPts.size()-1])));
+		}
+	}
 }

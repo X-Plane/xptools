@@ -89,7 +89,7 @@ int		WED_MarqueeTool::GetNthEntityID(int n) const
 int		WED_MarqueeTool::CountControlHandles(int id						  ) const
 {
 	if (!GetTotalBounds())			return 0;
-	if (mCacheBounds.is_point())	return 1;
+///	if (mCacheBounds.is_point())	return 1;
 									return 9;
 }
 
@@ -104,8 +104,8 @@ void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleTyp
 	}
 	else
 	{
-		int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag);
-		if(active) *active=1;
+		int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag) && !mCacheBounds.is_point();
+		if(active) *active=(mCacheBounds.is_point() ? (n == 8) : 1);
 		if (con_type) *con_type = mCacheIconic ? handle_Icon : ((could_rotate && n < 8) ? handle_RotateHead : handle_Square);
 		if (radius && mCacheIconic) *radius = GetFurnitureIconRadius();
 		if (direction) *direction=Vector2(0,1);
