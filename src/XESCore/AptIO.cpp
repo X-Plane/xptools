@@ -568,7 +568,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 	
 	for (int a = 0; a < outApts.size(); ++a)
 	{
-		outApts[a].bounds = Bbox2(outApts[a].pavements[0].ends.p1);
+		outApts[a].bounds = Bbox2();
 	
 //		outApts[a].bounds = Bbox2(outApts[a].tower.location);
 //		outApts[a].bounds += outApts[a].beacon.location;
