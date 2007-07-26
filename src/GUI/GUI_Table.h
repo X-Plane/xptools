@@ -83,7 +83,7 @@ public:
 	virtual	void				CellDragLeave	(int cell_bounds[4], int cell_x, int cell_y)=0;
 	virtual	GUI_DragOperation	CellDrop		(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, GUI_DragData * drag, GUI_DragOperation allowed, GUI_DragOperation recommended)=0;
 
-	virtual	void		KillEditing(void)=0;
+	virtual	void		KillEditing(bool save_it)=0;
 
 };
 
@@ -124,8 +124,6 @@ public:
 
 			void		SetGeometry(GUI_TableGeometry * inContent);
 			void		SetContent(GUI_TableContent * inContent);
-			int			GetScrollH(void) { return mScrollH; }
-			int			GetScrollV(void) { return mScrollV; }
 			void		SizeShowAll(void);
 
 	virtual	void		Draw(GUI_GraphState * state);	
@@ -149,6 +147,9 @@ public:
 							GUI_Broadcaster *		inSrc,
 							int						inMsg,
 							int						inParam);
+
+			int			GetScrollH(void);
+			int			GetScrollV(void);
 
 	virtual	void	GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4]);	
 	virtual	void	ScrollH(float xOffset);

@@ -49,10 +49,10 @@ GUI_Table::GUI_Table(int fill_right) :
 	mGeometry(NULL),
 	mContent(NULL),
 	mScrollH(0),
-	mScrollV(0),
+	mScrollV(0),			// hack to start things scrolled up!
 	mDragX(-1),mDragY(-1),
 	mExtendSide(fill_right),
-	mAligned(true)
+	mAligned(false)			// hack - start things scrolled up!
 {	
 }
 
@@ -108,12 +108,12 @@ void	GUI_Table::RevealCol(int x)
 	
 	if (cell_bounds[0] < pane_bounds[0])
 	{
-		mScrollH += max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2]));
+		ScrollH(GetScrollH() + max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2])));
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
 	} else if (cell_bounds[2] > pane_bounds[2])
 	{
-		mScrollH += min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0]));
+		ScrollH(GetScrollH() + min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0])));
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
 	}
@@ -133,12 +133,12 @@ void	GUI_Table::RevealRow(int y)
 	
 	if (cell_bounds[1] < pane_bounds[1])
 	{
-		mScrollV += max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3]));
+		ScrollV(GetScrollV() + max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3])));
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
 	} else if (cell_bounds[3] > pane_bounds[3])
 	{
-		mScrollV += min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1]));
+		ScrollV(GetScrollV() + min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1])));
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
 	}
@@ -155,20 +155,20 @@ void	GUI_Table::RevealCell(int x, int y)
 	pane_bounds[4] = pane_bounds[2] - pane_bounds[0];
 	pane_bounds[5] = pane_bounds[3] - pane_bounds[1];
 	
-	int old_h = mScrollH;
-	int old_v = mScrollV;
+	int old_h = GetScrollH();
+	int old_v = GetScrollV();
 	
 	if (cell_bounds[0] < pane_bounds[0])
-		mScrollH += max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2]));
+		ScrollH(GetScrollH() + max(cell_bounds[0] - pane_bounds[0], min(0,cell_bounds[2] - pane_bounds[2])));
 	else if (cell_bounds[2] > pane_bounds[2])
-		mScrollH += min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0]));
+		ScrollH(GetScrollH() + min(cell_bounds[2] - pane_bounds[2], max(0, cell_bounds[0] - pane_bounds[0])));
 
 	if (cell_bounds[1] < pane_bounds[1])
-		mScrollV += max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3]));
+		ScrollV(GetScrollV() + max(cell_bounds[1] - pane_bounds[1], min(0, cell_bounds[3] - pane_bounds[3])));
 	else if (cell_bounds[3] > pane_bounds[3])
-		mScrollV += min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1]));
+		ScrollV(GetScrollV() + min(cell_bounds[3] - pane_bounds[3], max(0, cell_bounds[1] - pane_bounds[1])));
 
-	if (old_h != mScrollH || old_v != mScrollV)
+	if (old_h != GetScrollH() || old_v != GetScrollV())
 	{
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
@@ -238,7 +238,7 @@ int GUI_Table::TrapNotify(int x, int y, int button)
 	if (x < b[0] || x > b[2] ||
 		y < b[1] || y > b[3])
 	{
-		if (mContent) mContent->KillEditing();
+		if (mContent) mContent->KillEditing(true);
 		return 0;
 	}
 	return 1;
@@ -353,8 +353,8 @@ void					GUI_Table::DragScroll	(int x, int y)
 	float total[4], vis[4];	
 	GetScrollBounds(total, vis);
 
-	int old_h = mScrollH;
-	int old_v = mScrollV;
+	int old_h = GetScrollH();
+	int old_v = GetScrollV();
 	
 	int max_left  =	max(vis[0] - total[0], 0.0f);
 	int max_right = max(total[2] - vis[2], 0.0f);
@@ -371,12 +371,12 @@ void					GUI_Table::DragScroll	(int x, int y)
 	speed_bottom = min(AUTOSCROLL_DIST, max(0, speed_bottom));
 	speed_top = min(AUTOSCROLL_DIST, max(0, speed_top));
 
-	mScrollH -= min(speed_left, max_left);
-	mScrollH += min(speed_right, max_right);
-	mScrollV -= min(speed_bottom, max_bottom);
-	mScrollV += min(speed_top, max_top);
+	ScrollH(GetScrollH() - min(speed_left, max_left));
+	ScrollH(GetScrollH() + min(speed_right, max_right));
+	ScrollV(GetScrollV() - min(speed_bottom, max_bottom));
+	ScrollV(GetScrollV() + min(speed_top, max_top));
 
-	if (old_h != mScrollH || old_v != mScrollV)
+	if (old_h != GetScrollH() || old_v != GetScrollV())
 	{
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED,0);
 		Refresh();
@@ -424,7 +424,7 @@ void		GUI_Table::SetBounds(int x1, int y1, int x2, int y2)
 	int new_height = y2 - y1;
 	int old_height = b[3] - b[1];
 	int delta_y = new_height - old_height;
-	mScrollV -= delta_y;
+	ScrollV(GetScrollV() - delta_y);
 	GUI_Pane::SetBounds(x1,y1,x2,y2);
 	mAligned = false;
 }
@@ -436,7 +436,7 @@ void		GUI_Table::SetBounds(int inBounds[4])
 	int new_height = inBounds[3] - inBounds[1];
 	int old_height = b[3] - b[1];
 	int delta_y = new_height - old_height;
-	mScrollV -= delta_y;
+	ScrollV(GetScrollV() - delta_y);
 	GUI_Pane::SetBounds(inBounds);
 	mAligned = false;
 }
@@ -448,16 +448,17 @@ void		GUI_Table::AlignContents(void)
 	float	vis[4],total[4];
 
 	GetScrollBounds(total,vis);	
-	if (total[1] > vis[1])		mScrollV -= (vis[1] - total[1]);
+	if (total[1] > vis[1])		ScrollV(GetScrollV() - (vis[1] - total[1]));
 
 	GetScrollBounds(total,vis);	
-	if (total[3] < vis[3])		mScrollV -= (vis[3] - total[3]);
+	if (total[3] < vis[3])		ScrollV(GetScrollV() - (vis[3] - total[3]));
 
 	GetScrollBounds(total,vis);	
-	if (total[2] < vis[2])		mScrollH -= (vis[2] - total[2]);
+	if (total[2] < vis[2])		ScrollH(GetScrollH() - (vis[2] - total[2]));
 
 	GetScrollBounds(total,vis);	
-	if (total[0] > vis[0])		mScrollH -= (vis[0] - total[0]);
+	if (total[0] > vis[0])		ScrollH(GetScrollH() - (vis[0] - total[0]));
+
 }
 
 
@@ -475,9 +476,9 @@ void		GUI_Table::ReceiveMessage(
 //	int new_height = inBounds[3] - inBounds[1];
 //	int old_height = b[3] - b[1];
 //	int delta_y = new_height - old_height;
-//	mScrollV -= delta_y;
+//	GetScrollV() -= delta_y;
 		mAligned = false;
-		if (mContent) mContent->KillEditing();
+		if (mContent) mContent->KillEditing(false);
 		BroadcastMessage(GUI_SCROLL_CONTENT_SIZE_CHANGED, 0);
 		Refresh();
 		break;
@@ -485,6 +486,16 @@ void		GUI_Table::ReceiveMessage(
 		Refresh();
 		break;
 	}
+}
+
+int			GUI_Table::GetScrollH(void)
+{
+	return mScrollH;
+}
+
+int			GUI_Table::GetScrollV(void)
+{
+	return mGeometry->GetCellTop(mGeometry->GetRowCount()-1) - mScrollV;
 }
 
 void	GUI_Table::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[4])
@@ -507,20 +518,22 @@ void	GUI_Table::GetScrollBounds(float outTotalBounds[4], float outVisibleBounds[
 		return;
 	}
 	
-	outTotalBounds[0] = b[0] - mScrollH;
-	outTotalBounds[1] = b[1] - mScrollV;
-	outTotalBounds[2] = b[0] - mScrollH + mGeometry->GetCellRight(mGeometry->GetColCount()-1);
-	outTotalBounds[3] = b[1] - mScrollV + mGeometry->GetCellTop(mGeometry->GetRowCount()-1);
+	outTotalBounds[0] = b[0] - GetScrollH();
+	outTotalBounds[1] = b[1] - GetScrollV();
+	outTotalBounds[2] = b[0] - GetScrollH() + mGeometry->GetCellRight(mGeometry->GetColCount()-1);
+	outTotalBounds[3] = b[1] - GetScrollV() + mGeometry->GetCellTop(mGeometry->GetRowCount()-1);
 }
 
 void	GUI_Table::ScrollH(float xOffset)
 {
+	if (mContent) mContent->KillEditing(true);
 	mScrollH = xOffset;
 }
 
 void	GUI_Table::ScrollV(float yOffset)
 {
-	mScrollV = yOffset;
+	if (mContent) mContent->KillEditing(true);
+	mScrollV = mGeometry->GetCellTop(mGeometry->GetRowCount()-1) - yOffset;
 }
 
 int		GUI_Table::MouseToCellX(int x)
@@ -529,7 +542,7 @@ int		GUI_Table::MouseToCellX(int x)
 	AlignContents();
 	int	b[4];
 	GetBounds(b);
-	return mGeometry->ColForX(x - b[0] + mScrollH);
+	return mGeometry->ColForX(x - b[0] + GetScrollH());
 }
 
 
@@ -539,7 +552,7 @@ int		GUI_Table::MouseToCellY(int y)
 	AlignContents();
 	int	b[4];
 	GetBounds(b);
-	return mGeometry->RowForY(y - b[1] + mScrollV);
+	return mGeometry->RowForY(y - b[1] + GetScrollV());
 }
 
 
@@ -555,10 +568,10 @@ int		GUI_Table::CalcVisibleCells(int bounds[4])
 	int yc = mGeometry->GetRowCount();
 	if (xc == 0 || yc == 0) return 0;
 	
-	l[0] = mScrollH;
-	l[1] = mScrollV;
-	l[2] = mScrollH + b[2] - b[0];
-	l[3] = mScrollV + b[3] - b[1];
+	l[0] = GetScrollH();
+	l[1] = GetScrollV();
+	l[2] = GetScrollH() + b[2] - b[0];
+	l[3] = GetScrollV() + b[3] - b[1];
 	
 	bounds[0] = mGeometry->ColForX(l[0]);
 	bounds[1] = mGeometry->RowForY(l[1]);
@@ -587,10 +600,10 @@ int		GUI_Table::CalcCellBounds(int x, int y, int bounds[4])
 		int	b[4];
 	GetBounds(b);
 	
-	bounds[0] = mGeometry->GetCellLeft  (x) + b[0] - mScrollH;
-	bounds[1] = mGeometry->GetCellBottom(y) + b[1] - mScrollV;
-	bounds[2] = mGeometry->GetCellRight (x) + b[0] - mScrollH;
-	bounds[3] = mGeometry->GetCellTop   (y) + b[1] - mScrollV;
+	bounds[0] = mGeometry->GetCellLeft  (x) + b[0] - GetScrollH();
+	bounds[1] = mGeometry->GetCellBottom(y) + b[1] - GetScrollV();
+	bounds[2] = mGeometry->GetCellRight (x) + b[0] - GetScrollH();
+	bounds[3] = mGeometry->GetCellTop   (y) + b[1] - GetScrollV();
 
 	if (mExtendSide)
 	if (x == mGeometry->GetColCount()-1 && bounds[2] < b[2])
