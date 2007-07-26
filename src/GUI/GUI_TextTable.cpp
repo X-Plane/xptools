@@ -370,8 +370,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	if (mContent &&
 		last_cell_x == cell_x &&
 		last_cell_y == cell_y &&
-		fabs(last_mouse_x - mouse_x) < 3.0 &&
-		fabs(last_mouse_y - mouse_y) < 3.0 &&
+		fabs((float)(last_mouse_x - mouse_x)) < 3.0 &&
+		fabs((float)(last_mouse_y - mouse_y)) < 3.0 &&
 		time_now - last_time_now < 0.1)
 	{
 		did_double = mContent->DoubleClickCell(cell_x,cell_y);	

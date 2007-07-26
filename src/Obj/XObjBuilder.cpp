@@ -23,6 +23,7 @@
  
 #include "XObjBuilder.h"
 #include "XObjDefs.h"
+#include <algorithm>
 
 XObjBuilder::XObjBuilder(XObj8 * inObj) : obj(inObj), lod(NULL)
 {
