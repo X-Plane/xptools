@@ -409,7 +409,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					case GUI_KEY_DOWN:		itemname += "Down";		accel.key = VK_DOWN;	break;
 					case GUI_KEY_RIGHT:		itemname += "Right";	accel.key = VK_RIGHT;	break;
 					case GUI_KEY_LEFT:		itemname += "Left";		accel.key = VK_LEFT;	break;
-					case GUI_KEY_DELETE:	itemname += "Del";		accel.key = VK_DELETE;	break;
+					case GUI_KEY_DELETE:	itemname += "Del";		accel.key = VK_BACK;	break;
 					case GUI_KEY_RETURN:	itemname += "Return";	accel.key = VK_RETURN;	break;
 					default:				itemname += key_cstr;	accel.key = VkKeyScan(items[n].key) & 0xFF;	break;
 				}
