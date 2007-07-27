@@ -293,7 +293,7 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		Point2	lo_pt;
 		if (has_lo) lo_pt = recip(cur->pt, cur->ctrl);
 
-		printf("Low pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
+//		printf("Low pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
 
 		// 2. Iterate forward: run until our point changes or we hit a span that forms a non-zero-length curve.
 		AptPolygon_t::const_iterator next = cur, orig = cur, prev = cur;
@@ -302,13 +302,13 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 			(!is_curved(prev->code) || !is_curved(next->code)))
 		{
 			prev = next;
-			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
+//			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
 			++next;
 		}
-		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
+//		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
 		--next;			
 		cur = next;
-		printf("hi-end pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
+//		printf("hi-end pt is: %d %lf,%lf (%lf,%lf)\n",cur->code, cur->pt.x,cur->pt.y,cur->ctrl.x,cur->ctrl.y);
 
 		
 		// 3. High side control point.
