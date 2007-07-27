@@ -623,7 +623,7 @@ void	FindAirports(const Bbox2& bounds, const AptIndex& index, set<int>& apts)
 
 bool	WriteAptFile(const char * inFileName, const AptVector& inApts)
 {
-	FILE * fi = fopen(inFileName, "w");
+	FILE * fi = fopen(inFileName, "wb");
 	if (fi == NULL) return false;
 	bool ok = WriteAptFileOpen(fi, inApts);
 	fclose(fi);
