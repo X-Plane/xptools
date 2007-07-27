@@ -509,6 +509,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 			break;
 		case apt_lin_seg:
 		case apt_rng_seg:
+			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"iddT|",
 				&open_poly->back().code,
@@ -519,6 +520,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 			break;
 		case apt_lin_crv:
 		case apt_rng_crv:
+			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"iddddT|",
 				&open_poly->back().code,
@@ -537,6 +539,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&open_poly->back().pt.x) != 3) ok = false;
 			break;
 		case apt_end_crv:
+			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"idddd",
 				&open_poly->back().code,
