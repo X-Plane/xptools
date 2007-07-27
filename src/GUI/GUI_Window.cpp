@@ -869,6 +869,7 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		case GUI_VK_ESCAPE:			charCode = GUI_KEY_ESCAPE;		break;
 		case GUI_VK_TAB:			charCode = GUI_KEY_TAB;			break;
 		case GUI_VK_BACK:			charCode = GUI_KEY_DELETE;		break;
+		case GUI_VK_DELETE:			charCode = GUI_KEY_DELETE;		break;
 		case GUI_VK_LEFT:			charCode = GUI_KEY_LEFT;		break;
 		case GUI_VK_UP:				charCode = GUI_KEY_UP;			break;
 		case GUI_VK_RIGHT:			charCode = GUI_KEY_RIGHT;		break;
