@@ -133,12 +133,15 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 	result =  GetTempFileName(temp_path, in_resource, 0, temp_file);
 	if (result == 0) { GUI_UnloadResource(res); return false; }
 	
+	strcat(temp_file, in_resource);
+
 	FILE * fi = fopen(temp_file, "wb");
 	if (fi == NULL) { GUI_UnloadResource(res); return false; }
 	fwrite(sp, ep - sp, 1, fi);
 	
 	fclose(fi);
 	GUI_UnloadResource(res);
+	out_path = temp_file;
 	return true;
 }
 
