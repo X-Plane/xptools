@@ -211,6 +211,7 @@
 		D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63681A10B8ACA2600091AFC /* WED_GISComposite.cpp */; };
 		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
 		D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */; };
+		D654C52F0C676995009726BD /* WEDManual.pdf in Resources */ = {isa = PBXBuildFile; fileRef = D654C52E0C676995009726BD /* WEDManual.pdf */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -911,6 +912,7 @@
 		D6536E9A0C3D7F3100005385 /* WED_TexMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TexMgr.h; sourceTree = "<group>"; };
 		D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TexMgr.cpp; sourceTree = "<group>"; };
 		D653753C0C405CE100005385 /* IDocPrefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IDocPrefs.h; sourceTree = "<group>"; };
+		D654C52E0C676995009726BD /* WEDManual.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = WEDManual.pdf; sourceTree = "<group>"; };
 		D656B11A0B51778F003FF84F /* ErrMsg.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ErrMsg.cpp; sourceTree = "<group>"; };
 		D656B11B0B51778F003FF84F /* ErrMsg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ErrMsg.h; sourceTree = "<group>"; };
 		D656B1260B51778F003FF84F /* MacSpec.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MacSpec.cpp; sourceTree = "<group>"; };
@@ -2872,6 +2874,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D654C52E0C676995009726BD /* WEDManual.pdf */,
 				D67B29DA0C5661A100A21ABC /* line_types */,
 				D67B21400C5536A300A21ABC /* pavement */,
 				D67082FF0C1A4DBA00F33E06 /* world */,
@@ -3304,6 +3307,7 @@
 				D67B2A0E0C5661A100A21ABC /* line_TaxiEdge.png in Resources */,
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
+				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
