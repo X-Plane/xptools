@@ -210,7 +210,8 @@ void WED_GISChain::RebuildCache(void) const
 	mCachePts.reserve(nc);
 	mCachePtsBezier.reserve(nc);
 	
-	for (int n = 0; n < nc; ++n)
+	int n;
+	for (n = 0; n < nc; ++n)
 	{
 		WED_Thing * c = GetNthChild(n);
 		IGISPoint *		   p = NULL;
@@ -223,7 +224,7 @@ void WED_GISChain::RebuildCache(void) const
 		}
 	}
 	
-	int n = GetNumSides();
+	n = GetNumSides();
 	mCacheBounds = Bbox2();
 	
 	for (int i = 0; i < n; ++i)
