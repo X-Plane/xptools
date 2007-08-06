@@ -1,6 +1,7 @@
 #include "WED_Application.h"
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
+#include "GUI_Resources.h"
 #include "PlatformUtils.h"
 #include "GUI_Help.h"
 #include "WED_UIDefs.h"
@@ -34,6 +35,15 @@ int		WED_Application::HandleCommand(int command)
 	case wed_HelpScenery:
 		GUI_LaunchURL("http://scenery.x-plane.com/");
 		return 1;
+	case wed_HelpManual:
+		{
+			string path;
+			if (GUI_GetTempResourcePath("WEDManual.pdf",path))
+			{
+				GUI_LaunchURL(path.c_str());
+			}
+		}		
+		return 1;
 	default:
 		return GUI_Application::HandleCommand(command);
 	}
@@ -45,6 +55,7 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	case gui_Undo:		ioName = "&Undo"; return 0;
 	case gui_Redo:		ioName = "&Redo"; return 0;
 	case wed_HelpScenery:
+	case wed_HelpManual:	return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
 	}
 }
