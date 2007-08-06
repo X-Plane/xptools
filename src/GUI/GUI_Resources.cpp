@@ -68,6 +68,12 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 	return 	MemFile_GetEnd((MFMemFile *) res);
 }
 
+bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
+{
+	return GUI_GetResourcePath(in_resource, out_path);
+}
+
+
 #elif IBM
 
 struct res_struct {
@@ -110,6 +116,32 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 {
 		return ((res_struct*)res)->end_p;
 }
+
+bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
+{
+	GUI_Resource res = GUI_LoadResource(in_resource);
+	if (res == NULL) return false;
+	const char * sp = GUI_GetResourceBegin(res);
+	const char * ep = GUI_GetResourceEnd(res);
+
+	char	temp_path[MAX_PATH];
+	char	temp_file[MAX_PATH];
+     // Get the temp path.
+    int result = GetTempPath(sizeof(temp_path), temp_path);
+	if (result > sizeof(temp_path) || result == 0) { GUI_UnloadResource(res); return false; }
+	
+	result =  GetTempFileName(temp_path, in_resource, 0, temp_file);
+	if (result == 0) { GUI_UnloadResource(res); return false; }
+	
+	FILE * fi = fopen(temp_file, "wb");
+	if (fi == NULL) { GUI_UnloadResource(res); return false; }
+	fwrite(sp, ep - sp, 1, fi);
+	
+	fclose(fi);
+	GUI_UnloadResource(res);
+	return true;
+}
+
 
 #elif LIN
 

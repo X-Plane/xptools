@@ -12,6 +12,8 @@ void			GUI_UnloadResource(GUI_Resource res);
 const char *	GUI_GetResourceBegin(GUI_Resource res);
 const char *	GUI_GetResourceEnd(GUI_Resource res);
 
+bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path);
+
 
 struct	GUI_TexPosition_t {
 	int		real_width;
