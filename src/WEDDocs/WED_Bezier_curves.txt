@@ -1,0 +1,34 @@
+Some linear features in WED may be straight lines or bezier curves, while others
+must br straight lines.  For example, runways cannot be bezier curves, but taxiway
+lines may be.  So this section applies only to bezier-capable entities.
+
+------------------------------------------------------------
+
+A bezier curve is defined between two vertices.  Each vertex may have 0, 1, or 2 
+control handles.  If it has two control handles it is SPLIT if moving one control handle
+doesn't move the other in the opposite direction.
+
+A segment between two vertices is a bezier curve if at least one vertex has a control
+handle on the side leading into the other vertex.
+
+When drawing new taxiways, click and drag to set a point and then add a curve to it.
+
+Click and do not drag for a non-bezier vertex.
+
+While creating you can use modifier keys to edit your work as you go, changing vertices
+to have control handles and back.
+
+To add a bezier curve where there is not one:
+- To add unsplit control handles: option-drag on the vertex.
+- To add a single control handle: optoin-shift-drag on the vertex.
+
+To remove a bezier curve:
+- Remove both from  unsplit control handles: shift-click on a control handle
+- To remove one control handle from a vertex: option-shift-clik on a control handle
+
+To split two control handles:
+- option drag on one control handle.
+
+To unsplit two control handles:
+- shift-drag on one split control handle.
+

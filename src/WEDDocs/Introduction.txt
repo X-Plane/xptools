@@ -1,0 +1,44 @@
+Thoughts on presentation.
+
+Introduce WED, what it is, why's it here, what it can do, who can benefit. Where will it go from here.  Quickly establish how WED is different from previous methods and describe how it goes about doing it's thing, i.e. the WED file, importing and exporting apt.dat (diagram) so people won't try to force the WED concept into their existing notions of apt.dat development or World-Maker development.
+
+Having established the overview of WED and calmed folks done.  Go over the basic UI, command by command and tool by tool.  A short description suffices here because were only wanting to make the users familiar with terms we'll be using in subsequent text.  A "Tool Use" section will be provided and referred to when necessary.  This allows additions of tools and text without major reorganization of the manual...and well as "compartmentalizing" the text so contributions are encapsulated and easy to integrate.
+
+With users familiar with the interface, we can go through the "start up" and present/explain to the user what they'll be seeing.  This is a bit more in depth UI familiarization which goes over passive things such as windows and information as opposed to active items such as tools and commands.  Though the interface has been presented before, It's important for the user to solidify their comprehension by seeing...chronologically...exactly what we're describing.  That way, they won't feel as if we're bouncing around ahead of them.
+
+Assuming comprehension, folks will be ready to start using it if they're familiar with it.  The most common scenario will be for people to open existing apt.dat, download a photo if they can, and start creation..so the next step is to describe the "modifying existing airports process.  Follwoed by a section on Creating new airports.
+
+During this process, a macro view of tool use will be presented...terms such as "draw a bezier object and cut some holes in it.  The step by step description of using each tool will be contained further in the document as 1.) it's easier to give demonstrations on random examples and 2.)  anybody can contribute to tool instructions. This is the section where attributes can be elaborated upon.
+
+Finally, consider a technical section with apt.dat 8.50 reference information.
+
+-----------------SAMPLE TOC------------
+
+Introduction
+
+1.	WED role in scenery development.  File structure, organization, etc. object, attributes, etc.
+2.	UI Overview
+	-Command by Command
+	-Tool by Tool
+3.	Using WED for the first time, windows, what you'll see, etc.
+4.	Modifying Existing Airports (refer to Tool Use Section)
+5.	Creating New Airports from Scratch (refer to Tool Use)
+6.	Tool Use (tool by tool)...micro examples.
+	-Vertex
+	-Marquee
+	-Overlay Picture
+	-Runway
+	-Sealane
+	-Helipad
+	-Taxiway
+	-Hole
+	-Taxiline
+	-Signs
+	-Light Fixture
+	-Ramp Start
+	-Tower Viewpoint
+	-Airport Beacon
+	-Windsock
+	-Boundary
+
+  
