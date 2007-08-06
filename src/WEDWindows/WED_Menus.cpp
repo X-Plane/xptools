@@ -108,6 +108,8 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 };
 
 static const GUI_MenuItem_t kHelpMenu[] = {
+{	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
+{	"-",							0,	0,										0,	0				},
 {	"&X-Plane Scenery Homepage",	0,	0,										0,	wed_HelpScenery },
 #if IBM
 {	"-",							0,		0,									0,	0				},

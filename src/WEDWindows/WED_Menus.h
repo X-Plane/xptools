@@ -56,6 +56,7 @@ enum {
 	wed_EditApt,
 	wed_AddATCFreq,
 	// Help Menu
+	wed_HelpManual,
 	wed_HelpScenery	
 };
 
