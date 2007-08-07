@@ -26,3 +26,11 @@ cd SceneryToolsWin/release/
 
 zip -r ../../../XPWebsite/scenery/tools/wed_win_$1.zip WED.exe
 
+cd ../..
+
+cd src/WEDDocs/
+
+zip -g ../../../XPWebsite/scenery/tools/wed_mac_$1.zip README.txt
+zip -g ../../../XPWebsite/scenery/tools/wed_win_$1.zip README.txt
+
+cd ../..
