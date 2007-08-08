@@ -660,6 +660,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who)
 			if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
 		}
 	}
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		s_used_hel.clear();
+		s_used_rwy.clear();	
+	}
 
 	if (!msg.empty())
 	{
