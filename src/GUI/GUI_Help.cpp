@@ -29,8 +29,9 @@
 void	GUI_LaunchURL(const char * url)
 {
 	#if APL
-		string cmd = "open ";
+		string cmd = "open \"";
 		cmd += url;
+		cmd += "\"";
 /*		ICInstance inst;						
 		OSStatus err=ICStart(&inst,0x3F3F3F3F);	// Use your creator code if you have one!
 		if(err==noErr){
