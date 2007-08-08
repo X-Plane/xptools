@@ -235,6 +235,7 @@ bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 
 		if (GetScrapFlavorData(scrap, sCITs[inType], &sz, ptr) != noErr) return false;
 		if (sz != size) return false;
+		return true;
 	#elif IBM
 
 			HGLOBAL   	hglb;
