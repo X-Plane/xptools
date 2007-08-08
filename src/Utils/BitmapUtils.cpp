@@ -24,6 +24,7 @@
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <errno.h>
+#include <setjmp.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -699,6 +700,13 @@ typedef struct {
 } mem_source_mgr;
 typedef mem_source_mgr *  mem_src_ptr;
 
+typedef struct {
+	struct jpeg_error_mgr	pub;
+	jmp_buf					buf;
+} setjmp_err_mgr;
+typedef setjmp_err_mgr *	setjmp_err_ptr;
+
+
 METHODDEF(void) mem_init_source (j_decompress_ptr cinfo)
 {
 }
@@ -735,7 +743,8 @@ METHODDEF(void) throw_error_exit (j_common_ptr cinfo)
 	// relieves client code from having to worry about 
 	// order of destruction.
 	jpeg_destroy(cinfo);
-	throw EXIT_FAILURE;
+//	throw EXIT_FAILURE;
+	longjmp(((setjmp_err_ptr) cinfo->err)->buf,1);
 }
 
 METHODDEF(void)
@@ -749,16 +758,16 @@ eat_output_message (j_common_ptr cinfo)
 }
 
 GLOBAL(struct jpeg_error_mgr *)
-jpeg_throw_error (struct jpeg_error_mgr * err)
+jpeg_throw_error (setjmp_err_mgr * err)
 {
 	// This routine sets up our various error handlers.
 	// We use their decision making logic, and change
 	// two of our own handlers.
-	jpeg_std_error(err);
-	err->error_exit = throw_error_exit;
-	err->output_message = eat_output_message;
-
-	return err;
+	jpeg_std_error(&err->pub);
+	err->pub.error_exit = throw_error_exit;
+	err->pub.output_message = eat_output_message;
+	
+	return &err->pub;
 }
 
 
@@ -778,13 +787,19 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 	try {
 
 			struct jpeg_decompress_struct cinfo;
-			struct jpeg_error_mgr		  jerr;
+			setjmp_err_mgr		  jerr;
 
 		cinfo.err = jpeg_throw_error(&jerr);
 		jpeg_create_decompress(&cinfo);
 
-		jpeg_stdio_src(&cinfo, fi);
+		if(setjmp(jerr.buf))
+		{
+			fclose(fi);
+			return 1;
+		}
 
+		jpeg_stdio_src(&cinfo, fi);
+		
 		jpeg_read_header(&cinfo, TRUE);
 
 		jpeg_start_decompress(&cinfo);
@@ -803,10 +818,12 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
 				break;
 			
-			if (cinfo.output_components == 1)
 			for (int n = cinfo.output_width - 1; n >= 0; --n)
 			{
-				p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
+				if (cinfo.output_components == 1)
+					p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
+				else
+					swap(p[n*3+2],p[n*3]);
 			}
 			p -= linesize;
 		}
@@ -831,10 +848,15 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 {
 	try {
 			struct jpeg_decompress_struct cinfo;
-			struct jpeg_error_mgr		  jerr;
+			setjmp_err_mgr		  jerr;
 
 		cinfo.err = jpeg_throw_error(&jerr);
 		jpeg_create_decompress(&cinfo);
+
+		if (setjmp(jerr.buf))
+		{
+			return 1;
+		}
 
 		mem_source_mgr	src;
 
@@ -1141,12 +1163,12 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			unsigned char * s = (unsigned char *) raster;
 			while (count--)
 			{
-#if APL			
+#if BIG			
 				d[0] = s[1];
 				d[1] = s[2];
 				d[2] = s[3];
 				d[3] = s[0];
-#elif IBM
+#elif LIL
 				d[0] = s[2];
 				d[1] = s[1];
 				d[2] = s[0];
