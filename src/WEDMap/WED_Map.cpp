@@ -39,6 +39,8 @@
 #include "GUI_Fonts.h"
 #include <time.h>
 
+int	gDMS = 0;
+
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -222,9 +224,26 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		}
 	}
 
-	if (has_a1)				p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.x,anchor1.y);
+	#define GET_NS(x)	((x) > 0.0 ? 'N' : 'S')
+	#define GET_EW(x)	((x) > 0.0 ? 'E' : 'W')
+	#define GET_DEGS(x) ((int) floor(fabs(x)))	
+	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
+	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
+	
+	if (has_a1 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y,anchor1.x);
+	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+												GET_NS(anchor1.y),GET_DEGS(anchor1.y),GET_MINS(anchor1.y),GET_SECS(anchor1.y),
+												GET_EW(anchor1.x),GET_DEGS(anchor1.x),GET_MINS(anchor1.x),GET_SECS(anchor1.x));
 	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2)				p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.x,anchor2.y);
+	if (has_a2 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y,anchor2.x);
+	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf", 
+												GET_NS(anchor1.y),GET_DEGS(anchor1.y),GET_MINS(anchor1.y),GET_SECS(anchor1.y),
+												GET_EW(anchor1.x),GET_DEGS(anchor1.x),GET_MINS(anchor1.x),GET_SECS(anchor1.x));
+	
+
+	#undef GET_DEGS
+	#undef GET_MINS
+	#undef GET_SECS
 
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
