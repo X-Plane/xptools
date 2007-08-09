@@ -211,6 +211,9 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 		vis[4] = vis[2] - vis[0];
 		vis[5] = vis[3] - vis[1];
 		
+		if (axis == 0 && mScrollV)			dist *= (mScrollV->GetPageSize() * 0.1f);
+		if (axis == 1 && mScrollH)			dist *= (mScrollH->GetPageSize() * 0.1f);
+		
 		if (axis == 0)
 		{		
 			float minv = 0;
