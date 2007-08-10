@@ -57,6 +57,8 @@ KNOWN ISSUES
 -------------------------------------------------------------------------------
 
 - The user's manual is still a work in progress.
+- Overlay images on Windows must be on the same hard drive as the scenery pack
+  you are editing.
 
 -------------------------------------------------------------------------------
 VERSION HISTORY
