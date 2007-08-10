@@ -159,25 +159,13 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 		Point2	coords[4];
 		double c[8];
 	
-		if (FetchTIFFCorners(buf, c))
-		{
-			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-			coords[3].x = c[0];
-			coords[3].y = c[1];
-			coords[0].x = c[2];
-			coords[0].y = c[3];
-			coords[2].x = c[4];
-			coords[2].y = c[5];
-			coords[1].x = c[6];
-			coords[1].y = c[7];
-		}
-		else
 		{
 			ImageInfo	inf;
-			
+			int tif_ok=-1;
+
 			if (CreateBitmapFromPNG(buf,&inf,false) != 0)
 			if (CreateBitmapFromJPEG(buf,&inf) != 0)
-			if (CreateBitmapFromTIF(buf,&inf) != 0)
+			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
 			if (CreateBitmapFromFile(buf,&inf) != 0)
 			{
 				#if ERROR_CHECK
@@ -207,6 +195,20 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			
 			DestroyBitmap(&inf);
 			
+			if (tif_ok==0)
+			if (FetchTIFFCorners(buf, c))
+			{
+			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+			coords[3].x = c[0];
+			coords[3].y = c[1];
+			coords[0].x = c[2];
+			coords[0].y = c[3];
+			coords[2].x = c[4];
+			coords[2].y = c[5];
+			coords[1].x = c[6];
+			coords[1].y = c[7];
+			}
+	
 			WED_Thing * wrl = WED_GetWorld(inResolver);
 			ISelection * sel = WED_GetSelect(inResolver);
 			
