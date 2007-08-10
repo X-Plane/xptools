@@ -52,7 +52,7 @@ void	WED_AirportSign::SetHeight(int h)
 void		WED_AirportSign::Import(const AptSign_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
-	SetHeading(x.heading);
+	SetHeading(x.heading <= 180.0 ? x.heading + 180.0 : x.heading - 180.0);
 	style = ENUM_Import(Sign_Style, x.style_code);
 	if (style == -1)
 	{
@@ -73,6 +73,8 @@ void		WED_AirportSign::Export(		 AptSign_t& x) const
 {
 	GetLocation(x.location);
 	x.heading = GetHeading();
+	x.heading += 180.0;
+	if (x.heading > 360.0) x.heading -= 360.0;
 	x.style_code = ENUM_Export(style.value);
 	x.size_code = ENUM_Export(height.value);
 	GetName(x.text);

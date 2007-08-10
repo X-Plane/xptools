@@ -53,7 +53,7 @@ void	WED_LightFixture::SetAngle(double x)
 void	WED_LightFixture::Import(const AptLight_t& x, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetLocation(x.location);
-	SetHeading(x.heading);
+	SetHeading(x.heading <= 180.0 ? x.heading + 180.0 : x.heading - 180.0);
 	angle = x.angle;
 	light_type = ENUM_Import(Light_Fixt, x.light_code);
 	if (light_type == -1)
@@ -69,6 +69,9 @@ void	WED_LightFixture::Export(		 AptLight_t& x) const
 {
 	GetLocation(x.location);
 	x.heading = GetHeading();
+	x.heading += 180.0;
+	if (x.heading > 360.0) x.heading -= 360.0;
+	
 	x.angle = angle;
 	x.light_code = ENUM_Export(light_type.value);
 	GetName(x.name);
