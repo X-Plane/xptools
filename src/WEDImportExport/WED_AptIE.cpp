@@ -87,7 +87,7 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 			}
 			else
 			{
-				set<int>	attrs;
+				set<int>	attrs, no_attrs;
 				set<int>	enums;
 				node->GetAttributes(enums);
 				for (set<int>::iterator e = enums.begin(); e != enums.end(); ++e)
@@ -100,9 +100,9 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 				{
 					// Note that we have to know which is the last of the three we write and write the ring if needed.
 					
-					if (has_lo)	accum(poly,									  apt_lin_crv, pt, recip(pt, lo)	, attrs);
-								accum(poly, (!has_hi && last) ? apt_rng_seg : apt_lin_seg, pt, pt				, attrs);
-					if (has_hi) accum(poly,             last  ? apt_rng_crv : apt_lin_crv, pt, hi				, attrs);
+					if (has_lo)	accum(poly,									  apt_lin_crv, pt, recip(pt, lo)	,		  no_attrs		   );
+								accum(poly, (!has_hi && last) ? apt_rng_seg : apt_lin_seg, pt, pt				, has_hi ? no_attrs : attrs);
+					if (has_hi) accum(poly,             last  ? apt_rng_crv : apt_lin_crv, pt, hi				,					  attrs);
 				}
 				else
 				{
