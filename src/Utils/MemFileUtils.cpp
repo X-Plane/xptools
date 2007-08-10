@@ -953,6 +953,8 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 #elif IBM
 
+	FILE * pp = fopen("log.txt","a");
+
 	char path[MAX_PATH], SearchPath[MAX_PATH];
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;		
@@ -960,29 +962,50 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
 
+	fprintf(pp,"Searching: %s\n",path);
+
 	hFind = FindFirstFile(path, &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		fprintf(pp,"Invalid handle on search.\n");
+		fclose(pp);
 		return false;
+	} 
 	else 
 	{
+		fprintf(pp,"Got a first file: %s attrs=%d\n", FindFileData.cFileName,FindFileData.dwFileAttributes);
+
 		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 		{
-			if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
+			if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+			{
+				fprintf(pp,"Passed first file to eval and got true, bailing.\n");
+				fclose(pp);
+				FindClose(hFind);
 				return true;
+			}
 		}
 
 		while (FindNextFile(hFind, &FindFileData) != 0)
 		{
+			fprintf(pp,"Got another file: %s attrs=%d\n", FindFileData.cFileName,FindFileData.dwFileAttributes);
 			if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 			{
-				if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, ref))
+				if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+				{
+					fprintf(pp,"Passed another file to eval and got true, bailing.\n");
+					fclose(pp);
+					FindClose(hFind);
 					return true;
+				}
 			}
 		}
 	}
-	return true;
+	fprintf(pp,"Finished iteration loop.\n");
+	fclose(pp);
 	FindClose(hFind);
+	return true;
 #else
 	#error PLATFORM NOT KNOWN
 #endif	
@@ -1207,13 +1230,13 @@ MF_GetDirectoryBulk(
 	++total;
 	when = ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
 
-	if (cbFunc(findData.cFileName, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon))
+	if (cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
 		while(FindNextFile(hFind,&findData) != 0)
 		{
 			++total;
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
-			if (!cbFunc(findData.cFileName, findData.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
+			if (!cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
 		}
 	}
 
