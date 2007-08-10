@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 
-                       WORLD-EDITOR 1.0b1 RELEASE NOTES
+                       WORLD-EDITOR 1.0b2 RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
@@ -59,11 +59,26 @@ KNOWN ISSUES
 - The user's manual is still a work in progress.
 - Overlay images on Windows must be on the same hard drive as the scenery pack
   you are editing.
+- WED may not work right for broken mice.
 
 -------------------------------------------------------------------------------
 VERSION HISTORY
 -------------------------------------------------------------------------------
 
+1.0b2 - 8/10/07
+
+Fixed: split beziers with lights won't cause lights everywhere.
+
+Fixed: all files in x-system folder will show up on windows
+Fixed: user's manual will open even if spaces in file name	
+Fixed: TIF files now open
+Fixed: colors on JPEG fixed
+Fixed: same name runway can be in two airports.
+Fixed: copy/paste fixed on Mac
+Fixed: scroll wheel speed adjusted to be useful
+Fixed: signs and light strcuture were imported/exported facing the wrong way
+
+
 1.0b1 - 8/6/07
 
-- Initial release of WED.
+Initial release of WED.
