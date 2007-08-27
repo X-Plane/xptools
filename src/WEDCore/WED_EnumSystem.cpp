@@ -151,7 +151,8 @@ int					ENUM_Create(int domain, const char * value, const char * desc, int expor
 	{
 		idx = i->second;
 		Assert(sEnums[idx].domain == domain);
-		Assert(sEnums[idx].export_value == export_value);
+//		Ben says: EXPORT values do NOT have to match - go by CURRENT export values - may be due to a bug fix!
+//		Assert(sEnums[idx].export_value == export_value);
 		return idx;
 	}
 	
