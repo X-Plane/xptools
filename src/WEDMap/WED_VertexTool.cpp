@@ -756,7 +756,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	WED_Entity * went = SAFE_CAST(WED_Entity,e);
 	if (went)
 	{
-		if (went->GetLocked()) return;
+//		if (went->GetLocked()) return;
 		if (went->GetHidden()) return;
 	}
 
