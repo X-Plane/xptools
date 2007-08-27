@@ -22,6 +22,7 @@
  */
 #include "TexUtils.h"
 #include "BitmapUtils.h"
+#include "MemFileUtils.h"
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
@@ -29,6 +30,7 @@
 	#include <gl/gl.h>
 	#include <gl/glu.h>
 #endif
+#include "squish.h"
 
 /*****************************************************************************************
  * UTILS
@@ -70,6 +72,19 @@ bool LoadTextureFromFile(
 {
 	bool	ok = false;
 	struct ImageInfo	im;
+
+	MFMemFile * mf = MemFile_Open(inFileName);
+	if(mf)
+	{
+		if(LoadTextureFromDDS((const unsigned char *) MemFile_GetBegin(mf),(const unsigned char *) MemFile_GetEnd(mf),inTexNum,flags,outWidth,outHeight))
+		{
+			if(outS) *outS = 1.0;
+			if(outT) *outT = 1.0;
+			MemFile_Close(mf);
+			return true;
+		}
+		MemFile_Close(mf);
+	}
 
 	int result =  CreateBitmapFromPNG(inFileName, &im, false);
 	if (result) result = CreateBitmapFromFile(inFileName, &im);
@@ -218,4 +233,128 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		
 	}	
 	return ok;
+}
+
+#if BIG
+	#if APL
+		#if defined(__MACH__)
+			#include <libkern/OSByteOrder.h>
+			#define SWAP32(x) (OSSwapConstInt32(x))
+		#else
+			#include <Endian.h>
+			#define SWAP32(x) (Endian32_Swap(x))
+		#endif
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
+	#define SWAP32(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
+#endif	
+
+
+bool	LoadTextureFromDDS(
+				const unsigned char *	mem_start,
+				const unsigned char *	mem_end,
+				int						in_tex_num,
+				int					in_flags,
+				int *					outWidth, 
+				int *					outHeight)
+{
+	if((mem_end - mem_start) < sizeof(TEX_dds_desc)) return false;
+	
+	const TEX_dds_desc * desc = (const TEX_dds_desc *) mem_start;
+	
+	if (desc->dwMagic[0] != 'D' ||
+		desc->dwMagic[1] != 'D' ||
+		desc->dwMagic[2] != 'S' ||
+		desc->dwMagic[3] != ' ') return false;
+	
+	if((SWAP32(desc->dwSize)) != (sizeof(*desc) - sizeof(desc->dwMagic))) return false;
+
+	if(desc->ddpfPixelFormat.dwFourCC[0] != 'D' ||
+	   desc->ddpfPixelFormat.dwFourCC[1] != 'X' ||
+	   desc->ddpfPixelFormat.dwFourCC[2] != 'T') return false;
+
+	GLenum format = 0;
+	int	flags = 0;
+	switch(desc->ddpfPixelFormat.dwFourCC[3]) { 
+	case '1':		flags = squish::kDxt1;			format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;	break;
+	case '3':		flags = squish::kDxt3;			format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	break;
+	case '5':		flags = squish::kDxt5;			format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	break;
+	default: return false;
+	}
+	
+	int mips = 0;
+	if((SWAP32(desc->dwFlags)) & DDSD_MIPMAPCOUNT)
+		mips = SWAP32(desc->dwMipMapCount);
+	int has_mips = (mips > 1);
+	int x = SWAP32(desc->dwWidth);
+	int y = SWAP32(desc->dwHeight);
+	
+	if (outWidth) *outWidth = x;
+	if (outHeight) *outHeight = y;
+
+	const unsigned char * data = mem_start + sizeof(TEX_dds_desc);
+		
+	glBindTexture(GL_TEXTURE_2D, in_tex_num);
+
+	int level = 0;
+	do {
+		int data_len = squish::GetStorageRequirements(x,y,flags);
+		if((data + data_len) > mem_end) return false;
+		
+		glCompressedTexImage2D(
+			GL_TEXTURE_2D,
+			level,
+			format,
+			x,
+			y,
+			0,
+			data_len,
+			data);
+		
+		if (x==1 && y == 1)	break;
+		++level;
+		if (x > 1) x >>= 1;
+		if (y > 1) y >>= 1;		
+		--mips;		
+		if(mips<=0) break;
+		data += data_len;
+	} while (1);
+
+	if (in_flags & tex_Linear)
+	{		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (in_flags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (in_flags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
+	}
+
+	static const char * ver_str = (const char *) glGetString(GL_VERSION);
+	static const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
+		
+	static bool tex_clamp_avail = 
+		strstr(ext_str,"GL_SGI_texture_edge_clamp"		) ||
+		strstr(ext_str,"GL_SGIS_texture_edge_clamp"		) || 
+		strstr(ext_str,"GL_ARB_texture_edge_clamp"		) || 
+		strstr(ext_str,"GL_EXT_texture_edge_clamp"		) ||
+		strncmp(ver_str,"1.2", 3) ||
+		strncmp(ver_str,"1.3", 3) ||
+		strncmp(ver_str,"1.4", 3) ||
+		strncmp(ver_str,"1.5", 3);
+
+	
+		 if(in_flags & tex_Wrap){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT		 );
+								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT		 );}
+#if !IBM								    
+	else if(tex_clamp_avail)   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);}
+#endif								    
+	else					   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP		 );
+								glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP		 );}
+	
+	return true;	
 }

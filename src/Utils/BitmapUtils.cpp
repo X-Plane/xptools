@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "Interpolation.h"
+#include <squish.h>
 
 /*
 	NOTES ON ENDIAN CHAOS!!!!!!!!!!!!!!!!!!!
@@ -1192,3 +1193,183 @@ bail:
 }
 
 #endif
+
+static void	in_place_scaleXY(int x, int y, unsigned char * io_data)
+{
+	int rb = x * 4;
+	unsigned char *	s1 = io_data;
+	unsigned char *	s2 = io_data + rb;
+	unsigned char * d1 = io_data;
+	
+	x /= 2;
+	y /= 2;
+	
+	int t1,t2,t3,t4;
+	while(y--)
+	{
+		int ctr=x;
+		while(ctr--)
+		{
+			t1=t2=t3=t4=0;
+			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
+			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
+			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
+			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
+			t1 >>= 2;				t2 >>= 2;				t3 >>= 2;				t4 >>= 2;
+			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
+			
+		}
+		s1 += rb;
+		s2 += rb;
+	}	
+}
+
+static void	in_place_scaleX(int x, int y, unsigned char * io_data)
+{
+	unsigned char *	s1 = io_data;
+	unsigned char * d1 = io_data;
+	
+	x /= 2;
+	
+	int t1,t2,t3,t4;
+	int ctr = x * y;
+	while(ctr--)
+	{
+		t1=t2=t3=t4=0;
+		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
+		t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
+		t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
+		*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;		
+	}
+}
+
+
+static void	in_place_scaleY(int x, int y, unsigned char * io_data)
+{
+	int rb = x * 4;
+	unsigned char *	s1 = io_data;
+	unsigned char *	s2 = io_data + rb;
+	unsigned char * d1 = io_data;
+	
+	x /= 2;
+	y /= 2;
+	
+	int t1,t2,t3,t4;
+	while(y--)
+	{
+		int ctr=x;
+		while(ctr--)
+		{
+			t1=t2=t3=t4=0;
+			t1 += *s1++;			t2 += *s1++;			t3 += *s1++;			t4 += *s1++;
+			t1 += *s2++;			t2 += *s2++;			t3 += *s2++;			t4 += *s2++;
+			t1 >>= 1;				t2 >>= 1;				t3 >>= 1;				t4 >>= 1;
+			*d1++ = t1;				*d1++ = t2;				*d1++ = t3;				*d1++ = t4;
+			
+		}
+		s1 += rb;
+		s2 += rb;
+	}	
+}
+
+#if BIG
+	#if APL
+		#if defined(__MACH__)
+			#include <libkern/OSByteOrder.h>
+			#define SWAP32(x) (OSSwapConstInt32(x))
+		#else
+			#include <Endian.h>
+			#define SWAP32(x) (Endian32_Swap(x))
+		#endif
+	#else
+		#error we do not have big endian support on non-Mac platforms
+	#endif
+#elif LIL
+	#define SWAP32(x) (x)
+#else
+	#error BIG or LIL are not defined - what endian are we?
+#endif	
+
+
+
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name)
+{
+	FILE * fi = fopen(file_name,"wb");
+	if (fi == NULL) return -1;
+	vector<unsigned char>	src_v, dst_v;
+	int flags = ioImage.channels==3 ? squish::kDxt1 : squish::kDxt3;
+	src_v.resize(ioImage.width * ioImage.height * 4);
+	dst_v.resize(squish::GetStorageRequirements(ioImage.width,ioImage.height,flags));
+	unsigned char * src_mem = &*src_v.begin();
+	unsigned char * dst_mem = &*dst_v.begin();
+
+	int x = ioImage.width;
+	int y = ioImage.height;
+	int mips=1;
+	while(x > 1 || y > 1)
+	{
+		x >>= 1;
+		y >>= 1;
+		++mips;
+	}
+	
+	for(y=0;y<ioImage.height;++y)
+	for(x=0;x<ioImage.width;++x)
+	{
+		unsigned char * srcp = ioImage.data + x * ioImage.channels + y * (ioImage.channels * ioImage.width + ioImage.pad);
+		unsigned char * dstp = src_mem + x * 4 + y * 4 * ioImage.width;
+		
+		dstp[0] = srcp[2];
+		dstp[1] = srcp[1];
+		dstp[2] = srcp[0];
+		dstp[3] = ioImage.channels == 4 ? srcp[3] : 255;
+	}
+	
+	TEX_dds_desc header = { 0 };
+	header.dwMagic[0] = 'D';
+	header.dwMagic[1] = 'D';
+	header.dwMagic[2] = 'S';
+	header.dwMagic[3] = ' ';
+	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
+	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT);
+	header.dwHeight = SWAP32(ioImage.height);
+	header.dwWidth = SWAP32(ioImage.width);
+	header.dwLinearSize=0;
+	header.dwDepth=0;
+	header.dwMipMapCount=SWAP32(mips);		
+	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
+	header.ddpfPixelFormat.dwFlags=SWAP32(DDPF_FOURCC);
+	header.ddpfPixelFormat.dwFourCC[0]='D';
+	header.ddpfPixelFormat.dwFourCC[1]='X';
+	header.ddpfPixelFormat.dwFourCC[2]='T';
+	header.ddpfPixelFormat.dwFourCC[3]=ioImage.channels==3?'1' : '3';
+	header.ddsCaps.dwCaps=SWAP32(0x00001000l|0x00400000l|0x00000008l);
+
+	fwrite(&header,sizeof(header),1,fi);
+	
+	x = ioImage.width;
+	y = ioImage.height;
+	
+	do {
+		squish::CompressImage(src_mem, x, y, dst_mem, flags|squish::kColourIterativeClusterFit);
+		int len = squish::GetStorageRequirements(x,y,flags);
+		// write out mem
+		
+		fwrite(dst_mem,len,1,fi);
+		
+		if(x==1 && y==1) break;
+		
+		if(x > 1) {
+			if (y > 1)		in_place_scaleXY(x,y,src_mem);
+			else			in_place_scaleX (x,y,src_mem);
+		} else if (y > 1)	in_place_scaleY (x,y,src_mem);
+	
+		if(x > 1) x >>= 1;
+		if(y > 1) y >>= 1;
+	
+	} while (1);
+	fclose(fi);
+	return 0;
+	// close file
+}
+

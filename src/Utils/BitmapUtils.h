@@ -70,6 +70,67 @@ struct	BMPImageDesc {
 #endif
 
 
+
+// DD surface flags
+#define DDSD_CAPS               0x00000001l     // default
+#define DDSD_HEIGHT             0x00000002l
+#define DDSD_WIDTH              0x00000004l
+#define DDSD_PIXELFORMAT        0x00001000l
+#define DDSD_MIPMAPCOUNT        0x00020000l
+
+// DD Pixel format flags
+#define DDPF_FOURCC             0x00000004l
+
+// DD surface caps
+#define DDSCAPS_TEXTURE			0x00001000l
+#define DDSCAPS_MIPMAP          0x00400000l
+#define DDSCAPS_COMPLEX         0x00000008l
+
+#if APL
+	#define DWORD unsigned int
+#endif
+	
+struct TEX_dds_caps2 {
+    DWORD       dwCaps;         // capabilities of surface wanted
+    DWORD       dwCaps2;
+    DWORD       dwCaps3;
+    DWORD       dwCaps4;
+};
+
+struct TEX_dds_pixelformat {
+    DWORD       dwSize;                 // size of structure (must be 32)
+    DWORD       dwFlags;                // pixel format flags
+    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.  
+	DWORD		dwRGBBitCount;          // how many bits per pixel
+	DWORD		dwRBitMask;             // mask for red bit
+	DWORD		dwGBitMask;             // mask for green bits
+	DWORD		dwBBitMask;             // mask for blue bits
+	DWORD		dwRGBAlphaBitMask;      // mask for alpha channel
+};
+
+struct TEX_dds_desc {
+	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
+
+    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
+    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+    DWORD               dwHeight;               // height of surface to be created
+    DWORD               dwWidth;                // width of input surface
+	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
+    DWORD               dwDepth;				// Vol texes-depth.
+	DWORD				dwMipMapCount;          // number of mip-map levels requestde
+	DWORD               dwReserved1[11];        // 
+	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
+    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+    DWORD               dwReserved2;			// 
+};
+
+
+
+
+
+
+
+
 /*
 	This is our in memory way of storing an image.  Data is a pointer
 	to an array of bytes large enough to hold the image.  We always
@@ -192,4 +253,8 @@ int	ConvertBitmapToAlpha(
 int	ConvertAlphaToBitmap(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha);
+			
+/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name);
+			
 #endif

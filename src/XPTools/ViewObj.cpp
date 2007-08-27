@@ -510,7 +510,7 @@ void			XObjWin::ReceiveFiles(const vector<string>& files, int, int)
 				if (mMeasureOnOpen)
 					KeyPressed('m', 0,0,0);			
 			}
-		} else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i, ".png") || HasExtNoCase(*i, ".tif"))
+		} else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i, ".png") || HasExtNoCase(*i, ".tif") || HasExtNoCase(*i,".dds"))
 		{
 			SetGLContext();
 			AccumTexture(*i);
@@ -706,7 +706,7 @@ void	XGrindFiles(const vector<string>& files)
 	{
 		if (HasExtNoCase(*i, ".obj"))
 			(new XObjWin(i->c_str()))->ForceRefresh();
-		else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i,".png") || HasExtNoCase(*i, ".tif"))
+		else if (HasExtNoCase(*i, ".bmp") || HasExtNoCase(*i,".png") || HasExtNoCase(*i, ".tif") || HasExtNoCase(*i,".dds"))
 		{
 			if (!sWindows.empty())
 				(*sWindows.begin())->SetGLContext();
@@ -765,11 +765,11 @@ GLenum		FindTexture(const string& inName, bool inNight)
 void		AccumTexture(const string& inFileName)
 {
 	static	GLenum	gCounter = 1;	
-	bool	lit = HasExtNoCase(inFileName, "LIT.bmp") || HasExtNoCase(inFileName, "LIT.png") || HasExtNoCase(inFileName, "LIT.tif");
-	bool	lit_new = HasExtNoCase(inFileName, "_LIT.bmp") || HasExtNoCase(inFileName, "_LIT.png") || HasExtNoCase(inFileName, "_LIT.tif");
+	bool	lit = HasExtNoCase(inFileName, "LIT.bmp") || HasExtNoCase(inFileName, "LIT.png") || HasExtNoCase(inFileName, "LIT.tif") || HasExtNoCase(inFileName, "LIT.dds");
+	bool	lit_new = HasExtNoCase(inFileName, "_LIT.bmp") || HasExtNoCase(inFileName, "_LIT.png") || HasExtNoCase(inFileName, "_LIT.tif") || HasExtNoCase(inFileName, "_LIT.dds");
 	map<string, pair<string, GLenum> >&	texDB = gDayTextures;
 	string	shortName = inFileName;
-	if (!HasExtNoCase(inFileName, ".bmp") && !HasExtNoCase(inFileName, ".png") && !HasExtNoCase(inFileName, ".tif"))
+	if (!HasExtNoCase(inFileName, ".bmp") && !HasExtNoCase(inFileName, ".png") && !HasExtNoCase(inFileName, ".tif") && !HasExtNoCase(inFileName, ".dds"))
 		return;
 
 //	if (lit_new)
