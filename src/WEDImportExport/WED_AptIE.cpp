@@ -39,6 +39,7 @@
 #include "WED_TowerViewpoint.h"
 #include "WED_Windsock.h"
 #include "WED_EnumSystem.h"
+#include "WED_OverlayImage.h"
 #include "AptIO.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
@@ -135,6 +136,11 @@ static void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_Windsock *			win;
 
 	int holes, h;
+
+	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to 
+	 * build the interior ring of an overlay image.  If we recurse through the overlay image we  get
+	 * a bogus export. */
+	if(dynamic_cast<WED_OverlayImage *>(what)) return;
 	
 	if (apt = dynamic_cast<WED_Airport *>(what))
 	{
