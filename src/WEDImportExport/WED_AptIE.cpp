@@ -374,8 +374,13 @@ void	WED_AptImport(
 				const char *	file_path)
 {
 	AptVector	apts;
-	ReadAptFile(file_path, apts);
-	
+	string result = ReadAptFile(file_path, apts);
+	if (!result.empty())
+	{
+		string msg = string("Unable to read apt.dat file '") + file_path + string("': ") + result;
+		DoUserAlert(msg.c_str());
+		return;
+	}
 	char path[1024];
 	strcpy(path,file_path);
 	strcat(path,".log");
