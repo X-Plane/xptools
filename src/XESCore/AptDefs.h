@@ -292,12 +292,14 @@ struct	AptPavement_t {
 	int			vap_lites_code1;
 	int			edge_lites_code1;
 	int			app_lites_code1;
+	int			vasi_angle1;	//  x100
 
 	int			blast2_ft;
 	int			disp2_ft;
 	int			vap_lites_code2;
 	int			edge_lites_code2;
-	int			app_lites_code2;
+	int			app_lites_code2;	
+	int			vasi_angle2;	// x100
 	
 
 #if OPENGL_MAP	

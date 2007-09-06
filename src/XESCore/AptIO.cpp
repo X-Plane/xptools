@@ -255,27 +255,52 @@ static void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
 }
 #endif /* OPENGL_MAP */
 
-bool	ReadAptFile(const char * inFileName, AptVector& outApts)
+string	ReadAptFile(const char * inFileName, AptVector& outApts)
 {
 	outApts.clear();
 	MFMemFile * f = MemFile_Open(inFileName);
 	if (f == NULL) return false;
 	
-	bool ok = ReadAptFileMem(MemFile_GetBegin(f), MemFile_GetEnd(f), outApts);
+	string err = ReadAptFileMem(MemFile_GetBegin(f), MemFile_GetEnd(f), outApts);
 	MemFile_Close(f);
-	return ok;
+	return err;
 }
 
-bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts)
+string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts)
 {
 	outApts.clear();
 
 	MFTextScanner * s = TextScanner_OpenMem(inBegin, inEnd);
-	bool ok = true;
-	TextScanner_Next(s);
+	string ok;
+	
+	int ln = 0;
+	
+	// Versioning:
+	// 703 (base)
+	// 715 - addded vis flag to tower
+	// 810 - added vasi slope to towers
+	// 850 - added next-gen stuff
+
+		int vers = 0;
+	
 	if (TextScanner_IsDone(s)) 
-		ok = false;
-		
+		ok = string("File is empty.");
+	if (ok.empty())
+	{
+		string app_win;
+		if (TextScanner_FormatScan(s, "T", &app_win) != 1) ok = "Invalid header";
+		if (app_win != "a" && app_win != "A" && app_win != "i" && app_win != "I") ok = string("Invalid header:") + app_win;		
+		TextScanner_Next(s);		
+		++ln;
+	}
+	if (ok.empty())
+	{
+		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
+		if (vers != 703 && vers != 715 && vers != 810 && vers != 850) ok = "Illegal Version";
+		TextScanner_Next(s);		
+		++ln;
+	}	
+	
 	set<string>		centers;
 	string codez;
 	string			lat_str, lon_str, rot_str, len_str, wid_str;
@@ -284,10 +309,10 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 	Point2			pt,ctrl;	
 	
 	bool forceDone = false;
-	while (!TextScanner_IsDone(s) && !forceDone)
+	while (ok.empty() && !TextScanner_IsDone(s) && !forceDone)
 	{
 		int		rec_code;
-		string	dis, blas;
+		string	dis, blas, vasi;
 		int		len_code, liting_code;
 		Point2	center_loc;
 		float	rwy_heading;
@@ -296,6 +321,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 		if (TextScanner_FormatScan(s, "i", &rec_code) != 1)
 		{
 			TextScanner_Next(s);
+			++ln;
 			continue;
 		}
 		
@@ -313,7 +339,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().default_buildings,
 				&outApts.back().icao,
 				&outApts.back().name) != 6) 
-				ok = false;
+				ok = "Illegal line (airport, seaport or heliport)";
 			outApts.back().kind_code = rec_code;
 			outApts.back().beacon.color_code = apt_beacon_none;
 			outApts.back().tower.draw_obj = -1;
@@ -341,7 +367,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				}
 				centers.insert(lat_str);
 			}
-			if (TextScanner_FormatScan(s, "iddTfiTTfiiiifi",
+			if (TextScanner_FormatScan(s, "iddTfiTTfiiiifiT",
 					&rec_code,
 					&center_loc.y,
 					&center_loc.x,
@@ -356,12 +382,23 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 					&rwy->shoulder_code,
 					&rwy->marking_code,
 					&rwy->roughness_ratio,
-					&rwy->distance_markings) != 15)
-				ok = false;
+					&rwy->distance_markings,
+					&vasi) != (vers >= 810 ? 16 : 15))
+				ok = "Illegal old runway";
 			if (sscanf(dis.c_str(),"%d.%d", &rwy->disp1_ft,&rwy->disp2_ft) != 2)
-				ok = false;
+				ok = string("Illegal displaced threshholds in old runway") + dis;
 			if (sscanf(blas.c_str(),"%d.%d", &rwy->blast1_ft,&rwy->blast2_ft) != 2)
-				ok = false;
+				ok = string("Illegal blast-pads in old runway: ") + blas;
+				
+			rwy->vasi_angle1 = rwy->vasi_angle2 = 300;	
+			if (vers >= 810)
+			{
+				if (sscanf(blas.c_str(),"%d.%d", &rwy->vasi_angle1,&rwy->vasi_angle2) != 2)
+					ok = string("Illegal VASI in old runway: ") + blas;
+			} 
+			if(rwy->vasi_angle1 == 0) rwy->vasi_angle1 = 300;
+			if(rwy->vasi_angle2 == 0) rwy->vasi_angle2 = 300;
+			
 			rwy->vap_lites_code1 = (liting_code / 100000) % 10;
 			rwy->edge_lites_code1= (liting_code / 10000) % 10;
 			rwy->app_lites_code1 = (liting_code / 1000) % 10;
@@ -381,8 +418,9 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().tower.location.x,
 				&outApts.back().tower.height_ft,
 				&outApts.back().tower.draw_obj,
-				&outApts.back().tower.name) != 6)
-			ok = false;
+				&outApts.back().tower.name) < (vers >= 715 ? 5 : 4))
+			ok = "Illegal tower loc";
+			if(vers < 715) outApts.back().tower.draw_obj = 1;
 			break;				
 		case apt_startup_loc:
 			outApts.back().gates.push_back(AptGate_t());
@@ -391,8 +429,8 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().gates.back().location.y,
 				&outApts.back().gates.back().location.x,
 				&outApts.back().gates.back().heading,
-				&outApts.back().gates.back().name) != 5)
-			ok = false;
+				&outApts.back().gates.back().name) < 4)
+			ok = "Illegal startup loc";
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
@@ -400,8 +438,8 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().beacon.location.y,
 				&outApts.back().beacon.location.x,
 				&outApts.back().beacon.color_code,
-				&outApts.back().beacon.name) != 5)
-			ok = false;
+				&outApts.back().beacon.name) < 4)
+			ok = "Illegal apt beacon";
 			break;
 		case apt_windsock:
 			outApts.back().windsocks.push_back(AptWindsock_t());
@@ -410,16 +448,11 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().windsocks.back().location.y,
 				&outApts.back().windsocks.back().location.x,
 				&outApts.back().windsocks.back().lit,
-				&outApts.back().windsocks.back().name) != 5)
-			ok = false;
-			break;
-		case 600:
-		case 703:
-		case 715:
-		case 810:
-		case 850:
+				&outApts.back().windsocks.back().name) < 4)
+			ok = "Illegal windsock";
 			break;
 		case apt_sign:
+			if (vers < 850) ok = "Error: apt signs not allowed before 850";
 			outApts.back().signs.push_back(AptSign_t());
 			if (TextScanner_FormatScan(s,"iddfiiT|",
 					&rec_code,
@@ -428,10 +461,11 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 					&outApts.back().signs.back().heading,
 					&outApts.back().signs.back().style_code,
 					&outApts.back().signs.back().size_code,
-					&outApts.back().signs.back().text) != 6)
-			ok = false;
+					&outApts.back().signs.back().text) != 7)
+			ok = "Illegal apt sign";
 			break;
 		case apt_papi:
+			if (vers < 850) ok = "Error: stand-alone light fixtures not allowed before 850";
 			outApts.back().lights.push_back(AptLight_t());
 			if (TextScanner_FormatScan(s, "iddiffT|",
 					&rec_code,
@@ -440,10 +474,11 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 					&outApts.back().lights.back().light_code,
 					&outApts.back().lights.back().heading,
 					&outApts.back().lights.back().angle,
-					&outApts.back().lights.back().name) != 7)
-			ok = false;
+					&outApts.back().lights.back().name) < 6)
+			ok = "Illegal PAPI";
 			break;
 		case apt_rwy_new:
+			if (vers < 850) ok = "Error: new runways not allowed before 850";
 			outApts.back().runways.push_back(AptRunway_t());
 			if (TextScanner_FormatScan(s, "ifiifiiiTddffiiiiTddffiiii",
 				&rec_code,
@@ -474,9 +509,10 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().runways.back().app_light_code[1],
 				&outApts.back().runways.back().has_tdzl[1],
 				&outApts.back().runways.back().reil_code[1]) != 26)
-			ok = false;
+			ok = "Illegal new runway";
 			break;
 		case apt_sea_new:
+			if (vers < 850) ok = "Error: new sealanes not allowed before 850";
 			outApts.back().sealanes.push_back(AptSealane_t());
 			if (TextScanner_FormatScan(s, "ifiTddTdd",
 				&rec_code,
@@ -488,9 +524,10 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().sealanes.back().id[2],
 				&outApts.back().sealanes.back().ends.p2.y,
 				&outApts.back().sealanes.back().ends.p2.x) != 9)
-			ok = false;
+			ok = "Illegal new seaway";
 			break;
 		case apt_heli_new:
+			if (vers < 850) ok = "Error: new helipads not allowed before 850";
 			outApts.back().helipads.push_back(AptHelipad_t());
 			if (TextScanner_FormatScan(s,"iTddfffiiifi",
 				&rec_code,
@@ -505,44 +542,49 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&outApts.back().helipads.back().shoulder_code,
 				&outApts.back().helipads.back().roughness_ratio,
 				&outApts.back().helipads.back().edge_light_code) != 12)
-			ok = false;
+			ok = "Illegal new helipad";
 			break;		
 		case apt_taxi_new:
+			if (vers < 850) ok = "Error: new taxiways not allowed before 850";
 			outApts.back().taxiways.push_back(AptTaxiway_t());
 			if (TextScanner_FormatScan(s,"iiffT|",
 				&rec_code,
 				&outApts.back().taxiways.back().surface_code,
 				&outApts.back().taxiways.back().roughness_ratio,
 				&outApts.back().taxiways.back().heading,
-				&outApts.back().taxiways.back().name) != 5)
-			ok = false;			
+				&outApts.back().taxiways.back().name) < 4)
+			ok = "Illegal new taxi";			
 			open_poly = &outApts.back().taxiways.back().area;
 			break;
 		case apt_free_chain:
+			if (vers < 850) ok = "Error: new free lines not allowed before 850";
 			outApts.back().lines.push_back(AptMarking_t());
-			if (TextScanner_FormatScan(s,"iT|",&rec_code,&outApts.back().lines.back().name) != 2) 
-				ok = false;
+			if (TextScanner_FormatScan(s,"iT|",&rec_code,&outApts.back().lines.back().name) < 1) 
+				ok = "Illegal free chain";
 			open_poly = &outApts.back().lines.back().area;
 			break;
 		case apt_boundary:
+			if (vers < 850) ok = "Error: new apt boundary not allowed before 850";
 			outApts.back().boundaries.push_back(AptBoundary_t());
-			if (TextScanner_FormatScan(s,"iT|",&rec_code,&outApts.back().boundaries.back().name) != 2) 
-				ok = false;
+			if (TextScanner_FormatScan(s,"iT|",&rec_code,&outApts.back().boundaries.back().name) < 1) 
+				ok = "Illegal boundary";
 			open_poly = &outApts.back().boundaries.back().area;
 			break;
 		case apt_lin_seg:
 		case apt_rng_seg:
+			if (vers < 850) ok = "Error: new linear segments allowed before 850";
 			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"iddT|",
 				&open_poly->back().code,
 				&open_poly->back().pt.y,
 				&open_poly->back().pt.x,
-				&codez) != 4) ok = false;
+				&codez) < 3) ok = "Illegal straight segment";
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_lin_crv:
 		case apt_rng_crv:
+			if (vers < 850) ok = "Error: new curved segments allowed before 850";
 			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"iddddT|",
@@ -551,17 +593,19 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&open_poly->back().pt.x,
 				&open_poly->back().ctrl.y,
 				&open_poly->back().ctrl.x,
-				&codez) != 6) ok = false;
+				&codez) < 5) ok = "Illegal curved segment";
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_end_seg:
+			if (vers < 850) ok = "Error: new end segments allowed before 850";
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"idd",
 				&open_poly->back().code,
 				&open_poly->back().pt.y,
-				&open_poly->back().pt.x) != 3) ok = false;
+				&open_poly->back().pt.x) != 3) ok = "Illegal straight end.";
 			break;
 		case apt_end_crv:
+			if (vers < 850) ok = "Error: new end curves allowed before 850";
 			codez.clear();
 			open_poly->push_back(AptLinearSegment_t());			
 			if (TextScanner_FormatScan(s,"idddd",
@@ -569,7 +613,7 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 				&open_poly->back().pt.y,
 				&open_poly->back().pt.x,
 				&open_poly->back().ctrl.y,
-				&open_poly->back().ctrl.x) != 5) ok = false;
+				&open_poly->back().ctrl.x) != 5) ok = "Illegal curved end";
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
 		case apt_done:
@@ -583,14 +627,22 @@ bool	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outApts
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
 					&outApts.back().atc.back().name) != 3)
-				ok = false;
+				ok = "Illegal ATC frequency";
 			} else 
-				ok = false;
+				ok = "Illegal unknown record";
 			break;
 		}
 		TextScanner_Next(s);
+		++ln;
 	}
 	TextScanner_Close(s);
+	
+	if (!ok.empty())
+	{
+		char buf[50];
+		sprintf(buf," (Line %d)",ln);
+		ok += buf;
+	}
 	
 	for (int a = 0; a < outApts.size(); ++a)
 	{
@@ -691,7 +743,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 			Point2	center;
 			EndsToCenter(pav->ends, center, len, heading);
 			fprintf(fi,"%2d % 012.8lf % 013.8lf %s %6.2lf %6.0lf %4d.%04d %4d.%04d %4.0f "
-					   "%d%d%d%d%d%d %02d %d %d %3.2f %d" CRLF, apt_rwy_old,
+					   "%d%d%d%d%d%d %02d %d %d %3.2f %d %3d.%03d" CRLF, apt_rwy_old,
 				center.y, center.x, pav->name.c_str(), heading, len * MTR_TO_FT,
 				pav->disp1_ft, pav->disp2_ft, pav->blast1_ft, pav->blast2_ft, pav->width_ft, 
 				pav->vap_lites_code1,
@@ -703,7 +755,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 				pav->surf_code, 
 				pav->shoulder_code,
 				pav->marking_code, 
-				pav->roughness_ratio, pav->distance_markings);
+				pav->roughness_ratio, pav->distance_markings, pav->vasi_angle1, pav->vasi_angle2);
 		}
 		
 
