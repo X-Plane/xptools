@@ -43,6 +43,14 @@ int main(int argc, char * argv[])
 
 	if (argc < 2) goto help;
 	
+	if(!strcmp(argv[1],"--auto_config"))
+	{
+		printf("CMD .env .dsf %s -env2overlay \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .txt .dsf %s -text2dsf \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dsf .txt %s -dsf2text \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		return 0;
+	}
+	
 	for (int n = 1; n < argc; ++n)
 	{
 		if (!strcmp(argv[n], "-env2overlay") ||
