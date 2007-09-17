@@ -1,0 +1,25 @@
+/* exe icon */
+100 					ICON 		ObjView_icons.ico
+/* Versioning info */
+#include "..\WEDCore\WED_Version.h"
+#include <winver.h>
+
+VS_VERSION_INFO		VERSIONINFO
+FILEVERSION			3,0,0,1
+PRODUCTVERSION		3,0,0,1
+FILEOS				VOS__WINDOWS32
+FILETYPE			VFT_APP
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "CompanyName",		"Laminar Research"
+			VALUE "FileDescription",	"Object Viezer"
+			VALUE "FileVersion",		"3.0a1"
+			VALUE "ProductVersion",		3,0,0,1
+			VALUE "LegalCopyright",		"Copyright 2007, Laminar Research"
+			VALUE "ProductName",		"ObjView"
+		END
+	END
+END
