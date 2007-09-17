@@ -1292,12 +1292,12 @@ static void	in_place_scaleY(int x, int y, unsigned char * io_data)
 
 
 
-int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name)
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 {
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
 	vector<unsigned char>	src_v, dst_v;
-	int flags = ioImage.channels==3 ? squish::kDxt1 : squish::kDxt3;
+	int flags = (dxt == 1 ? squish::kDxt1 : (dxt == 3 ? squish::kDxt3 : squish::kDxt5));
 	src_v.resize(ioImage.width * ioImage.height * 4);
 	dst_v.resize(squish::GetStorageRequirements(ioImage.width,ioImage.height,flags));
 	unsigned char * src_mem = &*src_v.begin();
@@ -1325,16 +1325,21 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name)
 		dstp[3] = ioImage.channels == 4 ? srcp[3] : 255;
 	}
 	
+	x = ioImage.width;
+	y = ioImage.height;
+	int len = squish::GetStorageRequirements(x,y,flags);
+	
+	
 	TEX_dds_desc header = { 0 };
 	header.dwMagic[0] = 'D';
 	header.dwMagic[1] = 'D';
 	header.dwMagic[2] = 'S';
 	header.dwMagic[3] = ' ';
 	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
-	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT);
+	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_LINEARSIZE);
 	header.dwHeight = SWAP32(ioImage.height);
 	header.dwWidth = SWAP32(ioImage.width);
-	header.dwLinearSize=0;
+	header.dwLinearSize=SWAP32(len);
 	header.dwDepth=0;
 	header.dwMipMapCount=SWAP32(mips);		
 	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
@@ -1342,17 +1347,14 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name)
 	header.ddpfPixelFormat.dwFourCC[0]='D';
 	header.ddpfPixelFormat.dwFourCC[1]='X';
 	header.ddpfPixelFormat.dwFourCC[2]='T';
-	header.ddpfPixelFormat.dwFourCC[3]=ioImage.channels==3?'1' : '3';
+	header.ddpfPixelFormat.dwFourCC[3]='0' + dxt;
 	header.ddsCaps.dwCaps=SWAP32(0x00001000l|0x00400000l|0x00000008l);
 
 	fwrite(&header,sizeof(header),1,fi);
 	
-	x = ioImage.width;
-	y = ioImage.height;
-	
 	do {
 		squish::CompressImage(src_mem, x, y, dst_mem, flags|squish::kColourIterativeClusterFit);
-		int len = squish::GetStorageRequirements(x,y,flags);
+		len = squish::GetStorageRequirements(x,y,flags);
 		// write out mem
 		
 		fwrite(dst_mem,len,1,fi);
@@ -1364,6 +1366,72 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name)
 			else			in_place_scaleX (x,y,src_mem);
 		} else if (y > 1)	in_place_scaleY (x,y,src_mem);
 	
+		if(x > 1) x >>= 1;
+		if(y > 1) y >>= 1;
+	
+	} while (1);
+	fclose(fi);
+	return 0;
+	// close file
+}
+
+int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
+{
+	FILE * fi = fopen(file_name,"wb");
+	if (fi == NULL) return -1;
+
+	int x = ioImage.width/2;
+	int y = ioImage.height;
+	int mips=1;
+	while(x > 1 || y > 1)
+	{
+		x >>= 1;
+		y >>= 1;
+		++mips;
+	}
+	
+	int width = ioImage.width/2;
+		
+	TEX_dds_desc header = { 0 };
+	header.dwMagic[0] = 'D';
+	header.dwMagic[1] = 'D';
+	header.dwMagic[2] = 'S';
+	header.dwMagic[3] = ' ';
+	header.dwSize = SWAP32(sizeof(header)-sizeof(header.dwMagic));
+	header.dwFlags = SWAP32(DDSD_CAPS|DDSD_HEIGHT|DDSD_WIDTH|DDSD_PIXELFORMAT|DDSD_MIPMAPCOUNT|DDSD_PITCH);
+	header.dwHeight = SWAP32(ioImage.height);
+	header.dwWidth = SWAP32(width);
+	header.dwLinearSize = SWAP32(width * ioImage.channels);
+	header.dwDepth=0;
+	header.dwMipMapCount=SWAP32(mips);		
+	header.ddpfPixelFormat.dwSize=SWAP32(sizeof(header.ddpfPixelFormat));
+	header.ddpfPixelFormat.dwFlags=SWAP32((ioImage.channels==3 ? DDPF_RGB : (DDPF_RGB|DDPF_ALPHAPIXELS)));
+	header.ddpfPixelFormat.dwRGBBitCount=SWAP32(ioImage.channels==3 ? 24 : 32);
+	header.ddpfPixelFormat.dwRBitMask=SWAP32(0x00FF0000);
+	header.ddpfPixelFormat.dwGBitMask=SWAP32(0x0000FF00);
+	header.ddpfPixelFormat.dwBBitMask=SWAP32(0x000000FF);
+	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
+	
+	header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
+
+	fwrite(&header,sizeof(header),1,fi);
+	
+	int xo = 0;
+	x = ioImage.width/2;
+	y = ioImage.height;
+	
+	do {
+	
+		struct ImageInfo im;
+		CreateNewBitmap(x, y, ioImage.channels, &im);
+		CopyBitmapSectionDirect(ioImage, im, xo, 0, 0, 0, x, y);
+	
+		fwrite(im.data,x*y*ioImage.channels,1,fi);
+		
+		if(x==1 && y==1) break;
+		
+		xo += x;
+		
 		if(x > 1) x >>= 1;
 		if(y > 1) y >>= 1;
 	

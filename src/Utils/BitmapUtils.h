@@ -75,11 +75,15 @@ struct	BMPImageDesc {
 #define DDSD_CAPS               0x00000001l     // default
 #define DDSD_HEIGHT             0x00000002l
 #define DDSD_WIDTH              0x00000004l
+#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
 #define DDSD_PIXELFORMAT        0x00001000l
 #define DDSD_MIPMAPCOUNT        0x00020000l
+#define DDSD_LINEARSIZE         0x00080000l
 
 // DD Pixel format flags
-#define DDPF_FOURCC             0x00000004l
+#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
+#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed 
+#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
 
 // DD surface caps
 #define DDSCAPS_TEXTURE			0x00001000l
@@ -255,6 +259,8 @@ int	ConvertAlphaToBitmap(
 			bool					doMagentaAlpha);
 			
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
-int	WriteBitmapToDDS(struct ImageInfo& ioImage, const char * file_name);
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name);
+
+int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name);
 			
 #endif
