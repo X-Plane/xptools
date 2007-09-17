@@ -243,7 +243,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj && wParam == IDT_TIMER1)
 			obj->Timer();
 		break; 
-		
+	
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -257,9 +257,12 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			case WM_RBUTTONDOWN:	btn = 1;	break;
 			case WM_MBUTTONDOWN:	btn = 2;	break;
 			case WM_XBUTTONDOWN:	btn = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
-			}			
-			obj->mDragging[btn]=1;
-			obj->ClickDown(obj->mMouse.x, obj->mMouse.y, btn);
+			}
+			if(obj->mDragging[btn]==0)
+			{
+				obj->mDragging[btn]=1;
+				obj->ClickDown(obj->mMouse.x, obj->mMouse.y, btn);
+			}
 			SetCapture(hWnd);
 		}
 		break;
