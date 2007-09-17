@@ -812,8 +812,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 		 ******************************************************************************************************************************************************/		
 		if ((ps = SAFE_CAST(IGISPointSequence,entity)) != NULL)
 		{
-			int n = ps->GetNumSides();
-			for (int i = 0; i < n; ++i)
+			int i, n = ps->GetNumSides();
+			for (i = 0; i < n; ++i)
 			{
 				set<int>		attrs;
 				if (mRealLines)
@@ -850,18 +850,29 @@ bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * enti
 					pts.push_back(GetZoomer()->LLToPixel(s.p1));
 					pts.push_back(GetZoomer()->LLToPixel(s.p2));
 				}
-				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);	
-				if (mVertices)
+				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);
+			}
+			
+			if (mVertices)
+			{
+				n = ps->GetNumPoints();
+				glPointSize(5);
+				glColor4fv(WED_Color_RGBA(struct_color));
+				glBegin(GL_POINTS);
+				
+				for (i = 0; i < n; ++i)
 				{
-					glPointSize(5);
-					glColor4fv(WED_Color_RGBA(struct_color));
-					glBegin(GL_POINTS);
-					glVertex2(GetZoomer()->LLToPixel(s.p1));
-					if (!ps->IsClosed())
-						glVertex2(GetZoomer()->LLToPixel(s.p2));				
-					glEnd();
-					glPointSize(1);
+					IGISPoint * pt = ps->GetNthPoint(i);
+					WED_Entity * e = dynamic_cast<WED_Entity *>(pt);
+					if(!e || !e->GetHidden())
+					{
+						Point2 p;
+						pt->GetLocation(p);
+						glVertex2(GetZoomer()->LLToPixel(p));
+					}
 				}
+				glEnd();
+				glPointSize(1);
 			}
 		}
 		break;
