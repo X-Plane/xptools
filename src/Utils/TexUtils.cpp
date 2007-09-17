@@ -29,8 +29,14 @@
 #else
 	#include <gl/gl.h>
 	#include <gl/glu.h>
+	#include <gl/glext.h>
 #endif
 #include "squish.h"
+
+#if IBM
+// Ben says - this sucks!
+#include "XWinGL.h"
+#endif
 
 /*****************************************************************************************
  * UTILS
@@ -305,7 +311,7 @@ bool	LoadTextureFromDDS(
 		int data_len = squish::GetStorageRequirements(x,y,flags);
 		if((data + data_len) > mem_end) return false;
 		
-		glCompressedTexImage2D(
+		glCompressedTexImage2DARB(
 			GL_TEXTURE_2D,
 			level,
 			format,
