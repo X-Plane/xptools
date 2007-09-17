@@ -1,10 +1,8 @@
 -------------------------------------------------------------------------------
 
-                       WORLD-EDITOR 1.0b2 RELEASE NOTES
+                       WORLD-EDITOR 1.0b3 RELEASE NOTES
 
 -------------------------------------------------------------------------------
-
-These are the release notes for WorldEditor 1.0.
 
 -------------------------------------------------------------------------------
 LICENSING
@@ -64,6 +62,18 @@ KNOWN ISSUES
 -------------------------------------------------------------------------------
 VERSION HISTORY
 -------------------------------------------------------------------------------
+
+1.0b3 - 9/17/07
+
+Fixed: export codes 55 and 56 swapped
+Fixed: snap to locked vertices works.
+Fixed: exporting apt.dat for VERY old projects wont leave a zero-vertex airport marking line in the apt.dat file.
+Fixed: x-system folder relableed to x-plane folder in startup window
+Fixed: smarter parser of apt.dat 
+Fixed: hidden vertices are not shown
+Fixed: taxiway lights and line were copied to all segments when taxiway was copied
+Fixed: mac version number fixed
+
 
 1.0b2 - 8/10/07
 
