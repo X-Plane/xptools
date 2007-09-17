@@ -156,6 +156,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\src\XPTools\ObjView.rc"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\XPTools\ViewObj.cpp"
 				>
 			</File>
@@ -295,6 +299,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\Utils\MemFileUtils.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\MemFileUtils.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\Utils\ObjUtils.cpp"
 					>
 				</File>
@@ -327,11 +339,127 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\Utils\unzip.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\unzip.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\Utils\XUtils.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\Utils\XUtils.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\zip.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\Utils\zip.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="squish"
+				>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\alpha.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\alpha.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\clusterfit.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\clusterfit.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourblock.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourblock.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourfit.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourfit.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourset.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\colourset.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\config.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\maths.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\maths.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\rangefit.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\rangefit.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\simd.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\simd_float.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\simd_sse.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\simd_ve.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\singlecolourfit.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\singlecolourfit.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\singlecolourlookup.inl"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\squish.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\libsrc\squish-1.10\squish.h"
 					>
 				</File>
 			</Filter>
