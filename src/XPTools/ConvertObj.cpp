@@ -197,6 +197,35 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 int main(int argc, const char * argv[])
 {
+	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
+	{
+		printf("CMD .obj .3ds %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .dxf %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dxf .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .3ds .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("OPTIONS ObjConverter\n");
+		printf("RADIO CO_UNITS 0 --inches Inches\n");
+		printf("RADIO CO_UNITS 0 --feet Feet\n");
+		printf("RADIO CO_UNITS 1 --meters Meters\n");
+		printf("DIV\n");
+		printf("CHECK CO_CENTER 0 --center Center Object Horizontally\n");
+		printf("DIV\n");
+		printf("CHECK CO_FLIPX 0 --flip_x Flip X\n");
+		printf("CHECK CO_FLIPY 0 --flip_y Flip Y\n");
+		printf("CHECK CO_FLIPZ 0 --flip_z Flip Z\n");
+		printf("DIV\n");
+		printf("RADIO CO_CCW 0 --polygon_cw Polygons are CW\n");
+		printf("RADIO CO_CCW 1 --polygon_ccw Polygons are CCW\n");
+		printf("DIV\n");
+		printf("RADIO CO_AXIS 1 --axis_y Y Axis is up\n");
+		printf("RADIO CO_AXIS 0 --axis_z Z Axis is up\n");
+		printf("DIV\n");
+		printf("RADIO CO_OBJ8 0 --obj7 Write OBJ version 7\n");
+		printf("RADIO CO_OBJ8 1 --obj8 Write OBJ version 8\n");
+		return 0;
+	}
+
 	if (argc < 4) { printf("Usage: %s [options ...] --conversion input_file output_file\n",argv[0]); exit(1); }
 	for (int a = 1; a < argc-3; ++a)
 	{
@@ -212,6 +241,9 @@ int main(int argc, const char * argv[])
 
 		else if (!strcmp(argv[a],"--polygon_ccw"))	gPoly = poly_CCW;
 		else if (!strcmp(argv[a],"--polygon_cw"))	gPoly = poly_CW;
+		
+		else if (!strcmp(argv[a],"--axis_y"))		gAxis = axis_Y;
+		else if (!strcmp(argv[a],"--axis_z"))		gAxis = axis_Z;
 
 		else if (!strcmp(argv[a],"--obj7"))			gSave = save_OBJ7;
 		else if (!strcmp(argv[a],"--obj8"))			gSave = save_OBJ8;

@@ -21,6 +21,17 @@
  *
  */
 
+/*
+	META TOKENS: INFILE OUTFILE
+
+	CMD	<in_ext> <out_ext> <cmd-prompt-string>
+	OPTIONS <title of menu for this tool>
+	DIV
+	CHECK <token> <enabled> <flag> <menu item name>
+	RADIO <token> <enabled> <flag> <menu item name>
+
+*/
+
 #include "XGrinderShell.h"
 #include "XGrinderApp.h"
 #include "MemFileUtils.h"
@@ -35,6 +46,7 @@ struct conversion_info {
 	string					cmd_string;
 	string					input_extension;
 	string					output_extension;
+	string					tool_name;
 };
 
 struct flag_item_info {
@@ -84,61 +96,63 @@ static void	sync_menu_checks()
 
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref)
 {
-	if (!isDir && strcmp(fileName+strlen(fileName)-4,".cmd")==0)
+	char pipe_buf[1024];
+	sprintf(pipe_buf,"%s/%s --auto_config", ref,fileName);
+	FILE * fi = popen(pipe_buf, "r");		
+	if (fi)
 	{
-		string path="config/";
-		path += fileName;
-		MFMemFile * fi = MemFile_Open(path.c_str());
-		if (fi)
+		while(!feof(fi))
 		{
-			MFScanner	s;
-			MFS_init(&s, fi);
-			while(!MFS_done(&s))
+			char	line[2048];
+			char	s1[512];
+			char	s2[512];
+			char	s3[512];
+			int		en;
+			
+			if(!fgets(line,sizeof(line),fi)) break;
+//			printf("%s\n",line);
+			if(sscanf(line,"CMD %s %s %[^\r\n]",s1,s2,s3)==3)
 			{
-				if (MFS_string_match(&s, "CMD", 0))
-				{
-					conversion_info * info = new conversion_info;
-					MFS_string(&s,&info->input_extension);
-					MFS_string(&s,&info->output_extension);
-					MFS_string_eol(&s,&info->cmd_string);
-					conversions.push_back(info);
-					selected_conversions[info->input_extension] = info;
-				} 
-				else if (MFS_string_match(&s,"OPTIONS", 0))
-				{
-					flag_menus.push_back(flag_menu_info());
-					flag_menus.back().menu = NULL;
-					MFS_string_eol(&s,&flag_menus.back().title);
-				}
-				else if (MFS_string_match(&s,"DIV",1))
-				{
-					flag_menus.back().items.push_back(flag_item_info());
-					flag_menus.back().items.back().enabled = 0;
-					flag_menus.back().items.back().radio = 0;
-				}
-				else if (MFS_string_match(&s,"CHECK",0))
-				{
-					flag_menus.back().items.push_back(flag_item_info());
-					flag_menus.back().items.back().radio = 0;
-					MFS_string(&s,&flag_menus.back().items.back().token);
-					flag_menus.back().items.back().enabled = MFS_int(&s);
-					MFS_string(&s,&flag_menus.back().items.back().flag);					
-					MFS_string_eol(&s,&flag_menus.back().items.back().item_name);					
-				}
-				else if (MFS_string_match(&s,"RADIO",0))
-				{
-					flag_menus.back().items.push_back(flag_item_info());
-					flag_menus.back().items.back().radio = 1;				
-					MFS_string(&s,&flag_menus.back().items.back().token);
-					flag_menus.back().items.back().enabled = MFS_int(&s);
-					MFS_string(&s,&flag_menus.back().items.back().flag);					
-					MFS_string_eol(&s,&flag_menus.back().items.back().item_name);					
-				}
-				else
-					MFS_string_eol(&s, NULL);
+				conversion_info * info = new conversion_info;
+				info->input_extension	= s1;
+				info->output_extension	= s2;
+				info->cmd_string		= s3;
+				info->tool_name			= fileName;
+				conversions.push_back(info);
+				selected_conversions[info->input_extension] = info;
+			} 
+			else if (sscanf(line,"OPTIONS %[^\r\n]",s1)==1)
+			{
+				flag_menus.push_back(flag_menu_info());
+				flag_menus.back().menu = NULL;
+				flag_menus.back().title = s1;
 			}
-			MemFile_Close(fi);
+			else if (strncmp(line,"DIV",3)==0)
+			{
+				flag_menus.back().items.push_back(flag_item_info());
+				flag_menus.back().items.back().enabled = 0;
+				flag_menus.back().items.back().radio = 0;
+			}
+			else if (sscanf(line,"CHECK %s %d %s %[^\r\n]",s1,&en,s2,s3)==4)
+			{
+				flag_menus.back().items.push_back(flag_item_info());
+				flag_menus.back().items.back().radio = 0;
+				flag_menus.back().items.back().token = s1;
+				flag_menus.back().items.back().enabled = en;
+				flag_menus.back().items.back().flag = s2;
+				flag_menus.back().items.back().item_name = s3;
+			}
+			else if (sscanf(line,"RADIO %s %d %s %[^\r\n]",s1,&en,s2,s3)==4)
+			{
+				flag_menus.back().items.push_back(flag_item_info());
+				flag_menus.back().items.back().radio = 1;
+				flag_menus.back().items.back().token = s1;
+				flag_menus.back().items.back().enabled = en;
+				flag_menus.back().items.back().flag = s2;
+				flag_menus.back().items.back().item_name = s3;
+			}
 		}
+		pclose(fi);
 	}
 	return true;
 }
@@ -248,8 +262,25 @@ int	XGrinderMenuPick(xmenu menu, int item)
 
 void	XGrindInit(string& t)
 {
-	// load ini files
-	MF_GetDirectoryBulk("config", file_cb, NULL);
+	char base[2048];
+	char resp[2048];
+	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());	
+	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());		
+	CFStringRef	res_path = CFURLCopyFileSystemPath(res_url, kCFURLPOSIXPathStyle);
+	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
+	CFStringGetCString(res_path,resp,sizeof(resp),kCFStringEncodingMacRoman);
+	CFStringGetCString(main_path,base,sizeof(base),kCFStringEncodingMacRoman);
+	CFRelease(res_url);
+	CFRelease(main_url);
+	CFRelease(res_path);
+	CFRelease(main_path);
+	strcat(base,"/");
+	strcat(base,resp);
+	MF_GetDirectoryBulk(base, file_cb, base);
+
+//	file_cb("DSFTool");
+//	file_cb("DDSTool");
+//	file_cb("ObjConverter");
 	
 	// sort conversions
 	
@@ -271,9 +302,10 @@ void	XGrindInit(string& t)
 		if (conversions[n] == NULL)
 			strcpy(buf,"-");
 		else
-			sprintf(buf,"%s to %s",
+			sprintf(buf,"%s to %s (%s)",
 				conversions[n]->input_extension.c_str(),
-				conversions[n]->output_extension.c_str());
+				conversions[n]->output_extension.c_str(),
+				conversions[n]->tool_name.c_str());
 		char * p = new char[strlen(buf)+1];
 		items[n] = p;
 		strcpy(p,buf);
