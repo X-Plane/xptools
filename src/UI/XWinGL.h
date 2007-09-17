@@ -36,6 +36,7 @@
 
 #if IBM
 #include <gl/gl.h>
+#include <gl/glext.h>
 #endif
 
 #if IBM
@@ -47,6 +48,8 @@
    extern PFNGLMULTITEXCOORD2FVARBPROC    glMultiTexCoord2fvARB;
    extern PFNGLACTIVETEXTUREARBPROC       glActiveTextureARB	;
    extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
+   extern PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB	;
+
 
 #define GL_TEXTURE0_ARB                   0x84C0
 #define GL_TEXTURE1_ARB                   0x84C1

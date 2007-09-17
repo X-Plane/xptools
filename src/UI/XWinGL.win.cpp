@@ -22,11 +22,13 @@
  */
 #include "XWinGL.h"
 #include <gl/gl.h>
+#include <gl/glext.h>
 
 PFNGLMULTITEXCOORD2FARBPROC  		glMultiTexCoord2fARB	;
 PFNGLMULTITEXCOORD2FVARBPROC 		glMultiTexCoord2fvARB;
 PFNGLACTIVETEXTUREARBPROC    		glActiveTextureARB	;
 PFNGLCLIENTACTIVETEXTUREARBPROC    	glClientActiveTextureARB	;
+PFNGLCOMPRESSEDTEXIMAGE2DARBPROC	glCompressedTexImage2DARB	;
 
 XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	XWin(default_dnd)
@@ -66,7 +68,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	glMultiTexCoord2fvARB   =(PFNGLMULTITEXCOORD2FVARBPROC   )wglGetProcAddress("glMultiTexCoord2fvARB"   );
 	glActiveTextureARB      =(PFNGLACTIVETEXTUREARBPROC      )wglGetProcAddress("glActiveTextureARB"      );
 	glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)wglGetProcAddress("glClientActiveTextureARB");
-	
+	glCompressedTexImage2DARB=(PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)wglGetProcAddress("glCompressedTexImage2DARB");
+
    glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
    glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
 }	
