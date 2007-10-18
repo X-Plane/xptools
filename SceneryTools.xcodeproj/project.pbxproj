@@ -367,6 +367,38 @@
 		D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083050C1A4DBB00F33E06 /* earth_32.jpg */; };
 		D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083060C1A4DBB00F33E06 /* earth_41.jpg */; };
 		D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083070C1A4DBB00F33E06 /* earth_42.jpg */; };
+		D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67682B60CC669830032B90C /* TensorUtils.cpp */; };
+		D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67682B60CC669830032B90C /* TensorUtils.cpp */; };
+		D67683520CC67B750032B90C /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
+		D67683530CC67B760032B90C /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
+		D67683540CC67B760032B90C /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
+		D67683550CC67B780032B90C /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
+		D67683560CC67B790032B90C /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
+		D67683570CC67B790032B90C /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
+		D67683580CC67B7A0032B90C /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
+		D67683590CC67B7B0032B90C /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
+		D676835A0CC67B7C0032B90C /* singlecolourlookup.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */; };
+		D676835B0CC67B7C0032B90C /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
+		D67683600CC67B8D0032B90C /* GISTool_CoreCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */; };
+		D67683610CC67B8D0032B90C /* GISTool_DemCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38840AB22C85003949C5 /* GISTool_DemCmds.cpp */; };
+		D67683620CC67B8E0032B90C /* GISTool_DumpCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38860AB22C85003949C5 /* GISTool_DumpCmds.cpp */; };
+		D67683630CC67B8F0032B90C /* GISTool_Globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38880AB22C85003949C5 /* GISTool_Globals.cpp */; };
+		D67683640CC67B900032B90C /* GISTool_MiscCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC388A0AB22C85003949C5 /* GISTool_MiscCmds.cpp */; };
+		D67683650CC67B910032B90C /* GISTool_ObsCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC388C0AB22C85003949C5 /* GISTool_ObsCmds.cpp */; };
+		D67683660CC67B920032B90C /* GISTool_ProcessingCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC388E0AB22C85003949C5 /* GISTool_ProcessingCmds.cpp */; };
+		D67683670CC67B940032B90C /* GISTool_Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38900AB22C85003949C5 /* GISTool_Utils.cpp */; };
+		D67683680CC67B9B0032B90C /* MiscFuncs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38A00AB22C85003949C5 /* MiscFuncs.cpp */; };
+		D676836A0CC67BA90032B90C /* TigerImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC374C0AB22C85003949C5 /* TigerImport.cpp */; };
+		D676836B0CC67BAA0032B90C /* TIGERProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC374E0AB22C85003949C5 /* TIGERProcess.cpp */; };
+		D676836C0CC67BAA0032B90C /* TIGERRead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37500AB22C85003949C5 /* TIGERRead.cpp */; };
+		D676836E0CC67BAE0032B90C /* VPFImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B70AB22C85003949C5 /* VPFImport.cpp */; };
+		D676836F0CC67BAF0032B90C /* VPFTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B90AB22C85003949C5 /* VPFTable.cpp */; };
+		D67683700CC67BB40032B90C /* FAA_Obs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37360AB22C85003949C5 /* FAA_Obs.cpp */; };
+		D67683710CC67BB40032B90C /* gshhs.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37380AB22C85003949C5 /* gshhs.c */; };
+		D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38920AB22C85003949C5 /* GISTool_VectorCmds.cpp */; };
+		D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
+		D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67684520CC699070032B90C /* WED_EditCommands.cpp */; };
+		D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
 		D67B1C010C54EC4000A21ABC /* WED_Ring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */; };
 		D67B21480C5536A300A21ABC /* asphalt.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21410C5536A300A21ABC /* asphalt.png */; };
 		D67B21490C5536A300A21ABC /* concrete.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B21420C5536A300A21ABC /* concrete.png */; };
@@ -1034,6 +1066,12 @@
 		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
 		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
+		D67682B50CC669830032B90C /* TensorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TensorUtils.h; sourceTree = "<group>"; };
+		D67682B60CC669830032B90C /* TensorUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TensorUtils.cpp; sourceTree = "<group>"; };
+		D67684510CC699070032B90C /* WED_EditCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_EditCommands.h; sourceTree = "<group>"; };
+		D67684520CC699070032B90C /* WED_EditCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_EditCommands.cpp; sourceTree = "<group>"; };
+		D67685250CC6A0690032B90C /* TensorRoads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TensorRoads.h; sourceTree = "<group>"; };
+		D67685260CC6A0690032B90C /* TensorRoads.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TensorRoads.cpp; sourceTree = "<group>"; };
 		D67B1BFF0C54EC4000A21ABC /* WED_Ring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Ring.h; sourceTree = "<group>"; };
 		D67B1C000C54EC4000A21ABC /* WED_Ring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Ring.cpp; sourceTree = "<group>"; };
 		D67B21410C5536A300A21ABC /* asphalt.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = asphalt.png; sourceTree = "<group>"; };
@@ -1663,7 +1701,7 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
-		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
@@ -2571,6 +2609,8 @@
 				D6FF2DBE0B6F8C0400960D5E /* QuadTree.h */,
 				D67B28650C5647EF00A21ABC /* STLUtils.h */,
 				D67B28660C5647EF00A21ABC /* STLUtils.cpp */,
+				D67682B50CC669830032B90C /* TensorUtils.h */,
+				D67682B60CC669830032B90C /* TensorUtils.cpp */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2764,6 +2804,8 @@
 				D6BC38290AB22C85003949C5 /* WED_TopoTester.h */,
 				D6BC382A0AB22C85003949C5 /* WED_TriTestTool.cpp */,
 				D6BC382B0AB22C85003949C5 /* WED_TriTestTool.h */,
+				D67684510CC699070032B90C /* WED_EditCommands.h */,
+				D67684520CC699070032B90C /* WED_EditCommands.cpp */,
 			);
 			path = WorldEditor;
 			sourceTree = "<group>";
@@ -2847,6 +2889,8 @@
 				D6BC387B0AB22C85003949C5 /* XESIO.h */,
 				D6BC387C0AB22C85003949C5 /* Zoning.cpp */,
 				D6BC387D0AB22C85003949C5 /* Zoning.h */,
+				D67685250CC6A0690032B90C /* TensorRoads.h */,
+				D67685260CC6A0690032B90C /* TensorRoads.cpp */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
@@ -3359,6 +3403,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D676835A0CC67B7C0032B90C /* singlecolourlookup.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3679,6 +3724,36 @@
 				D69FD7490B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74A0B6CF765008E3AEC /* zip.c in Sources */,
 				D6FF39B00B71B5C700960D5E /* WED_BezierTestTool.cpp in Sources */,
+				D67682B70CC669830032B90C /* TensorUtils.cpp in Sources */,
+				D67683520CC67B750032B90C /* alpha.cpp in Sources */,
+				D67683530CC67B760032B90C /* clusterfit.cpp in Sources */,
+				D67683540CC67B760032B90C /* colourblock.cpp in Sources */,
+				D67683550CC67B780032B90C /* colourfit.cpp in Sources */,
+				D67683560CC67B790032B90C /* maths.cpp in Sources */,
+				D67683570CC67B790032B90C /* colourset.cpp in Sources */,
+				D67683580CC67B7A0032B90C /* rangefit.cpp in Sources */,
+				D67683590CC67B7B0032B90C /* singlecolourfit.cpp in Sources */,
+				D676835B0CC67B7C0032B90C /* squish.cpp in Sources */,
+				D67683600CC67B8D0032B90C /* GISTool_CoreCmds.cpp in Sources */,
+				D67683610CC67B8D0032B90C /* GISTool_DemCmds.cpp in Sources */,
+				D67683620CC67B8E0032B90C /* GISTool_DumpCmds.cpp in Sources */,
+				D67683630CC67B8F0032B90C /* GISTool_Globals.cpp in Sources */,
+				D67683640CC67B900032B90C /* GISTool_MiscCmds.cpp in Sources */,
+				D67683650CC67B910032B90C /* GISTool_ObsCmds.cpp in Sources */,
+				D67683660CC67B920032B90C /* GISTool_ProcessingCmds.cpp in Sources */,
+				D67683670CC67B940032B90C /* GISTool_Utils.cpp in Sources */,
+				D67683680CC67B9B0032B90C /* MiscFuncs.cpp in Sources */,
+				D676836A0CC67BA90032B90C /* TigerImport.cpp in Sources */,
+				D676836B0CC67BAA0032B90C /* TIGERProcess.cpp in Sources */,
+				D676836C0CC67BAA0032B90C /* TIGERRead.cpp in Sources */,
+				D676836E0CC67BAE0032B90C /* VPFImport.cpp in Sources */,
+				D676836F0CC67BAF0032B90C /* VPFTable.cpp in Sources */,
+				D67683700CC67BB40032B90C /* FAA_Obs.cpp in Sources */,
+				D67683710CC67BB40032B90C /* gshhs.c in Sources */,
+				D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */,
+				D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */,
+				D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */,
+				D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3779,6 +3854,7 @@
 				D65E4C390B654908004D7887 /* hl_types.cpp in Sources */,
 				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
+				D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
