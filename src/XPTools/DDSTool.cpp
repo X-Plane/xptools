@@ -30,7 +30,8 @@ int main(int argc, const char * argv[])
 	{
 		printf("CMD .png .dds %s DDS_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
-		printf("RADIO DDS_MODE 1 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
+		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
+		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb Use no compression (requires mipmap)\n");
@@ -41,7 +42,8 @@ int main(int argc, const char * argv[])
 		printf("Usage: %s --png2dds <input_file> <output_file>|-\n",argv[0]); exit(1); 
 	}
 	
-	if(strcmp(argv[1],"--png2dxt1")==0 ||
+	if(strcmp(argv[1],"--png2dxt")==0 ||
+	   strcmp(argv[1],"--png2dxt1")==0 ||
 	   strcmp(argv[1],"--png2dxt3")==0 ||
 	   strcmp(argv[1],"--png2dxt5")==0)
 	{
@@ -62,7 +64,18 @@ int main(int argc, const char * argv[])
 			outf=buf;
 		}
 		
-		if (WriteBitmapToDDS(info, argv[1][9]-'0',outf)!=0)
+		if(info.channels == 1)
+		{
+			printf("Unable to write DDS file from alpha-only PNG %s\n", argv[2]);			
+		}
+		int dxt_type = argv[1][9]-'0';
+		if(argv[1][9]==0)
+		{
+			if(info.channels == 3)  dxt_type=1;
+			else					dxt_type=5;
+		}
+		
+		if (WriteBitmapToDDS(info, dxt_type,outf)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[3]);
 			return 1;
