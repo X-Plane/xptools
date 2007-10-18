@@ -100,7 +100,8 @@ static	int		kFeatureTypes [] = {
 static	int	kConvertLegacyObjTypes[] = {
 	NO_VALUE,
 	NO_VALUE,
-	feat_Skyscraper,
+//	feat_Skyscraper,
+	feat_Building,		// BEN SAYS: importing as sky-scraper means no obj match. :-(
 	feat_RadioTower,
 	NO_VALUE,
 	feat_CoolingTower,
