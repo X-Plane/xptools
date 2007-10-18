@@ -77,9 +77,9 @@ bool LoadTextureFromFile(
 						float * 		outT)
 {
 	bool	ok = false;
-	struct ImageInfo	im;
+	struct ImageInfo	im = { 0 };
 
-	MFMemFile * mf = MemFile_Open(inFileName);
+/*	MFMemFile * mf = MemFile_Open(inFileName);
 	if(mf)
 	{
 		if(LoadTextureFromDDS((const unsigned char *) MemFile_GetBegin(mf),(const unsigned char *) MemFile_GetEnd(mf),inTexNum,flags,outWidth,outHeight))
@@ -91,8 +91,10 @@ bool LoadTextureFromFile(
 		}
 		MemFile_Close(mf);
 	}
+*/	
 
 	int result =  CreateBitmapFromPNG(inFileName, &im, false);
+	if (result) result = CreateBitmapFromDDS(inFileName, &im);
 	if (result) result = CreateBitmapFromFile(inFileName, &im);
 	#if USE_TIF
 	if (result) result = CreateBitmapFromTIF(inFileName, &im);
@@ -260,6 +262,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 #endif	
 
 
+#if 0
 bool	LoadTextureFromDDS(
 				const unsigned char *	mem_start,
 				const unsigned char *	mem_end,
@@ -364,3 +367,4 @@ bool	LoadTextureFromDDS(
 	
 	return true;	
 }
+#endif
