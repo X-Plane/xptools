@@ -50,7 +50,7 @@ inline float interp_noise_1d(const float x,const int seed)
 	return  interp_rat(v1,v2,fractional_X);
 }
 
-inline float interp_noise_2d(const float x,const float y,const int seed)
+float interp_noise_2d(const float x,const float y,const int seed)
 {
 	int integer_X	=(int)x;
 	int integer_Y	=(int)y;

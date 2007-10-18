@@ -32,6 +32,7 @@ inline	float	GetRandomRat(int seed)
 	return gRandomRats[seed % RAN_RAT_DIM];
 }
 
+float interp_noise_2d(const float x,const float y,const int seed);
 float perlin_1d(float x, int min_level, int max_level, float persistence, int seed);
 float perlin_2d(float x, float y, int min_level, int max_level, float persistence, int seed);
 
