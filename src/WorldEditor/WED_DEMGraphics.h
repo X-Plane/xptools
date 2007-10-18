@@ -26,11 +26,15 @@
 #include "DEMDefs.h"
 #include "BitmapUtils.h"
 
+struct	Point2;
+struct	Vector2;
+
 enum {
 	dem_Strata = -1000,
 	dem_Shaded,
 	dem_Enum,
 	dem_Normals,
+	dem_DDA,
 	
 	dem_StrataBiomass,
 	dem_StrataRainfallYearly,
@@ -50,5 +54,10 @@ void ColorForValue(
 				int				dem_type,
 				float			value,
 				unsigned char	rgb[3]);
+				
+void TensorDDA(
+			ImageInfo&	ioImage,
+			Vector2 (*	tensor_func)(const Point2& p, void * ref),
+			void *		ref);
 
 #endif

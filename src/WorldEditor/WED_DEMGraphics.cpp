@@ -24,6 +24,12 @@
 #include "ParamDefs.h"
 #include "DEMTables.h"
 #include "CompGeomDefs3.h"
+#include "TensorUtils.h"
+#include "CompGeomDefs2.h"
+#include "Perlin.h"
+
+#define		DDA_STEPS 10.0f
+#define		DDA_FACTOR 0.5
 
 #define	ARRAY_COUNT(x)		(sizeof(x) / sizeof(x[0]))
 
@@ -474,6 +480,30 @@ int	DEMToBitmap(
 			outImage.data[(x + (outImage.height-2) * outImage.width) * outImage.channels + ch];
 		}
 		break;
+	case dem_DDA:
+		for (y = 0; y < inDEM.mHeight; ++y)
+		for (x = 0; x < inDEM.mWidth; ++x)
+		{
+			float gx = inDEM.gradient_x_bilinear(x,y);
+			float gy = inDEM.gradient_y_bilinear(x,y);
+			Vector2	e = Tensor2Eigen(Gradient2Tensor(Vector2(gx,gy)));
+//			Vector2	e = Tensor2Eigen(Linear_Tensor(Point2(600,600),Vector2(0.717, -0.717), 0.0,Point2(x,y)));
+//			Vector2	e = Tensor2Eigen(Radial_Tensor(Point2(600,600),0.0,Point2(x,y)));
+
+			float v = 0.0f;
+			Point2 p(x,y);
+			for (int n = -DDA_STEPS; n <= DDA_STEPS; ++n)
+			{
+				Point2 s(p + e * n);
+				v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
+			}
+			v /= (DDA_STEPS*2.0f+1.0f);			
+//			v = e.dy * 0.5 + 0.5;
+			outImage.data[(x + y * outImage.width) * outImage.channels  ] = v * 255.0f;
+			outImage.data[(x + y * outImage.width) * outImage.channels+1] = v * 255.0f;
+			outImage.data[(x + y * outImage.width) * outImage.channels+2] = v * 255.0f;
+		}
+		break;
 	}	
 	return 0;
 }				
@@ -518,5 +548,32 @@ void ColorForValue(
 		} else {
 			rgb[0] = 255.0 * 2.0 * value; rgb[1] = 1.0; rgb[2] = 0.0;
 		}
+	}
+}
+
+void TensorDDA(
+			ImageInfo&	ioImage,
+			Vector2 (*	tensor_func)(const Point2& p, void * ref),
+			void *		ref)
+{
+	for (int y = 0; y < ioImage.height; ++y)
+	for (int x = 0; x < ioImage.width;  ++x)
+	{
+		Point2 p((double) x / (double) ioImage.width, (double) y / (double) ioImage.height);
+		Vector2 t(tensor_func(p,ref));
+		Vector2 e(Tensor2Eigen(t));
+		float v = 0.0f;
+		Point2 pi(x,y);
+		for (int n = -DDA_STEPS; n <= DDA_STEPS; ++n)
+		{
+			Point2 s(pi + e * n);
+			v += interp_noise_2d(s.x * DDA_FACTOR,s.y * DDA_FACTOR,0);
+		}
+		v /= (DDA_STEPS*2.0f+1.0f);	
+		for(int c = 0; c < ioImage.channels; ++c)		
+			ioImage.data[(x + y * ioImage.width) * ioImage.channels+c] = v * 255.0f;
+//		ioImage.data[(x + y * ioImage.width) * ioImage.channels+0] = 255.0 * e.dx;
+//		ioImage.data[(x + y * ioImage.width) * ioImage.channels+1] = 255.0 * e.dy;
+//		ioImage.data[(x + y * ioImage.width) * ioImage.channels+2] = 0;
 	}
 }
