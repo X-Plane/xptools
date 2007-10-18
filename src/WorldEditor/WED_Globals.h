@@ -30,21 +30,22 @@
 #include "AptDefs.h"
 #include "CompGeomDefs3.h"
 
-extern Pmwx					gMap;
-extern DEMGeoMap			gDem;
+#include "GISTool_Globals.h"
+//extern Pmwx					gMap;
+//extern DEMGeoMap			gDem;
 //extern MapFaceBuckets		gFaceBuckets;
 //extern MapHalfedgeBuckets	gHalfedgeBuckets;
 //extern MapVertexBuckets	gVertexBuckets;
 //extern CDT				gTriangulationLo;
-extern CDT					gTriangulationHi;
+//extern CDT					gTriangulationHi;
 
-extern vector<pair<Point2,Point3> >		gMeshPoints;
-extern vector<pair<Point2,Point3> >		gMeshLines;
+//extern vector<pair<Point2,Point3> >		gMeshPoints;
+//extern vector<pair<Point2,Point3> >		gMeshLines;
 //extern int					gLayer;
 
 extern string				gFilePath;
 extern bool					gDirty;
-extern AptVector			gApts;
-extern AptIndex				gAptIndex;
+//extern AptVector			gApts;
+//extern AptIndex				gAptIndex;
 
 #endif

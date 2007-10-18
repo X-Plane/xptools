@@ -22,20 +22,20 @@
  */
 #include "WED_Globals.h"
 
-Pmwx				gMap;
-DEMGeoMap			gDem;
+//Pmwx				gMap;
+//DEMGeoMap			gDem;
 
 //MapFaceBuckets		gFaceBuckets		(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
 //MapHalfedgeBuckets	gHalfedgeBuckets	(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
 //MapVertexBuckets		gVertexBuckets		(8, Point2(0.0, 0.0), Point2(1.0, 1.0), false);
 //CDT					gTriangulationLo;
-CDT					gTriangulationHi;
+//CDT					gTriangulationHi;
 
-vector<pair<Point2,Point3> >		gMeshPoints;
-vector<pair<Point2,Point3> >		gMeshLines;
+//vector<pair<Point2,Point3> >		gMeshPoints;
+//vector<pair<Point2,Point3> >		gMeshLines;
 //int					gLayer = NO_DATA;
 
 string				gFilePath;
 bool				gDirty = false;
-AptVector			gApts;
-AptIndex			gAptIndex;
+//AptVector			gApts;
+//AptIndex			gAptIndex;
