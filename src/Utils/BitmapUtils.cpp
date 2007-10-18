@@ -1316,7 +1316,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	for(y=0;y<ioImage.height;++y)
 	for(x=0;x<ioImage.width;++x)
 	{
-		unsigned char * srcp = ioImage.data + x * ioImage.channels + y * (ioImage.channels * ioImage.width + ioImage.pad);
+		unsigned char * srcp = ioImage.data + x * ioImage.channels + (ioImage.height - y - 1) * (ioImage.channels * ioImage.width + ioImage.pad);
 		unsigned char * dstp = src_mem + x * 4 + y * 4 * ioImage.width;
 		
 		dstp[0] = srcp[2];
@@ -1426,6 +1426,7 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 		CreateNewBitmap(x, y, ioImage.channels, &im);
 		CopyBitmapSectionDirect(ioImage, im, xo, 0, 0, 0, x, y);
 	
+		FlipImageY(im);	
 		fwrite(im.data,x*y*ioImage.channels,1,fi);
 		
 		if(x==1 && y==1) break;
@@ -1441,3 +1442,116 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 	// close file
 }
 
+int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo)
+{
+	FILE * fi = fopen(inFilePath, "rb");
+	unsigned char * raw = NULL;
+	outImageInfo->data = NULL;	
+	
+	if(fi==NULL) return -1;
+	TEX_dds_desc header = { 0 };
+	if (fread(&header, 1, sizeof(header), fi) != sizeof(header)) goto bail;
+
+	header.dwSize = SWAP32(header.dwSize);
+	header.dwFlags = SWAP32(header.dwFlags);
+	header.dwHeight = SWAP32(header.dwHeight);
+	header.dwWidth = SWAP32(header.dwWidth);
+	header.dwLinearSize = SWAP32(header.dwLinearSize);
+	header.dwMipMapCount=SWAP32(header.dwMipMapCount);
+	header.ddpfPixelFormat.dwSize=SWAP32(header.ddpfPixelFormat.dwSize);
+	header.ddpfPixelFormat.dwFlags=SWAP32(header.ddpfPixelFormat.dwFlags);
+	header.ddpfPixelFormat.dwRGBBitCount=SWAP32(header.ddpfPixelFormat.dwRGBBitCount);
+	header.ddpfPixelFormat.dwRBitMask=SWAP32(header.ddpfPixelFormat.dwRBitMask);
+	header.ddpfPixelFormat.dwGBitMask=SWAP32(header.ddpfPixelFormat.dwGBitMask);
+	header.ddpfPixelFormat.dwBBitMask=SWAP32(header.ddpfPixelFormat.dwBBitMask);
+	header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(header.ddpfPixelFormat.dwRGBAlphaBitMask);
+	
+	if (header.dwMagic[0] != 'D' ||
+		header.dwMagic[1] != 'D' ||
+		header.dwMagic[2] != 'S' ||
+		header.dwMagic[3] != ' ') goto bail;
+
+
+	if(header.ddpfPixelFormat.dwFlags & DDPF_RGB)
+	{
+		outImageInfo->channels = (header.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? 4 : 3;
+		outImageInfo->width = header.dwWidth;
+		outImageInfo->height = header.dwHeight;
+		outImageInfo->pad = (header.dwLinearSize == 0) ? 0 : (header.dwLinearSize - outImageInfo->width * outImageInfo->channels);
+		int im_len = (outImageInfo->width * outImageInfo->channels + outImageInfo->pad) * outImageInfo->height;
+		outImageInfo->data = (unsigned char *) malloc(im_len);
+		if(outImageInfo->data==NULL) goto bail;
+
+		if(fread(outImageInfo->data, 1, im_len, fi) != im_len) goto bail;
+		FlipImageY(*outImageInfo);	
+
+		fclose(fi);
+		return 0;
+	} 
+	else if (header.ddpfPixelFormat.dwFlags & DDPF_FOURCC)
+	{
+		int sflags;
+		if(header.ddpfPixelFormat.dwFourCC[0] != 'D' || header.ddpfPixelFormat.dwFourCC[1] != 'X' || header.ddpfPixelFormat.dwFourCC[2] != 'T') goto bail;
+		switch(header.ddpfPixelFormat.dwFourCC[3]) {
+		case '1':		sflags = squish::kDxt1;	break;
+		case '3':		sflags = squish::kDxt3;	break;
+		case '5':		sflags = squish::kDxt5;	break;
+		default: goto bail;
+		}
+		outImageInfo->channels = 4;
+		outImageInfo->width = header.dwWidth;
+		outImageInfo->height = header.dwHeight;
+		outImageInfo->pad = 0;
+		int im_len = (outImageInfo->width * outImageInfo->channels + outImageInfo->pad) * outImageInfo->height;
+		outImageInfo->data = (unsigned char *) malloc(im_len);
+		if(outImageInfo->data==NULL) goto bail;
+		int im_raw = squish::GetStorageRequirements(header.dwWidth,header.dwHeight, sflags);
+		
+		raw = (unsigned char *) malloc(im_raw);
+		if(raw==NULL) goto bail;
+		if(fread(raw, 1, im_raw, fi) != im_raw) goto bail;
+		squish::DecompressImage( outImageInfo->data, header.dwWidth, header.dwHeight, raw, sflags);
+		int count = header.dwWidth * header.dwHeight;
+		unsigned char * p = outImageInfo->data;
+		while(count--)
+		{
+			swap(p[0],p[2]);
+			p += 4;
+		}
+		FlipImageY(*outImageInfo);			
+		free(raw);
+		fclose(fi);
+		return 0;	
+	}
+
+	
+bail:
+	if (fi) fclose(fi);
+	if (outImageInfo->data) free(outImageInfo->data);
+	if(raw) free(raw);
+	return -1;
+}
+
+inline void swap_mem(unsigned char * p1, unsigned char * p2, int len)
+{
+	while(len--)
+	{
+		register unsigned char a = *p1;
+		register unsigned char b = *p2;
+		*p1 = b;
+		*p2 = a;
+		++p1;
+		++p2;		
+	}
+}
+
+void	FlipImageY(struct ImageInfo&	io_image)
+{
+	int y_stop = io_image.height / 2;
+	int row_len = io_image.width * io_image.channels + io_image.pad;
+	for(int y1 = 0; y1 < y_stop; ++y1)
+	{
+		int y2 = io_image.height - y1 - 1;
+		swap_mem(io_image.data + y1 * row_len,io_image.data + y2 * row_len, row_len);
+	}
+}

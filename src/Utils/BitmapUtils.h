@@ -240,6 +240,8 @@ void	CopyBitmapSectionDirect(
 			long						inDstTop,
 			long						inWidth,
 			long						inHeight);
+
+void	FlipImageY(struct ImageInfo&	io_image);
 			
 /* This routine rotates a bitmap counterclockwise 90 degrees, exchanging its width
  * and height. */
@@ -257,6 +259,9 @@ int	ConvertBitmapToAlpha(
 int	ConvertAlphaToBitmap(
 			struct ImageInfo *		ioImage,
 			bool					doMagentaAlpha);
+
+/* Create a 4-channel image from a DDS file. */
+int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);
 			
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name);
