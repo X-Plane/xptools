@@ -888,4 +888,92 @@ float	DEMGeo_LocalMinMaxWithCache(
 	return maxh - minh;
 }
 
+float	DEMGeo::gradient_x(int x, int y) const
+{
+	float h1 = this->get(x,y);
+	float h2 = this->get(x+1,y);
+	if(h1 == DEM_NO_DATA || h2 == DEM_NO_DATA) return DEM_NO_DATA;
+	return (h2-h1) / x_dist_to_m(1);
+}
 
+float	DEMGeo::gradient_y(int x, int y) const
+{
+	float h1 = this->get(x,y);
+	float h2 = this->get(x,y+1);
+	if(h1 == DEM_NO_DATA || h2 == DEM_NO_DATA) return DEM_NO_DATA;
+	return (h2-h1) / y_dist_to_m(1);
+}
+
+float	DEMGeo::gradient_x_bilinear(float x, float y) const
+{
+	x -= 0.5f;
+	y -= 0.5f;
+	
+	float x1 = floor(x);
+	float x2 = x1 + 1.0f;
+	float xb = x - x1;
+	float y1 = floor(y);
+	float y2 = y1 + 1.0f;
+	float yb = y - y1;
+	
+	float g11 = gradient_x(x1,y1);
+	float g12 = gradient_x(x1,y2);
+	float g21 = gradient_x(x2,y1);
+	float g22 = gradient_x(x2,y2);
+	
+	float w11 = (1.0f - xb) * (1.0 - yb);
+	float w12 = (1.0f - xb) * (		 yb);
+	float w21 = (		xb) * (1.0 - yb);
+	float w22 = (		xb) * (		 yb);
+	if(g11 == DEM_NO_DATA) w11 = 0.0f;
+	if(g12 == DEM_NO_DATA) w12 = 0.0f;
+	if(g21 == DEM_NO_DATA) w21 = 0.0f;
+	if(g22 == DEM_NO_DATA) w22 = 0.0f;
+	
+	float w = w11 + w12 + w21 + w22;
+	if (w == 0.0f) return DEM_NO_DATA;
+	w = 1.0f / w;
+	w11 *= w;
+	w12 *= w;
+	w21 *= w;
+	w22 *= w;
+	
+	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;	
+}
+
+float	DEMGeo::gradient_y_bilinear(float x, float y) const
+{
+	x -= 0.5f;
+	y -= 0.5f;
+	
+	float x1 = floor(x);
+	float x2 = x1 + 1.0f;
+	float xb = x - x1;
+	float y1 = floor(y);
+	float y2 = y1 + 1.0f;
+	float yb = y - y1;
+	
+	float g11 = gradient_y(x1,y1);
+	float g12 = gradient_y(x1,y2);
+	float g21 = gradient_y(x2,y1);
+	float g22 = gradient_y(x2,y2);
+	
+	float w11 = (1.0f - xb) * (1.0 - yb);
+	float w12 = (1.0f - xb) * (		 yb);
+	float w21 = (		xb) * (1.0 - yb);
+	float w22 = (		xb) * (		 yb);
+	if(g11 == DEM_NO_DATA) w11 = 0.0f;
+	if(g12 == DEM_NO_DATA) w12 = 0.0f;
+	if(g21 == DEM_NO_DATA) w21 = 0.0f;
+	if(g22 == DEM_NO_DATA) w22 = 0.0f;
+	
+	float w = w11 + w12 + w21 + w22;
+	if (w == 0.0f) return DEM_NO_DATA;
+	w = 1.0f / w;
+	w11 *= w;
+	w12 *= w;
+	w21 *= w;
+	w22 *= w;
+	
+	return g11 * w11 + g21 * w21 + g12 * w12 + g22 * w22;
+}

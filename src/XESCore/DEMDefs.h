@@ -196,6 +196,14 @@ struct	DEMGeo {
 	void	filter_self(int dim, float * k);
 	void	filter_self_normalize(int dim, float * k);
 
+#if !DEV
+inline this
+#endif
+			float	gradient_x(int x, int y) const;					// These return exact gradients at HALF-POSTINGS!
+			float	gradient_y(int x, int y) const;					// So for a 1201 DEM there are 1200 gradients.  This is really utility funcs
+			float	gradient_x_bilinear(float x, float y) const;	// These return interp'd gradients on WHOLE POSTINGS, which is what we REALLY
+			float	gradient_y_bilinear(float x, float y) const;	// want...remember that we can't get an exact discrete gradient on the post (duh).
+
 };
 
 /*************************************************************************************

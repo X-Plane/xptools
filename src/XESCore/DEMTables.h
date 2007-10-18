@@ -90,7 +90,7 @@ struct	NaturalTerrainInfo_t {
 	
 	float			lat_min;
 	float			lat_max;
-	int				variant;
+	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
 	int				related;
 	
 	// DEFS
@@ -100,7 +100,9 @@ struct	NaturalTerrainInfo_t {
 	int				xon_hack;
 	// 2-D Texturing
 	string			base_tex;
+	string			vary_tex;			// variation tex if needed
 	string			lit_tex;
+	int				auto_vary;			// Use shaders to make variations
 //	string			comp_tex;
 	float			base_res;
 //	float			comp_res;

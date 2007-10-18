@@ -241,6 +241,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	{
 		y = elev.lat_to_y(lat);
 		if (LowestInRange(elev, 0, y - DEM_EXIT_SEARCH_RANGE, 1, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != DEM_NO_DATA)
+		if(hydro_dir.get(xo, yo) != sink_Invalid)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -250,6 +251,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	{
 		y = elev.lat_to_y(lat);
 		if (LowestInRange(elev, elev.mWidth-1, y - DEM_EXIT_SEARCH_RANGE, elev.mWidth, y + DEM_EXIT_SEARCH_RANGE + 1, xo, yo) != DEM_NO_DATA)
+		if(hydro_dir.get(xo, yo) != sink_Invalid)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -259,6 +261,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	{
 		x = elev.lon_to_x(lon);
 		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, 0, x + DEM_EXIT_SEARCH_RANGE + 1, 1, xo, yo) != DEM_NO_DATA)
+		if(hydro_dir.get(xo, yo) != sink_Invalid)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -268,6 +271,7 @@ static void BurnLowestNearDrainPt(const DEMGeo& elev, DEMGeo& hydro_dir, double 
 	{
 		x = elev.lon_to_x(lon);
 		if (LowestInRange(elev, x - DEM_EXIT_SEARCH_RANGE, elev.mHeight-1, x + DEM_EXIT_SEARCH_RANGE + 1, elev.mHeight, xo, yo) != DEM_NO_DATA)
+		if(hydro_dir.get(xo, yo) != sink_Invalid)
 		{
 			hydro_dir(xo, yo) = sink_Known;
 		}
@@ -536,13 +540,15 @@ void	BuildRiverPolygon(int x, int y, const DEMGeo& hydro_dir, const DEMGeo& hydr
 }
 
 
-void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
+void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, int borders[4], ProgressFunc inProg)
 {
 	if (inProg) inProg(0, 4, "Preparing elevation maps", 0.0);
 	int x, y, n, max_hydro;
 
+#if 0
 	gMeshPoints.clear();
 	gMeshLines.clear();
+#endif
 	DEMGeo  elev(ioDEMs[dem_Elevation]);
 	DEMGeo&	hydro_elev(ioDEMs[dem_HydroElevation]);
 	DEMGeo	is_river(61, 61);
@@ -558,6 +564,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	hydro_dir = sink_Unresolved;
 	is_river = 0;
 	
+	// Burn each river from VMAP0 into the "is river" low-res DEM
 	for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin(); he != inMap.halfedges_end(); ++he)
 	if (he->mDominant)
 	if (he->mParams.count(he_IsRiver))
@@ -567,11 +574,21 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	
 	if (inProg) inProg(0, 4, "Preparing elevation maps", 1.0);
 
+	// For each border, if we have a border file, it means our adjacent tile is already done.  It's not up to us to decide
+	// whether we sink to this edge, so mark the entire edge as invalid.  
 	for (y = 0; y < hydro_elev.mHeight;++y)
-		hydro_dir(0, y) = sink_Invalid;
+	{
+		if(borders[0])	hydro_dir(0					, y) = sink_Invalid;
+		if(borders[2])	hydro_dir(hydro_dir.mWidth-1, y) = sink_Invalid;
+	}
 	for (x = 0; x < hydro_elev.mWidth; ++x)
-		hydro_dir(x, 0) = sink_Invalid;
-	
+	{
+		if(borders[1])	hydro_dir(x, 0					) = sink_Invalid;
+		if(borders[3])	hydro_dir(x, hydro_dir.mHeight-1) = sink_Invalid;
+	}
+	// Furthermore, if our hydro-elevation has water elevation, this is a known waterbody.  (Note that this comes from both our water
+	// and any water that came from a border, so between the invalid marking of the borders and sink-known, every border that was 
+	// previously rendered by another tile is sink_invalid or sink_known - 100% deterministic.)
 	for (y = 0; y < hydro_elev.mHeight;++y)
 	for (x = 0; x < hydro_elev.mWidth; ++x)
 	if (hydro_elev.get(x,y) != DEM_NO_DATA)
@@ -655,6 +672,7 @@ void	BuildRivers(const Pmwx& inMap, DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	for (x = 0; x < hydro_dir.mWidth; ++x)
 	if (is_river.xy_nearest(hydro_dir.x_to_lon(x),hydro_dir.y_to_lat(y)))
 	{
+		if (hydro_dir(x,y) != sink_Invalid)
 		if (hydro_flw(x,y) > REQUIRED_FLOW)
 		if (MinSlopeNear(hydro_slp,x,y) < REQUIRED_SLOPE)
 			hydro_elev(x,y) = elev(x,y);
@@ -1051,10 +1069,14 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 
 #pragma mark -
 
-void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite)
+void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int borders[4])
 {
 	DEMGeo&	water_elev(dems[dem_HydroElevation]);
-	char	fname_left[1024], fname_bot[1024], fname_self[1024];
+	char	fname_left[1024]; 
+	char	fname_rigt[1024]; 
+	char	fname_bott[1024]; 
+	char	fname_topp[1024]; 
+	char	fname_self[1024];
 
 	string border_loc = hydro_dir;
 #if APL && !defined(__MACH__)
@@ -1067,10 +1089,12 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite)
 
 	sprintf(fname_self,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest  ));
 	sprintf(fname_left,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest-1),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest-1));
-	sprintf(fname_bot ,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth-1),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth-1),(int)(water_elev.mWest  ));
+	sprintf(fname_bott,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth-1),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth-1),(int)(water_elev.mWest  ));
+	sprintf(fname_rigt,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest+1),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest+1));
+	sprintf(fname_topp,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth+1),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth+1),(int)(water_elev.mWest  ));
 	FILE * fi;
 	int n, w, h;
-	float e;
+	float e1, e2;
 	if (inWrite)
 	{
 		fi = fopen(fname_self, "w");
@@ -1079,63 +1103,82 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite)
 			fprintf(fi,"%d,%d\n", water_elev.mWidth, water_elev.mHeight);
 			for (n = 0; n < water_elev.mWidth; ++n)
 			{
-				e = water_elev.get(n, water_elev.mHeight-1);
-				fprintf(fi, "%f\n", e);
+				e1 = water_elev.get(n, 0				   );
+				e2 = water_elev.get(n, water_elev.mHeight-1);
+				fprintf(fi, "%f,%f\n", e1,e2);
 			}
 			for (n = 0; n < water_elev.mHeight; ++n)
 			{
-				e = water_elev.get(water_elev.mWidth-1, n);
-				fprintf(fi, "%f\n", e);
+				e1 = water_elev.get(0				   , n);
+				e2 = water_elev.get(water_elev.mWidth-1, n);
+				fprintf(fi, "%f,%f\n", e1,e2);
 			}
 			fclose(fi);
 		} else
 			AssertPrintf("Unable to open file %s for write.", fname_self);
 	} else {
-		fi = fopen(fname_bot, "r");
+		fi = fopen(fname_bott, "r");
+		borders[1] = fi != NULL;
 		if (fi)
 		{	
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
-			{
-				if (w == water_elev.mWidth)
-				{
-					for (n = 0; n < water_elev.mWidth; ++n)
-					{
-						if (fscanf(fi, "%f", &e) == 1)
-							water_elev(n, 0) = e;
-					}
-				}
-			}
+			if (w == water_elev.mWidth)
+			for (n = 0; n < water_elev.mWidth; ++n)
+			if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
+				water_elev(n, 0) = e2;
+			fclose(fi);
+		}
+		fi = fopen(fname_topp, "r");
+		borders[3] = fi != NULL;
+		if (fi)
+		{	
+			if (fscanf(fi, "%d,%d", &w, &h) == 2)
+			if (w == water_elev.mWidth)
+			for (n = 0; n < water_elev.mWidth; ++n)
+			if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
+				water_elev(n, water_elev.mHeight-1) = e1;
 			fclose(fi);
 		}
 		
 		fi = fopen(fname_left, "r");
+		borders[0] = fi != NULL;
 		if (fi)
 		{	
 			if (fscanf(fi, "%d,%d", &w, &h) == 2)
+			if (h == water_elev.mHeight)
 			{
-				if (h == water_elev.mHeight)
-				{
-					for (n = 0; n < water_elev.mWidth; ++n)
-					{
-						fscanf(fi, "%f", &e);							
-					}
-					for (n = 0; n < water_elev.mHeight; ++n)
-					{
-						if (fscanf(fi, "%f", &e) == 1)
-							water_elev(0, n) = e;
-					}					
-				}
+				for (n = 0; n < water_elev.mWidth; ++n)
+					fscanf(fi, "%f,%f", &e1,&e2);							
+				for (n = 0; n < water_elev.mHeight; ++n)
+				if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
+					water_elev(0, n) = e2;
 			}
 			fclose(fi);
 		}
+		fi = fopen(fname_rigt, "r");
+		borders[2] = fi != NULL;
+		if (fi)
+		{	
+			if (fscanf(fi, "%d,%d", &w, &h) == 2)
+			if (h == water_elev.mHeight)
+			{
+				for (n = 0; n < water_elev.mWidth; ++n)
+					fscanf(fi, "%f,%f", &e1,&e2);							
+				for (n = 0; n < water_elev.mHeight; ++n)
+				if (fscanf(fi, "%f,%f", &e1,&e2) == 2)
+					water_elev(water_elev.mWidth-1, n) = e1;
+			}
+			fclose(fi);
+		}		
 	}
 }
 
 void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, const char * hydro_dir, ProgressFunc inFunc)
 {
+	int borders[4];
 	UpdateWaterWithMaskFile(ioMap, ioDem, mask_file, inFunc);
-	ConformWater(ioDem, hydro_dir, false);
-	BuildRivers		  (ioMap, ioDem, inFunc);
+	ConformWater(ioDem, hydro_dir, false, borders);
+	BuildRivers		  (ioMap, ioDem, borders, inFunc);
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
 	InterpDoubleDEM(foo, bar);
 	ReduceToBorder(bar, foo);
@@ -1162,7 +1205,7 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	MergeMaps(water, ioMap, true, NULL, true, inFunc);
 	ioMap.swap(water);
 	
-	ConformWater(ioDem, hydro_dir, true);	
+	ConformWater(ioDem, hydro_dir, true, NULL);	
 }
 
 /******************************************************************************************************************************

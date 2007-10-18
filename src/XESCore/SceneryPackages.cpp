@@ -108,6 +108,15 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 //		if (gNaturalTerrainTable[n].base_alpha_invert)
 //			fprintf(ter, "BASE_ALPHA_INVERT" CRLF);
 
+		if(!gNaturalTerrainTable[n].vary_tex.empty())
+		{
+			fprintf(ter, "COMPOSITE_TEX %s" CRLF, gNaturalTerrainTable[n].vary_tex.c_str());
+		}
+		if(gNaturalTerrainTable[n].auto_vary > 0)
+		{
+			fprintf(ter, "AUTO_VARY" CRLF);
+		}
+
 //		if (!gNaturalTerrainTable[n].comp_tex.empty())
 //		{
 //			fprintf(ter, "COMPOSITE_TEX %s" CRLF, gNaturalTerrainTable[n].comp_tex.c_str());
@@ -147,6 +156,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		canonical_path(dir_path);
 
 		imageFiles.insert(dir_path+gNaturalTerrainTable[n].base_tex);
+		if (!gNaturalTerrainTable[n].vary_tex.empty())	imageFiles.insert(dir_path+gNaturalTerrainTable[n].vary_tex);
 		if (!gNaturalTerrainTable[n].lit_tex.empty())	imageFiles.insert(dir_path+gNaturalTerrainTable[n].lit_tex);
 //		imageFiles.insert(dir_path+gNaturalTerrainTable[n].comp_tex);
 		borderFiles.insert(dir_path+gNaturalTerrainTable[n].border_tex);

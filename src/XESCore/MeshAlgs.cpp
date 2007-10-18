@@ -135,7 +135,7 @@ inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 	return false;
 }
 
-inline void FindNextEast(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
+inline void FindNextEast(CDT& ioMesh, CDT::Face_handle& ioFace, int& index, bool is_bot_edge)
 {
 	CDT::Vertex_handle sv = ioFace->vertex(index);
 	CDT::Point p = sv->point();
@@ -154,8 +154,10 @@ inline void FindNextEast(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 		{
 			CDT::Face_handle	a_face;
 			CDT::Vertex_circulator next = now;
-			--next;
+			if(is_bot_edge)	++next;
+			else			--next;
 			Assert(ioMesh.is_face(sv, now, next, a_face));
+			Assert(!ioMesh.is_infinite(a_face));
 			ioFace = a_face;
 			index = ioFace->index(now);
 			return;
@@ -165,7 +167,7 @@ inline void FindNextEast(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 	AssertPrintf("Next mesh point not found.");
 }
 
-inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
+inline void FindNextNorth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index, bool is_right_edge)
 {
 	CDT::Vertex_handle sv = ioFace->vertex(index);
 	CDT::Point p = sv->point();
@@ -180,12 +182,14 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 //		printf("Checking: %lf, %lf\n", CGAL::to_double(now->point().x()), CGAL::to_double(now->point().y()));
 		if (now != ioMesh.infinite_vertex())
 		if (cx(now->point(), p) == CGAL::EQUAL)
-		if (cy(now->point(), p) == CGAL::SMALLER)
+		if (cy(now->point(), p) == CGAL::LARGER)
 		{
 			CDT::Face_handle	a_face;
 			CDT::Vertex_circulator next = now;
-			--next;
+			if(is_right_edge)	++next;
+			else				--next;
 			Assert(ioMesh.is_face(sv, now, next, a_face));
+			Assert(!ioMesh.is_infinite(a_face));
 			ioFace = a_face;
 			index = ioFace->index(now);
 			return;
@@ -195,6 +199,7 @@ inline void FindNextSouth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index)
 	Assert(!"Next pt not found.");
 }
 
+// This builds the set of all continuous triangles that have the same variation of a terrain (a contiguous blob if you will)
 void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& all, Bbox2& bounds)
 {
 	bounds = Point2(f->vertex(0)->point().x(),f->vertex(0)->point().y());
@@ -298,11 +303,12 @@ inline bool MATCH(const char * big, const char * msmall)
 	return strncmp(big, msmall, strlen(msmall)) == 0;
 }
 
-static mesh_match_t gMatchBottom, gMatchLeft;
+static mesh_match_t gMatchBorders[4];
 
 
 static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 {
+	printf("Finding edge tris for %d edgse.\n",ioBorder.edges.size());
 	DebugAssert(ioBorder.vertices.size() == (ioBorder.edges.size()+1));
 	for (int n = 0; n < ioBorder.edges.size(); ++n)
 	{
@@ -311,6 +317,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 		CDT::Point	p2 = ioBorder.vertices[n+1].buddy->point();
 #endif		
 		if (!(ioMesh.is_face(ioBorder.vertices[n].buddy, ioBorder.vertices[n+1].buddy, ioMesh.infinite_vertex(), ioBorder.edges[n].buddy)))
+//		if (!(ioMesh.is_face(ioBorder.vertices[n+1].buddy, ioBorder.vertices[n].buddy, ioMesh.infinite_vertex(), ioBorder.edges[n].buddy)))
 		{
 /*		
 			CDT::Vertex_circulator	circ, stop;
@@ -334,7 +341,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 */
 		// BEN SEZ: this used to be an error but - there are cases where the SLAVE file has a lake ENDING at the edge...there is no way the MASTER
 		// could have induced these pts, so we're screwed.  For now - we'll just blunder on.
-			ioBorder.edges[n].buddy = CDT::Face_handle();				
+			ioBorder.edges[n].buddy = CDT::Face_handle();	
 		} else {
 			int idx = ioBorder.edges[n].buddy->index(ioMesh.infinite_vertex());
 			ioBorder.edges[n].buddy = ioBorder.edges[n].buddy->neighbor(idx);
@@ -360,12 +367,16 @@ inline void ZapBorders(CDT::Vertex_handle v)
 		i->second = 0.0;
 }
 
-static bool	load_match_file(const char * path, mesh_match_t& outTop, mesh_match_t& outRight)
+static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match_t& outBottom, mesh_match_t& outRight, mesh_match_t& outTop)
 {
 	outTop.vertices.clear();
 	outTop.edges.clear();
 	outRight.vertices.clear();
 	outRight.edges.clear();
+	outBottom.vertices.clear();
+	outBottom.edges.clear();
+	outLeft.vertices.clear();
+	outLeft.edges.clear();
 	
 	FILE * fi = fopen(path, "r");
 	if (fi == NULL) return false;
@@ -375,99 +386,77 @@ static bool	load_match_file(const char * path, mesh_match_t& outTop, mesh_match_
 	float mix;
 	char ter[80];
 	
-	while (go)
+	for(int b = 0; b < 4; ++b)
 	{
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		if (MATCH(buf, "VT"))
-		{
-			outTop.vertices.push_back(mesh_match_vertex_t());
-			sscanf(buf, "VT %lf, %lf, %lf", &outTop.vertices.back().loc.x, &outTop.vertices.back().loc.y, &outTop.vertices.back().height);			
-			outTop.vertices.back().buddy = NULL;
+		go = true;
+		mesh_match_t *	dest;
+		switch(b) {
+		case 0: dest = &outLeft;	break;
+		case 1: dest = &outBottom;	break;
+		case 2: dest = &outRight;	break;
+		case 3: dest = &outTop;		break;
 		}
-		if (MATCH(buf, "VC"))
-		{
-			go = false;
-			outTop.vertices.push_back(mesh_match_vertex_t());
-			sscanf(buf, "VC %lf, %lf, %lf", &outTop.vertices.back().loc.x, &outTop.vertices.back().loc.y, &outTop.vertices.back().height);			
-			outTop.vertices.back().buddy = NULL;			
-		}
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		sscanf(buf, "VBC %d", &count);
-		while (count--)
+		
+		while (go)
 		{
 			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-			sscanf(buf, "VB %f %s", &mix, ter);
-			outTop.vertices.back().blending[LookupToken(ter)] = mix;
-		}
-		if (go)
-		{
+			if (MATCH(buf, "VT"))
+			{
+				dest->vertices.push_back(mesh_match_vertex_t());
+				sscanf(buf, "VT %lf, %lf, %lf", &dest->vertices.back().loc.x, &dest->vertices.back().loc.y, &dest->vertices.back().height);			
+				dest->vertices.back().buddy = NULL;
+			}
+			if (MATCH(buf, "VC"))
+			{
+				go = false;
+				dest->vertices.push_back(mesh_match_vertex_t());
+				sscanf(buf, "VC %lf, %lf, %lf", &dest->vertices.back().loc.x, &dest->vertices.back().loc.y, &dest->vertices.back().height);			
+				dest->vertices.back().buddy = NULL;			
+			}
 			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-			sscanf(buf, "TERRAIN %s", ter);
-			outTop.edges.push_back(mesh_match_edge_t());
-			outTop.edges.back().base = LookupToken(ter);
-			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-			sscanf(buf, "BORDER_C %d", &count);
+			sscanf(buf, "VBC %d", &count);
 			while (count--)
 			{
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-				sscanf(buf, "BORDER_T %s", ter);
-				outTop.edges.back().borders.insert( LookupToken(ter));				
-			}			
+				sscanf(buf, "VB %f %s", &mix, ter);
+				dest->vertices.back().blending[LookupToken(ter)] = mix;
+			}
+			if (go)
+			{
+				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
+				sscanf(buf, "TERRAIN %s", ter);
+				dest->edges.push_back(mesh_match_edge_t());
+				dest->edges.back().base = LookupToken(ter);
+				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
+				sscanf(buf, "BORDER_C %d", &count);
+				while (count--)
+				{
+					if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
+					sscanf(buf, "BORDER_T %s", ter);
+					dest->edges.back().borders.insert( LookupToken(ter));				
+				}			
+			}
 		}
 	}
 	
-	outRight.vertices.push_back(outTop.vertices.back());
-	go = true;
-	while (go)
-	{
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		if (MATCH(buf, "END"))
-		{
-			fclose(fi);			
-			return true;
-		}
-		sscanf(buf, "TERRAIN %s", ter);
-		outRight.edges.push_back(mesh_match_edge_t());
-		outRight.edges.back().base = LookupToken(ter);
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		sscanf(buf, "BORDER_C %d", &count);
-		while (count--)
-		{
-			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-			sscanf(buf, "BORDER_T %s", ter);
-			outRight.edges.back().borders.insert( LookupToken(ter));				
-		}			
-	
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		if (MATCH(buf, "VR"))
-		{
-			outRight.vertices.push_back(mesh_match_vertex_t());
-			sscanf(buf, "VR %lf, %lf, %lf", &outRight.vertices.back().loc.x, &outRight.vertices.back().loc.y, &outRight.vertices.back().height);			
-			outRight.vertices.back().buddy = NULL;			
-		}
-		if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-		sscanf(buf, "VBC %d", &count);
-		while (count--)
-		{
-			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
-			sscanf(buf, "VB %f %s", &mix, ter);
-			outRight.vertices.back().blending[LookupToken(ter)] = mix;
-		}
-	}
-	
+	return true;
 	
 bail:	
 	outTop.vertices.clear();
 	outTop.edges.clear();
 	outRight.vertices.clear();
 	outRight.edges.clear();
+	outBottom.vertices.clear();
+	outBottom.edges.clear();
+	outLeft.vertices.clear();
+	outLeft.edges.clear();
 	fclose(fi);
 	return false;	
 }
 
 // Given a point on the left edge of the top border or top edge of the right border, this fetches all border
 // points in order of distance from that origin.
-void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_handle>& outPts, bool isRight)
+void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_handle>& outPts, int side_num)
 {
 	CDT::Vertex_handle sv = ioMesh.infinite_vertex();
 	CDT::Vertex_circulator stop, now;
@@ -481,13 +470,13 @@ void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_han
 	CDT::Geom_traits::Compare_x_2 cx;
 	do {
 		double dist;
-		if (isRight && cx(now->point(), pt) == CGAL::EQUAL)
+		if ((side_num == 0 || side_num == 2) && cx(now->point(), pt) == CGAL::EQUAL)
 		{
 			dist = CGAL::to_double(now->point().y()) - origin.y;
 			DebugAssert(outPts.count(dist)==0);
 			outPts[dist] = now;
 		}
-		if (!isRight && cy(now->point(), pt) == CGAL::EQUAL)
+		if ((side_num == 1 || side_num == 3) && cy(now->point(), pt) == CGAL::EQUAL)
 		{
 			dist = CGAL::to_double(now->point().x()) - origin.x;
 			DebugAssert(outPts.count(dist)==0);
@@ -505,13 +494,13 @@ void	fetch_border(CDT& ioMesh, const Point2& origin, map<double, CDT::Vertex_han
 // 2. Match existing slave points with master points.
 // 3. Induce any extra slave points as needed.
 
-void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
+void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 {
 	map<double, CDT::Vertex_handle>	slaves;					// Slave map, from relative border offset to the handle.  Allows for fast slave location.
 	Point2	origin = ioBorder.vertices.front().loc;			// Origin of our tile.
 
 	// Step 1.  Fetch the entire border from the mesh.
-	fetch_border(ioMesh, origin, slaves, isRight);
+	fetch_border(ioMesh, origin, slaves, side_num);
 	
 	// Step 2. Until we have exhausted all of the slaves, we are going to try to find the neaerest master-slave pair and link them.
 	
@@ -526,7 +515,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 			// Find the nearest slave for it by decreasing distance.
 			for (map<double, CDT::Vertex_handle>::iterator sl = slaves.begin(); sl != slaves.end(); ++sl)
 			{
-				double myDist = isRight ? (pts->loc.y - CGAL::to_double(sl->second->point().y())) : (pts->loc.x - CGAL::to_double(sl->second->point().x()));
+				double myDist = (side_num == 0 || side_num == 2) ? (pts->loc.y - CGAL::to_double(sl->second->point().y())) : (pts->loc.x - CGAL::to_double(sl->second->point().x()));
 				if (myDist < 0.0) myDist = -myDist;
 				nearest.insert(multimap<double, pair<double, mesh_match_vertex_t *> >::value_type(myDist, pair<double, mesh_match_vertex_t *>(sl->first, &*pts)));
 			}
@@ -543,6 +532,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 		pair<double, mesh_match_vertex_t *> best_match = nearest.begin()->second;
 		DebugAssert(slaves.count(best_match.first) > 0);
 		best_match.second->buddy = slaves[best_match.first];
+//		printf("Matched: %lf,%lf to %lf,%lf\n",			CGAL::to_double(best_match.second->buddy->point().x()),			CGAL::to_double(best_match.second->buddy->point().y()),			best_match.second->loc.x,			best_match.second->loc.y);
 		slaves.erase(best_match.first);
 	}
 	
@@ -551,6 +541,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, bool isRight)
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
 	{
+//		printf("Found no buddy for: %lf,%lf\n",pts->loc.x, pts->loc.y);
 		pts->buddy = ioMesh.safe_insert(CDT::Point(pts->loc.x, pts->loc.y), nearf);
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
@@ -905,14 +896,18 @@ void AddEdgePoints(
 			DEMGeo& 			deriv, 			// Edge points are added to this
 			int 				interval,		// The interval - add an edge point once every N points.
 			int					divisions,		// Number of divisions - 1 means 1 big, "2" means 4 parts, etc.
-			bool				has_left,		// True if the left and bottom edges are provided to us.  This is
-			bool				has_bottom)		// Useful in making sure our borders match up.
+			bool				has_border[4])	// Useful in making sure our borders match up.
 {
 	int	div_skip_x = (deriv.mWidth-1) / divisions;
 	int	div_skip_y = (deriv.mHeight-1) / divisions;
 	int x, y, dx, dy;
-	for (y = (has_bottom ? div_skip_y : 0); y < deriv.mHeight; y += div_skip_y)
-	for (x = (has_left ? div_skip_x : 0); x < deriv.mWidth; x += div_skip_x)
+	bool has_left = has_border[0];
+	bool has_bottom = has_border[1];
+	bool has_right = has_border[2];
+	bool has_top = has_border[3];
+	
+	for (y = (has_bottom ? div_skip_y : 0); y < (deriv.mHeight - (has_top ? div_skip_y : 0)) ; y += div_skip_y)
+	for (x = (has_left ? div_skip_x : 0); x < (deriv.mWidth - (has_right ? div_skip_x : 0)); x += div_skip_x)
 	{
 		for (dy = 0; dy < deriv.mHeight; dy += interval)
 		for (dx = 0; dx < deriv.mWidth; dx += interval)
@@ -1274,35 +1269,44 @@ void	AddBulkPointsToMesh(
 void CalculateMeshNormals(CDT& ioMesh)
 {
 	for (CDT::Finite_vertices_iterator i = ioMesh.finite_vertices_begin(); i != ioMesh.finite_vertices_end(); ++i)
-	{
+	{		
 		Vector3	total(0.0, 0.0, 0.0);
 		CDT::Vertex_circulator last = ioMesh.incident_vertices(i);
 		CDT::Vertex_circulator nowi = last, stop = last;
+		Point3	selfP(   i->point().x(),    i->point().y(),    i->info().height);
 		do {
 			last = nowi;
 			++nowi;
-			Point3	lastP(last->point().x(), last->point().y(), last->info().height);
-			Point3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
-			Point3	selfP(   i->point().x(),    i->point().y(),    i->info().height);
-			Vector3	v1(selfP, lastP);
-			Vector3	v2(selfP, nowiP);
-			v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
-			v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
-			v1.dy *= (DEG_TO_MTR_LAT);
-			v2.dy *= (DEG_TO_MTR_LAT);
-			v1.normalize();
-			v2.normalize();
-			Vector3	normal(v1.cross(v2));
-			normal.normalize();
-			CDT::Face_handle	a_face;
-			if (ioMesh.is_face(i, last, nowi, a_face))
+			if(!ioMesh.is_infinite(last) && !ioMesh.is_infinite(nowi))
 			{
-				a_face->info().normal[0] = normal.dx;
-				a_face->info().normal[1] = normal.dy;
-				a_face->info().normal[2] = normal.dz;
-			}
-			total += normal;			
+				Point3	lastP(last->point().x(), last->point().y(), last->info().height);
+				Point3	nowiP(nowi->point().x(), nowi->point().y(), nowi->info().height);
+				Vector3	v1(selfP, lastP);
+				Vector3	v2(selfP, nowiP);
+				v1.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+				v2.dx *= (DEG_TO_MTR_LAT * cos(selfP.y * DEG_TO_RAD));
+				v1.dy *= (DEG_TO_MTR_LAT);
+				v2.dy *= (DEG_TO_MTR_LAT);
+				DebugAssert(v1.dx != 0.0 || v1.dy != 0.0 || v1.dz != 0.0);
+				DebugAssert(v2.dx != 0.0 || v2.dy != 0.0 || v2.dz != 0.0);
+				v1.normalize();
+				v2.normalize();
+				Vector3	normal(v1.cross(v2));
+				DebugAssert(normal.dx != 0.0 || normal.dy != 0.0 || normal.dz != 0.0);
+				DebugAssert(normal.dz > 0.0);
+				normal.normalize();
+				CDT::Face_handle	a_face;
+				if (ioMesh.is_face(i, last, nowi, a_face))
+				{
+					a_face->info().normal[0] = normal.dx;
+					a_face->info().normal[1] = normal.dy;
+					a_face->info().normal[2] = normal.dz;
+				}
+				total += normal;			
+			}	
 		} while (nowi != stop);
+		DebugAssert(total.dx != 0.0 || total.dy != 0.0 || total.dz != 0.0);
+		DebugAssert(total.dz > 0.0);
 		total.normalize();
 		i->info().normal[0] = total.dx;
 		i->info().normal[1] = total.dy;
@@ -1427,8 +1431,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	{
 		TIMER(edges);
 		
-		char	fname_left[512];
+		char	fname_lef[512];
 		char	fname_bot[512];
+		char	fname_rgt[512];
+		char	fname_top[512];
 
 		string border_loc = mesh_folder;		
 #if APL && !defined(__MACH__)
@@ -1439,14 +1445,19 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		border_loc = appP + border_loc;
 #endif
 
-		sprintf(fname_left,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest - 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
+		sprintf(fname_lef,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest - 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
 		sprintf(fname_bot ,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth - 1),latlon_bucket(deriv.mWest), DIR_STR, (int) (deriv.mSouth - 1), (int) (deriv.mWest));
+		sprintf(fname_rgt,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest + 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest + 1));
+		sprintf(fname_top ,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth + 1),latlon_bucket(deriv.mWest), DIR_STR, (int) (deriv.mSouth + 1), (int) (deriv.mWest));
 		
-		mesh_match_t bot_junk, left_junk;
-		bool	has_left = gMeshPrefs.border_match ? load_match_file(fname_left, left_junk, gMatchLeft) : false;
-		bool	has_bot  = gMeshPrefs.border_match ? load_match_file(fname_bot , gMatchBottom, bot_junk) : false;
+		mesh_match_t junk1, junk2, junk3;
+		bool	has_borders[4];
+		has_borders[0] = gMeshPrefs.border_match ? load_match_file(fname_lef, junk1, junk2, gMatchBorders[0], junk3) : false;
+		has_borders[1] = gMeshPrefs.border_match ? load_match_file(fname_bot, junk1, junk2, junk3, gMatchBorders[1]) : false;
+		has_borders[2] = gMeshPrefs.border_match ? load_match_file(fname_rgt, gMatchBorders[2], junk1, junk2, junk3) : false;
+		has_borders[3] = gMeshPrefs.border_match ? load_match_file(fname_top, junk1, gMatchBorders[3], junk2, junk3) : false;
 		
-		AddEdgePoints(orig, deriv, 20, 1, has_left, has_bot);
+		AddEdgePoints(orig, deriv, 20, 1, has_borders);
 	}
 
 	/*********************************************************************************************************************
@@ -1466,30 +1477,36 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	// We temporarily build the whole slaved edge. 
 	 
 	vector<CDT::Vertex_handle> temporary;
-	int n;
-	 
-	if (!gMatchLeft.vertices.empty()) // Because size-1 for empty is max-unsigned-int - gross.
-	for (n = 1; n < gMatchLeft.vertices.size()-1; ++n)
+	int n,b;
+	for(b=0;b<4;++b)
+	if (!gMatchBorders[b].vertices.empty()) // Because size-1 for empty is max-unsigned-int - gross.
+	for (n = 1; n < gMatchBorders[b].vertices.size()-1; ++n)
 	{
-		temporary.push_back(outMesh.insert(CDT::Point(gMatchLeft.vertices[n].loc.x,gMatchLeft.vertices[n].loc.y)));
-		temporary.back()->info().height = gMatchLeft.vertices[n].height;
-	}
-	if (!gMatchBottom.vertices.empty())
-	for (n = 1; n < gMatchBottom.vertices.size()-1; ++n)
-	{
-		temporary.push_back(outMesh.insert(CDT::Point(gMatchBottom.vertices[n].loc.x,gMatchBottom.vertices[n].loc.y)));
-		temporary.back()->info().height = gMatchBottom.vertices[n].height;
+		temporary.push_back(outMesh.insert(CDT::Point(gMatchBorders[b].vertices[n].loc.x,gMatchBorders[b].vertices[n].loc.y)));
+		temporary.back()->info().height = gMatchBorders[b].vertices[n].height;
 	}
 		
 	// Clear out the slaved edges in the data so that we don't add them as part of our process.	 
 	{
-		if (!gMatchLeft.vertices.empty())
+		if (!gMatchBorders[2].vertices.empty())
+		for (y = 0; y < deriv.mHeight; ++y)
+		{
+			land (deriv.mWidth-1, y) = DEM_NO_DATA;
+			deriv(deriv.mWidth-1, y) = DEM_NO_DATA;
+		}
+		if (!gMatchBorders[3].vertices.empty())
+		for (x = 0; x < deriv.mWidth; ++x)
+		{
+			land(x , deriv.mHeight-1) = DEM_NO_DATA;
+			deriv(x, deriv.mHeight-1) = DEM_NO_DATA;
+		}
+		if (!gMatchBorders[0].vertices.empty())
 		for (y = 0; y < deriv.mHeight; ++y)
 		{
 			land(0, y) = DEM_NO_DATA;
 			deriv(0, y) = DEM_NO_DATA;
 		}
-		if (!gMatchBottom.vertices.empty())
+		if (!gMatchBorders[1].vertices.empty())
 		for (x = 0; x < deriv.mWidth; ++x)
 		{
 			land(x, 0) = DEM_NO_DATA;
@@ -1539,10 +1556,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	{
 		// This HAS to go after water.  Why?  Well, it can absorb existing points but the other routines dumbly add.
 		// So we MUST build all forced points (water) first.
-		if (!gMatchLeft.vertices.empty())
-			match_border(outMesh, gMatchLeft, true);
-		if (!gMatchBottom.vertices.empty())
-			match_border(outMesh, gMatchBottom, false);
+		for(b=0;b<4;++b)
+		if (!gMatchBorders[b].vertices.empty())
+			match_border(outMesh, gMatchBorders[b], b);
 	}
 	
 	if (prog) prog(0, 3, "Calculating Mesh Points", 0.8);
@@ -1821,8 +1837,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// ??? So the optmizer will NUKE this stuff. :-(
 
 	// First build a correlation between our border info and some real tris in the mesh.
-	if (!gMatchLeft.vertices.empty())	border_find_edge_tris(ioMesh, gMatchLeft);
-	if (!gMatchBottom.vertices.empty())	border_find_edge_tris(ioMesh, gMatchBottom);
+	int b;
+	for(b=0;b<4;++b)
+	if (!gMatchBorders[b].vertices.empty())	
+		border_find_edge_tris(ioMesh, gMatchBorders[b]);
 	int lowest;
 	int n;
 #if !NO_BORDER_SHARING	
@@ -1831,78 +1849,44 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// Now we have to "rebase" our edges.  Basically it is possible that we are getting intruded from the left
 	// by a lower priority texture.  If we just use borders, that low prio tex will end up UNDER our base, and we'll
 	// never see it.  So we need to take the tex on our right side and reduce it.
-	for (n = 0; n < gMatchLeft.edges.size(); ++n)
-	if (gMatchLeft.edges[n].buddy != CDT::Face_handle())
+	for(b=0;b < 4; ++b)
 	{
-		lowest = gMatchLeft.edges[n].buddy->info().terrain;
-		if (LowerPriorityNaturalTerrain(gMatchLeft.edges[n].base, lowest))
-			lowest = gMatchLeft.edges[n].base;
-		for (set<int>::iterator bl = gMatchLeft.edges[n].borders.begin(); bl != gMatchLeft.edges[n].borders.end(); ++bl)
+		for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
+		if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
 		{
-			if (LowerPriorityNaturalTerrain(*bl, lowest))
-				lowest = *bl;
+			lowest = gMatchBorders[b].edges[n].buddy->info().terrain;
+			if (LowerPriorityNaturalTerrain(gMatchBorders[b].edges[n].base, lowest))
+				lowest = gMatchBorders[b].edges[n].base;
+			for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
+			{
+				if (LowerPriorityNaturalTerrain(*bl, lowest))
+					lowest = *bl;
+			}
+
+			if (lowest != gMatchBorders[b].edges[n].buddy->info().terrain)
+				RebaseTriangle(ioMesh, gMatchBorders[b].edges[n].buddy, lowest, gMatchBorders[b].vertices[n].buddy, gMatchBorders[b].vertices[n+1].buddy, vertices);
 		}
 
-		if (lowest != gMatchLeft.edges[n].buddy->info().terrain)
-			RebaseTriangle(ioMesh, gMatchLeft.edges[n].buddy, lowest, gMatchLeft.vertices[n].buddy, gMatchLeft.vertices[n+1].buddy, vertices);
-	}
-
-	for (n = 0; n < gMatchLeft.vertices.size(); ++n)
-	{
-		CDT::Face_circulator circ, stop;
-		circ = stop = ioMesh.incident_faces(gMatchLeft.vertices[n].buddy);
-		do {
-			if (!ioMesh.is_infinite(circ))
-			if (!is_border(ioMesh, circ))
-			{
-				lowest = circ->info().terrain;
-				for (hash_map<int, float>::iterator bl = gMatchLeft.vertices[n].blending.begin(); bl != gMatchLeft.vertices[n].blending.end(); ++bl)				
-				if (bl->second > 0.0)
-				if (LowerPriorityNaturalTerrain(bl->first, lowest))
-					lowest = bl->first;
-				
-				if (lowest != circ->info().terrain)
-					RebaseTriangle(ioMesh, circ, lowest, gMatchLeft.vertices[n].buddy, CDT::Vertex_handle(), vertices);
-			}
-			++circ;
-		} while (circ != stop);
-	}
-
-	for (n = 0; n < gMatchBottom.edges.size(); ++n)
-	if (gMatchBottom.edges[n].buddy != CDT::Face_handle())
-	{
-		lowest = gMatchBottom.edges[n].buddy->info().terrain;
-		if (LowerPriorityNaturalTerrain(gMatchBottom.edges[n].base, lowest))
-			lowest = gMatchBottom.edges[n].base;
-		for (set<int>::iterator bl = gMatchBottom.edges[n].borders.begin(); bl != gMatchBottom.edges[n].borders.end(); ++bl)
+		for (n = 0; n < gMatchBorders[b].vertices.size(); ++n)
 		{
-			if (LowerPriorityNaturalTerrain(*bl, lowest))
-				lowest = *bl;
+			CDT::Face_circulator circ, stop;
+			circ = stop = ioMesh.incident_faces(gMatchBorders[b].vertices[n].buddy);
+			do {
+				if (!ioMesh.is_infinite(circ))
+				if (!is_border(ioMesh, circ))
+				{
+					lowest = circ->info().terrain;
+					for (hash_map<int, float>::iterator bl = gMatchBorders[b].vertices[n].blending.begin(); bl != gMatchBorders[b].vertices[n].blending.end(); ++bl)				
+					if (bl->second > 0.0)
+					if (LowerPriorityNaturalTerrain(bl->first, lowest))
+						lowest = bl->first;
+					
+					if (lowest != circ->info().terrain)
+						RebaseTriangle(ioMesh, circ, lowest, gMatchBorders[b].vertices[n].buddy, CDT::Vertex_handle(), vertices);
+				}
+				++circ;
+			} while (circ != stop);
 		}
-		
-		if (lowest != gMatchBottom.edges[n].buddy->info().terrain)
-			RebaseTriangle(ioMesh, gMatchBottom.edges[n].buddy, lowest, gMatchBottom.vertices[n].buddy, gMatchBottom.vertices[n+1].buddy, vertices);
-	}
-	
-	for (n = 0; n < gMatchBottom.vertices.size(); ++n)
-	{
-		CDT::Face_circulator circ, stop;
-		circ = stop = ioMesh.incident_faces(gMatchBottom.vertices[n].buddy);
-		do {
-			if (!ioMesh.is_infinite(circ))
-			if (!is_border(ioMesh, circ))
-			{
-				lowest = circ->info().terrain;
-				for (hash_map<int, float>::iterator bl = gMatchBottom.vertices[n].blending.begin(); bl != gMatchBottom.vertices[n].blending.end(); ++bl)				
-				if (bl->second > 0.0)
-				if (LowerPriorityNaturalTerrain(bl->first, lowest))
-					lowest = bl->first;
-				
-				if (lowest != circ->info().terrain)
-					RebaseTriangle(ioMesh, circ, lowest, gMatchBottom.vertices[n].buddy, CDT::Vertex_handle(), vertices);
-			}
-			++circ;
-		} while (circ != stop);
 	}
 
 	// These vertices were given partial borders by rebasing - go in and make sure that all incident triangles match them.
@@ -2041,12 +2025,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 #if !NO_BORDER_SHARING
 	// First - force border blend of zero at the slaved edge, no matter how ridiculous.  We can't possibly propagate
 	// this border into a previously rendered file, so a hard stop is better than a cutoff.
-	for (n = 0; n < gMatchLeft.vertices.size(); ++n)
-	for (hash_map<int, float>::iterator blev = gMatchLeft.vertices[n].buddy->info().border_blend.begin(); blev != gMatchLeft.vertices[n].buddy->info().border_blend.end(); ++blev)
-		blev->second = 0.0;
-
-	for (n = 0; n < gMatchBottom.vertices.size(); ++n)
-	for (hash_map<int, float>::iterator blev = gMatchBottom.vertices[n].buddy->info().border_blend.begin(); blev != gMatchBottom.vertices[n].buddy->info().border_blend.end(); ++blev)
+	for(b=0;b<4;++b)
+	for (n = 0; n < gMatchBorders[b].vertices.size(); ++n)
+	for (hash_map<int, float>::iterator blev = gMatchBorders[b].vertices[n].buddy->info().border_blend.begin(); blev != gMatchBorders[b].vertices[n].buddy->info().border_blend.end(); ++blev)
 		blev->second = 0.0;
 
 	// Now we are going to go in and add borders on our slave edges from junk coming in on the left.  We have ALREADY
@@ -2055,62 +2036,35 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	// a border on the slave - the edge blend levels are the master's blend and the interior poiont gets a blend of 0 or whatever
 	// was already there.
 	
-	for (n = 0; n < gMatchLeft.edges.size(); ++n)
-	if (gMatchLeft.edges[n].buddy != CDT::Face_handle())
-	if (gMatchLeft.edges[n].buddy->info().terrain != terrain_Water)
+	for(b=0;b<4;++b)
+	for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
+	if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
+	if (gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water)
 	{
 		// Handle the base terrain
-		if (gMatchLeft.edges[n].buddy->info().terrain != gMatchLeft.edges[n].base)
+		if (gMatchBorders[b].edges[n].buddy->info().terrain != gMatchBorders[b].edges[n].base)
 		{
-			AddZeroMixIfNeeded(gMatchLeft.edges[n].buddy, gMatchLeft.edges[n].base);
-			gMatchLeft.vertices[n].buddy->info().border_blend[gMatchLeft.edges[n].base] = 1.0;
-			SafeSmearBorder(ioMesh, gMatchLeft.vertices[n].buddy, gMatchLeft.edges[n].base);
-			gMatchLeft.vertices[n+1].buddy->info().border_blend[gMatchLeft.edges[n].base] = 1.0;
-			SafeSmearBorder(ioMesh, gMatchLeft.vertices[n+1].buddy, gMatchLeft.edges[n].base);
+			AddZeroMixIfNeeded(gMatchBorders[b].edges[n].buddy, gMatchBorders[b].edges[n].base);
+			gMatchBorders[b].vertices[n].buddy->info().border_blend[gMatchBorders[b].edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchBorders[b].vertices[n].buddy, gMatchBorders[b].edges[n].base);
+			gMatchBorders[b].vertices[n+1].buddy->info().border_blend[gMatchBorders[b].edges[n].base] = 1.0;
+			SafeSmearBorder(ioMesh, gMatchBorders[b].vertices[n+1].buddy, gMatchBorders[b].edges[n].base);
 		}
 		
 		// Handle any overlay layers...
-		for (set<int>::iterator bl = gMatchLeft.edges[n].borders.begin(); bl != gMatchLeft.edges[n].borders.end(); ++bl)
+		for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
 		{
-			if (gMatchLeft.edges[n].buddy->info().terrain != *bl)
+			if (gMatchBorders[b].edges[n].buddy->info().terrain != *bl)
 			{
-				AddZeroMixIfNeeded(gMatchLeft.edges[n].buddy, *bl);
-				gMatchLeft.vertices[n].buddy->info().border_blend[*bl] = gMatchLeft.vertices[n].blending[*bl];
-				SafeSmearBorder(ioMesh, gMatchLeft.vertices[n].buddy, *bl);				
-				gMatchLeft.vertices[n+1].buddy->info().border_blend[*bl] = gMatchLeft.vertices[n+1].blending[*bl];
-				SafeSmearBorder(ioMesh, gMatchLeft.vertices[n+1].buddy, *bl);				
+				AddZeroMixIfNeeded(gMatchBorders[b].edges[n].buddy, *bl);
+				gMatchBorders[b].vertices[n].buddy->info().border_blend[*bl] = gMatchBorders[b].vertices[n].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchBorders[b].vertices[n].buddy, *bl);				
+				gMatchBorders[b].vertices[n+1].buddy->info().border_blend[*bl] = gMatchBorders[b].vertices[n+1].blending[*bl];
+				SafeSmearBorder(ioMesh, gMatchBorders[b].vertices[n+1].buddy, *bl);				
 			}
 		}
 	}
 	
-	for (n = 0; n < gMatchBottom.edges.size(); ++n)
-	if (gMatchBottom.edges[n].buddy != CDT::Face_handle())
-	if (gMatchBottom.edges[n].buddy->info().terrain != terrain_Water)
-	{
-		// Handle the base terrain
-		if (gMatchBottom.edges[n].buddy->info().terrain != gMatchBottom.edges[n].base)
-		{
-			AddZeroMixIfNeeded(gMatchBottom.edges[n].buddy, gMatchBottom.edges[n].base);
-			gMatchBottom.vertices[n].buddy->info().border_blend[gMatchBottom.edges[n].base] = 1.0;
-			SafeSmearBorder(ioMesh, gMatchBottom.vertices[n].buddy, gMatchBottom.edges[n].base);							
-			gMatchBottom.vertices[n+1].buddy->info().border_blend[gMatchBottom.edges[n].base] = 1.0;
-			SafeSmearBorder(ioMesh, gMatchBottom.vertices[n+1].buddy, gMatchBottom.edges[n].base);							
-		}
-		
-		// Handle any overlay layers...
-		for (set<int>::iterator bl = gMatchBottom.edges[n].borders.begin(); bl != gMatchBottom.edges[n].borders.end(); ++bl)
-		{
-			if (gMatchBottom.edges[n].buddy->info().terrain != *bl)
-			{
-				AddZeroMixIfNeeded(gMatchBottom.edges[n].buddy, *bl);
-				gMatchBottom.vertices[n].buddy->info().border_blend[*bl] = gMatchBottom.vertices[n].blending[*bl];
-				SafeSmearBorder(ioMesh, gMatchBottom.vertices[n].buddy, *bl);							
-				gMatchBottom.vertices[n+1].buddy->info().border_blend[*bl] = gMatchBottom.vertices[n+1].blending[*bl];
-				SafeSmearBorder(ioMesh, gMatchBottom.vertices[n+1].buddy, *bl);							
-			}
-		}
-	
-	}
 #endif
 	
 	/***********************************************************************************************
@@ -2202,92 +2156,67 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		FILE * border = fopen(fname, "w");
 		if (border == NULL) AssertPrintf("Unable to open file %s for writing.", fname);
 		
-		CDT::Point	cur(west,north), stop(east, north);
+		CDT::Point cur,stop;
+		for(int b = 0; b < 4; ++b)
+		{
+			switch(b) {
+			case 0:	cur = CDT::Point(west,south);	stop = CDT::Point(west,north);	break;
+			case 1:	cur = CDT::Point(west,south);	stop = CDT::Point(east,south);	break;
+			case 2:	cur = CDT::Point(east,south);	stop = CDT::Point(east,north);	break;
+			case 3:	cur = CDT::Point(west,north);	stop = CDT::Point(east,north);	break;
+			}	
 	
-		CDT::Face_handle	f;
-		int					i;
-		CDT::Locate_type	lt;
-		f = ioMesh.locate(cur, lt, i);
-		Assert(lt == CDT::VERTEX);
-		
-		CDT::Face_circulator circ, circstop;
-		
-		do {
-			fprintf(border, "VT %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
+			CDT::Face_handle	f;
+			int					i;
+			CDT::Locate_type	lt;
+			f = ioMesh.locate(cur, lt, i);
+			Assert(lt == CDT::VERTEX);
 			
-			hash_map<int, float>	borders;			
-			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
-			if (hfi->second > 0.0)
-				borders[hfi->first] = max(borders[hfi->first], hfi->second);
-			circ = circstop = ioMesh.incident_faces(f->vertex(i));
-			do {
-				if (!ioMesh.is_infinite(circ))
-				{
-					borders[circ->info().terrain] = 1.0;
-				}
-				++circ;
-			} while (circ != circstop);
-
-			fprintf(border, "VBC %d\n", borders.size());
-			for (hash_map<int, float>::iterator hfi = borders.begin(); hfi != borders.end(); ++hfi)
-				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
-
-			FindNextEast(ioMesh, f, i);
-			DebugAssert(!ioMesh.is_infinite(f));
-
-			fprintf(border, "TERRAIN %s\n", FetchTokenString(f->info().terrain));
-			fprintf(border, "BORDER_C %d\n", f->info().terrain_border.size());
-			for (set<int>::iterator si = f->info().terrain_border.begin(); si != f->info().terrain_border.end(); ++si)
-				fprintf(border, "BORDER_T %s\n", FetchTokenString(*si));
+			CDT::Face_circulator circ, circstop;
 			
-		} while (f->vertex(i)->point() != stop);
-		
-		fprintf(border, "VC %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
-		fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
-		for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
-			fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
-
-		
-		stop = CDT::Point(east, south);
-
-		do {
-			FindNextSouth(ioMesh, f, i);
-			DebugAssert(!ioMesh.is_infinite(f));
-			fprintf(border, "TERRAIN %s\n", FetchTokenString(f->info().terrain));
-			fprintf(border, "BORDER_C %d\n", f->info().terrain_border.size());
-			for (set<int>::iterator si = f->info().terrain_border.begin(); si != f->info().terrain_border.end(); ++si)
-				fprintf(border, "BORDER_T %s\n", FetchTokenString(*si));
-		
-			fprintf(border, "VR %.12lf, %.12lf, %lf\n", 
-				CGAL::to_double(f->vertex(i)->point().x()),
-				CGAL::to_double(f->vertex(i)->point().y()),
-				CGAL::to_double(f->vertex(i)->info().height));
-				
-			hash_map<int, float>	borders;			
-			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
-			if (hfi->second > 0.0)
-				borders[hfi->first] = max(borders[hfi->first], hfi->second);
-			circ = circstop = ioMesh.incident_faces(f->vertex(i));
 			do {
-				if (!ioMesh.is_infinite(circ))
-				{
-					borders[circ->info().terrain] = 1.0;
-				}
-				++circ;
-			} while (circ != circstop);
+				fprintf(border, "VT %.12lf, %.12lf, %lf\n", 
+					CGAL::to_double(f->vertex(i)->point().x()),
+					CGAL::to_double(f->vertex(i)->point().y()),
+					CGAL::to_double(f->vertex(i)->info().height));
 				
+				hash_map<int, float>	borders;			
+				for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
+				if (hfi->second > 0.0)
+					borders[hfi->first] = max(borders[hfi->first], hfi->second);
+				circ = circstop = ioMesh.incident_faces(f->vertex(i));
+				do {
+					if (!ioMesh.is_infinite(circ))
+					{
+						borders[circ->info().terrain] = 1.0;
+					}
+					++circ;
+				} while (circ != circstop);
+
+				fprintf(border, "VBC %d\n", borders.size());
+				for (hash_map<int, float>::iterator hfi = borders.begin(); hfi != borders.end(); ++hfi)
+					fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
+
+				if(b == 1 || b == 3)				FindNextEast(ioMesh, f, i, b==1);
+				else								FindNextNorth(ioMesh, f, i, b==2);
+				DebugAssert(!ioMesh.is_infinite(f));
+
+				fprintf(border, "TERRAIN %s\n", FetchTokenString(f->info().terrain));
+				fprintf(border, "BORDER_C %d\n", f->info().terrain_border.size());
+				for (set<int>::iterator si = f->info().terrain_border.begin(); si != f->info().terrain_border.end(); ++si)
+					fprintf(border, "BORDER_T %s\n", FetchTokenString(*si));
+			
+			} while (f->vertex(i)->point() != stop);
+			
+			fprintf(border, "VC %.12lf, %.12lf, %lf\n", 
+					CGAL::to_double(f->vertex(i)->point().x()),
+					CGAL::to_double(f->vertex(i)->point().y()),
+					CGAL::to_double(f->vertex(i)->info().height));
 			fprintf(border, "VBC %d\n", f->vertex(i)->info().border_blend.size());
 			for (hash_map<int, float>::iterator hfi = f->vertex(i)->info().border_blend.begin(); hfi != f->vertex(i)->info().border_blend.end(); ++hfi)
 				fprintf(border, "VB %f %s\n", hfi->second, FetchTokenString(hfi->first));
-
-		} while (f->vertex(i)->point() != stop);
-
+		}
+		
 		fprintf(border, "END\n");
 		fclose(border);
 

@@ -54,8 +54,11 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 
 #define		PATCH_DIM_HI	16
 #define		PATCH_DIM_LO	16
-#define		TERRAIN_NEAR_LOD 		0.0
-#define		TERRAIN_FAR_LOD			-1.0
+#define		TERRAIN_NEAR_LOD			 0.0
+#define		TERRAIN_FAR_LOD				-1.0
+#define		TERRAIN_NEAR_BORDER_LOD 	 0.0
+#define		TERRAIN_FAR_BORDER_LOD		 20000
+
 #define		ORTHO_NEAR_LOD			100000.0
 #define		ORTHO_FAR_LOD			-1.0
 #define		MAX_TRIS_PER_PATCH		85
@@ -740,7 +743,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
+		{
 			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
+			landuses.insert(map<int, int, SortByLULayer>::value_type(*border_lu,0));
+		}
 	}
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.5)) return;	
@@ -1022,7 +1028,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (lu_ranked->first >= terrain_Natural)
 		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer);
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, TERRAIN_FAR_BORDER_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer);
 			cbs.BeginPrimitive_f(dsf_Tri, writer);				
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
@@ -1035,6 +1041,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					for (vi = 0; vi < 3; ++vi)
 						bblend[vi] = f->vertex(vi)->info().border_blend[lu_ranked->first];
 					
+					// Ben says: normally we would like to draw one DSF overdrawn tri for each border tri.  But there is an exception case:
+					// if ALL of our border blends are 100% but our border is NOT a variant (e.g. this is a meaningful border change) then
+					// we really need to make 3 border tris that all fade out...this allows the CENTER of our tri to show the base terrain
+					// while the borders show the neighboring tris.  (Without this, a single tri of cliff will be COMPLETELY covered by 
+					// the non-cliff terrain surrouding on 3 sides.)  In this case we make THREE passes and force one vertex to 0% blend for
+					// each pass.
 					int ts = -1, te = 0;
 					if (!AreVariants(lu_ranked->first, f->info().terrain))
 					if (bblend[0] == bblend[1] &&

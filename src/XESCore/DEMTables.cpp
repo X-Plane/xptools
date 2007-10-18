@@ -397,14 +397,54 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.slope_heading_max = cosdeg(info.slope_heading_max);
 	swap(info.slope_heading_min, info.slope_heading_max);
 
+	// Ben says: this used to be the non-auto-vary case!	
+	if (auto_vary < 3)
+	{
+		
+		info.variant = 0;
+		info.related = -1;
+		
+		string rep_name = ter_name;
+		if(auto_vary > 0) rep_name += "_av";
+		
+		LowerCheckName(rep_name);
+		info.name = LookupTokenCreate(rep_name.c_str());	
+		info.base_tex = tex_name;
+		if(auto_vary == 2)
+		{
+			info.vary_tex = tex_name;
+			info.vary_tex.insert(info.vary_tex.end()-4,'2');
+		}
+		if(auto_vary > 0)
+			info.auto_vary = 1;
+		else
+			info.auto_vary = 0;
+
+		if (has_lit)			info.lit_tex = MakeLit(info.base_tex);
+		else					info.lit_tex.clear();
+		
+		int rn = gNaturalTerrainTable.size();
+		gNaturalTerrainTable.push_back(info);
+
+//		gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
+		if (gNaturalTerrainIndex.count(info.name) == 0)
+			gNaturalTerrainIndex[info.name] = rn;
+	}
+
+
+	info.vary_tex.clear();
+
 	// AUTO-VARIATION - we take one rule and make four rules with variant codes.  Later the rule-finder will generate random codes to select rules spatially.
 	// The auto-vary code is: 0 = none, 1 = vary by spatial blobs, 2 = vary by spatial blobs (2tex) 3 = vary by slope heading
 	// The resulting codes in the struct are: 0 - no vary, 1-4 = spatial variants (all equal), 5-8 = heading variatns (N,E,S,W)
-	if (auto_vary > 0)
+	if (auto_vary > 0)			// For ALL auto vary
+//	if (auto_vary > 2)			// For only slope-based auto-vary
+//	if (auto_vary > 3)			// For NO Variations
 	{
 		// -1 for related field means no relation.  Otherwise it is the index of the FIRST of four variants.
 		// So...
 		info.related = auto_vary == 3 ? -1 : gNaturalTerrainTable.size();
+		info.auto_vary = 0;
 		for (int rep = 1; rep <= 4; ++rep)
 		{
 			info.variant = rep + (auto_vary == 3 ? 4 : 0);
@@ -434,27 +474,6 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			if (gNaturalTerrainIndex.count(info.name) == 0)
 				gNaturalTerrainIndex[info.name] = rn;
 		}
-
-	} else {
-		
-		info.variant = 0;
-		info.related = -1;
-		
-		LowerCheckName(ter_name);
-		info.name = LookupTokenCreate(ter_name.c_str());	
-		info.base_tex = tex_name;
-
-		if (has_lit)
-			info.lit_tex = MakeLit(info.base_tex);
-		else
-			info.lit_tex.clear();
-		
-		int rn = gNaturalTerrainTable.size();
-		gNaturalTerrainTable.push_back(info);
-
-//		gNaturalTerrainLandUseIndex.insert(NaturalTerrainLandUseIndex::value_type(info.landuse, rn));
-		if (gNaturalTerrainIndex.count(info.name) == 0)
-			gNaturalTerrainIndex[info.name] = rn;
 	}
 	
 	return true;	
