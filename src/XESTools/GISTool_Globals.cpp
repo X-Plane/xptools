@@ -32,8 +32,11 @@ DEMGeoMap			gDem;
 //CDT					gTriangulationLo;
 CDT					gTriangulationHi;
 
-vector<Point2>		gMeshPoints;
-vector<Point2>		gMeshLines;
+//vector<Point2>		gMeshPoints;
+//vector<Point2>		gMeshLines;
+
+vector<pair<Point2,Point3> >		gMeshPoints;
+vector<pair<Point2,Point3> >		gMeshLines;
 
 bool				gVerbose = true;
 bool				gTiming = false;

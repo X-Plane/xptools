@@ -95,7 +95,8 @@ static int DoAptImport(const vector<const char *>& args)
 {
 	gApts.clear();
 	gAptIndex.clear();
-	if (!ReadAptFile(args[0], gApts)) return 1;
+	string err = ReadAptFile(args[0], gApts);
+	if (!err.empty()) {fprintf(stderr,"Error importing %s: %s\n", args[0],err.c_str()); return 1;}
 	IndexAirports(gApts,gAptIndex);
 	return 0;
 }

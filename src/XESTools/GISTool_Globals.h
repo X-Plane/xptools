@@ -26,6 +26,8 @@
 
 #include "ProgressUtils.h"
 #include "AptDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomDefs3.h"
 
 class Pmwx;
 class CDT;
@@ -47,5 +49,8 @@ extern	int					gMapNorth;
 
 extern AptVector			gApts;
 extern AptIndex				gAptIndex;
+
+extern vector<pair<Point2,Point3> >		gMeshPoints;
+extern vector<pair<Point2,Point3> >		gMeshLines;
 
 #endif
