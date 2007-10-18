@@ -164,8 +164,9 @@ static	void	WED_HandleFileMenuCmd(void *, void * i)
 				buf[0] = 0;
 				if (!GetFilePathFromUser(getFile_Open, "Please pick an apt.dat file to open", "Open", 10, buf,sizeof(buf))) return;
 				gApts.clear();
-				if (!ReadAptFile(buf, gApts))
-					DoUserAlert("Could not open file.\n");
+				string err = ReadAptFile(buf, gApts);
+				if (!err.empty())
+					DoUserAlert(err.c_str());
 				else
 					IndexAirports(gApts,gAptIndex);
 				WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
