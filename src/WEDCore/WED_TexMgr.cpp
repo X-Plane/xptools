@@ -23,6 +23,7 @@
 
 #include "WED_TexMgr.h"
 #include "BitmapUtils.h"
+#include "MemFileUtils.h"
 #include "TexUtils.h"
 #include "WED_PackageMgr.h"
 
@@ -79,7 +80,25 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 	TexInfo * inf = new TexInfo;
 	
 	ImageInfo	im;
+	
+/*	
+	MFMemFile * dds_file;
+	dds_file = MemFile_Open(path);
+	if(dds_file)
+	{
+		if (LoadTextureFromDDS((unsigned const char *) MemFile_GetBegin(dds_file),(unsigned const char *) MemFile_GetEnd(dds_file),tn,0,&inf->act_x, &inf->act_y))
+		{
+			inf->tex_id = tn;
+			inf->org_x = inf->vis_x = inf->act_x;
+			inf->org_y = inf->vis_y = inf->act_y;
+			MemFile_Close(dds_file);
+			return inf;
+		}
+		MemFile_Close(dds_file);
+	}	
+*/	
 	if (CreateBitmapFromPNG(fpath.c_str(), &im, false) != 0)
+	if (CreateBitmapFromDDS(fpath.c_str(), &im) != 0)
 	if (CreateBitmapFromFile(fpath.c_str(), &im) != 0)
 	if (CreateBitmapFromJPEG(fpath.c_str(), &im) != 0)
 	if (CreateBitmapFromTIF(fpath.c_str(), &im) != 0)
@@ -87,20 +106,22 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 		return NULL;
 	}
 
-	GLuint t;
-	glGenTextures(1,&t);
-	inf->tex_id = t;
+	GLuint tn;
+	glGenTextures(1,&tn);
+
+	inf->tex_id = tn;
 	inf->org_x = im.width;
 	inf->org_y = im.height;
 	
-	if (!LoadTextureFromImage(im, t, 0, &inf->act_x, &inf->act_y, NULL, NULL))
+	float s,t;
+	if (!LoadTextureFromImage(im, tn, 0, &inf->act_x, &inf->act_y, &s,&t))
 	{
 		delete inf;
 		return NULL;
 	}
 	
-	inf->vis_x = min(inf->org_x, inf->act_x);
-	inf->vis_y = min(inf->org_y, inf->act_y);
+	inf->vis_x = (float) inf->act_x * s;
+	inf->vis_y = (float) inf->act_y * t;
 	
 	mTexes[path] = inf;
 
