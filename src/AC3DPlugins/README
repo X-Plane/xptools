@@ -11,7 +11,11 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
-Versoin 3.0b3 6/25/07
+Version 3.0.1r1 9/20/07
+	- As an optimization, the OBJ8 exporter no longer writes the unnecessary ATTR_shade_flat
+Version 3.0r1 9/17/07
+	- This is a rename of 3.0b3 with latest code.
+Version 3.0b3 6/25/07
 	- Optimization utils
 	- Animation window scrolls
 	- LOD group name label was wrong in property editor
