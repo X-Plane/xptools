@@ -76,14 +76,18 @@
 	#include <glext.h>
 #endif
 
-#define DRAW_MESH_BORDERS 0
+#define DRAW_MESH_BORDERS 1
 
-#define DEBUG_PRINT_LAYERS 0
+#define DEBUG_PRINT_LAYERS 1
 
-#define DEBUG_PRINT_NORMALS 1
+#define DEBUG_PRINT_NORMALS 0
 
-#define DEBUG_PRINT_CORNERS 1
+#define DEBUG_PRINT_CORNERS 0
 
+#define DEBUG_PRINT_TRI_PARAMS 0
+
+
+WED_MapView *		gMapView = NULL;
 
 const int 	kInfoStripHeight = 18;
 
@@ -293,6 +297,8 @@ WED_MapView::WED_MapView(
 	mNeedRecalcMeshHi(true),
 	mNeedRecalcMeshHiAlpha(true)
 {
+	DebugAssert(gMapView == NULL);
+	gMapView = this;
 	for (int n = 0; n < (MESH_BUCKET_SIZE * MESH_BUCKET_SIZE); ++n)
 		mDLBuckets[n] = Bbox2(0, 0, 0, 0);
 	mDLBuckets[MESH_BUCKET_SIZE * MESH_BUCKET_SIZE] = Bbox2(-180, -90, 180, 90);
@@ -325,8 +331,10 @@ WED_MapView::WED_MapView(
 
 	XPLMGenerateTextureNumbers(&mTexID, 1);
 	XPLMGenerateTextureNumbers(&mReliefID, 1);
+	XPLMGenerateTextureNumbers(&mFlowID, 1);
 	mHasTex = false;
 	mHasRelief = false;
+	mHasFlow = false;
 
 	mCurTool = 0;
 	mZoomer = new WED_MapZoomer;
@@ -633,21 +641,15 @@ void	WED_MapView::DrawSelf(void)
 		glBegin(GL_QUADS);
 		if (do_relief)
 		{
-#if IBM
-#if !DEV
-fix this
-#endif
-#define glMultiTexCoord2f  glMultiTexCoord2fARB
-#endif
-			glMultiTexCoord2f(GL_TEXTURE1_ARB, 0.0  , 0.0  );glTexCoord2f(0.0     , 0.0     );		glVertex2f((mBitsWest), (mBitsSouth));
-			glMultiTexCoord2f(GL_TEXTURE1_ARB, 0.0  , mTexT);glTexCoord2f(0.0     , mReliefT);		glVertex2f((mBitsWest), (mBitsNorth));
-			glMultiTexCoord2f(GL_TEXTURE1_ARB, mTexS, mTexT);glTexCoord2f(mReliefS, mReliefT);		glVertex2f((mBitsEast), (mBitsNorth));
-			glMultiTexCoord2f(GL_TEXTURE1_ARB, mTexS, 0.0  );glTexCoord2f(mReliefS, 0.0     );		glVertex2f((mBitsEast), (mBitsSouth));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , 0.0  );glTexCoord2f(0.0     , 0.0     );		glVertex2f((mDEMBounds[0]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , mTexT);glTexCoord2f(0.0     , mReliefT);		glVertex2f((mDEMBounds[0]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, mTexT);glTexCoord2f(mReliefS, mReliefT);		glVertex2f((mDEMBounds[2]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, 0.0  );glTexCoord2f(mReliefS, 0.0     );		glVertex2f((mDEMBounds[2]), (mDEMBounds[1]));
 		} else {
-			glMultiTexCoord2f(GL_TEXTURE0_ARB, 0.0  , 0.0  );glVertex2f((mBitsWest), (mBitsSouth));
-			glMultiTexCoord2f(GL_TEXTURE0_ARB, 0.0  , mTexT);glVertex2f((mBitsWest), (mBitsNorth));
-			glMultiTexCoord2f(GL_TEXTURE0_ARB, mTexS, mTexT);glVertex2f((mBitsEast), (mBitsNorth));
-			glMultiTexCoord2f(GL_TEXTURE0_ARB, mTexS, 0.0  );glVertex2f((mBitsEast), (mBitsSouth));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , 0.0  );glVertex2f((mDEMBounds[0]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , mTexT);glVertex2f((mDEMBounds[0]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, mTexT);glVertex2f((mDEMBounds[2]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, 0.0  );glVertex2f((mDEMBounds[2]), (mDEMBounds[1]));
 		}
 		glEnd();
 		
@@ -656,6 +658,19 @@ fix this
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		}
 		
+	}
+
+	if(mHasFlow)
+	{
+		XPLMSetGraphicsState(0, 11, 0,   0, 0,  0, 0);
+		XPLMBindTexture2d(mFlowID, 0);
+		glColor3f(1.0, 1.0, 1.0);
+		glBegin(GL_QUADS);
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  0.0   );glVertex2f((mFlowBounds[0]), (mFlowBounds[1]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  mFlowT);glVertex2f((mFlowBounds[0]), (mFlowBounds[3]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, mFlowT);glVertex2f((mFlowBounds[2]), (mFlowBounds[3]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, 0.0   );glVertex2f((mFlowBounds[2]), (mFlowBounds[1]));
+		glEnd();
 	}
 	
 	/***************************************************************************************************************************************
@@ -1340,10 +1355,10 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 	
 	if (DEMToBitmap(master, image, mode) == 0)
 	{
-		mBitsNorth = master.mNorth;
-		mBitsSouth = master.mSouth;
-		mBitsWest = master.mWest;
-		mBitsEast = master.mEast;
+		mDEMBounds[3] = master.mNorth;
+		mDEMBounds[1] = master.mSouth;
+		mDEMBounds[0] = master.mWest;
+		mDEMBounds[2] = master.mEast;
 		
 		if (LoadTextureFromImage(image, mTexID, tex_Mipmap + (nearest ? 0 : tex_Linear), NULL, NULL, &mTexS, &mTexT))
 		{
@@ -1361,10 +1376,10 @@ bool	WED_MapView::RecalcDEM(bool do_relief)
 			
 			if (DEMToBitmap(master, image, dem_Normals) == 0)
 			{
-				mBitsNorth = master.mNorth;
-				mBitsSouth = master.mSouth;
-				mBitsWest = master.mWest;
-				mBitsEast = master.mEast;
+				mDEMBounds[3] = master.mNorth;
+				mDEMBounds[1] = master.mSouth;
+				mDEMBounds[0] = master.mWest;
+				mDEMBounds[2] = master.mEast;
 				
 				if (LoadTextureFromImage(image, mReliefID, tex_Mipmap + (tex_Linear), NULL, NULL, &mReliefS, &mReliefT))
 				{
@@ -1529,6 +1544,7 @@ char * WED_MapView::MonitorCaption(void)
 #if DEBUG_PRINT_NORMALS		
 		n += sprintf(buf+n, "S=%d H=%d ", slope, slope_head);
 #endif	
+#if DEBUG_PRINT_TRI_PARAMS
 		n += sprintf(buf+n,"(sd=%.0f,st=%.0f,t=%.1f,tr=%.1f,r=%.0f,h=%.2f) ",
 					acos(1.0-recent->info().debug_slope_dem) * RAD_TO_DEG,
 					acos(1.0-recent->info().debug_slope_tri) * RAD_TO_DEG,
@@ -1537,6 +1553,7 @@ char * WED_MapView::MonitorCaption(void)
 					recent->info().debug_rain,
 //					-asin(recent->info().debug_heading) * RAD_TO_DEG + 90.0);
 					recent->info().debug_heading);
+#endif					
 
 #if DEBUG_PRINT_CORNERS
 		n += sprintf(buf+n,"%.0f,%.0f,%.0f ",
@@ -1573,4 +1590,15 @@ char * WED_MapView::MonitorCaption(void)
 	}		
 		
 	return buf;
+}
+
+
+void	WED_MapView::SetFlowImage(
+							ImageInfo&				image,
+							double					bounds[4])
+{
+	for(int n = 0; n < 4; ++n)
+	mFlowBounds[n] = bounds[n];
+	if (LoadTextureFromImage(image, mFlowID, tex_Mipmap + tex_Linear, NULL, NULL, &mFlowS, &mFlowT))
+		mHasFlow = true;
 }

@@ -39,6 +39,7 @@
 #include "MapAlgs.h"
 #include "Skeleton.h"
 #include "AssertUtils.h"
+#include "WED_MapView.h"
 
 #include "WED_DrawMap.h"
 #include "PlatformUtils.h"
@@ -73,6 +74,8 @@
 //#include <geos/geom/BinaryOp.h>
 //#include <geos/version.h> 
 
+#include "BitmapUtils.h"
+#include "TensorRoads.h"
 
 #include "ObjPlacement.h"
 
@@ -311,7 +314,7 @@ void	WED_SelectionTool::SetNthPropertyValue(int, double v)
 	
 int		WED_SelectionTool::GetNumButtons(void)
 {
-	return 10;
+	return 6;
 }
 
 void	WED_SelectionTool::GetNthButtonName(int n, string& s)
@@ -322,11 +325,7 @@ void	WED_SelectionTool::GetNthButtonName(int n, string& s)
 	case 2: s=  "Inset"; break;
 	case 3: s=  "Clear"; break;
 	case 4: s=  "Next"; break;
-	case 5: s=  "Simplify Water"; break;
-	case 6: s=  "Simplify pmwx"; break;
-	case 7: s=	"Gut Area"; break;
-	case 8: s=	"Insert Map"; break;
-	case 9: s=  "Make Faces Wet"; break;
+	case 5: s= "Roads"; break;
 	}
 }
 
@@ -514,111 +513,17 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 			(*fsel)->mPolyObjs.clear();
 		return;
 	case 5:
-		try {
+		{
+			ImageInfo	img;
+			CreateNewBitmap(512,512,3,&img);
+			double		bounds[4];
 			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
-			{
-//				SimplifyCoastlineFace(gMap, *fsel);
-			}
-		} catch (...) {
+				BuildRoadsForFace(gMap, gDem[dem_Elevation], *fsel,  WED_ProgressFunc, &img, bounds);
+
+			gMapView->SetFlowImage(img,bounds);
+			DestroyBitmap(&img);
 		}
-		break;
-	case 6:
-		SimplifyMap(gMap, true);
-		gEdgeSelection.clear();
-		gFaceSelection.clear();
-		gVertexSelection.clear();
-		break;
-	case 7:
-		{
-			set<GISFace *> kill_f;
-			int ctr;
-			
-			PROGRESS_START(WED_ProgressFunc, 0, 3, "Accumulating Faces")
-			ctr = 0;
-			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel, ++ctr)
-			{
-				PROGRESS_CHECK(WED_ProgressFunc, 0, 3, "Accumulating Faces", ctr, gFaceSelection.size(), gFaceSelection.size() / 200)
-				kill_f.insert(*fsel);
-			}	
-			PROGRESS_DONE(WED_ProgressFunc, 0, 3, "Accumulating Faces")
-
-			PROGRESS_START(WED_ProgressFunc, 1, 3, "Accumulating Edges")
-			set<GISHalfedge *> kill_e;			
-			ctr = 0;
-			for (Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e, ++ctr)
-			if (e->mDominant)
-			{
-				PROGRESS_CHECK(WED_ProgressFunc, 1, 3, "Accumulating Edges", ctr, gMap.number_of_halfedges(), gMap.number_of_halfedges() / 200)
-				if (kill_f.count(e->face()) &&
-					kill_f.count(e->twin()->face()))
-				kill_e.insert(e);
-			}
-			PROGRESS_DONE(WED_ProgressFunc, 1, 3, "Accumulating Edges")
-
-			ctr = 0;
-			PROGRESS_START(WED_ProgressFunc, 2, 3, "Deleting Edges")
-			for (set<GISHalfedge *>::iterator kill = kill_e.begin(); kill != kill_e.end(); ++kill, ++ctr)
-			{
-				PROGRESS_CHECK(WED_ProgressFunc, 2, 3, "Deleting Edges", ctr, kill_e.size(), kill_e.size() / 200)
-				gMap.remove_edge(*kill);
-			}			
-			PROGRESS_DONE(WED_ProgressFunc, 2, 3, "Deleting Edges")
-		}		
-		gEdgeSelection.clear();
-		gFaceSelection.clear();
-		gVertexSelection.clear();
-		break;
-	case 8:
-		{
-			char	path[1024];
-			path[0] = 0;
-			if (gFaceSelection.size() == 1)
-			if (GetFilePathFromUser(getFile_Open, "Please pick an .XES file to open for roads", "Open", 8, path, sizeof(path)))
-			{
-				MFMemFile * fi = MemFile_Open(path);
-				if (fi)
-				{
-					Pmwx		overMap;
-					ReadXESFile(fi, &overMap, NULL, NULL, NULL, WED_ProgressFunc);
-
-                    Point2 master1, master2, slave1, slave2;
-                    CalcBoundingBox(gMap, master1, master2);
-                    CalcBoundingBox(overMap, slave1, slave2);
-                    
-                    Vector2 delta(slave1, master1);
-
-                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
-                    	overMap.UnindexVertex(i);
-
-                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
-                        i->point() += delta;
-
-                    for (Pmwx::Vertex_iterator i = overMap.vertices_begin(); i != overMap.vertices_end(); ++i)
-                    	overMap.ReindexVertex(i);
-					
-					SwapFace(gMap, overMap, *gFaceSelection.begin(), WED_ProgressFunc);
-					
-					WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
-					MemFile_Close(fi);
-				}					
-			}
-		}
-		gEdgeSelection.clear();
-		gFaceSelection.clear();
-		gVertexSelection.clear();
-		break;
-	case 9:
-		for (set<GISFace *>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
-		{
-//			(*f)->mTerrainType = terrain_Water;
-			(*f)->mAreaFeature.mFeatType = feat_Park;
-		}
-		for (set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
-		{
-//			(*e)->mSegments.clear();
-		}
-		
-		break;
+		return;
 	}
 	DebugAssert(gMap.is_valid());
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);

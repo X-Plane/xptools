@@ -29,6 +29,7 @@
 
 class	WED_MapZoomer;
 class	WED_MapTool;
+struct	ImageInfo;
 
 extern	int			sShowMap;
 extern	int			sShowMeshTrisHi;
@@ -64,13 +65,13 @@ public:
                                    long                 inParam1,    
                                    long                 inParam2);    
 
-// private:
-
-			bool	RecalcDEM(bool do_relief);
+			void	SetFlowImage(
+							ImageInfo&				image,
+							double					bounds[4]);
 
 private:
 
-
+			bool	RecalcDEM(bool do_relief);
 			void	SetupForTool(void);
 			void	UpdateForTool(void);
 
@@ -90,18 +91,20 @@ private:
 	int						mToolStatusOffset;
 
 	int						mTexID;
+	int						mReliefID;
 	bool					mHasTex;
+	bool					mHasRelief;
 	float					mTexS;
 	float					mTexT;
-	int						mReliefID;
-	bool					mHasRelief;
 	float					mReliefS;
 	float					mReliefT;
+	double					mDEMBounds[4];
 	
-	double					mBitsNorth;
-	double					mBitsSouth;
-	double					mBitsEast;
-	double					mBitsWest;
+	int						mFlowID;
+	bool					mHasFlow;
+	float					mFlowS;
+	float					mFlowT;
+	double					mFlowBounds[4];
 	
 	bool					mNeedRecalcMapFull;
 	bool					mNeedRecalcMapMeta;
@@ -123,5 +126,7 @@ private:
 	friend	void	WED_MapView_HandleDEMMenuCommand(void *, void *);
 	friend	void	WED_MapView_UpdateCommandStatus(void);
 };
+
+extern	WED_MapView *		gMapView;
 
 #endif

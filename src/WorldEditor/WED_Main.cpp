@@ -26,16 +26,32 @@
 #include "XESInit.h"
 #include "WED_ProcessingCmds.h"
 #include "WED_FileCommands.h"
+#include "WED_EditCommands.h"
 #include "WED_SpecialCommands.h"
 #include "WED_MapView.h"
 #include "WED_PrefsDialog.h"
+#include "XPLMProcessing.h"
 #include "WED_Assert.h"
 #include "DEMTables.h"
 #include "ObjTables.h"
+#include <errno.h>
 #include <CGAL/assertions.h>
-
+#include <sys/stat.h>
+#include "fcntl.h"
 #include "XPWidgets.h"
 #include "XPWidgetDialogs.h"
+#include "GISTool_Utils.h"
+#include "GISTooL_ObsCmds.h"
+#include "GISTool_DemCmds.h"
+#include "GISTool_CoreCmds.h"
+#include "GISTool_DumpCmds.h"
+#include "GISTool_MiscCmds.h"
+#include "GISTool_ProcessingCmds.h"
+#include "GISTool_VectorCmds.h"
+#include "GISTool_Globals.h"
+#include "WED_Notify.h"
+#include "WED_Msgs.h"
+
 
 #if APL && defined(__MWERKS__)
 #include "SIOUX.h"
@@ -142,8 +158,119 @@ void	import_tiger_repository(const string& rt)
 }
 #endif
 
+
+
+
+static int DoSelfTest(const vector<const char *>& args)		{	/*SelfTestAll();*/ 	return 0; 	}
+static int DoVerbose(const vector<const char *>& args)		{	gVerbose = 1;	return 0;	}
+static int DoQuiet(const vector<const char *>& args)		{	gVerbose = 0;	return 0;	}
+static int DoTiming(const vector<const char *>& args)		{	gTiming = 1;	return 0;	}
+static int DoNoTiming(const vector<const char *>& args)		{	gTiming = 0;	return 0;	}
+static int DoProgress(const vector<const char *>& args)		{	/*gProgress = ConsoleProgressFunc;	*/return 0;	}
+static int DoNoProgress(const vector<const char *>& args)	{	/*gProgress = NULL;					*/return 0;	}
+
+static	GISTool_RegCmd_t		sUtilCmds[] = {
+//{ "-help",			0, 1, DoHelp, "Prints help info for a command.", "" },
+{ "-verbose",		0, 0, DoVerbose, "Enables loggging messages.", "" },
+{ "-quiet",			0, 0, DoQuiet, "Disables logging messages.", "" },
+{ "-timing",		0, 0, DoTiming, "Enables performance timing.", "" },
+{ "-notiming",		0, 0, DoNoTiming, "Disables performance timing.", "" },
+{ "-progress",		0, 0, DoProgress, "Shows progress bars", "" },
+{ "-noprogress",	0, 0, DoNoProgress, "Disables progress bars", "" },
+{ "-selftest",		0, 0, DoSelfTest, "Self test internal algorithms.", "" },
+#if USE_CHUD
+{ "-chud_start",	1, 1, DoChudStart, "Start profiling", "" },
+{ "-chud_stop",		0, 0, DoChudStop, "stop profiling", "" },
+#endif
+{ 0, 0, 0, 0, 0, 0 }
+};
+
+
+
+
+
+static int fifo = NULL;
+
+float CheckFifo(
+                                   float                inElapsedSinceLastCall,    
+                                   float                inElapsedTimeSinceLastFlightLoop,    
+                                   int                  inCounter,    
+                                   void *               inRefcon)
+{
+	static vector<char> data;
+	fd_set rd, wr, er;
+	FD_ZERO(&rd);
+	FD_ZERO(&wr);
+	FD_ZERO(&er);
+	FD_SET(fifo,&rd);
+	FD_SET(fifo,&er);
+	struct timeval to = { 0, 0 };
+	int res = select(fifo+1,&rd,&wr,&er, &to);
+	if (res > 0)
+	{
+		if(FD_ISSET(fifo,&rd))
+		{
+			char buf[1024];
+			int nread = read(fifo,buf,sizeof(buf)-1);
+			if(nread > 0)
+			{
+				data.insert(data.end(),buf,buf+nread);
+			}
+			
+		} else {
+			printf("Got discon.\n");
+		}
+		
+		for(int n = 0; n < data.size();++n)
+		if(data[n]=='\r' || data[n] == '\n')
+		{
+			data[n] = 0;
+			vector<const char*>	args;
+			char * str = &*data.begin();
+			char * sep = "\r\n \t";
+			while(1)
+			{
+				char * tok = strtok(str,sep);
+				str = NULL;
+				if(tok == NULL)
+					break;
+				args.push_back(tok);
+			}
+			printf("Eval:\n");
+			for (int nn = 0; nn < args.size(); ++nn)
+				printf("  %d) '%s'\n", nn,args[nn]);
+			printf("Going...\n");
+			GISTool_ParseCommands(args);
+			data.erase(data.begin(),data.begin()+n+1);
+			n = 0;
+		}
+			
+		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_RasterChange, NULL);
+		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
+		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_TriangleHiChange, NULL);
+		WED_Notifiable::Notify(wed_Cat_File, wed_Msg_AirportsLoaded, NULL);
+
+		
+	}
+	return -1;
+}
+
+
+
 void	XGrindInit(string& outName)
 {
+	#if APL
+	int e = mkfifo("wed_cmds", 0777);
+	if(e==-1 && errno != EEXIST)
+	{
+		fprintf(stderr,"WARNING: unable to make fifo: %d.\n",errno);
+	} else {
+		fifo=open("wed_cmds",O_RDONLY | O_NONBLOCK, 0);
+	}
+	#endif
+	
+	XPLMRegisterFlightLoopCallback(CheckFifo,-1, NULL);
+
 #if APL && defined(__MWERKS__)
 //	SIOUXSettings.stubmode = true;
 	SIOUXSettings.standalone = false;
@@ -162,6 +289,7 @@ void	XGrindInit(string& outName)
 	int w, h;
 	XPLMGetScreenSize(&w, &h);
 	RegisterFileCommands();
+	RegisterEditCommands();
 	WED_MapView *	map_view = new WED_MapView(20, h - 20, w - 20, 20, 1, NULL);
 	RegisterProcessingCommands();
 	RegisterSpecialCommands();
@@ -263,6 +391,18 @@ void	XGrindInit(string& outName)
 				gMap.number_of_halfedges(),
 				gMap.number_of_vertices());				
 #endif	
+
+		GISTool_RegisterCommands(sUtilCmds);
+
+		RegisterDemCmds();
+		RegisterCoreCmds();
+		RegisterDumpCmds();
+		RegisterVectorCmds();
+		RegisterProcessingCmds();
+		RegisterObsCmds();
+		RegisterMiscCmds();
+		
+
 }
 
 
@@ -274,4 +414,6 @@ bool	XGrindCanQuit(void)
 void	XGrindDone(void)
 {
 	WED_SavePrefs();
+	if(fifo) close(fifo);
+	unlink("wed_cmds");
 }

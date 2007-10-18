@@ -178,7 +178,8 @@ static	void	WED_HandleSpecMenuCmd(void *, void * i)
 				if (!GetFilePathFromUser((cmd == specCmd_UpdateTerrainPackage) ? getFile_PickFolder : getFile_Save, 
 										(cmd == specCmd_UpdateTerrainPackage) ? "Please pick your scenery package" : "Please name your scenery package", 
 										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf, sizeof(buf))) return;
-				if (cmd != specCmd_UpdateTerrainPackage) strcat(buf, DIR_STR);
+//				if (cmd != specCmd_UpdateTerrainPackage) 
+					strcat(buf, DIR_STR);
 				CreateTerrainPackage(buf, true);
 			}
 			break;
