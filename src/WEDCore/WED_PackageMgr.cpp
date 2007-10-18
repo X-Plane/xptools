@@ -167,7 +167,15 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 	string partial(full_file);
 	
 	int n = 0;
-	while(n < prefix.size() && n < partial.size() && prefix[n] == partial[n]) ++n;
+	do {
+		int p = prefix.find_first_of("\\/:", n);
+		if(p == prefix.npos) break;
+		++p;
+		if(p != prefix.npos && p <= prefix.size() && p <= partial.size() && strncmp(prefix.c_str(), partial.c_str(), p) == 0)
+			n = p;
+		else
+			break;
+	} while(1);
 	
 	prefix.erase(0,n);
 	partial.erase(0,n);
