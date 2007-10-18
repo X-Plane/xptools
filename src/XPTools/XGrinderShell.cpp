@@ -160,6 +160,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 static void spool_job(const char * cmd_line)
 {
 	FILE * log = fopen("log.txt", "a");
+	if(log == NULL) log = stdout;
 	fprintf(log,"%s\n",cmd_line);
 	XGrinder_ShowMessage("%s",cmd_line);
 	FILE * pipe = popen(cmd_line, "r");
@@ -175,7 +176,8 @@ static void spool_job(const char * cmd_line)
 		fwrite(buf,1,count,log);
 	}
 	pclose(pipe);
-	fclose(log);
+	if(log != stdout)
+		fclose(log);
 }
 
 
