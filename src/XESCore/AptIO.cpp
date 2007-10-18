@@ -383,7 +383,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&rwy->marking_code,
 					&rwy->roughness_ratio,
 					&rwy->distance_markings,
-					&vasi) != (vers >= 810 ? 16 : 15))
+					&vasi) < 15)
 				ok = "Illegal old runway";
 			if (sscanf(dis.c_str(),"%d.%d", &rwy->disp1_ft,&rwy->disp2_ft) != 2)
 				ok = string("Illegal displaced threshholds in old runway") + dis;
