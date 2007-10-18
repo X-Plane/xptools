@@ -204,7 +204,9 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	
 	
 	builder->SetAttribute(is_two_sided ? attr_NoCull : attr_Cull);
-	builder->SetAttribute(is_smooth ? attr_Shade_Smooth : attr_Shade_Flat);
+//	builder->SetAttribute(is_smooth ? attr_Shade_Smooth : attr_Shade_Flat);
+	// Ben says: smooth flag sets normals basde on face - no need to set flat shading!
+	builder->SetAttribute(is_smooth ? attr_Shade_Smooth : attr_Shade_Smooth);
 
 
 	if (s->numvert != 4)
