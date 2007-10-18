@@ -906,7 +906,7 @@ int		get_keyframe_range			(ACObject * obj, float& lo, float& hi)
 	return 1;
 }
 
-void	reverse_sel(void)
+static void	reverse_sel(void)
 {
 	vector<ACObject *>	objs;
 	find_all_selected_objects(objs);
@@ -937,7 +937,7 @@ void	reverse_sel(void)
 	}
 }
 
-void	rescale_sel(int argc, char * argv[])
+static void	rescale_sel(int argc, char * argv[])
 {
 	if (argc < 5) return;
 	float old_lo = atof(argv[1]);
