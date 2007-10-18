@@ -25,7 +25,7 @@
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
 
-#define DEBUG_PREFS 1
+#define DEBUG_PREFS 0
 #if APL
 	#include <Carbon/Carbon.h>
 #endif
