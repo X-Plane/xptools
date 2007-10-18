@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 
-                       WORLD-EDITOR 1.0b3 RELEASE NOTES
+                       WORLD-EDITOR 1.0b4 RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
@@ -62,6 +62,12 @@ KNOWN ISSUES
 -------------------------------------------------------------------------------
 VERSION HISTORY
 -------------------------------------------------------------------------------
+
+1.0b4 - 10/18/07
+
+Fixed: apt.dat 810 import works
+Fixed: some overlay images had wrong aspect ratio
+Enhanced: WED supports some DDS formats (only certain compression) for overlay images.
 
 1.0b3 - 9/17/07
 
