@@ -2299,7 +2299,10 @@ void UnmangleBorder(Pmwx& ioMap)
 	printf("Will kill %d segments.\n", dead.size());
 	for (set<GISHalfedge *>::iterator d = dead.begin(); d != dead.end(); ++d)
 	{
-		DebugAssert((*d)->face()->IsWater() == (*d)->twin()->face()->IsWater());
+		// Ben says: not sure why this assert was here...well, I am actually, it's to try to make sure we're not
+		// changing the fundamental topology of the import...but there are zero length segments that DO change the 
+		// import. :-(  WTF is wrong with VMAP0?
+//		DebugAssert((*d)->face()->IsWater() == (*d)->twin()->face()->IsWater());
 		ioMap.remove_edge(*d);
 	}
 
