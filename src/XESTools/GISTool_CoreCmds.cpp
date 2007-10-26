@@ -330,6 +330,16 @@ static int DoCropSave(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoTagOrigin(const vector<const char *>& args)
+{
+	float o = atof(args[0]);
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+		f->mParams[af_OriginCode] = o;
+	if (gVerbose)
+		printf("Set %d faces to have origin ode %f\n",gMap.number_of_faces(), o);
+	return 0;
+}
+
 static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
@@ -352,6 +362,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-cropsave", 		1, 1, DoCropSave, 		"Save only extent as an XES file.", "" },
 { "-overlay", 		1, 1, DoOverlay, 		"Superimpose a second vector map.", "" },
 { "-simplify",		0, 0, DoSimplify,		"Remove unneeded vectors.", "" },
+{ "-tag_origin",	1, 1, DoTagOrigin,		"Apply origin code X to this map.", "" },
 
 { 0, 0, 0, 0, 0, 0 }
 };
