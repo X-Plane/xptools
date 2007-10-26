@@ -143,17 +143,20 @@ int	LookupWaterCFCC(const char * inCode)
 
 RoadInfo_t * LookupNetCFCC(const char * inCode)
 {
-#if ENCODE_ROAD_CFCC
-	static RoadInfo_t	info;
-	info.cfcc = "HACK";
-	info.network_type = NO_VALUE;
-	info.underpassing = 0;
-	info.tunnel = 0;
-	return &info;
-#endif
-
 	hash_map<string,RoadInfo_t>::iterator i = kRoadCodes.find(inCode);
-	if (i == kRoadCodes.end()) return NULL;
+	if (i == kRoadCodes.end()) 
+	{
+	#if ENCODE_ROAD_CFCC
+		static RoadInfo_t	info;
+		info.cfcc = inCode;
+		info.network_type = road_Unknown;
+		info.underpassing = 0;
+		info.tunnel = 0;
+		return &info;
+	#endif
+
+		return NULL;
+	}
 	return &i->second;
 }
 
@@ -198,10 +201,10 @@ void	TIGERImport(
 				GISNetworkSegment_t nl;
 				nl.mFeatType = net_cfcc->network_type;
 #if ENCODE_ROAD_CFCC
-				nl.mFeatType = LookupTokenCreate(chainIter->second.cfcc.c_str());
-#endif				
+				nl.mRepType = LookupTokenCreate(chainIter->second.cfcc.c_str());
+#else
 				nl.mRepType = NO_VALUE;
-				
+#endif				
 				for (WTPM_Line::HalfedgeVector::const_iterator he = chainIter->second.pm_edges.first.begin(); 
 					he != chainIter->second.pm_edges.first.end(); ++he)
 				{			

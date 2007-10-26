@@ -33,8 +33,6 @@ using namespace std;
 typedef	pair<double, double>	LatLonPair;
 typedef vector<LatLonPair>		LatLonVector;
 
-void	ConvertLatLons(const ChainInfo_t& ci, LatLonVector& v);
-
 // For maps, the hash key for an env is lat * 360 + lon.
 
 struct	TigerAreaInfo_t {
