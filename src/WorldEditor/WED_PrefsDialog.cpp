@@ -35,6 +35,7 @@
 #include "DEMTables.h"
 #include "WED_ProcessingCmds.h"
 #include "DSFBuilder.h"
+#include "TensorRoads.h"
 #define PREFS_FILE	"WorldEditor.prf"
 
 static XPWidgetID		sPrefsDialog = NULL;
@@ -55,7 +56,7 @@ void	WED_ShowPrefsDialog(void)
 		sPrefsDialog = XPCreateWidgetLayout(
 			0, XP_DIALOG_BOX, "Preferences", XP_DIALOG_CLOSEBOX, 1, 0, NULL,
 				XP_COLUMN,
-					XP_TABS, "Processing;View;Mesh;DEMs;DSF", &sPrefsTab,
+					XP_TABS, "Processing;View;Mesh;DEMs;DSF;Roads", &sPrefsTab,
 						XP_COLUMN, XP_TAG, TAG_COMMAND_PREFS,
 							XP_ROW, XP_CHECKBOX,"Calculate Terrain Slope", 		&gProcessingCmdPrefs.do_calc_slope, 			XP_END,
 							XP_ROW, XP_CHECKBOX,"Upsample Environment", 		&gProcessingCmdPrefs.do_upsample_environment, 	XP_END,
@@ -93,6 +94,13 @@ void	WED_ShowPrefsDialog(void)
 						XP_COLUMN,
 							XP_ROW, XP_CHECKBOX, "Export Roads", &gDSFBuildPrefs.export_roads, XP_END,
 						XP_END,
+						XP_COLUMN,
+							XP_ROW, XP_CAPTION, "Road Elevation Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.elevation_weight, XP_END,
+							XP_ROW, XP_CAPTION, "Road Radial Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.radial_weight, XP_END,
+							XP_ROW, XP_CAPTION, "Road Slope Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.slope_amp, XP_END,
+							XP_ROW, XP_CAPTION, "Road Urban Density Sensitivity", XP_EDIT_FLOAT, 6, 6, 2, &gRoadPrefs.density_amp, XP_END,
+							
+						XP_END,						
 					XP_END,
 					XP_ROW, XP_BUTTON_CANCEL, "Cancel", XP_BUTTON_OK, "OK", XP_END,
 				XP_END,
