@@ -121,6 +121,75 @@ static int DoSDTSImport(const vector<const char *>& args)
 	return 0;
 }*/
 
+// This fetches all the counties for a given degree, using a pre-index.
+static int DoMakeTigerIndex(const vector<const char *>& args)
+{
+	for (int n = 0; n < args.size(); ++n)
+	{
+		gChains.clear();
+		gLandmarks.clear();
+		gPolygons.clear();
+		
+		string root(args[n]);
+		int	fnum = -1;
+		if ((root.length() > 3) &&
+			(root.substr(root.length()-4)==".RT1" ||
+			 root.substr(root.length()-4)==".rt1"))
+		{
+			root = root.substr(0, root.length()-4);
+			fnum = atoi(root.c_str() + root.length() - 5);
+			root.erase(root.rfind('/'));
+		}
+		if ((root.length() > 3) &&
+			(root.substr(root.length()-4)==".zip" ||
+			 root.substr(root.length()-4)==".ZIP"))
+		{
+			fnum = atoi(root.c_str() + root.length() - 9);
+		}
+		
+		if (fnum == -1)
+		{
+			fprintf(stderr,"Could not identify file %s as a TIGER file.\n", root.c_str());
+			return 1;
+		} else {
+
+			MFFileSet * fs = FileSet_Open(root.c_str());
+			if (fs)
+			{	
+				TIGER_LoadRT1(fs, fnum);
+				TIGER_LoadRT2(fs, fnum);
+				FileSet_Close(fs);
+			} else 
+				fprintf(stderr,"Could not open %s as a file set.\n", root.c_str());
+		}
+			
+		LatLonVector	v;
+		
+		double	latMin =  1000.0;
+		double	latMax = -1000.0;
+		double	lonMin =  1000.0;
+		double	lonMax = -1000.0;
+		
+		for (ChainInfoMap::iterator i = gChains.begin();
+			i != gChains.end(); ++i)
+		{
+			for (vector<Point2>::iterator l = i->second.shape.begin(); l != i->second.shape.end(); ++l)
+			{
+				latMin = min(latMin, l->y);
+				latMax = max(latMax, l->y);
+				lonMin = min(lonMin, l->x);
+				lonMax = max(lonMax, l->x);
+			}
+		}
+		
+		printf("%s %f %f %f %f\n",
+			args[n], latMin, latMax, lonMin, lonMax);		
+	}
+	return 0;
+}
+
+
+// This fetches all the counties for a given degree, using a pre-index.
 static int DoTigerIndex(const vector<const char *>& args)
 {
 		TigerMap	tigerMap;
@@ -178,6 +247,7 @@ static int DoTigerIndex(const vector<const char *>& args)
 }
 		
 
+// This code imports counties by name - ue to get a quick map of specific stuff.
 static int DoTigerImport(const vector<const char *>& args)
 {
 	for (int n = 0; n < args.size(); ++n)
@@ -325,6 +395,7 @@ static int DoVPFImport(const vector<const char *>& args)
 	strcpy(coverages,cov_list);
 	bool	first = true;
 	bool	ok;
+	bool	ok_any=false;
 	while ((found = strtok(cov, ",")) != NULL)
 	{
 		if (sVPFRules.count(found) == 0)
@@ -379,7 +450,8 @@ static int DoVPFImport(const vector<const char *>& args)
 				
 		if (ok)
 		{
-			if (gVerbose) printf("Imported %s/%s\n", cov, tile);
+			ok_any=true;
+			if (gVerbose) printf("Imported %s/%s\n", found, tile);
 			if (gVerbose) printf("Map contains: %d faces, %d half edges, %d vertices.\n",
 				gMap.number_of_faces(),
 				gMap.number_of_halfedges(),
@@ -392,14 +464,19 @@ static int DoVPFImport(const vector<const char *>& args)
 //				gMap.number_of_halfedges(),
 //				gMap.number_of_vertices());
 		} else {
-			fprintf(stderr, "ERROR importing VPF file %s/%s\n", cov, tile);
-			return 1;
+//			fprintf(stderr, "ERROR importing VPF file %s/%s\n", cov, tile);
+			fprintf(stdout,"WARNING: problem importing VPF file %s/%s\n", found, tile);
+//			return 1;
 		}
 		cov = NULL;
 		first = false;
 	}
 
-	return 0;
+	if(!ok_any)
+	{
+		fprintf(stderr, "ERROR: unable to import any coverages for %s.\n",tile);		
+	}
+	return ok_any ? 0 : 1;
 }
 
 static int DoGSHHSImport(const vector<const char *>& args)
@@ -637,6 +714,7 @@ int DoWetMask(const vector<const char *>& args)
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
+{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
 { "-tiger", 		1, -1, 	DoTigerImport, 			"Import tiger line file.", "" },
 { "-tigerindex", 	1, 1, 	DoTigerIndex, 			"Import tiger line files.", "" },
 { "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
