@@ -70,7 +70,9 @@ void PrintObj(const char * feature, const char * terrain, int variant, int width
 
 	char	tbuf[256];
 	
-	if (terrain && variant)
+	if (terrain && variant && variant == 5)
+		sprintf(tbuf, "terrain/%s_av", terrain);
+	else if (terrain && variant)
 		sprintf(tbuf, "terrain/%s%d", terrain, variant);
 	else if (terrain)
 		sprintf(tbuf, "terrain/%s", terrain);
@@ -109,7 +111,7 @@ void PrintSpec(const char * suite, const char * terrain, int variant, const ObjS
 	int j;
 	const char * sterrain;	
 	int j1 = 0, j2 = 0;
-	if (variant) { j1 = 1; j2 = 4; }
+	if (variant) { j1 = 1; j2 = 5; }
 	for (j = j1; j <= j2; ++j)
 	{
 		n = 0;
