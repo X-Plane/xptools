@@ -34,7 +34,8 @@
 #include "MapDefs.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
-
+#include "MemFileUtils.h"
+#include "XChunkyFileUtils.h"
 extern int	PrintDSFFile(const char * inPath, FILE * output, bool print_it);
 
 #if 0
@@ -148,6 +149,31 @@ static int dump_shape_file(const char * inFileName)
 	return 0;
 }
 
+static int DoDumpAtomic(const vector<const char *>& args)
+{
+	MFMemFile *	fi = MemFile_Open(args[0]);
+	if(fi)
+	{
+		XAtomContainer	ac;
+		ac.begin = (char *) MemFile_GetBegin(fi);
+		ac.end = (char *) MemFile_GetEnd(fi);
+		XAtom a;
+		if(ac.GetFirst(a))
+		do 
+		{
+			char c[4];
+			*((int *) c) = a.GetID();
+			printf("%c%c%c%c: %d\n", c[0],c[1],c[2],c[3], a.GetContentLength());
+		} while (a.GetNext(ac,a));
+		else printf("File %s contains no atoms.\n", args[0]);
+		MemFile_Close(fi);
+		return 0;
+	} else {
+		fprintf(stderr,"Cannot open file %s\n", args[0]);
+		return 1;
+	}
+}
+
 static int DoDumpObs(const vector<const char *>& args)
 {
 	for (FAAObsTable::iterator iter = gFAAObs.begin(); iter != gFAAObs.end(); ++iter)
@@ -225,6 +251,7 @@ static int DoDumpMap(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sDumpCmds[] = {
+{ "-dumpatomic",	1,	1, DoDumpAtomic ,		"Dump atom table of atomic file.", "" },
 { "-dumpobs", 		0, 0, DoDumpObs, 		"Dump current FAA objects.", "" },
 { "-dumpdsf", 		1, -1, DoDumpDSF, 		"Dump contents of a DSF file.", "" },
 { "-dumpvpf", 		1, 1, DoDumpVPF, 		"Dump a VPF table.", "" },
