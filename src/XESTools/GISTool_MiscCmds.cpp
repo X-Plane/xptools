@@ -234,7 +234,7 @@ int DoMakeCoverage(const vector<const char *>& args)
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "" },
 { "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "" },
-{ "-obj2config", 	2, -1, 	DoObjToConfig, 			"Import SDTS VTP vector map.", "" },
+{ "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
 { 0, 0, 0, 0, 0, 0 }
