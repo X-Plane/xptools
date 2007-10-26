@@ -71,3 +71,8 @@ PREFS_KEY_INT	("PROCESSING", "DO_3D_FORESTS"				,gProcessingCmdPrefs.build_3d_fo
 PREFS_KEY_INT	("PROCESSING", "DO_PLACE_BUILDINGS"			,gProcessingCmdPrefs.place_buildings)
 
 PREFS_KEY_INT	("DSF_EXPORT", "EXPORT_ROADS",				gDSFBuildPrefs.export_roads)
+
+PREFS_KEY_FLOAT	("ROADS",	"ELEV_WEIGHT",					gRoadPrefs.elevation_weight)
+PREFS_KEY_FLOAT	("ROADS",	"RADIAL_WEIGHT",				gRoadPrefs.radial_weight)
+PREFS_KEY_FLOAT	("ROADS",	"SLOPE_AMP",					gRoadPrefs.slope_amp)
+PREFS_KEY_FLOAT	("ROADS",	"DENSITY_AMP",					gRoadPrefs.density_amp)
