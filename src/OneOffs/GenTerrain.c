@@ -26,6 +26,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* 
+ * GenTerrain is compiled with
+ *
+ * gcc GenTerrain.c -o GenTerrain
+ *
+ * GenTerrain is a generator for object spreadasheets.  Basically the format of the file describing the objects to x-plane is long and
+ * annoying, since it cross-multiplies a ton of terrain types (made more by variants) with the same set of buildings over and over and over.
+ * So this function generates that pre-multiply.
+ *
+ * Usually it is used like this:
+ *
+ * ./GenTerrain 1 > /rendering_code/config/obj_properties_us.txt 
+ *
+ */
+
+
 /****************************************************************************************************************************************
  *
  * UTILITIES

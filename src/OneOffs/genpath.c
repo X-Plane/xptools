@@ -23,6 +23,16 @@
 
 #include <stdio.h>
 
+/*
+ * Compile with:
+ * gcc genpath.c -o genpath
+ *
+ * genpath makes a command-line utility that takes as arguments the location of the folder
+ * and spits out the x-plane-named file/folder.  It is used as a util in the various scripts
+ * to ID the appropriate destinations.  It is usually compiled into the /rendering_code/ folder.
+ *
+ */
+
 int	latlon_bucket(int p)
 {
 	if (p > 0) return (p / 10) * 10;
