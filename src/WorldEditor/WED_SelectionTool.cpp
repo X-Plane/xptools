@@ -515,15 +515,14 @@ void	WED_SelectionTool::NthButtonPressed(int n)
 	case 5:
 		{
 			ImageInfo	img;
-			CreateNewBitmap(512,512,3,&img);
+			GISFace * f = gFaceSelection.empty() ? NULL : *gFaceSelection.begin();
+			if(f)CreateNewBitmap(512,512,3,&img);
 			double		bounds[4];
-			for (set<GISFace *>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
-				BuildRoadsForFace(gMap, gDem[dem_Elevation], *fsel,  WED_ProgressFunc, &img, bounds);
-
+			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], f,  WED_ProgressFunc, f ? &img : NULL, bounds);
+			if(f){			
 			gMapView->SetFlowImage(img,bounds);
-			DestroyBitmap(&img);
+			DestroyBitmap(&img);}
 		}
-		return;
 	}
 	DebugAssert(gMap.is_valid());
 	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
@@ -578,9 +577,9 @@ char *	WED_SelectionTool::GetStatusText(void)
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->mAreaFeature.mFeatType));
 		}
 		
-		if (the_face->mParams.count(af_Height))
+		for(GISParamMap::iterator p = the_face->mParams.begin(); p != the_face->mParams.end(); ++p)
 		{
-			n += sprintf(buf+n, "AGL:%lf ", the_face->mParams[af_Height]);
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
 		}
 	}
 	if (gEdgeSelection.size() == 1)
