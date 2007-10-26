@@ -170,8 +170,8 @@ struct	DEMGeo {
 	inline double	y_to_lat_double(double inY) const;
 	inline double	lon_to_x(double inLon) const;
 	inline double	lat_to_y(double inLat) const;
-	inline double	x_dist_to_m(int inX) const;
-	inline double	y_dist_to_m(int inY) const;
+	inline double	x_dist_to_m(double inX) const;
+	inline double	y_dist_to_m(double inY) const;
 
 	// These routines return the grid point below or above a coordinate constrained
 	// to within the grid.
@@ -773,17 +773,17 @@ inline int		DEMGeo::y_upper(double lat) const
 	return ceil(lat);
 }
 
-inline double	DEMGeo::x_dist_to_m(int inX) const
+inline double	DEMGeo::x_dist_to_m(double inX) const
 {
-	double	d = (double) inX / (double) mWidth;
+	double	d = inX / (double) mWidth;
 	d *= (mEast - mWest);
 	d *= (DEG_TO_MTR_LAT * cos((mSouth+mNorth) * 0.5 * DEG_TO_RAD));
 	return d;
 }
 
-inline double	DEMGeo::y_dist_to_m(int inY) const
+inline double	DEMGeo::y_dist_to_m(double inY) const
 {
-	double	d = (double) inY / (double) mHeight;
+	double	d = inY / (double) mHeight;
 	d *= (mNorth - mSouth);
 	d *= (DEG_TO_MTR_LAT);
 	return d;
