@@ -741,6 +741,17 @@
 		D6ED40440B6AD47300D5484E /* WED_UndoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403D0B6AD47300D5484E /* WED_UndoLayer.cpp */; };
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
+		D6F00F760CCD7F5A00A3F1B0 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
+		D6F00F770CCD7F5A00A3F1B0 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
+		D6F00F780CCD7F5A00A3F1B0 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
+		D6F00F790CCD7F5C00A3F1B0 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
+		D6F00F7A0CCD7F5C00A3F1B0 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
+		D6F00F7B0CCD7F5D00A3F1B0 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
+		D6F00F7C0CCD7F5D00A3F1B0 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
+		D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
+		D6F00F7E0CCD7F5E00A3F1B0 /* singlecolourlookup.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */; };
+		D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
+		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
 		D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */; };
@@ -3532,6 +3543,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */,
+				D6F00F7E0CCD7F5E00A3F1B0 /* singlecolourlookup.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3855,6 +3867,16 @@
 				D69FD74D0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74E0B6CF765008E3AEC /* zip.c in Sources */,
 				D67682B80CC669830032B90C /* TensorUtils.cpp in Sources */,
+				D6F00F760CCD7F5A00A3F1B0 /* alpha.cpp in Sources */,
+				D6F00F770CCD7F5A00A3F1B0 /* clusterfit.cpp in Sources */,
+				D6F00F780CCD7F5A00A3F1B0 /* colourblock.cpp in Sources */,
+				D6F00F790CCD7F5C00A3F1B0 /* colourfit.cpp in Sources */,
+				D6F00F7A0CCD7F5C00A3F1B0 /* colourset.cpp in Sources */,
+				D6F00F7B0CCD7F5D00A3F1B0 /* maths.cpp in Sources */,
+				D6F00F7C0CCD7F5D00A3F1B0 /* rangefit.cpp in Sources */,
+				D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */,
+				D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */,
+				D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4355,16 +4377,20 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_AUTO_VECTORIZATION = NO;
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEV=0",
 					"APL=1",
 				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_THREADSAFE_STATICS = NO;
 				GCC_UNROLL_LOOPS = YES;
 				HEADER_SEARCH_PATHS = (
