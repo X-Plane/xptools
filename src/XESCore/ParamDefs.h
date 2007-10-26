@@ -51,7 +51,7 @@
 	TOKEN(dem_UrbanPropertyValue)	//	Human settlement density
 	TOKEN(dem_UrbanRadial)			//	DEM of urban radial stuff
 	TOKEN(dem_UrbanTransport)		//	DEM of possible transportation stuff
-	TOKEN(dem_UrbanSquare)			//	Boolean DEM - is it square?
+	TOKEN(dem_UrbanSquare)			//	Boolean DEM - is it square? (Contains 1.0 for square, 2.0 for irregular urban)
 //	TOKEN(dem_VegetationDensity)	//	Vegetation density ratio
 
 	TOKEN(dem_TemperatureSeaLevel)	//	Average Temperature Data corrected for height
@@ -90,6 +90,8 @@
 	
 	TOKEN(af_WaterArea)				// square area in sq meters
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
+	
+	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?
 
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.
@@ -105,6 +107,7 @@
 		TOKEN(road_PrimaryLimSepRail)
 		TOKEN(road_PrimaryLimOneway)
 		TOKEN(road_PrimaryLimOnewayRail)
+		TOKEN(road_PrimaryLimBridge)
 	TOKEN(road_End_Highway)
 	
 	TOKEN(road_Start_MainDrag)	
@@ -112,11 +115,17 @@
 		TOKEN(road_PrimaryUnsepRail)
 		TOKEN(road_PrimarySep)
 		TOKEN(road_PrimarySepRail)
+		TOKEN(road_PrimaryOneway)
+		TOKEN(road_PrimaryOnewayRail)
+		TOKEN(road_PrimaryBridge)
 
 		TOKEN(road_SecondUnsep)
 		TOKEN(road_SecondUnsepRail)
 		TOKEN(road_SecondSep)
-		TOKEN(road_SecondSepRail)	
+		TOKEN(road_SecondSepRail)
+		TOKEN(road_SecondOneway)
+		TOKEN(road_SecondOnewayRail)
+		TOKEN(road_SecondBridge)	
 	TOKEN(road_End_MainDrag)
 	
 	TOKEN(road_Start_LocalRoad)	
@@ -124,6 +133,9 @@
 		TOKEN(road_LocalUnsepRail)
 		TOKEN(road_LocalSep)
 		TOKEN(road_LocalSepRail)
+		TOKEN(road_LocalOneway)
+		TOKEN(road_LocalOnewayRail)
+		TOKEN(road_LocalBridge)
 		
 		TOKEN(road_Culdesac)
 		TOKEN(road_TrafficCircle)	
