@@ -126,7 +126,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_HydroDirection,		"Hydro Flow Direction"			,	dem_Enum,					false,	true,	"%s "			},
 {		dem_HydroQuantity,		"Hydro Flow Quantity"			,	dem_HydroQuantity,			true,	false,	"%fm "			},
 {		dem_HydroElevation,		"Hydro Elevation"				,	dem_Elevation,				false,	false,	"%fm "			},
-{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Wizard,					false,	false,	"%fm "			},
+{		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
 
 };
 
@@ -137,6 +137,7 @@ const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 enum {
 	viewCmd_DEMChoice = 0,
 	viewCmd_ShowShading,
+	viewCmd_ShowTensor,
 	viewCmd_DEMDataChoice,
 	viewCmd_Break,
 	viewCmd_RecalcDEM,	
@@ -159,6 +160,7 @@ enum {
 const char *	kCmdNames [] = {
 	"Raster Layer",
 	"Show Shading on Raster Layer",
+	"Show Tensors",
 	"Show Raster Data",
 	"-",
 	"Recalculate Raster Data Preview",
@@ -179,6 +181,7 @@ const char *	kCmdNames [] = {
 };
 
 static	const char	kCmdKeys [] = {
+	0,	 0,
 	0,	 0,
 	0,	 0,
 	0,	 0,
@@ -211,6 +214,7 @@ int			sShowMeshTrisHi = 1;
 int			sShowMeshAlphas = 1;
 int			sShowAirports =1;
 int			sShowShading = 1;
+int			sShowTensors = 1;
 float		sShadingAzi = 315;
 float		sShadingDecl = 45;
 
@@ -660,7 +664,7 @@ void	WED_MapView::DrawSelf(void)
 		
 	}
 
-	if(mHasFlow)
+	if(mHasFlow && sShowTensors)
 	{
 		XPLMSetGraphicsState(0, 11, 0,   0, 0,  0, 0);
 		XPLMBindTexture2d(mFlowID, 0);
@@ -1430,6 +1434,7 @@ void	WED_MapView_HandleMenuCommand(void * r, void * i)
 	case viewCmd_VecMap:		sShowMap = !sShowMap;				break;
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		break;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		break;
+	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		break;
 //	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	break;
 //	case viewCmd_MeshLines:		sShowMeshLines = !sShowMeshLines;	break;
 //	case viewCmd_MeshTrisLo:	sShowMeshTrisLo = !sShowMeshTrisLo;	break;
@@ -1481,12 +1486,14 @@ void	WED_MapView_UpdateCommandStatus(void)
 	XPLMCheckMenuItem(sViewMenu, viewCmd_VecMap	     ,sShowMap		? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_Airports	 ,sShowAirports ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowShading ,sShowShading  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+	XPLMCheckMenuItem(sViewMenu, viewCmd_ShowTensor  ,sShowTensors  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 //	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshPoints  ,sShowMeshPoints ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 //	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshLines   ,sShowMeshLines  ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 //	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisLo  ,sShowMeshTrisLo ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTrisHi  ,sShowMeshTrisHi ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshTerrains,sShowMeshAlphas ? xplm_Menu_Checked : xplm_Menu_Unchecked);
 //	XPLMCheckMenuItem(sViewMenu, viewCmd_MeshBorders ,sShowMeshBorders?xplm_Menu_Checked : xplm_Menu_Unchecked);
+
 
 //	XPLMEnableMenuItem(sViewMenu, viewCmd_ZoomSel, !gFaceSelection.empty() || !gEdgeSelection.empty() || !gVertexSelection.empty());
 	
