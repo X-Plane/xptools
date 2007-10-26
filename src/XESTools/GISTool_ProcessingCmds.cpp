@@ -32,6 +32,7 @@
 #include "DSFBuilder.h"
 #include "ObjPlacement.h"
 #include "SceneryPackages.h"
+#include "TensorRoads.h"
 #include "Forests.h"
 #include "Zoning.h"
 #include "DEMDefs.h"
@@ -53,6 +54,12 @@ static int DoSpreadsheet(const vector<const char *>& args)
 		printf("New prefix is: %s\n",gObjLibPrefix.c_str());
 	return 0;
 }
+
+static int DoRoads(const vector<const char *>& args)
+{
+	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  gProgress, NULL, NULL);
+}
+
 
 static int DoUpsample(const vector<const char *>& args)
 {
@@ -175,6 +182,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 }
 
 static	GISTool_RegCmd_t		sProcessCmds[] = {
+{ "-roads",			0, 0, DoRoads,			"Generate Fake Roads.",				  "" },
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
 { "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },

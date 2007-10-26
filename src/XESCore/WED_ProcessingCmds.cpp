@@ -24,6 +24,7 @@
 #include "MeshAlgs.h"
 #include "MemFileUtils.h"
 #include "DEMAlgs.h"
+#include "TensorRoads.h"
 #include "EuroRoads.h"
 #include "ParamDefs.h"
 #include "XESIO.h"
@@ -223,7 +224,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 			break;
 		case procCmd_AddUrbanRoads:
 			{
-				char	path[1024];
+/*				char	path[1024];
 				path[0] = 0;
 				if (!gReplacementRoads.empty())
 				{
@@ -254,6 +255,8 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 						MemFile_Close(fi);
 					}					
 				}
+*/
+			BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  WED_ProgressFunc, NULL, NULL);
 			}
 			break;
 		case procCmd_RemoveDupes:
