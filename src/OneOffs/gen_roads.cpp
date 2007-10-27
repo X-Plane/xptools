@@ -333,6 +333,26 @@ void lcl_4wd() { make_deck(51,108, &local, "gravel"); }
 void lcl_walk     () { make_deck(107,146, &local, "gravel"); }
 void lcl_walk_over() { make_deck(120,137, &local, "gravel"); }
 
+/*******/
+
+void tra_underside_start()	{ underside_start(391,432,-1.0,&railroad); }
+void tra_underbridge_start()	{ underside_start(391,432,-0.5,&railroad); }
+void tra_roof_start()	{ underside_start(265,298,6.5,&railroad); }
+
+void tra_start(int b, int n, const char * na) { road_start(b, n,na,&railroad); }
+
+void tra_pylon_start() { pylons_start("railroad_pylon.obj", 0.5, 0, 30, 0, 0); }
+
+
+void tra_guard_rail()	{	make_blade(96,123,0,2,&railroad); }
+void tra_over_side()	{	make_blade(300,347,-1,0,&railroad); }
+void tra_bridge_side()	{	make_blade(300,347,-0.5,6.5,&railroad); }
+
+void tra_one()			{	make_deck(44, 95, &railroad, "gravel"); }
+void tra_two()			{	make_deck(148, 251, &railroad, "gravel"); }
+void tra_one_ovr()		{	make_deck(349, 391, &railroad, "gravel"); }
+
+
 
 int main(int, char *[])
 {
@@ -1031,9 +1051,6 @@ int main(int, char *[])
 		lcl_unmarked();
 	road_end();
 	
-	
-	
-	
 	lcl_start(0, 58, "net_Walking");
 		lcl_walk();
 	road_end();
@@ -1059,10 +1076,84 @@ int main(int, char *[])
 		lcl_walk();
 	road_end();
 	
+	// TRAINS 54-58, 
+	tra_start(0, 54, "net_TrainsTwoWay");
+		tra_two();
+	road_end();
 
-	
+	tra_start(1, 55, "net_TrainsTwoWayOverpass");
+		tra_pylon_start();
+		start_composite();
+		tra_underside_start();
+		start_composite();
+		tra_over_side();
+		tra_one_ovr();
+		end_composite();
+		underside_end();
+		tra_underside_start();
+		start_composite();
+		tra_one_ovr();
+		tra_over_side();
+		end_composite();
+		underside_end();
+		end_composite();
+		pylons_end();
+	road_end();
 
+	tra_start(1, 74, "net_TrainsTwoWayBridge");
+		tra_pylon_start();
+		start_composite();
+		tra_underbridge_start();
+		tra_roof_start();
+		start_composite();
+		tra_bridge_side();
+		tra_one_ovr();
+		end_composite();
+		underside_end();
+		underside_end();
+		tra_bridge_side();
+		tra_underbridge_start();
+		tra_roof_start();
+		start_composite();
+		tra_one_ovr();
+		tra_bridge_side();
+		end_composite();
+		underside_end();
+		underside_end();
+		end_composite();
+		pylons_end();
+	road_end();
+
+	tra_start(0, 56, "net_TrainsOneWay");
+		tra_one();
+	road_end();
+
+	tra_start(1, 57, "net_TrainsOneWayOverpass");
+		tra_pylon_start();
+		tra_underside_start();
+		start_composite();
+		tra_over_side();
+		tra_one_ovr();
+		tra_over_side();
+		end_composite();
+		underside_end();
+		pylons_end();
+	road_end();
 	
+	tra_start(1, 75, "net_TrainsOneWayBridge");
+		tra_pylon_start();
+		tra_underbridge_start();
+		tra_roof_start();
+		start_composite();
+		tra_bridge_side();
+		tra_one_ovr();
+		tra_bridge_side();
+		end_composite();
+		underside_end();
+		underside_end();
+		pylons_end();
+	road_end();
+
 	return 0;
 }
 
