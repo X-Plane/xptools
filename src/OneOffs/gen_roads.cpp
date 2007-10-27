@@ -225,8 +225,8 @@ void 	pylons_end()	{	road_stack.pop_back(); }
 void	road_start(int br, int n, const char * na, tex_info * t) {  road * r = new road(br, t,na, n); road_stack.push_back(r); }
 void 	road_end(void) { road * r = dynamic_cast<road *>(road_stack.back()); r->emit(); road_stack.pop_back(); assert(road_stack.empty()); }
 
-void start_composite()	{	road_composite * c = new road_composite; road_stack.push_back(c); }
-void end_composite()	{	road_composite * c = dynamic_cast<road_composite*>(road_stack.back()); road_stack.pop_back(); get_top()->accept(c); }
+void 	start_composite()	{	road_composite * c = new road_composite; road_stack.push_back(c); }
+void 	end_composite()	{	road_composite * c = dynamic_cast<road_composite*>(road_stack.back()); road_stack.pop_back(); get_top()->accept(c); }
 
 void hwy_underside_start()	{ underside_start(357,409,-1.5,&highway); }
 
@@ -271,6 +271,52 @@ void hwy_sus_e(int p) { hwy_suspension_side(); end_composite(); underside_end();
 void hwy_arc_s(int p) { if (p) hwy_arch2_start(); else hwy_arch1_start(); hwy_underside_start(); start_composite(); hwy_arch_side(); }
 void hwy_arc_e(int p) { hwy_arch_side(); end_composite(); underside_end(); if (p) pylons_end(); pylons_end(); }
 
+/****/
+
+void sec_underside_start()	{ underside_start(481,528,-1,&secondary); }
+
+void sec_start(int b, int n, const char * na) { road_start(b, n,na,&secondary); }
+void sec_pylon1_start() { pylons_start("highway_pylon.obj", 0.5, 0, 120, 60, 0); }
+void sec_pylon2_start() { 	pylons_start("highway_pylon.obj", 0.20, 0, 120, 60, 0); 	
+							pylons_start("highway_pylon.obj", 0.80, 0, 120, 60, 0); }
+void sec_stone_start() { 	pylons_start("secondary_oldpylon.obj", 0.5, 0, 30, 0, 0); }
+void sec_girdr_start() { 	pylons_start("secondary_pylon.obj", 0.0, -1.3, 60, 0, 0); 	
+							pylons_start("secondary_pylon.obj", 1.0,  1.3, 60, 0, 0); }
+void sec_girdr_space() { 	pylons_start("secondary_pylon.obj", 0.5, 0, 60, 0, 0); 	
+							make_spacer(2.6);
+							pylons_end(); }
+
+void sec_overpass_side(){	make_blade(556,545,0.5,-1.5,&secondary); }
+void sec_stone_side()	{	make_blade(929,1021,-10.5,1.5,&secondary); }
+void sec_girdr_side() 	{ 	make_blade(681,810,-2,9,&secondary);  }
+
+void sec_prim_undiv()	{	make_deck(23,131, &secondary, "asphalt"); }
+void sec_prim_undiv_s()	{	make_deck( 2,151, &secondary, "asphalt"); }
+void sec_prim_L()		{	make_deck(175,229, &secondary, "asphalt"); }
+void sec_prim_L_s()		{	make_deck(154,250, &secondary, "asphalt"); }
+void sec_prim_tr()		{	make_deck(569,640, &secondary, "gravel"); }
+void sec_prim_R()		{	make_deck(175,229, &secondary, "asphalt"); }
+void sec_prim_R_s()		{	make_deck(154,250, &secondary, "asphalt"); }
+
+void sec_sec()			{	make_deck(358,416, &secondary, "asphalt"); }
+void sec_sec_s()		{	make_deck(253,356, &secondary, "asphalt"); }
+void sec_sec_p()		{	make_deck(419,477, &secondary, "asphalt"); }
+
+void sec_reg_s(void) { start_composite(); }
+void sec_reg_e(void) { end_composite(); }
+void sec_ovr_s(int p) { if (p) sec_pylon2_start(); else sec_pylon1_start(); sec_underside_start(); start_composite(); sec_overpass_side(); }
+void sec_ovr_e(int p) { sec_overpass_side(); end_composite(); underside_end(); if (p) pylons_end(); pylons_end(); }
+void sec_grd_s(int p) { if(p) { sec_girdr_start(); start_composite(); } sec_underside_start(); start_composite(); sec_girdr_side(); }
+void sec_grd_e(int p) { sec_girdr_side(); end_composite(); underside_end(); if (p) {end_composite(); pylons_end(); pylons_end(); } }
+void sec_grd_b(int p) { sec_grd_e(0); sec_girdr_space(); sec_grd_s(0); }
+void sec_stn_s(int p) { sec_stone_start(); sec_underside_start(); start_composite(); sec_stone_side(); }
+void sec_stn_e(int p) { sec_stone_side(); end_composite(); underside_end(); pylons_end(); }
+
+
+
+
+
+
 
 int main(int, char *[])
 {
@@ -286,6 +332,8 @@ int main(int, char *[])
 	do_tex_bridge(&local);
 	do_tex_bridge(&secondary);
 	do_tex_bridge(&highway);
+	
+	// six-lane US highways: 1-13 = normal,bridge then 76-88=suspension bridge, metal bridge	
 	
 	hwy_start(0, 1, "net_SixLaneUSHighway");
 		hwy_reg_s();
@@ -310,13 +358,11 @@ int main(int, char *[])
 		hwy_6unsep();
 		hwy_arc_e(1);
 	road_end();
-	
-	
 
 	hwy_start(0, 3, "net_SixLaneUSHighwaySeparated");
 		hwy_reg_s();
 		hwy_3lane_L(); make_spacer(3.0); hwy_3lane_R();
-		hwy_guard_rail(); end_composite();
+		hwy_reg_e();
 	road_end();
 	
 	hwy_start(1, 4, "net_SixLaneUSHighwaySeparatedOverpass");
@@ -472,11 +518,7 @@ int main(int, char *[])
 		hwy_arc_e(1);
 	road_end();
 
-
-
-
-
-
+	// four-lane US highways: 13-26 = normal,bridge then 88-100=suspension bridge, metal bridge	
 
 	hwy_start(0, 13, "net_SixLaneUSHighway");
 		hwy_reg_s();
@@ -666,6 +708,256 @@ int main(int, char *[])
 		hwy_4onewaytr();
 		hwy_arc_e(1);
 	road_end();
+		
+	// PRIMARY roads: 26-42 = primary, primary overpass, 63-71 = primary girder
+
+	sec_start(0, 26, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_undiv();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,27, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_prim_undiv();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,63, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_undiv();
+		sec_grd_e(1);
+	road_end();
+
+	sec_start(0, 28, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_undiv_s();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,29, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_prim_undiv_s();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,64, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_undiv_s();
+		sec_grd_e(1);
+	road_end();
+	
+	sec_start(0, 30, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L();
+		sec_prim_tr();
+		sec_prim_R();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,31, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_prim_L();
+		sec_prim_tr();
+		sec_prim_R();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,65, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L();
+		sec_prim_tr();
+		sec_prim_R();
+		sec_grd_e(1);
+	road_end();
+	
+	sec_start(0, 32, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L_s();
+		sec_prim_tr();
+		sec_prim_R_s();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,33, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_prim_L_s();
+		sec_prim_tr();
+		sec_prim_R_s();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,66, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L_s();
+		sec_prim_tr();
+		sec_prim_R_s();
+		sec_grd_e(1);
+	road_end();
+	
+	sec_start(0, 34, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L();
+		make_spacer(2.6);
+		sec_prim_R();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,35, "net_SixLaneUSHighwayOnewayOVerpass");
+		start_composite();
+		sec_ovr_s(0);
+		sec_prim_L();
+		sec_ovr_e(0);
+		make_spacer(2.6);		
+		sec_ovr_s(0);
+		sec_prim_R();
+		sec_ovr_e(0);
+		end_composite();
+	road_end();
+
+	sec_start(1,67, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L();
+		sec_grd_b(1);
+		sec_prim_R();
+		sec_grd_e(1);
+	road_end();
+
+	sec_start(0, 36, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L_s();
+		make_spacer(2.6);
+		sec_prim_R_s();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,37, "net_SixLaneUSHighwayOnewayOVerpass");
+		start_composite();
+		sec_ovr_s(0);
+		sec_prim_L_s();
+		sec_ovr_e(0);
+		make_spacer(2.6);		
+		sec_ovr_s(0);
+		sec_prim_R_s();
+		sec_ovr_e(0);
+		end_composite();
+	road_end();
+
+	sec_start(1,68, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L_s();
+		sec_grd_b(1);
+		sec_prim_R_s();
+		sec_grd_e(1);
+	road_end();
+		
+	sec_start(0, 38, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L();
+		sec_prim_tr();
+		make_spacer(2.6);
+		sec_prim_R();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,39, "net_SixLaneUSHighwayOnewayOVerpass");
+		start_composite();
+		sec_ovr_s(0);
+		sec_prim_L();
+		sec_prim_tr();
+		sec_ovr_e(0);
+		make_spacer(2.6);		
+		sec_ovr_s(0);
+		sec_prim_R();
+		sec_ovr_e(0);
+		end_composite();
+	road_end();
+
+	sec_start(1,69, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L();
+		sec_prim_tr();
+		sec_grd_b(1);
+		sec_prim_R();
+		sec_grd_e(1);
+	road_end();
+		
+	sec_start(0, 40, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_prim_L_s();
+		sec_prim_tr();
+		make_spacer(2.6);
+		sec_prim_R_s();
+		sec_reg_e();
+	road_end();
+	
+	sec_start(1,41, "net_SixLaneUSHighwayOnewayOVerpass");
+		start_composite();
+		sec_ovr_s(0);
+		sec_prim_L_s();
+		sec_prim_tr();
+		sec_ovr_e(0);
+		make_spacer(2.6);		
+		sec_ovr_s(0);
+		sec_prim_R_s();
+		sec_ovr_e(0);
+		end_composite();
+	road_end();
+
+	sec_start(1,70, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_grd_s(1);
+		sec_prim_L_s();
+		sec_prim_tr();
+		sec_grd_b(1);
+		sec_prim_R_s();
+		sec_grd_e(1);
+	road_end();
+	
+	// SECONDAARY roads: 42-47 = secondary, secondary overpass, 71-73 = stone bridge	
+
+	sec_start(0, 42, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_sec_s();
+		sec_reg_e();
+	road_end();
+
+	sec_start(1,43, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_sec_s();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,71, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_stn_s(1);
+		sec_sec_s();
+		sec_stn_e(1);
+	road_end();
+
+	sec_start(0, 44, "net_SixLaneUSHighwayOneway");
+		sec_reg_s();
+		sec_sec();
+		sec_reg_e();
+	road_end();
+
+	sec_start(1,45, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_sec();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,46, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_ovr_s(0);
+		sec_sec_p();
+		sec_ovr_e(0);
+	road_end();
+
+	sec_start(1,72, "net_SixLaneUSHighwayOnewayOVerpass");
+		sec_stn_s(1);
+		sec_sec();
+		sec_stn_e(1);
+	road_end();
+
+	
 		
 	
 	return 0;
