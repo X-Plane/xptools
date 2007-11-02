@@ -40,6 +40,13 @@
  *
  ************************************************************************************************************************************************/
 
+inline bool RoadsForThisFace(GISFace * f)
+{
+	return !f->IsWater() && f->mTerrainType != terrain_Airport &&
+		f->mParams.count(af_OriginCode) &&
+		f->mParams[af_OriginCode] == 2.0;
+}
+
 bool CrossCheck(const Segment2& s1, const Segment2& s2, Point2& p)
 {
 	if(s1.p1 == s2.p1 ||
@@ -514,7 +521,7 @@ void	BuildRoadsForFace(
 	
 	for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())	
-	if (!f->IsWater() && f->mTerrainType != terrain_Airport)
+	if(RoadsForThisFace(f))
 	{
 		// First build a polygon with tensor weights for the face we're working on.		
 		vector<Point2>		poly;
@@ -592,7 +599,7 @@ void	BuildRoadsForFace(
 	PolyRasterizer			raster;
 	for(f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
 	if (!f->is_unbounded())	
-	if (f->IsWater() || f->mTerrainType == terrain_Airport)
+	if(!RoadsForThisFace(f))
 		no_road_faces.insert(f);	
 	
 	FindEdgesForFaceSet(no_road_faces, bounds);
