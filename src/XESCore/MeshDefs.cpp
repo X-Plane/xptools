@@ -163,7 +163,7 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 				CGAL::Orientation 	_o2 = orientation(p0_, p1_, p),
 									_o0 = orientation(p1_, p2_, p),
 									_o1 = orientation(p2_, p0_, p);
-			
+/*			
 				gMeshPoints.push_back(pair<Point2,Point3>(Point2(p.x(),p.y()),Point3(1,1,1)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0.x(),p0.y()),Point3(0,1,1)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p1.x(),p1.y()),Point3(0,1,1)));
@@ -178,7 +178,7 @@ CDT::Vertex_handle	CDT::safe_insert(const Point& p, Face_handle hint)
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2_.x(),p2_.y()),Point3(0,1,0)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p2_.x(),p2_.y()),Point3(0,1,0)));
 				gMeshLines.push_back(pair<Point2,Point3>(Point2(p0_.x(),p0_.y()),Point3(0,1,0)));
-
+*/
 				AssertPrintf("Unable to resolve bad locate.");
 			}
 		}
