@@ -163,6 +163,28 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 		OBJ_set_LOD_near(obj, lod_start);
 		OBJ_set_LOD_far(obj, lod_end);
 	}
+
+	char	light_name[1024];
+	if (sscanf(ac_object_get_name(obj), "LIGHT_NAMED %s", light_name) == 1)
+	{
+		OBJ_set_light_named(obj, light_name);
+	}
+	
+	float r,g,b,a,s,s1,s2,t1,t2;
+	if(sscanf(ac_object_get_name(obj), "LIGHT_CUSTOM %f %f %f %f %f %f %f %f %f %s", &r,&g,&b,&a,&s,&s1,&t1,&s2,&t2,&light_name) == 10)
+	{
+		OBJ_set_light_named(obj,"custom");
+		OBJ_set_light_red(obj,r);
+		OBJ_set_light_green(obj,g);
+		OBJ_set_light_blue(obj,b);
+		OBJ_set_light_alpha(obj,a);
+		OBJ_set_light_size(obj,s);
+		OBJ_set_light_s1(obj,s1);
+		OBJ_set_light_t1(obj,t1);
+		OBJ_set_light_s2(obj,s2);
+		OBJ_set_light_t2(obj,t2);
+		OBJ_set_light_dataref(obj,light_name);		
+	}
 	
 	if (strstr(ac_object_get_name(obj), "ANIMATION") != NULL)
 	{
