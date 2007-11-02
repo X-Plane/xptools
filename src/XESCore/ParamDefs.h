@@ -732,6 +732,13 @@
 	TOKEN(net_PrimaryDividedWithTrains)
 	TOKEN(net_PrimaryDividedWithSidewalksWithTrains)
 
+	/* Primary oneway road - two lanes in the same direction.  Use white lines
+	 * for all lines (center and edge).  Center line is dashed. */
+	TOKEN(net_PrimaryOneway)
+	TOKEN(net_PrimaryOnewayWithSidewalks)
+	TOKEN(net_PrimaryOnewayWithTrains)
+	TOKEN(net_PrimaryOnewayWithSidewalksWithTrains)
+
 	/* Secondary road - in the city with sidewalks - double yellow line.  In 
 	 * the country - single yellow line.  Passing - dashed yellow line. */
 	TOKEN(net_SecondaryRoadWithSidewalks)
