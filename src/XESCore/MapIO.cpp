@@ -25,6 +25,7 @@
 #include "ProgressUtils.h"
 #include "XChunkyFileUtils.h"
 #include "SimpleIO.h"
+#include "AssertUtils.h"
 
 // Ratio of operations to an update of the progress bar.
 #define	PROGRESS_RATIO	5000
@@ -111,6 +112,7 @@ void WriteParamMap				(IOWriter& inWriter, const GISParamMap& m)
 	inWriter.WriteInt(m.size());
 	for (GISParamMap::const_iterator i = m.begin(); i != m.end(); ++i)
 	{
+		DebugAssert(i->first >= 0 && i->first < gTokens.size());
 		inWriter.WriteInt(i->first);
 		inWriter.WriteDouble(i->second);
 	}
@@ -126,6 +128,7 @@ void ReadParamMap				(IOReader& inReader, GISParamMap& m, const TokenConversionM
 		int		e;
 		double	v;
 		inReader.ReadInt(e);
+		DebugAssert(e >= 0 && e < c.size());
 		e = c[e];
 		inReader.ReadDouble(v);
 		m.insert(GISParamMap::value_type(e,v));
