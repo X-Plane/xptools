@@ -308,7 +308,7 @@ static mesh_match_t gMatchBorders[4];
 
 static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 {
-	printf("Finding edge tris for %d edgse.\n",ioBorder.edges.size());
+//	printf("Finding edge tris for %d edgse.\n",ioBorder.edges.size());
 	DebugAssert(ioBorder.vertices.size() == (ioBorder.edges.size()+1));
 	for (int n = 0; n < ioBorder.edges.size(); ++n)
 	{
