@@ -781,16 +781,24 @@ void	WED_MapView::DrawSelf(void)
 //				glVertex2f((gApts[n].bounds.xmax()),
 //							(gApts[n].bounds.ymin()));
 			
-				for (int m = 0; m < gApts[n].pavements.size(); ++m)
+				for(vector<AptInfo_t::AptLineLoop_t>::iterator ogl = gApts[n].ogl.begin(); ogl != gApts[n].ogl.end(); ++ogl)
 				{
-					for (int i = 0, j = 0; i < gApts[n].pavements[m].quad_coords.size(); i += 2, j += 3)
-					{
-						glColor3f(gApts[n].pavements[m].quad_colors[j],gApts[n].pavements[m].quad_colors[j+1],gApts[n].pavements[m].quad_colors[j+2]);
-						glVertex2f(
-							(gApts[n].pavements[m].quad_coords[i]),
-							(gApts[n].pavements[m].quad_coords[i+1]));
-					}
+					glColor3fv(ogl->rgb);
+					glBegin(GL_LINE_LOOP);
+					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
+						glVertex2d(pt->x,pt->y);
+					glEnd();
 				}
+				glPointSize(3);
+				glBegin(GL_POINTS);
+				for(vector<AptInfo_t::AptLineLoop_t>::iterator ogl = gApts[n].ogl.begin(); ogl != gApts[n].ogl.end(); ++ogl)
+				{
+					glColor3fv(ogl->rgb);
+					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
+						glVertex2d(pt->x,pt->y);
+				}
+				glEnd();
+				glPointSize(1);
 //				glEnd();
 //				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 //				float col[3] = { 1.0, 1.0, 1.0 };
