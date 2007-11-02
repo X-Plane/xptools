@@ -193,6 +193,85 @@ static int DoAptInfo(const vector<const char *>& args)
 	for(s=old_bounded.begin();s!=old_bounded.end();++s)		printf("   %s\n",s->c_str());
 	printf("Mixed Airports (new and old together):\n");
 	for(s=new_old.begin();s!=new_old.end();++s)		printf("   %s\n",s->c_str());
+	return 0;
+}
+
+static int DoAptGenBounds(const vector<const char *>& args)
+{
+	for(int n = 0; n < gApts.size(); ++n)
+	{
+		if(gProgress)
+		if ((n % 100) == 0)
+			gProgress(0, 1, "Processing airports", (float) n / (float) gApts.size());	
+		GenBoundary(&gApts[n]);
+		#if OPENGL_MAP
+			GenerateOGL(&gApts[n]);
+		#endif
+	}
+	if(gProgress)
+			gProgress(0, 1, "Processing airports", 1.0);	
+	return 0;
+}
+
+static int DoAptFilter(const vector<const char *>& args)
+{
+	if (gApts.empty()) return 0;
+	
+	int wv = atoi(args[0]);
+	int wb = strcmp(args[1],"yes")==0;
+	if(gVerbose) printf("Want version: %d.  Want boundaries: %s.\n", wv, wb ? "yes" : "no");
+	if(gVerbose) printf("Before filter: %d airports.\n", gApts.size());
+	
+	vector<int>	keep(gApts.size());
+	int keep_ctr = 0;
+
+	for(int n = 0; n < gApts.size(); ++n)
+	{
+		if(gProgress)
+		if ((n % 100) == 0)
+			gProgress(0, 2, "Filtering airports", (float) n / (float) gApts.size());		
+
+		int v = (gApts[n].taxiways.empty()) ? 810 : 850;
+		int b = (gApts[n].boundaries.empty()) ? 0 : 1;
+		if (wv != v || wb != b)
+		{
+			keep[n] = 0;
+		}
+		else
+		{
+			++keep_ctr;
+			keep[n] = 1;
+		}
+	}
+	if(gProgress)
+		gProgress(0, 2, "Filtering airports", 1.0);
+	
+	AptVector keepers(keep_ctr);
+	int m = 0;
+	for(int n = 0; n < gApts.size(); ++n)
+	{
+		if(gProgress)
+		if ((n % 100) == 0)
+			gProgress(1, 2, "Deleting airports", (float) n / (float) gApts.size());		
+
+	
+		if(keep[n])
+		{
+			swap(gApts[n], keepers[m]);
+			++m;
+		}
+	}
+	swap(gApts,keepers);
+	
+	gAptIndex.clear();
+	IndexAirports(gApts,gAptIndex);
+
+	if(gProgress)
+		gProgress(1, 2, "Deleting airports", 1.0);
+	
+	
+	if(gVerbose) printf("After filter: %d airports.\n", gApts.size());
+	return 0;
 }
 
 
@@ -304,6 +383,8 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 { "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
 { "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
+{ "-aptfilter",		2, 2, DoAptFilter,			"Filter airports.", "-aptfilter <810|850> <yes|no>\nFilters airports to only take ones with taxiways of a certain version and boundaries (or not).\n" },
+{ "-aptboundary",	0,	0,DoAptGenBounds,		"Generate boundaries", "-aptboundary\nGenerates boundaries for all airports that don't have them.\n" },
 { "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "-obsrange\nPrints the range of heights of loaded objects, by type." },
 { "-makeobjlib",	1,	1,	DoBuildObjLib,		"Make a fake obj lib of placeholder objects.", "-makeobjlib <package>/\nMakes a package of stub objects that fit the loaded obj descs for autogen." },
 { 0, 0, 0, 0, 0, 0 }
