@@ -587,10 +587,11 @@ void DoScreenshot(void)
 #endif		
 		char	buf[1024];
 		do {
-			strcpy(buf, GetApplicationPath());
-			char * p = buf + strlen(buf);
-			while (p > buf && *(p-1) != DIR_CHAR)	--p;
-			sprintf(p, "screenshot %d.png", rev);
+//			strcpy(buf, GetApplicationPath());
+//			char * p = buf + strlen(buf);
+//			while (p > buf && *(p-1) != DIR_CHAR)	--p;
+//			sprintf(p, "screenshot %d.png", rev);
+			sprintf(buf, "screenshot %d.png", rev);
 			FILE * fi = fopen(buf, "rb");
 			if (fi)
 			{
