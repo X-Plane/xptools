@@ -257,8 +257,10 @@ static int DoAptTest(const vector<const char *>& args)
 	{
 		for (set<int>::iterator bd = bad_idx.begin(); bd != bad_idx.end(); ++bd)
 		{
-			printf("There was a problem with the airport '%s' %s\n",
-				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str());
+			printf("There was a problem with the airport '%s' %s (%.6lf,%.06lf\n",
+				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(),
+				gApts[*bd].bounds.p1.x,
+				gApts[*bd].bounds.p1.y);
 		}
 	}
 
