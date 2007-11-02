@@ -152,8 +152,14 @@ ACObject *	do_obj8_load(char *filename)
 	string texName = (p2 == obj8.texture.npos) ? obj8.texture : obj8.texture.substr(p2+1);    
 	if (texName.size() > 4)
 		texName.erase(texName.size()-4);
+	string texPath;
+	if(p2 != obj8.texture.npos) texPath = obj8.texture.substr(0,p2+1);
     string texNameBmp = texName + ".bmp";
     string texNamePng = texName + ".png";    
+    string texNameDds = texName + ".dds";   
+	string texPathBmp = texPath + texNameBmp; 
+	string texPathPng = texPath + texNamePng; 
+	string texPathDds = texPath + texNameDds; 
     string panelNamePng = "cockpit/-PANELS-/panel.png";
     string panelNameBmp = "cockpit/-PANELS-/panel.bmp";
         
@@ -169,13 +175,20 @@ ACObject *	do_obj8_load(char *filename)
     
     if (!texName.empty())
     {
-    	printf("Pgn tex path = %s\n", texNamePng.c_str());
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNamePng.c_str());
-		printf("full search = %s\n", tex_full_name ? tex_full_name : NULL);
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
-		printf("Tex id = %d\n", tex_id);
 		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNameBmp.c_str());
 		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texNameDds.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
+
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathPng.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathBmp.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
+		if (tex_id == -1)			tex_full_name = search_texture(filename, (char *) texPathDds.c_str());
+		if (tex_full_name != NULL)	tex_id = add_new_texture_opt(tex_full_name,tex_full_name);
+
 	}	
 	if (has_cockpit_cmd || has_cockpit_reg)
 	{
