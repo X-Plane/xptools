@@ -297,6 +297,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				
 				vector<PreinsetFace>	insets;
 				set<int>				the_types;
+				the_types.insert(terrain_Natural);
 				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
 				if (gFaceSelection.empty())
 				{
@@ -345,7 +346,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 //					if (cmd != procCmd_ExportDSFExisting) 
 					strcat(buf, DIR_STR);
 					CreatePackageForDSF(buf, (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
-					BuildDSF(buf2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, WED_ProgressFunc);
+					BuildDSF(buf2, "-", gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, WED_ProgressFunc);
 				}
 			}
 			break;
