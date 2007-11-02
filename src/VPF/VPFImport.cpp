@@ -23,6 +23,7 @@
 
 #include "VPFImport.h"
 #include "MapDefs.h"
+#include "AssertUtils.h"
 #include "VPFTable.h"
 #include "WTPM.h"
 #include "PlatformUtils.h"
@@ -405,6 +406,7 @@ bool	VPFImportTopo3(
 			lines.back().shape = edgPts;
 			NukeDupePts(lines.back().shape);
 			lines.back().he_trans_flags = 0;
+			lines.back().he_param = NO_VALUE;
 			
 			for (i = 0; i < numLines; ++i)
 			{
@@ -412,6 +414,7 @@ bool	VPFImportTopo3(
 				if (lineMatches[i].count(lin_attr_ref))
 				{
 //					if (inLineRules[i].he_param)
+					DebugAssert(inLineRules[i].he_param >= 0 && inLineRules[i].he_param < gTokens.size());
 						lines.back().he_param = inLineRules[i].he_param;
 					if (inLineRules[i].he_trans_flags)
 						lines.back().he_trans_flags |= inLineRules[i].he_trans_flags;
@@ -676,6 +679,7 @@ bool	VPFImportTopo3(
 
 		if (lines[i].he_param != NO_VALUE)
 		{
+			DebugAssert(lines[i].he_param >= 0 && lines[i].he_param < gTokens.size());
 			for (he = lines[i].pm_edges.first.begin(); he != lines[i].pm_edges.first.end(); ++he)
 			if ((*he)->mDominant)
 				(*he)->mParams[lines[i].he_param] = 0.0;
