@@ -43,7 +43,7 @@ BeachIndex					gBeachIndex;
 LandUseTransTable			gLandUseTransTable;
 
 static	void	ValidateNaturalTerrain(void);
-static set<int>		sForests;
+static map<int,int>		sForests;
 
 string	gNaturalTerrainFile;
 string	gLanduseTransFile;
@@ -353,7 +353,13 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.map_rgb[1] /= 255.0;
 	info.map_rgb[2] /= 255.0;
 	
-	if (info.forest_type != NO_VALUE)	sForests.insert(info.forest_type);
+	int orig_forest = info.forest_type;
+	if (info.forest_type != NO_VALUE)	info.forest_type = LookupTokenCreate(ter_name.c_str());
+	if (info.forest_type != NO_VALUE)
+	{
+		if(sForests.count(info.forest_type) > 0)	Assert(sForests[info.forest_type] == orig_forest);
+		sForests[info.forest_type] = orig_forest;
+	}
 		
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
@@ -920,3 +926,8 @@ bool	IsForestType(int inType)
 	return sForests.count(inType) != 0;
 }
 
+
+void	GetForestMapping(map<int,int>& forests)
+{
+	forests = sForests;
+}
