@@ -35,7 +35,8 @@ struct	DSFBuildPrefs_t {
 extern DSFBuildPrefs_t	gDSFBuildPrefs;
 
 void	BuildDSF(
-			const char *	inFileName,
+			const char *	inFileName1,
+			const char *	inFileName2,
 			const DEMGeo&	inLanduse,
 //			const DEMGeo&	inVege,
 			CDT&			inHiresMesh,

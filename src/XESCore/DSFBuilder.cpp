@@ -556,7 +556,8 @@ struct	ObjPrio {
 
 
 void	BuildDSF(
-			const char *	inFileName,
+			const char *	inFileName1,
+			const char *	inFileName2,
 			const DEMGeo&	inLanduse,
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
@@ -609,7 +610,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		Polygon2::iterator						polyPt;
 		vector<Polygon2>::iterator				polyRing;
 
-		void *			writer;
+		void *			writer1, * writer2;
 		DSFCallbacks_t	cbs;
 		
 		Net_JunctionInfoSet				junctions;
@@ -673,9 +674,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * SETUP
 	 ****************************************************************/	
 	 
-	writer = DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 8);
-	StNukeWriter	dontLeakWriter(writer);
-	DSFGetWriterCallbacks(&cbs);
+	writer1 = inFileName1 ? DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 8) : NULL;
+	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inLanduse.mWest, inLanduse.mSouth, inLanduse.mEast, inLanduse.mNorth, 8)) : NULL;
+	StNukeWriter	dontLeakWriter1(writer1);
+	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
+ 	DSFGetWriterCallbacks(&cbs);
 	 
 	/****************************************************************
 	 * MESH GENERATION
@@ -685,7 +688,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	// Also work out land uses.
 	
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.0)) return;	
-
+	
+	if(writer1)
 	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
 	{
 		fi->info().flag = 0;
@@ -752,6 +756,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 0.5)) return;	
 
 #if !NO_ORTHO
+	if(writer1)
 	for (fi = inLoresMesh.finite_faces_begin(); fi != inLoresMesh.finite_faces_end(); ++fi)
 	{
 		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
@@ -795,6 +800,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	// the DSF-file-relative indices.
 
 	cur_id = 0;
+	if(writer1)
 	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, ++cur_id)
 	{
 		lu_ranked->second = cur_id;
@@ -803,6 +809,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;	
 
+	if(writer1)
 	for (prog_c = 0.0, lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, prog_c += 1.0)
 	{
 		if (inProgress && inProgress(1, 5, "Sorting Mesh", prog_c / (float) landuses.size())) return;	
@@ -828,12 +835,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			}
 			fan_builder.CalcFans();
 			TriFan_t * fan;
-			cbs.BeginPatch_f(lu_ranked->second, ORTHO_NEAR_LOD, ORTHO_FAR_LOD, 0, 5, writer);
+			cbs.BeginPatch_f(lu_ranked->second, ORTHO_NEAR_LOD, ORTHO_FAR_LOD, 0, 5, writer1);
 			while ((fan = fan_builder.GetNextFan()) != NULL)
 			{
 				++total_tri_fans;
 				total_tri_fan_pts += fan->faces.size();
-				cbs.BeginPrimitive_f(dsf_TriFan, writer);
+				cbs.BeginPrimitive_f(dsf_TriFan, writer1);
 				coords8[0] = fan->center->point().x();
 				coords8[1] = fan->center->point().y();
 				coords8[2] = fan->center->info().height;
@@ -843,7 +850,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
 				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer);						
+				cbs.AddPatchVertex_f(coords8, writer1);						
 				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
 				coords8[0] = avert->point().x();
 				coords8[1] = avert->point().y();
@@ -854,7 +861,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
 				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer);						
+				cbs.AddPatchVertex_f(coords8, writer1);						
 				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
 				{
 					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
@@ -867,21 +874,21 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer);						
+					cbs.AddPatchVertex_f(coords8, writer1);						
 				}
-				cbs.EndPrimitive_f(writer);
+				cbs.EndPrimitive_f(writer1);
 				fan_builder.DoneWithFan(fan);
 			}
 			if (!fan_builder.Done())
 			{
-				cbs.BeginPrimitive_f(dsf_Tri, writer);
+				cbs.BeginPrimitive_f(dsf_Tri, writer1);
 				tris_this_patch = 0;
 				while (!fan_builder.Done())
 				{
 					if (tris_this_patch >= MAX_TRIS_PER_PATCH)
 					{
-						cbs.EndPrimitive_f(writer);
-						cbs.BeginPrimitive_f(dsf_Tri, writer);				
+						cbs.EndPrimitive_f(writer1);
+						cbs.BeginPrimitive_f(dsf_Tri, writer1);				
 						tris_this_patch = 0;
 					}				
 					++total_tris;
@@ -897,14 +904,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						DebugAssert(coords8[3] <=  1.0);
 						DebugAssert(coords8[4] >= -1.0);
 						DebugAssert(coords8[4] <=  1.0);
-						cbs.AddPatchVertex_f(coords8, writer);
+						cbs.AddPatchVertex_f(coords8, writer1);
 					}
-//					cbs.EndPrimitive_f(writer);
+//					cbs.EndPrimitive_f(writer1);
 					++tris_this_patch;
 				}
-				cbs.EndPrimitive_f(writer);
+				cbs.EndPrimitive_f(writer1);
 			}
-			cbs.EndPatch_f(writer);
+			cbs.EndPatch_f(writer1);
 			++total_patches;
 		}
 #endif		
@@ -929,12 +936,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			}
 			fan_builder.CalcFans();
 			TriFan_t * fan;
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, dsf_Flag_Physical, is_water ? 6 : 5, writer);			
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, dsf_Flag_Physical, is_water ? 6 : 5, writer1);			
 			while ((fan = fan_builder.GetNextFan()) != NULL)
 			{
 				++total_tri_fans;
 				total_tri_fan_pts += fan->faces.size();
-				cbs.BeginPrimitive_f(dsf_TriFan, writer);
+				cbs.BeginPrimitive_f(dsf_TriFan, writer1);
 				coords8[0] = fan->center->point().x();
 				coords8[1] = fan->center->point().y();
 				coords8[2] = fan->center->info().height;
@@ -946,7 +953,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
 				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer);						
+				cbs.AddPatchVertex_f(coords8, writer1);						
 				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
 				coords8[0] = avert->point().x();
 				coords8[1] = avert->point().y();
@@ -959,7 +966,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
 				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer);						
+				cbs.AddPatchVertex_f(coords8, writer1);						
 				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
 				{
 					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
@@ -974,22 +981,22 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer);						
+					cbs.AddPatchVertex_f(coords8, writer1);						
 					++debug_sub_tri_fan;
 				}
-				cbs.EndPrimitive_f(writer);
+				cbs.EndPrimitive_f(writer1);
 				fan_builder.DoneWithFan(fan);
 			}
 			if (!fan_builder.Done())
 			{
-				cbs.BeginPrimitive_f(dsf_Tri, writer);				
+				cbs.BeginPrimitive_f(dsf_Tri, writer1);				
 				tris_this_patch = 0;
 				while (!fan_builder.Done())
 				{
 					if (tris_this_patch >= MAX_TRIS_PER_PATCH)
 					{
-						cbs.EndPrimitive_f(writer);
-						cbs.BeginPrimitive_f(dsf_Tri, writer);				
+						cbs.EndPrimitive_f(writer1);
+						cbs.BeginPrimitive_f(dsf_Tri, writer1);				
 						tris_this_patch = 0;
 					}				
 					++total_tris;
@@ -1008,14 +1015,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						DebugAssert(coords8[3] <=  1.0);
 						DebugAssert(coords8[4] >= -1.0);
 						DebugAssert(coords8[4] <=  1.0);
-						cbs.AddPatchVertex_f(coords8, writer);						
+						cbs.AddPatchVertex_f(coords8, writer1);						
 					}
 					++tris_this_patch;
 					++debug_sub_tri_fan;					
 				}
-				cbs.EndPrimitive_f(writer);
+				cbs.EndPrimitive_f(writer1);
 			}
-			cbs.EndPatch_f(writer);
+			cbs.EndPatch_f(writer1);
 			++total_patches;
 		}		
 
@@ -1028,8 +1035,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		if (lu_ranked->first >= terrain_Natural)
 		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, TERRAIN_FAR_BORDER_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer);
-			cbs.BeginPrimitive_f(dsf_Tri, writer);				
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, TERRAIN_FAR_BORDER_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer1);
+			cbs.BeginPrimitive_f(dsf_Tri, writer1);				
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
 			{
@@ -1061,8 +1068,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				
 						if (tris_this_patch >= MAX_TRIS_PER_PATCH)
 						{
-							cbs.EndPrimitive_f(writer);
-							cbs.BeginPrimitive_f(dsf_Tri, writer);				
+							cbs.EndPrimitive_f(writer1);
+							cbs.BeginPrimitive_f(dsf_Tri, writer1);				
 							tris_this_patch = 0;
 						}
 					
@@ -1083,7 +1090,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[3] <=  1.0);
 							DebugAssert(coords8[4] >= -1.0);
 							DebugAssert(coords8[4] <=  1.0);
-							cbs.AddPatchVertex_f(coords8, writer);
+							cbs.AddPatchVertex_f(coords8, writer1);
 						}
 						++total_tris;
 						++border_tris;
@@ -1091,17 +1098,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					}										
 				}
 			}
-			cbs.EndPrimitive_f(writer);
-			cbs.EndPatch_f(writer);
+			cbs.EndPrimitive_f(writer1);
+			cbs.EndPatch_f(writer1);
 			++total_patches;
 		}
 #endif		
 	}
 	
+	if(writer1)
 	for (lu = landuses_reversed.begin(); lu != landuses_reversed.end(); ++lu)
 	{
 		string def = get_terrain_name(lu->second);
-		cbs.AcceptTerrainDef_f(def.c_str(), writer);
+		cbs.AcceptTerrainDef_f(def.c_str(), writer1);
 	}
 	
 	if (inProgress && inProgress(1, 5, "Sorting Mesh", 1.0)) return;	
@@ -1110,122 +1118,124 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * BEACH EXPORT
 	 ****************************************************************/
 	
-	// Beach export - we are going to export polygon rings/chains out of
-	// every homogenous continous coastline type.  Two issues:
-	// When a beach is not a ring, we need to find the start link
-	// We also need to identify rings somehow.
-
-	typedef edge_hash_map														LinkMap;
-	typedef set<edge_wrapper>													LinkSet;
-	typedef edge_info_map														LinkInfo;
-	
-	LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
-	LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.
-	LinkInfo		all;		// Ones we haven't exported.
-	LinkSet			starts;		// Ones that are not pointed to by a HE
-	edge_wrapper	beach, last_beach;
-	int				beachKind;
-
-	// Go through and build up the link map, e.g. for each edge, who's next.
-	// Also record each edge that's pointed to by another - these are NOT
-	// the starts of non-ring beaches.
-	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
-	for (v = 0; v < 3; ++v)
+	if(writer1)
 	{
-		edge_wrapper edge;
-		edge.edge.first = fi;
-		edge.edge.second = v;
-		if (has_beach(edge, inHiresMesh, beachKind))
+		// Beach export - we are going to export polygon rings/chains out of
+		// every homogenous continous coastline type.  Two issues:
+		// When a beach is not a ring, we need to find the start link
+		// We also need to identify rings somehow.
+
+		typedef edge_hash_map														LinkMap;
+		typedef set<edge_wrapper>													LinkSet;
+		typedef edge_info_map														LinkInfo;
+		
+		LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
+		LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.
+		LinkInfo		all;		// Ones we haven't exported.
+		LinkSet			starts;		// Ones that are not pointed to by a HE
+		edge_wrapper	beach, last_beach;
+		int				beachKind;
+
+		// Go through and build up the link map, e.g. for each edge, who's next.
+		// Also record each edge that's pointed to by another - these are NOT
+		// the starts of non-ring beaches.
+		for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
+		for (v = 0; v < 3; ++v)
 		{
-			all[edge] = beachKind;
-			starts.insert(edge);
-			// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise. 
-			// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
-			for (edge_wrapper iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
+			edge_wrapper edge;
+			edge.edge.first = fi;
+			edge.edge.second = v;
+			if (has_beach(edge, inHiresMesh, beachKind))
 			{
-				if (has_beach(iter, inHiresMesh, beachKind))
+				all[edge] = beachKind;
+				starts.insert(edge);
+				// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise. 
+				// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
+				for (edge_wrapper iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
 				{
-//					DebugAssert(iter->twin() != he);
-					DebugAssert(linkNext.count(edge) == 0);
-					linkNext[edge] = iter;
-					DebugAssert(nonStart.count(iter) == 0);
-					nonStart.insert(iter);
-					break;
+					if (has_beach(iter, inHiresMesh, beachKind))
+					{
+	//					DebugAssert(iter->twin() != he);
+						DebugAssert(linkNext.count(edge) == 0);
+						linkNext[edge] = iter;
+						DebugAssert(nonStart.count(iter) == 0);
+						nonStart.insert(iter);
+						break;
+					}
+					// If we hit something that isn't bounding water, we've gone out of our land into the next
+					// water out of this vertex.  Stop now before we link to a non-connected water body!!
+					if (iter.edge.first->info().terrain != terrain_Water)
+						break;
 				}
-				// If we hit something that isn't bounding water, we've gone out of our land into the next
-				// water out of this vertex.  Stop now before we link to a non-connected water body!!
-				if (iter.edge.first->info().terrain != terrain_Water)
-					break;
 			}
 		}
-	}
 
-	for (LinkSet::iterator i = nonStart.begin(); i != nonStart.end(); ++i)
-	{
-		starts.erase(*i);
-	}
-
-	// Export non-ring beaches.  For each link that's not pointed to by someone else
-	// export the chain.
-	
-	for (LinkSet::iterator a_start = starts.begin(); a_start != starts.end(); ++a_start)
-	{
-		FixBeachContinuity(linkNext, *a_start, all);
-	
-		cbs.BeginPolygon_f(0, 0, 6, writer);
-		cbs.BeginPolygonWinding_f(writer);
-		
-		for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
+		for (LinkSet::iterator i = nonStart.begin(); i != nonStart.end(); ++i)
 		{
-//			printf("output non-circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
-			last_beach = beach;
-			DebugAssert(all.count(beach) != 0);
-			beachKind = all[beach];
-			BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-			cbs.AddPolygonPoint_f(coords6, writer);
-			all.erase(beach);
+			starts.erase(*i);
 		}
-		DebugAssert(all.count(*a_start) == 0);
 
-		BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
-		cbs.AddPolygonPoint_f(coords6, writer);	
+		// Export non-ring beaches.  For each link that's not pointed to by someone else
+		// export the chain.
 		
-		cbs.EndPolygonWinding_f(writer);
-		cbs.EndPolygon_f(writer);
-	}
-
-#if DEV
-	for (LinkInfo::iterator test = all.begin(); test != all.end(); ++test)
-	{
-		DebugAssert(linkNext.count(test->first) != 0);
-	}
-#endif
-
-	// Now just pick an edge and export in a circulator - we should only have rings!	
-	while (!all.empty())
-	{
-		edge_wrapper this_start = all.begin()->first;
-		FixBeachContinuity(linkNext, this_start, all);	
-		cbs.BeginPolygon_f(0, 1, 6, writer);
-		cbs.BeginPolygonWinding_f(writer);
-	
-		beach = this_start;
-		do {
-//			printf("output circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
-			DebugAssert(all.count(beach) != 0);
-			DebugAssert(linkNext.count(beach) != 0);
-			beachKind = all.begin()->second;
-			BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
-			cbs.AddPolygonPoint_f(coords6, writer);			
-			all.erase(beach);
-			beach = linkNext[beach];
-		} while (beach != this_start);		
-		cbs.EndPolygonWinding_f(writer);
-		cbs.EndPolygon_f(writer);
+		for (LinkSet::iterator a_start = starts.begin(); a_start != starts.end(); ++a_start)
+		{
+			FixBeachContinuity(linkNext, *a_start, all);
 		
+			cbs.BeginPolygon_f(0, 0, 6, writer1);
+			cbs.BeginPolygonWinding_f(writer1);
+			
+			for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
+			{
+	//			printf("output non-circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
+				last_beach = beach;
+				DebugAssert(all.count(beach) != 0);
+				beachKind = all[beach];
+				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
+				cbs.AddPolygonPoint_f(coords6, writer1);
+				all.erase(beach);
+			}
+			DebugAssert(all.count(*a_start) == 0);
+
+			BeachPtGrab(last_beach, true, inHiresMesh, coords6, beachKind);
+			cbs.AddPolygonPoint_f(coords6, writer1);	
+			
+			cbs.EndPolygonWinding_f(writer1);
+			cbs.EndPolygon_f(writer1);
+		}
+
+	#if DEV
+		for (LinkInfo::iterator test = all.begin(); test != all.end(); ++test)
+		{
+			DebugAssert(linkNext.count(test->first) != 0);
+		}
+	#endif
+
+		// Now just pick an edge and export in a circulator - we should only have rings!	
+		while (!all.empty())
+		{
+			edge_wrapper this_start = all.begin()->first;
+			FixBeachContinuity(linkNext, this_start, all);	
+			cbs.BeginPolygon_f(0, 1, 6, writer1);
+			cbs.BeginPolygonWinding_f(writer1);
+		
+			beach = this_start;
+			do {
+	//			printf("output circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
+				DebugAssert(all.count(beach) != 0);
+				DebugAssert(linkNext.count(beach) != 0);
+				beachKind = all.begin()->second;
+				BeachPtGrab(beach, false, inHiresMesh, coords6, beachKind);
+				cbs.AddPolygonPoint_f(coords6, writer1);			
+				all.erase(beach);
+				beach = linkNext[beach];
+			} while (beach != this_start);		
+			cbs.EndPolygonWinding_f(writer1);
+			cbs.EndPolygon_f(writer1);
+			
+		}
+		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
 	}
-	cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer);
-	
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/
@@ -1257,11 +1267,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			lowest_required = min(lowest_required, cur_id);
 	}
 	
+	if(writer2)
 	if (lowest_required != objects.size())
 	{
 		char buf[256];
 		sprintf(buf,"1/%d", lowest_required);
-		cbs.AcceptProperty_f("sim/require_object", buf, writer);
+		cbs.AcceptProperty_f("sim/require_object", buf, writer2);
 	}
 	
 	cur_id = 1;
@@ -1275,6 +1286,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	// sorting them - the DSF lib is good about cleaning up the object
 	// data you give it.
 	
+	if(writer2)
 	for (pf = inVectorMap.faces_begin(); pf != inVectorMap.faces_end(); ++pf)
 	if (!pf->is_unbounded())
 	{
@@ -1286,7 +1298,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				objects[pointObj->mRepType],
 				coords2,
 				(pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading,
-				writer);
+				writer2);
 			++total_objs;
 		}
 		
@@ -1312,32 +1324,34 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			cbs.BeginPolygon_f(
 					facades[polyObj->mRepType],
 					polyObj->mHeight, 2,
-					writer);
+					writer2);
 			for (polyRing = polyObj->mShape.begin(); polyRing != polyObj->mShape.end(); ++polyRing)
 			{
-				cbs.BeginPolygonWinding_f(writer);					
+				cbs.BeginPolygonWinding_f(writer2);					
 				for (polyPt = polyRing->begin(); polyPt != polyRing->end(); ++polyPt)
 				{
 					coords2[0] = polyPt->x;
 					coords2[1] = polyPt->y;
-					cbs.AddPolygonPoint_f(coords2, writer);
+					cbs.AddPolygonPoint_f(coords2, writer2);
 					
 				}
-				cbs.EndPolygonWinding_f(writer);
+				cbs.EndPolygonWinding_f(writer2);
 			}
-			cbs.EndPolygon_f(writer);
+			cbs.EndPolygon_f(writer2);
 			++total_polys;
 		}
 	}
 
 	// Write out definition names too.	
+	if(writer2)
 	for (obdef = objects_reversed.begin(); obdef != objects_reversed.end(); ++obdef)
 	{
 		string objName = gObjLibPrefix + FetchTokenString(obdef->second);
 		objName += ".obj";
-		cbs.AcceptObjectDef_f(objName.c_str(), writer);
+		cbs.AcceptObjectDef_f(objName.c_str(), writer2);
 	}
 
+	if(writer2)
 	for (obdef = facades_reversed.begin(); obdef != facades_reversed.end(); ++obdef)
 	{
 		Assert(obdef->second != NO_VALUE);
@@ -1347,7 +1361,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			facName = "lib/g8/"+facName+".for";
 		} else
 			facName = gObjLibPrefix + facName + ".fac";
-		cbs.AcceptPolygonDef_f(facName.c_str(), writer);
+		cbs.AcceptPolygonDef_f(facName.c_str(), writer2);
 	}
 
 	if (inProgress && inProgress(2, 5, "Compiling Objects", 1.0)) return;	
@@ -1357,72 +1371,73 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 ****************************************************************/
 
 #if TEST_FORESTS
+	if(writer2)
 	{	 
 		int for_def = facades_reversed.size() + 1;
-		cbs.BeginPolygon_f(for_def, 255, 2, writer);
-		cbs.BeginPolygonWinding_f(writer);
+		cbs.BeginPolygon_f(for_def, 255, 2, writer2);
+		cbs.BeginPolygonWinding_f(writer2);
 		coords2[0] = -117.1;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.1;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.12;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.12;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
-		cbs.EndPolygonWinding_f(writer);
-		cbs.EndPolygon_f(writer);
+		cbs.EndPolygonWinding_f(writer2);
+		cbs.EndPolygon_f(writer2);
 		////////////////////////////////////////////////////////
-		cbs.BeginPolygon_f(for_def, 150, 2, writer);
-		cbs.BeginPolygonWinding_f(writer);
+		cbs.BeginPolygon_f(for_def, 150, 2, writer2);
+		cbs.BeginPolygonWinding_f(writer2);
 		coords2[0] = -117.2;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.2;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.22;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.22;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
-		cbs.EndPolygonWinding_f(writer);
-		cbs.EndPolygon_f(writer);
+		cbs.EndPolygonWinding_f(writer2);
+		cbs.EndPolygon_f(writer2);
 		////////////////////////////////////////////////////////
-		cbs.BeginPolygon_f(for_def, 40, 2, writer);
-		cbs.BeginPolygonWinding_f(writer);
+		cbs.BeginPolygon_f(for_def, 40, 2, writer2);
+		cbs.BeginPolygonWinding_f(writer2);
 		coords2[0] = -117.3;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.3;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.32;
 		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
 		coords2[0] = -117.32;
 		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer);
+		cbs.AddPolygonPoint_f(coords2, writer2);
 
-		cbs.EndPolygonWinding_f(writer);
-		cbs.EndPolygon_f(writer);
+		cbs.EndPolygonWinding_f(writer2);
+		cbs.EndPolygon_f(writer2);
 
-		cbs.AcceptPolygonDef_f("test.for", writer);
+		cbs.AcceptPolygonDef_f("test.for", writer2);
 	}
 #endif	 
 
@@ -1434,6 +1449,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.0)) return;	
 
+	if(writer2)
 	if (gDSFBuildPrefs.export_roads)
 	{
 
@@ -1502,7 +1518,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							(*ci)->start_junction->index,
 							coords3,
 							false,
-							writer);
+							writer2);
 			++total_chains;
 			
 			for (shapePoint = (*ci)->shape.begin(); shapePoint != (*ci)->shape.end(); ++shapePoint)
@@ -1513,7 +1529,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				if (coords3[0] < inLanduse.mWest  || coords3[0] > inLanduse.mEast || coords3[1] < inLanduse.mSouth || coords3[1] > inLanduse.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
-				cbs.AddSegmentShapePoint_f(coords3, false, writer);
+				cbs.AddSegmentShapePoint_f(coords3, false, writer2);
 				++total_shapes;
 			}
 
@@ -1526,32 +1542,49 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					(*ci)->end_junction->index,
 					coords3,
 					false,
-					writer);
+					writer2);
 		}
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;	
 
 		CleanupNetworkTopology(junctions, chains);
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;	
-		cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer);
+		cbs.AcceptNetworkDef_f("lib/g8/roads.net", writer2);
 	}
 	
 	/****************************************************************
 	 * MANIFEST
 	 ****************************************************************/
 
-	sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) inLanduse.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer);
-	sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer);
-	cbs.AcceptProperty_f("sim/planet", "earth", writer);
-	cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9", writer);
-	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
+	if(writer1)
+	{
+		sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inLanduse.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer1);
+		sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer1);
+		cbs.AcceptProperty_f("sim/planet", "earth", writer1);
+		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer1);
+		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer1);
+	}
+	
+	if (writer2 && writer2 != writer1)
+	{
+		sprintf(prop_buf, "%d", (int) inLanduse.mWest);			cbs.AcceptProperty_f("sim/west", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inLanduse.mEast);			cbs.AcceptProperty_f("sim/east", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inLanduse.mNorth);		cbs.AcceptProperty_f("sim/north", prop_buf, writer2);
+		sprintf(prop_buf, "%d", (int) inLanduse.mSouth);		cbs.AcceptProperty_f("sim/south", prop_buf, writer2);
+		cbs.AcceptProperty_f("sim/planet", "earth", writer2);
+		cbs.AcceptProperty_f("sim/creation_agent", "X-Plane Scenery Creator 0.9a", writer2);
+		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer2);
+		cbs.AcceptProperty_f("sim/overlay", "1", writer2);
+	}
 	
 	/****************************************************************
 	 * WRITEOUT
 	 ****************************************************************/
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.0)) return;	
-	DSFWriteToFile(inFileName, writer);
+	if (writer1) DSFWriteToFile(inFileName1, writer1);
+	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.5)) return;	
+	if (writer2 && writer2 != writer1) DSFWriteToFile(inFileName2, writer2);
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 1.0)) return;	
 	
 	printf("Patches: %d, Free Tris: %d, Tri Fans: %d, Tris in Fans: %d, Border Tris: %d, Avg Per Patch: %f, avg per fan: %f\n",
