@@ -263,7 +263,7 @@ void ReduceToWaterBodies(Pmwx& ioMap);
  * of halfedges in a CCB.
  *
  */
-int SimplifyMap(Pmwx& ioMap, bool inKillRivers);
+int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
 
 /*
  * TODO - DOC THIS 

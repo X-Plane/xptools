@@ -568,7 +568,7 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 	}	
 }
 
-int SimplifyMap(Pmwx& ioMap, bool inKillRivers)
+int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 {
 // OPTIMIZE: it would be possible to utilize the inherent 'creation order' in the Pmwx
 // to store the edges-to-die instead of a vector.  However this is probably NOT the major
@@ -576,16 +576,21 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers)
 
 // TODO: it would be nice to pass in a functor to evaluate edges.
 	vector<Pmwx::Halfedge_handle>	deadList;
+
+	PROGRESS_START(func, 0, 2, "Finding unneeded half-edges...")
+	int ctr = 0;
+	int tot = ioMap.number_of_halfedges();
 	
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin();
-		he != ioMap.halfedges_end(); ++he, ++he)
+		he != ioMap.halfedges_end(); ++he, ++he, ++tot, ++tot)
 	{
+		PROGRESS_CHECK(func,0,2,"Finding unneeded half-edges...",ctr,tot,1000);
 		Pmwx::Halfedge_handle h = he;
 		if (!h->mDominant) h = h->twin();
 		
 		bool	iWet = h->face()->IsWater();
 		bool	oWet = h->twin()->face()->IsWater();
-		bool	border = h->face()->is_unbounded() || h->twin()->face()->is_unbounded();
+		bool	border = h->face()->is_unbounded() != h->twin()->face()->is_unbounded();
 		bool	coastline = iWet != oWet;
 		bool	lu_change = h->face()->mTerrainType != h->twin()->face()->mTerrainType;
 		bool	road = !h->mSegments.empty();
@@ -599,13 +604,19 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers)
 		if (!river && !stuff && !road && !coastline && !border && !lu_change)
 			deadList.push_back(he);
 	}
+	PROGRESS_DONE(func, 0, 2, "Finding unneeded half-edges...");
 	
-	int i = 0;
+	tot = deadList.size();
+	ctr = 0;
+	
+	PROGRESS_START(func, 1,2,"Deleting halfedges...");
 	for (vector<Pmwx::Halfedge_handle>::iterator iter = deadList.begin();
-		iter != deadList.end(); ++iter, ++i)	
+		iter != deadList.end(); ++iter, ++ctr)	
 	{
+		PROGRESS_CHECK(func,1,2,"Deleting halfedges...",ctr,tot,1000);
 		ioMap.remove_edge(*iter);
 	}	
+	PROGRESS_DONE(func,1,2,"Deleting halfedges...");
 	return deadList.size();
 }
 
