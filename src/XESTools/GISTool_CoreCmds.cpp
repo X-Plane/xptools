@@ -36,6 +36,11 @@
 #include "MemFileUtils.h"
 #include "GISUtils.h"
 
+#if OPENGL_MAP
+#include "WED_Notify.h"
+#include "WED_Msgs.h"
+#endif
+
 static int DoExtent(const vector<const char *>& args)
 {
 	gMapWest = atoi(args[0]);
@@ -127,6 +132,26 @@ static int DoWaterCount(const vector<const char *>& args)
 	return 1;
 }
 
+static int DoCropGrid(const vector<const char *>& args)
+{
+	gMap.unbounded_face()->mTerrainType = terrain_Natural;
+
+	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapEast,gMapSouth), NULL, NULL);				
+	gMap.insert_edge(Point2(gMapWest,gMapNorth),Point2(gMapEast,gMapNorth), NULL, NULL);				
+	gMap.insert_edge(Point2(gMapWest,gMapSouth),Point2(gMapWest,gMapNorth), NULL, NULL);				
+	gMap.insert_edge(Point2(gMapEast,gMapSouth),Point2(gMapEast,gMapNorth), NULL, NULL);				
+
+//	for (int x = sw.x; x <= ne.x; ++x)
+//	{
+//		gMap.insert_edge(Point2(x,sw.y),Point2(x,ne.y), NULL, NULL);				
+//	}
+//	for (int y = sw.y; y <= ne.y; ++y)
+//	{
+//		gMap.insert_edge(Point2(sw.x,y),Point2(ne.x,y), NULL, NULL);
+//	}
+	return 0;
+}
+
 static int DoCrop(const vector<const char *>& args)
 {
 	if (gMap.number_of_halfedges() > 0)
@@ -213,6 +238,7 @@ static int DoLoad(const vector<const char *>& args)
 		ReadXESFile(load, &gMap, &gTriangulationHi, &gDem, &gApts, gProgress);
 		IndexAirports(gApts, gAptIndex);
 		MemFile_Close(load);
+		
 	} else {
 		fprintf(stderr,"Could not load file %s.\n", args[0]);
 		return 1;
@@ -222,6 +248,10 @@ static int DoLoad(const vector<const char *>& args)
 				gMap.number_of_faces(),
 				gMap.number_of_halfedges(),
 				gMap.number_of_vertices());
+
+#if OPENGL_MAP
+	WED_Notifiable::Notify(wed_Cat_File, wed_Msg_FileLoaded, NULL);
+#endif				
 	return 0;	
 }
 
@@ -260,6 +290,38 @@ static int DoOverlay(const vector<const char *>& args)
 				gMap.number_of_vertices());
 	return 0;	
 }
+
+static int DoMerge(const vector<const char *>& args)
+{
+	if (gVerbose) printf("Merging file %s...\n", args[0]);
+	MFMemFile * load = MemFile_Open(args[0]);
+	Pmwx		theMap;
+	if (load)
+	{
+		ReadXESFile(load, &theMap, NULL, NULL, NULL, gProgress);
+		MemFile_Close(load);
+				
+	} else {
+		fprintf(stderr,"Could not load file.\n");
+		return 1;
+	}
+	if (gVerbose)
+			printf("Map contains: %d faces, %d half edges, %d vertices.\n",
+				theMap.number_of_faces(),
+				theMap.number_of_halfedges(),
+				theMap.number_of_vertices());
+
+	TopoIntegrateMaps(&gMap, &theMap);
+	MergeMaps(gMap, theMap, false, NULL, true, gProgress);
+	if (gVerbose)
+			printf("Merged Map contains: %d faces, %d half edges, %d vertices.\n",
+				gMap.number_of_faces(),
+				gMap.number_of_halfedges(),
+				gMap.number_of_vertices());
+	return 0;	
+}
+
+
 
 static int DoSave(const vector<const char *>& args)
 {
@@ -301,7 +363,7 @@ static int DoCropSave(const vector<const char *>& args)
 		Pmwx	cutout;		
 		CropMap(gMap, cutout, pts, gProgress);
 		
-		SimplifyMap(cutout, false);
+		SimplifyMap(cutout, false, gProgress);
 		
 		int nland = 0;
 		for (Pmwx::Face_iterator f = cutout.faces_begin(); f != cutout.faces_end(); ++f)
@@ -344,7 +406,7 @@ static int DoSimplify(const vector<const char *>& args)
 {
 	if (gVerbose)
 		printf("Halfedges before simplify: %d\n", gMap.number_of_halfedges());		
-	SimplifyMap(gMap, false);
+	SimplifyMap(gMap, false, gProgress);
 	if (gVerbose)	
 		printf("Halfedges after simplify: %d\n", gMap.number_of_halfedges());			
 	return 0;
@@ -352,6 +414,7 @@ static int DoSimplify(const vector<const char *>& args)
 
 static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
+{ "-cropgrid",		0, 0, DoCropGrid, 		"Crop the map along 1x1 degree grid lines.", "" },
 { "-bbox", 			0, 0, DoBbox, 			"Show bounds of all maps.", "" },
 { "-nearest_dist",  0, 0, DoNearest, 		"Returns closest two pts on map.", "" },
 { "-water_count",	0, 0, DoWaterCount,		"Count amount of water in file.", "" },
@@ -360,7 +423,8 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },
 { "-save", 			1, 1, DoSave, 			"Save an XES file.", "" },
 { "-cropsave", 		1, 1, DoCropSave, 		"Save only extent as an XES file.", "" },
-{ "-overlay", 		1, 1, DoOverlay, 		"Superimpose a second vector map.", "" },
+{ "-overlay", 		1, 1, DoOverlay, 		"Superimpose/replace a second vector map.", "" },
+{ "-merge", 		1, 1, DoMerge,			"Superimpose/merge a second vector map.", "" },
 { "-simplify",		0, 0, DoSimplify,		"Remove unneeded vectors.", "" },
 { "-tag_origin",	1, 1, DoTagOrigin,		"Apply origin code X to this map.", "" },
 

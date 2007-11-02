@@ -228,7 +228,20 @@ int DoMakeCoverage(const vector<const char *>& args)
 
 
 
-
+int DoDumpForests(const vector<const char *>& args)
+{
+	map<int,int>	fm;
+	set<int>		ts;
+	GetForestMapping(fm);
+	for(map<int,int>::iterator i = fm.begin(); i != fm.end(); ++i)
+	{
+		ts.insert(i->second);
+		printf("EXPORT\tlib/g8/%s.for\t%s.for\n", FetchTokenString(i->first), FetchTokenString(i->second));
+	}
+	for(set<int>::iterator i = ts.begin(); i != ts.end(); ++i)
+		printf("# %s.for\n", FetchTokenString(*i));
+	return 0;
+}
 
 
 static	GISTool_RegCmd_t		sMiscCmds[] = {
@@ -237,6 +250,7 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 { "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
+{ "-forest_types",	0,	0, DoDumpForests,			"Output types of forests from the spreadsaheet.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 

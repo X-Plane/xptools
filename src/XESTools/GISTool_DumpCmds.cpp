@@ -36,6 +36,11 @@
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
 #include "XChunkyFileUtils.h"
+#if OPENGL_MAP
+#include <OpenGL/gl.h>
+#include "BitmapUtils.h"
+#endif
+
 extern int	PrintDSFFile(const char * inPath, FILE * output, bool print_it);
 
 #if 0
@@ -250,7 +255,33 @@ static int DoDumpMap(const vector<const char *>& args)
 	return 0;
 }
 
+#if OPENGL_MAP
+static int DoScreenShot(const vector<const char *>& args)
+{
+	static	int	rev = 1;
+	
+	GLint	viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	ImageInfo	cap;
+	int err = CreateNewBitmap(viewport[2], viewport[3], 3, &cap);
+	if (err == 0)
+	{	
+#if APL	
+		glReadPixels(0, 0, viewport[2], viewport[3], GL_BGR, GL_UNSIGNED_BYTE, cap.data);
+#else
+		glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB, GL_UNSIGNED_BYTE, cap.data);
+#endif		
+		WriteBitmapToPNG(&cap, args[0], NULL, 0);
+		DestroyBitmap(&cap);
+	}	
+	
+}
+#endif
+
 static	GISTool_RegCmd_t		sDumpCmds[] = {
+#if OPENGL_MAP
+{ "-screenshot",	1,	1, DoScreenShot ,		"Screenshot of current file.", "" },
+#endif
 { "-dumpatomic",	1,	1, DoDumpAtomic ,		"Dump atom table of atomic file.", "" },
 { "-dumpobs", 		0, 0, DoDumpObs, 		"Dump current FAA objects.", "" },
 { "-dumpdsf", 		1, -1, DoDumpDSF, 		"Dump contents of a DSF file.", "" },

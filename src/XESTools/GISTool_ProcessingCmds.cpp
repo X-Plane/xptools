@@ -151,8 +151,11 @@ static int DoInstantiateForests(const vector<const char *>& args)
 
 				
 	vector<PreinsetFace>	insets;
-//	GenerateInsets(gMap, insets, gProgress);
-//	GenerateForests(gMap, insets			, gTriangulationHi, gProgress);
+	set<int>				the_types;
+	the_types.insert(terrain_Natural);
+	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
+	GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, gProgress);
+	GenerateForests(gMap, insets, gTriangulationHi, gProgress);
 	return 0;
 }
 
@@ -173,11 +176,13 @@ static int DoAssignLandUse(const vector<const char *>& args)
 
 static int DoBuildDSF(const vector<const char *>& args)
 {
-	char buf2[1024];
+	char buf1[1024], buf2[1024];
 	if (gVerbose) printf("Build DSF...\n");
-
-	CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
-	BuildDSF(buf2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
+	char * b1 = buf1, * b2 = buf2;
+	
+	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);				
+	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);				
+	BuildDSF(b1,b2, gDem[dem_LandUse],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
 	return 0;
 }
 
@@ -197,7 +202,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-forests", 		0, 0, DoInstantiateForests, "Build 3-d Forests.",	 		  "" },
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
-{ "-exportdsf", 	1, 1, DoBuildDSF, 		"Build DSF file.", 					  "" },
+{ "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },
 
 
 

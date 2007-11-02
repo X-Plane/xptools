@@ -150,6 +150,51 @@ static void AssertThrower(const char * msg, const char * file, int line)
 	throw msg;
 }
 
+static int DoAptInfo(const vector<const char *>& args)
+{
+	set<string>	new_bounded;
+	set<string>	new_unbounded;
+	set<string>	old_bounded;
+	set<string>	new_old;
+	for(AptVector::iterator a = gApts.begin(); a != gApts.end(); ++a)
+	{
+		if(a->boundaries.empty())
+		{
+			if(!a->taxiways.empty())
+			{
+				if (a->pavements.empty())
+				{
+					new_unbounded.insert(a->icao);
+				}
+				else
+				{
+					new_old.insert(a->icao);
+				}
+			}
+		}
+		else
+		{
+			if (a->pavements.empty())
+			{
+				new_bounded.insert(a->icao);
+			}
+			else
+			{
+				old_bounded.insert(a->icao);
+			}
+		}
+	}
+	set<string>::iterator s;
+	printf("New Airports with boundaries:\n");
+	for(s=new_bounded.begin();s!=new_bounded.end();++s)		printf("   %s\n",s->c_str());
+	printf("New Airports with no boundaries:\n");
+	for(s=new_unbounded.begin();s!=new_unbounded.end();++s)		printf("   %s\n",s->c_str());
+	printf("Old Airports with boundaries:\n");
+	for(s=old_bounded.begin();s!=old_bounded.end();++s)		printf("   %s\n",s->c_str());
+	printf("Mixed Airports (new and old together):\n");
+	for(s=new_old.begin();s!=new_old.end();++s)		printf("   %s\n",s->c_str());
+}
+
 
 static int DoAptTest(const vector<const char *>& args)
 {
@@ -256,8 +301,9 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 { "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.adt file." },
 { "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
+{ "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
 { "-obsrange",		0,	0, DoShowObjRange,		"Show object height ranges.", "-obsrange\nPrints the range of heights of loaded objects, by type." },
-{ "-makeobjlib",	1,	1,	DoBuildObjLib,		"Make a fake obj lib of placeholder objects.", "" },
+{ "-makeobjlib",	1,	1,	DoBuildObjLib,		"Make a fake obj lib of placeholder objects.", "-makeobjlib <package>/\nMakes a package of stub objects that fit the loaded obj descs for autogen." },
 { 0, 0, 0, 0, 0, 0 }
 };
 

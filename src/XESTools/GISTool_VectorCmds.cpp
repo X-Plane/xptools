@@ -393,7 +393,7 @@ static int DoVPFImport(const vector<const char *>& args)
 	char	coverages[512];
 	char *	cov = coverages, * found;
 	strcpy(coverages,cov_list);
-	bool	first = true;
+	bool	first = gMap.empty();
 	bool	ok;
 	bool	ok_any=false;
 	while ((found = strtok(cov, ",")) != NULL)
@@ -408,11 +408,13 @@ static int DoVPFImport(const vector<const char *>& args)
 		if (first)
 //		if (first || sVPFRules[found].topology != 3)
 		{
+//			gMap.unbounded_face()->mTerrainType = terrain_Natural;
 			ok = VPFImportTopo3(coverage, tile, gMap,
 					sVPFRules[found].topology == 3,
 					&*sVPFRules[found].line_rules.begin(),
 					&*sVPFRules[found].face_rules.begin(),
 					&*sVPFRules[found].trans_flags.begin());
+//			gMap.unbounded_face()->mTerrainType = terrain_Natural;
 					
 			if (ok && first)
 			{
