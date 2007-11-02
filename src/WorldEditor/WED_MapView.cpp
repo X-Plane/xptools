@@ -761,7 +761,6 @@ void	WED_MapView::DrawSelf(void)
 		Bbox2	vis_area(w, s, e, n);
 		XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glBegin(GL_QUADS);
 		set<int>	apts;
 		FindAirports(vis_area, gAptIndex, apts);
 		for (set<int>::iterator e = apts.begin(); e != apts.end(); ++e)
@@ -807,10 +806,8 @@ void	WED_MapView::DrawSelf(void)
 				
 //				XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
 //				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);				
-				glBegin(GL_QUADS);
 			}
 		}
-		glEnd();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
