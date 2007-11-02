@@ -4723,6 +4723,199 @@
 			};
 			name = Release;
 		};
+		D6F01D700CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = src/XPTools/ObjView.plist;
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+			};
+			name = DebugOpt;
+		};
+		D6F01D710CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/libdime.a,
+					/usr/local/lib/lib3ds.a,
+				);
+			};
+			name = DebugOpt;
+		};
+		D6F01D720CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"USE_JPEG=1",
+					"OPENGL_MAP=1",
+					"$(inherited)",
+				);
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeos.a,
+					/usr/local/lib/libgeos_c.a,
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+			};
+			name = DebugOpt;
+		};
+		D6F01D730CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				PRODUCT_NAME = DSFTool;
+			};
+			name = DebugOpt;
+		};
+		D6F01D740CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = /usr/local/lib/libpng.a;
+				PRODUCT_NAME = DDSTool;
+			};
+			name = DebugOpt;
+		};
+		D6F01D750CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					/usr/local/lib/lib3ds.a,
+					/usr/local/lib/libdime.a,
+				);
+			};
+			name = DebugOpt;
+		};
+		D6F01D760CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = src/XPTools/XGrinder.plist;
+			};
+			name = DebugOpt;
+		};
+		D6F01D770CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"USE_JPEG=1",
+					"OPENGL_MAP=1",
+					"WED=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
+				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
+				INFOPLIST_PREPROCESS = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+					/usr/local/lib/libfreetype.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libtiffxx.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libsqlite3.a,
+				);
+			};
+			name = DebugOpt;
+		};
+		D6F01D780CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_TIF=1",
+					"$(inherited)",
+				);
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_CFLAGS = "-fpermissive";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PRODUCT_NAME = RenderFarm;
+			};
+			name = DebugOpt;
+		};
+		D6F01D790CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = Untitled;
+			};
+			name = DebugOpt;
+		};
+		D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "Build All";
+			};
+			name = DebugOpt;
+		};
+		D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = src/Obj/XDefs.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEV=1",
+					"APL=1",
+				);
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				HEADER_SEARCH_PATHS = (
+					"libsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1",
+					"libsrc/shapelib-1.2.10",
+					"libsrc/CGAL-3.0/include",
+					"libsrc/zlib-1.1.4/contrib/minizip",
+					/usr/local/include/freetype2,
+					"/usr/include/c++/4.0.0",
+					/usr/local/include,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(inherited)",
+				);
+				OTHER_LDFLAGS = "";
+				PREBINDING = NO;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
+			};
+			name = DebugOpt;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4730,6 +4923,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0E91AC608A95435008D54AB /* Debug */,
+				D6F01D700CDABA8D00A3F1B0 /* DebugOpt */,
 				C0E91AC708A95435008D54AB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4739,6 +4933,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C0E91ACA08A95435008D54AB /* Debug */,
+				D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */,
 				C0E91ACB08A95435008D54AB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4748,6 +4943,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D61C26F60B6155B70092E098 /* Debug */,
+				D6F01D790CDABA8D00A3F1B0 /* DebugOpt */,
 				D61C26F70B6155B70092E098 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4757,6 +4953,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D62435420AE401EF004F00E3 /* Debug */,
+				D6F01D720CDABA8D00A3F1B0 /* DebugOpt */,
 				D62435430AE401EF004F00E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4766,6 +4963,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D65E4B380B65427C004D7887 /* Debug */,
+				D6F01D780CDABA8D00A3F1B0 /* DebugOpt */,
 				D65E4B390B65427C004D7887 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4775,6 +4973,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF5080B5CF9F400D9190C /* Debug */,
+				D6F01D760CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF5090B5CF9F400D9190C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4784,6 +4983,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF84E0B5E5CA800D9190C /* Debug */,
+				D6F01D730CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF84F0B5E5CA800D9190C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4793,6 +4993,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D67EF9870B6135F400D9190C /* Debug */,
+				D6F01D750CDABA8D00A3F1B0 /* DebugOpt */,
 				D67EF9880B6135F400D9190C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4802,6 +5003,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6BC3CC80AB2330E003949C5 /* Debug */,
+				D6F01D710CDABA8D00A3F1B0 /* DebugOpt */,
 				D6BC3CC90AB2330E003949C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4811,6 +5013,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6C579D40C7E3C7B00FCB4C1 /* Debug */,
+				D6F01D740CDABA8D00A3F1B0 /* DebugOpt */,
 				D6C579D50C7E3C7B00FCB4C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4820,6 +5023,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6C68DF00BEFB3DB00C9F880 /* Debug */,
+				D6F01D7A0CDABA8D00A3F1B0 /* DebugOpt */,
 				D6C68DF10BEFB3DB00C9F880 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -4829,6 +5033,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				D6ED37470B67964D00D5484E /* Debug */,
+				D6F01D770CDABA8D00A3F1B0 /* DebugOpt */,
 				D6ED37480B67964D00D5484E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
