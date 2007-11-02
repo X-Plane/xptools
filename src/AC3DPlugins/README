@@ -11,6 +11,10 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
+Version 3.0.2
+	- Update old object updates lights
+	- Bulk update command
+	- Better optimization of rotate animations
 Version 3.0.1r1 9/20/07
 	- As an optimization, the OBJ8 exporter no longer writes the unnecessary ATTR_shade_flat
 Version 3.0r1 9/17/07
