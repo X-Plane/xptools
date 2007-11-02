@@ -29,6 +29,15 @@
 class	Pmwx;
 struct	DEMGeo;
 
+void	AptPolygonToBezier(
+				const AptPolygon_t&			inPoly,
+				vector<vector<Bezier2> >&	outPoly);
+
+void	BezierToSegments(
+				const vector<Bezier2>&		inWinding,
+				Polygon2&					outWinding,
+				float						inSimplify);
+
 void BurnInAirport(
 				const AptInfo_t * 	inAirport,
 				Pmwx&				ioMap,

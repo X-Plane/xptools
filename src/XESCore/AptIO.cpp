@@ -24,6 +24,9 @@
 #include "AptIO.h"
 #include "ParamDefs.h"
 #include "MemFileUtils.h"
+#if OPENGL_MAP
+#include "Airports.h"
+#endif
 #include "XESConstants.h"
 #include "GISUtils.h"
 #include "AssertUtils.h"
@@ -145,14 +148,50 @@ static void CenterToCorners(Point2 location, double heading, double len, double 
 }
 
 #if OPENGL_MAP
-static void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
+
+static void OGL_push_quad(AptInfo_t *		io_airport, float r, float g, float b, const Point2 p[4])
 {
-	double	aspect = cos(rwy->ends.midpoint().y * DEG_TO_RAD);
+	io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
+	io_airport->ogl.back().rgb[0] = r;
+	io_airport->ogl.back().rgb[1] = g;
+	io_airport->ogl.back().rgb[2] = b;
+	io_airport->ogl.back().pts.insert(io_airport->ogl.back().pts.end(),p,p+4);
+}
+
+static void CalcPavementBezier(AptInfo_t * io_airport, AptPolygon_t * poly, float r, float  g, float b, float simp)
+{
+	vector<vector<Bezier2> >	windings;
+	AptPolygonToBezier(*poly, windings);
+	
+	for(vector<vector<Bezier2> >::iterator w = windings.begin(); w != windings.end(); ++w)
+	{
+		io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
+		AptInfo_t::AptLineLoop_t * l = &io_airport->ogl.back();
+		l->rgb[0] = r; l->rgb[1] = g; l->rgb[2] = b;		
+		BezierToSegments(*w, l->pts,simp);
+		
+//		io_airport->ogl.push_back(AptInfo_t::AptLineLoop_t());
+//		l = &io_airport->ogl.back();
+//		l->rgb[0] = b; l->rgb[1] = g; l->rgb[2] = r;
+//		BezierToSegments(*w, l->pts,true);
+	}
+}
+
+static void CalcPavementOGL(
+					AptInfo_t *		io_airport,
+					const Segment2&	ends,
+					float			width_mtr,
+					float			blas1_mtr,
+					float			blas2_mtr,
+					float			disp1_mtr,
+					float			disp2_mtr)
+{
+	double	aspect = cos(ends.midpoint().y * DEG_TO_RAD);
 	double MTR_TO_DEG_LON = MTR_TO_DEG_LAT / aspect;
 	double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * aspect;
 	
-	double rwy_len = LonLatDistMetersWithScale(rwy->ends.p1.x, rwy->ends.p1.y, rwy->ends.p2.x, rwy->ends.p2.y, DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
-	Vector2	rwy_dir(rwy->ends.p1,  rwy->ends.p2);
+	double rwy_len = LonLatDistMetersWithScale(ends.p1.x, ends.p1.y, ends.p2.x, ends.p2.y, DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
+	Vector2	rwy_dir(ends.p1,  ends.p2);
 	rwy_dir.dx *= DEG_TO_MTR_LON;
 	rwy_dir.dy *= DEG_TO_MTR_LAT;
 	
@@ -160,8 +199,8 @@ static void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
 	
 	Vector2	rwy_right = rwy_dir.perpendicular_cw();
 	Vector2	rwy_left = rwy_dir.perpendicular_ccw();
-	rwy_right *= (rwy->width_ft * 0.5 * FT_TO_MTR);
-	rwy_left *= (rwy->width_ft * 0.5 * FT_TO_MTR);
+	rwy_right *= (width_mtr * 0.5);
+	rwy_left *= (width_mtr * 0.5);
 
 	rwy_left.dx *= MTR_TO_DEG_LON;
 	rwy_left.dy *= MTR_TO_DEG_LAT;
@@ -170,89 +209,58 @@ static void CalcRwyOGL(int apt_code, AptPavement_t * rwy)
 	
 	Point2	pts[4];
 	
-	pts[0] = rwy->ends.p1 + rwy_left;
-	pts[1] = rwy->ends.p2 + rwy_left;
-	pts[2] = rwy->ends.p2 + rwy_right;
-	pts[3] = rwy->ends.p1 + rwy_right;	
-	for (int n = 0; n < 4; ++n)
+	pts[0] = ends.p1 + rwy_left;
+	pts[1] = ends.p2 + rwy_left;
+	pts[2] = ends.p2 + rwy_right;
+	pts[3] = ends.p1 + rwy_right;
+
+		 if (io_airport->kind_code == apt_seaport) 	OGL_push_quad(io_airport, 0.0,0.0,0.6, pts);
+	else if (io_airport->kind_code == apt_heliport)	OGL_push_quad(io_airport, 0.6,0.0,0.3, pts);
+	else											OGL_push_quad(io_airport, 0.6,0.6,0.6, pts);
+
+	if (blas1_mtr != 0.0)
 	{
-		rwy->quad_coords.push_back(pts[n].x);
-		rwy->quad_coords.push_back(pts[n].y);
-		if (apt_code == apt_seaport) {
-			rwy->quad_colors.push_back(0.0);
-			rwy->quad_colors.push_back(0.0);
-			rwy->quad_colors.push_back(0.6);
-		} else if (apt_code == apt_heliport) {
-			rwy->quad_colors.push_back(0.6);
-			rwy->quad_colors.push_back(0.0);
-			rwy->quad_colors.push_back(0.3);
-		} else {
-			rwy->quad_colors.push_back(0.6);
-			rwy->quad_colors.push_back(0.6);
-			rwy->quad_colors.push_back(0.6);
-		}
+		pts[0] = ends.midpoint(-blas1_mtr / rwy_len) + rwy_left;
+		pts[1] = ends.p1 + rwy_left;
+		pts[2] = ends.p1 + rwy_right;
+		pts[3] = ends.midpoint(-blas1_mtr / rwy_len) + rwy_right;	
+		OGL_push_quad(io_airport, 0.8,0.8,0.0, pts);
 	}
-	if (rwy->blast1_ft != 0.0)
+	if (blas2_mtr != 0.0)
 	{
-		pts[0] = rwy->ends.midpoint(-rwy->blast1_ft * FT_TO_MTR / rwy_len) + rwy_left;
-		pts[1] = rwy->ends.p1 + rwy_left;
-		pts[2] = rwy->ends.p1 + rwy_right;
-		pts[3] = rwy->ends.midpoint(-rwy->blast1_ft * FT_TO_MTR / rwy_len) + rwy_right;	
-		for (int n = 0; n < 4; ++n)
-		{
-			rwy->quad_coords.push_back(pts[n].x);
-			rwy->quad_coords.push_back(pts[n].y);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.0);
-		}		
+		pts[0] = ends.p2 + rwy_left;
+		pts[1] = ends.midpoint(1.0 + blas2_mtr / rwy_len) + rwy_left;
+		pts[2] = ends.midpoint(1.0 + blas2_mtr / rwy_len) + rwy_right;
+		pts[3] = ends.p2 + rwy_right;	
+		OGL_push_quad(io_airport, 0.8,0.8,0.0, pts);
 	}
-	if (rwy->blast2_ft != 0.0)
+	if (disp1_mtr != 0.0)
 	{
-		pts[0] = rwy->ends.p2 + rwy_left;
-		pts[1] = rwy->ends.midpoint(1.0 + rwy->blast2_ft * FT_TO_MTR / rwy_len) + rwy_left;
-		pts[2] = rwy->ends.midpoint(1.0 + rwy->blast2_ft * FT_TO_MTR / rwy_len) + rwy_right;
-		pts[3] = rwy->ends.p2 + rwy_right;	
-		for (int n = 0; n < 4; ++n)
-		{
-			rwy->quad_coords.push_back(pts[n].x);
-			rwy->quad_coords.push_back(pts[n].y);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.0);
-		}		
+		pts[0] = ends.p1 + rwy_left;
+		pts[1] = ends.midpoint(disp1_mtr / rwy_len) + rwy_left;
+		pts[2] = ends.midpoint(disp1_mtr / rwy_len) + rwy_right;
+		pts[3] = ends.p1 + rwy_right;	
+		OGL_push_quad(io_airport, 0.8,0.8,0.8, pts);
 	}
-	if (rwy->disp1_ft != 0.0)
+	if (disp2_mtr != 0.0)
 	{
-		pts[0] = rwy->ends.p1 + rwy_left;
-		pts[1] = rwy->ends.midpoint(rwy->disp1_ft * FT_TO_MTR / rwy_len) + rwy_left;
-		pts[2] = rwy->ends.midpoint(rwy->disp1_ft * FT_TO_MTR / rwy_len) + rwy_right;
-		pts[3] = rwy->ends.p1 + rwy_right;	
-		for (int n = 0; n < 4; ++n)
-		{
-			rwy->quad_coords.push_back(pts[n].x);
-			rwy->quad_coords.push_back(pts[n].y);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-		}		
-	}
-	if (rwy->disp2_ft != 0.0)
-	{
-		pts[0] = rwy->ends.midpoint(1.0 - rwy->disp2_ft * FT_TO_MTR / rwy_len) + rwy_left;
-		pts[1] = rwy->ends.p2 + rwy_left;
-		pts[2] = rwy->ends.p2 + rwy_right;
-		pts[3] = rwy->ends.midpoint(1.0 - rwy->disp2_ft * FT_TO_MTR / rwy_len) + rwy_right;	
-		for (int n = 0; n < 4; ++n)
-		{
-			rwy->quad_coords.push_back(pts[n].x);
-			rwy->quad_coords.push_back(pts[n].y);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-			rwy->quad_colors.push_back(0.8);
-		}		
+		pts[0] = ends.midpoint(1.0 - disp2_mtr / rwy_len) + rwy_left;
+		pts[1] = ends.p2 + rwy_left;
+		pts[2] = ends.p2 + rwy_right;
+		pts[3] = ends.midpoint(1.0 - disp2_mtr / rwy_len) + rwy_right;	
+		OGL_push_quad(io_airport, 0.8,0.8,0.8, pts);
 	}
 }
+
+static void CalcPavementHelipad(AptInfo_t * io_airport, const Point2& c, float h, float w, float rwy_len)
+{
+	Segment2	e;
+	CenterToEnds(c,h,rwy_len,e);
+	CalcPavementOGL(io_airport,e,w,0,0,0,0);
+}
+
+
+
 #endif /* OPENGL_MAP */
 
 string	ReadAptFile(const char * inFileName, AptVector& outApts)
@@ -408,7 +416,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			
 			CenterToEnds(center_loc,rwy_heading,len_code * FT_TO_MTR, rwy->ends);
 #if OPENGL_MAP
-			CalcRwyOGL(outApts.back().kind_code,rwy);
+			CalcPavementOGL(&outApts.back(), rwy->ends,
+								rwy->width_ft * FT_TO_MTR,
+								rwy->blast1_ft * FT_TO_MTR,
+								rwy->blast2_ft * FT_TO_MTR,
+								rwy->disp1_ft * FT_TO_MTR,
+								rwy->disp2_ft * FT_TO_MTR);
 #endif						
 			break;
 		case apt_tower_loc:
@@ -480,6 +493,27 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		case apt_rwy_new:
 			if (vers < 850) ok = "Error: new runways not allowed before 850";
 			outApts.back().runways.push_back(AptRunway_t());
+			
+
+			if (outApts.back().kind_code == apt_airport)
+			if (!hit_prob)
+			if (TextScanner_FormatScan(s, " T       TT       TT",&wid_str,&lat_str,&lon_str,&rot_str,&len_str)==20)
+			{
+				lat_str += ' ';
+				lat_str += lon_str;
+				lat_str += ' ';
+				lat_str += rot_str;
+				lat_str += ' ';
+				lat_str += len_str;
+				lat_str += ' ';
+				lat_str += wid_str;
+				if (centers.count(lat_str) > 0)
+				{
+					hit_prob = true;
+					printf("WARNING: duplicate runway for airport '%s' %s: %s\n", outApts.back().icao.c_str(), outApts.back().name.c_str(), lat_str.c_str());
+				}
+				centers.insert(lat_str);
+			}
 			if (TextScanner_FormatScan(s, "ifiifiiiTddffiiiiTddffiiii",
 				&rec_code,
 				&outApts.back().runways.back().width_mtr,
@@ -510,6 +544,14 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().runways.back().has_tdzl[1],
 				&outApts.back().runways.back().reil_code[1]) != 26)
 			ok = "Illegal new runway";
+			#if OPENGL_MAP
+			CalcPavementOGL(&outApts.back(), outApts.back().runways.back().ends,
+								outApts.back().runways.back().width_mtr,
+								outApts.back().runways.back().blas_mtr[0],
+								outApts.back().runways.back().blas_mtr[1],
+								outApts.back().runways.back().disp_mtr[0],
+								outApts.back().runways.back().disp_mtr[1]);
+			#endif
 			break;
 		case apt_sea_new:
 			if (vers < 850) ok = "Error: new sealanes not allowed before 850";
@@ -525,6 +567,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().sealanes.back().ends.p2.y,
 				&outApts.back().sealanes.back().ends.p2.x) != 9)
 			ok = "Illegal new seaway";
+			#if OPENGL_MAP
+			CalcPavementOGL(&outApts.back(), outApts.back().sealanes.back().ends,
+								outApts.back().sealanes.back().width_mtr,0,0,0,0);
+			#endif			
 			break;
 		case apt_heli_new:
 			if (vers < 850) ok = "Error: new helipads not allowed before 850";
@@ -543,6 +589,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().helipads.back().roughness_ratio,
 				&outApts.back().helipads.back().edge_light_code) != 12)
 			ok = "Illegal new helipad";
+			#if OPENGL_MAP
+				CalcPavementHelipad(&outApts.back(),outApts.back().helipads.back().location,
+					outApts.back().helipads.back().heading,
+					outApts.back().helipads.back().width_mtr,				
+					outApts.back().helipads.back().length_mtr);
+			#endif
 			break;		
 		case apt_taxi_new:
 			if (vers < 850) ok = "Error: new taxiways not allowed before 850";
@@ -644,20 +696,58 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		ok += buf;
 	}
 	
-	for (int a = 0; a < outApts.size(); ++a)
+	for (AptVector::iterator a = outApts.begin(); a != outApts.end(); ++a)
 	{
-		outApts[a].bounds = Bbox2();
+		a->bounds = Bbox2();
 	
-//		outApts[a].bounds = Bbox2(outApts[a].tower.location);
-//		outApts[a].bounds += outApts[a].beacon.location;
-//		for (int w = 0; w < outApts[a].windsocks.size(); ++w)
-//			outApts[a].bounds += outApts[a].windsocks[w].location;
-//		for (int r = 0; r < outApts[a].gates.size(); ++r)
-//			outApts[a].bounds += outApts[a].gates[r].location;
-		for (int p = 0; p < outApts[a].pavements.size(); ++p)
+//		a->bounds = Bbox2(a->tower.location);
+//		a->bounds += a->beacon.location;
+//		for (int w = 0; w < a->windsocks.size(); ++w)
+//			a->bounds += a->windsocks[w].location;
+//		for (int r = 0; r < a->gates.size(); ++r)
+//			a->bounds += a->gates[r].location;
+		for (AptPavementVector::iterator p = a->pavements.begin(); p != a->pavements.end(); ++p)
 		{
-			outApts[a].bounds += outApts[a].pavements[p].ends.p1;
-			outApts[a].bounds += outApts[a].pavements[p].ends.p2;
+			a->bounds += p->ends.p1;
+			a->bounds += p->ends.p2;
+		}
+		for (AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
+		{
+			a->bounds += r->ends.p1;
+			a->bounds += r->ends.p2;
+		}
+		for(AptSealaneVector::iterator s = a->sealanes.begin(); s != a->sealanes.end(); ++s)
+		{
+			a->bounds += s->ends.p1;
+			a->bounds += s->ends.p2;
+		}
+		for(AptHelipadVector::iterator h = a->helipads.begin(); h != a->helipads.end(); ++h)
+			a->bounds += h->location;
+			
+		for(AptTaxiwayVector::iterator t = a->taxiways.begin(); t != a->taxiways.end(); ++t)
+		{
+			#if OPENGL_MAP
+				CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,10.0);
+			#endif			
+			for(AptPolygon_t::iterator pt = t->area.begin(); pt != t->area.end(); ++pt)
+			{
+				a->bounds += pt->pt;
+				if(pt->code == apt_lin_crv || pt->code == apt_rng_crv || pt-> code == apt_end_crv)
+					a->bounds += pt->ctrl;
+			}
+		}
+		
+		for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
+		{
+			#if OPENGL_MAP
+				CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,10.0);
+			#endif
+			for(AptPolygon_t::iterator pt = b->area.begin(); pt != b->area.end(); ++pt)
+			{
+				a->bounds += pt->pt;
+				if(pt->code == apt_lin_crv || pt->code == apt_rng_crv || pt-> code == apt_end_crv)
+					a->bounds += pt->ctrl;
+			}
 		}
 	}
 	return ok;

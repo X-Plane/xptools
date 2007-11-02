@@ -253,7 +253,6 @@ struct	AptLinearSegment_t {
 	set<int>	attributes;	
 };
 typedef	vector<AptLinearSegment_t>		AptPolygon_t;
-typedef vector<AptPolygon_t>			AptPolygonVector;
 
 struct	AptTaxiway_t {
 	int						surface_code;
@@ -299,13 +298,7 @@ struct	AptPavement_t {
 	int			vap_lites_code2;
 	int			edge_lites_code2;
 	int			app_lites_code2;	
-	int			vasi_angle2;	// x100
-	
-
-#if OPENGL_MAP	
-	vector<float>	quad_coords;
-	vector<float>	quad_colors;
-#endif	
+	int			vasi_angle2;	// x100	
 };
 typedef vector<AptPavement_t>	AptPavementVector;
 
@@ -388,6 +381,16 @@ struct AptInfo_t {
 	AptATCFreqVector	atc;
 	
 	Bbox2				bounds;
+
+#if OPENGL_MAP	
+	struct AptLineLoop_t {
+		float			rgb[3];
+		Polygon2		pts;
+	};
+	vector<AptLineLoop_t>	ogl;
+#endif	
+	
+	
 };
 
 typedef vector<AptInfo_t>	AptVector;
