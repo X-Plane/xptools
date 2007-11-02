@@ -399,12 +399,24 @@ void BurnInAirport(
 		{
 			vector<vector<Bezier2> >	bez_poly;
 			vector<Polygon2>			windings;
+			Polygon2					winding;
 			AptPolygonToBezier(b->area, bez_poly);			
-			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
-			{
-				windings.push_back(Polygon2());
-				BezierToSegments(*w, windings.back(),10.0);
-			}
+			BezierToSegments(bez_poly.front(), winding,0.0);			
+			MakePolygonConvex(winding);
+			
+				int n;
+				CoordTranslator	t;
+			CreateTranslatorForPolygon(winding, t);
+			for(n = 0; n < winding.size(); ++n) 
+				winding[n] = t.Forward(winding[n]);
+			windings.push_back(Polygon2());
+
+			InsetPolygon2(winding, NULL, -30, true, windings.back(), NULL, NULL);
+//			windings.back() = winding;
+			for(n = 0; n < windings.back().size(); ++n) 
+				windings.back()[n] = t.Reverse(windings.back()[n]);
+
+			
 			BurnInPolygon(ioMap, windings,faces);
 		}
 

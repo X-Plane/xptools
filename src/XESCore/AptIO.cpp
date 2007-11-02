@@ -727,7 +727,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		for(AptTaxiwayVector::iterator t = a->taxiways.begin(); t != a->taxiways.end(); ++t)
 		{
 			#if OPENGL_MAP
-				CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,10.0);
+				CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,0.0);
 			#endif			
 			for(AptPolygon_t::iterator pt = t->area.begin(); pt != t->area.end(); ++pt)
 			{
@@ -740,7 +740,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
 		{
 			#if OPENGL_MAP
-				CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,10.0);
+				CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
 			#endif
 			for(AptPolygon_t::iterator pt = b->area.begin(); pt != b->area.end(); ++pt)
 			{
