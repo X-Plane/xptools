@@ -85,6 +85,19 @@ proc xplane_convert_dir {} {
 	xplane_dir_eval {ac3d clear_all;ac3d load_ac $filename;set filename [string replace $filename [string last . $filename] end ".obj"];ac3d exporter_write_file OBJ8Save $filename} "*.ac"
 }
 
+proc xplane_update_dir {} {
+#	xplane_dir_eval "ac3d clear_all;ac3d load_ac \$filename;set filename \[string replace \$filename \[string last . \$filename\] end \".obj\"\];ac3d exporter_write_file OBJ8Save \$filename" "*.ac"
+#	xplane_dir_eval {ac3d clear_all;ac3d load_ac $filename;set filename [string replace $filename [string last . $filename] end ".obj"];ac3d exporter_write_file OBJ8Save $filename} "*.ac"
+
+	set strarg "ac3d clear_all;
+					ac3d load_ac \$filename;
+					ac3d xplane_update_selection;
+					ac3d save_ac \$filename"
+	xplane_dir_eval $strarg "*.ac"
+
+
+}
+
 
 ##########################################################################################################################################################
 # TEXTURE COORDINATE REMAPPING!
@@ -1036,7 +1049,8 @@ if {$USE_KEYFRAMES} {
 .mbar.xplane.menu add command -label "Bulk Export..." -command "ac3d xplane_bulk_export"
 .mbar.xplane.menu add command -label "By-Texture Export..." -command "ac3d xplane_tex_export"
 .mbar.xplane.menu add command -label "X-Plane Export Settings..." -command "xplane_prefs_dialog"
-.mbar.xplane.menu add command -label "Update from old plugin" -command "ac3d xplane_update_selection"
+.mbar.xplane.menu add command -label "Update workspace from old plugin" -command "ac3d xplane_update_selection"
+.mbar.xplane.menu add command -label "Update Directory from old plugin..." -command "xplane_update_dir"
 
 
 fetch_all_datarefs
