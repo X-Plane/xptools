@@ -87,7 +87,7 @@ static	void	WED_HandleEditMenuCmd(void *, void * i)
 //			WED_Notifiable::Notify(wed_Cat_File, wed_Msg_VectorChange, NULL);
 //			break;
 		case editCmd_SimplifyMap:
-			SimplifyMap(gMap, true);
+			SimplifyMap(gMap, true, WED_ProgressFunc);
 			gEdgeSelection.clear();
 			gFaceSelection.clear();
 			gVertexSelection.clear();

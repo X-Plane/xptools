@@ -342,7 +342,7 @@ void GenerateForests(
 
 					TopoIntegrateMaps(&forestMap, &baseClone);
 					MergeMaps(forestMap, baseClone, true, NULL, true, NULL);
-					SimplifyMap(forestMap, false);
+					SimplifyMap(forestMap, false, NULL);
 					
 					for (Pmwx::Face_iterator f = forestMap.faces_begin(); f != forestMap.faces_end(); ++f)
 					if (f->mTerrainType == terrain_ForestPark)
