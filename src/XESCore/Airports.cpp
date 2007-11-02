@@ -488,6 +488,7 @@ void BurnInAirport(
 	// (Note: this WILL possibly delete water, but that water is totally surrounded
 	// by pavement - we can afford this hit.
 
+	if (inAirport->boundaries.empty())
 	for (set<GISFace *>::iterator f = faces.begin(); f != faces.end(); ++f)
 	{
 		while ((*f)->holes_begin() != (*f)->holes_end())
@@ -635,4 +636,32 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		SimplifyMap(ioMap, kill_rivers, prog);
 	}
 	
+}
+
+void	GenBoundary(
+				AptInfo_t * 	ioAirport)
+{
+	if (!ioAirport->boundaries.empty()) return;
+
+		Pmwx			foo;
+		set<GISFace *>	faces;		
+	foo.unbounded_face()->mTerrainType = terrain_Natural;
+	BurnInAirport(ioAirport, foo, false, faces);
+	
+	for(Pmwx::Face_iterator f = foo.faces_begin(); f != foo.faces_end(); ++f)
+	if (!f->is_unbounded())
+	if(f->mTerrainType == terrain_Airport)
+	{
+		ioAirport->boundaries.push_back(AptBoundary_t());
+		AptPolygon_t * p = &ioAirport->boundaries.back().area;
+		Pmwx::Ccb_halfedge_circulator circ(f->outer_ccb()),stop(f->outer_ccb());
+		do {
+			++circ;
+			p->push_back(AptLinearSegment_t());
+			p->back().code = (circ == stop ? apt_rng_seg : apt_lin_seg);
+			p->back().pt = circ->target()->point();
+		} while(circ != stop);
+		
+		DebugAssert(f->holes_count() == 0);
+	}
 }

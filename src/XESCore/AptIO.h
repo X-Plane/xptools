@@ -42,4 +42,8 @@ void	FindAirports(const Bbox2& bounds, const AptIndex& index, set<int>& apts);
 
 void	ConvertForward(AptInfo_t& io_apt);
 
+#if OPENGL_MAP
+void	GenerateOGL(AptInfo_t * apt);
+#endif
+
 #endif

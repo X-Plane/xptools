@@ -29,6 +29,10 @@
 class	Pmwx;
 struct	DEMGeo;
 
+void	GenBoundary(
+				AptInfo_t * 	ioAirport);
+				
+
 void	AptPolygonToBezier(
 				const AptPolygon_t&			inPoly,
 				vector<vector<Bezier2> >&	outPoly);
