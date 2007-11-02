@@ -640,10 +640,10 @@ Pmwx& Pmwx::operator=(const GISFace& rhs)
 		} while (iter != stop);
 	}
 
-	DebugAssert(rhs.is_unbounded() || mUnbounded->holes_count() == 1);
+	Assert(rhs.is_unbounded() || mUnbounded->holes_count() == 1);
 	GISFace * copy = rhs.is_unbounded() ? mUnbounded : (*mUnbounded->holes_begin())->twin()->face();
-	DebugAssert(copy->is_unbounded() == rhs.is_unbounded());
-	DebugAssert(copy->holes_count() == rhs.holes_count());
+	Assert(copy->is_unbounded() == rhs.is_unbounded());
+	Assert(copy->holes_count() == rhs.holes_count());
 
 	return *this;	
 }
@@ -2345,10 +2345,10 @@ There are a few cases:
 
 GISHalfedge *	Pmwx::insert_edge_between_vertices(GISHalfedge * e1, GISHalfedge * e2)
 {
-	DebugAssert(e1 != e2);
-	DebugAssert(e1->target() != e2->target());
-	DebugAssert(e1->target()->point() != e2->target()->point());
-	DebugAssert(e1->face() == e2->face());
+	Assert(e1 != e2);
+	Assert(e1->target() != e2->target());
+	Assert(e1->target()->point() != e2->target()->point());
+	Assert(e1->face() == e2->face());
 
 	GISHalfedge * e1_hole = e1->get_hole_rep();
 	GISHalfedge * e2_hole = e2->get_hole_rep();
