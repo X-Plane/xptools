@@ -1005,6 +1005,7 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 	vector<q_type::iterator>	q_backlinks(ioPolygon.size());			// Per pt iterator into the queue (back-links)
 	int sz = ioPolygon.size();
 	double						err;
+	int							pts_total = ioPolygon.size();
 	
 	double max_err_sq = max_err * max_err;
 	
@@ -1016,8 +1017,9 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 		q_backlinks[n] = q.insert(q_type::value_type(err, n));
 	}
 	
-	while (!q.empty() && q.begin()->first < max_err_sq)
-	{
+	while (!q.empty() && q.begin()->first < max_err_sq && pts_total > 3)
+	{	
+		--pts_total;
 		// Find the point with the least error and rmeove it.
 		int k = q.begin()->second;
 		DebugAssert(prev_delta[k] != 0);
@@ -1044,6 +1046,7 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 		// points (c1 and c2) now link to each other
 		// and that new line may have lousy error
 		// that needs to be reconsidered.
+		DebugAssert(c1 != c2);
 		q.erase(q_backlinks[c1]);
 		q.erase(q_backlinks[c2]);
 
@@ -1071,6 +1074,7 @@ void	SimplifyPolygonMaxMove(Polygon2& ioPolygon, double max_err, bool allow_in, 
 		if (prev_delta[n] != 0)
 			npoly[ni++] = ioPolygon[n];
 	}
+	DebugAssert(pts_total == npoly.size());
 	DebugAssert(q.size() == ni);
 	ioPolygon.swap(npoly);
 }
