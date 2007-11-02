@@ -271,6 +271,11 @@ void	XObjBuilder::AccumAnimEnd(void)
 
 void	XObjBuilder::AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v2, const char * ref)
 {
+	// Optimize out no-op translates!  
+	if(strcmp(ref,"none")==0 && 
+		xyz1[0] == 0.0 && xyz2[0] == 0.0 &&
+		xyz1[1] == 0.0 && xyz2[1] == 0.0 &&
+		xyz1[2] == 0.0 && xyz2[2] == 0.0) return;
 	AccumTranslateBegin(ref);
 	AccumTranslateKey(v1, xyz1);
 	AccumTranslateKey(v2, xyz2);
