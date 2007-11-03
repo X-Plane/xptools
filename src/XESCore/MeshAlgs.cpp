@@ -1766,7 +1766,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (sh_tri < -0.7)	variant_head = 7;
 				if (sh_tri >  0.7)	variant_head = 5;
 				
-				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, center_y, variant_blob, variant_head);
+				int terrain = FindNaturalTerrain(tri->info().feature, lu, cl, el, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs(center_y), variant_blob, variant_head);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %s, %f, %f\n", FetchTokenString(lu), FetchTokenString(cl), el, sl);
 					
