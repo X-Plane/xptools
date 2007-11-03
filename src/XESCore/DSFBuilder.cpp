@@ -57,7 +57,7 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		TERRAIN_NEAR_LOD			 0.0
 #define		TERRAIN_FAR_LOD				-1.0
 #define		TERRAIN_NEAR_BORDER_LOD 	 0.0
-#define		TERRAIN_FAR_BORDER_LOD		 20000
+#define		TERRAIN_FAR_BORDER_LOD		 40000
 
 #define		ORTHO_NEAR_LOD			100000.0
 #define		ORTHO_FAR_LOD			-1.0
@@ -410,8 +410,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 			wave <= gBeachInfoTable[i].max_sea &&
 			prev_ang >= (prev_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
 			next_ang >= (next_convex ? gBeachInfoTable[i].max_turn_convex : gBeachInfoTable[i].max_turn_concave) &&
-			tri->vertex(0)->point().y() >= gBeachInfoTable[i].min_lat && 
-			tri->vertex(0)->point().y() <= gBeachInfoTable[i].max_lat &&
+			fabs(tri->vertex(0)->point().y()) >= gBeachInfoTable[i].min_lat && 
+			fabs(tri->vertex(0)->point().y()) <= gBeachInfoTable[i].max_lat &&
 			tri->info().debug_temp >= gBeachInfoTable[i].min_temp &&
 			tri->info().debug_temp <= gBeachInfoTable[i].max_temp &&
 			tri->info().debug_rain >= gBeachInfoTable[i].min_rain &&
@@ -1275,7 +1275,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.AcceptProperty_f("sim/require_object", buf, writer2);
 	}
 	
-	cur_id = 1;
+	cur_id = (writer2 == writer1 ? 1 : 0);
 	for (obdef = facades.begin(); obdef != facades.end(); ++obdef, ++cur_id)
 	{
 		obdef->second = cur_id;
