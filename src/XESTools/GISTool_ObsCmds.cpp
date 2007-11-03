@@ -152,47 +152,48 @@ static void AssertThrower(const char * msg, const char * file, int line)
 
 static int DoAptInfo(const vector<const char *>& args)
 {
-	set<string>	new_bounded;
-	set<string>	new_unbounded;
-	set<string>	old_bounded;
-	set<string>	new_old;
-	for(AptVector::iterator a = gApts.begin(); a != gApts.end(); ++a)
+	set<int>	new_bounded;
+	set<int>	new_unbounded;
+	set<int>	old_bounded;
+	set<int>	empty_bounded;
+	set<int>	new_old;
+	for(int a = 0; a < gApts.size(); ++a)
 	{
-		if(a->boundaries.empty())
+		if(gApts[a].boundaries.empty())
 		{
-			if(!a->taxiways.empty())
+			if(!gApts[a].taxiways.empty())
 			{
-				if (a->pavements.empty())
-				{
-					new_unbounded.insert(a->icao);
-				}
-				else
-				{
-					new_old.insert(a->icao);
-				}
+				if (gApts[a].pavements.empty())		new_unbounded.insert(a);
+				else								new_old.insert(a);
 			}
 		}
 		else
 		{
-			if (a->pavements.empty())
+			if (gApts[a].pavements.empty())
 			{
-				new_bounded.insert(a->icao);
+				if(gApts[a].taxiways.empty())			empty_bounded.insert(a);
+				else									new_bounded.insert(a);
 			}
 			else
 			{
-				old_bounded.insert(a->icao);
+				old_bounded.insert(a);
 			}
 		}
 	}
-	set<string>::iterator s;
-	printf("New Airports with boundaries:\n");
-	for(s=new_bounded.begin();s!=new_bounded.end();++s)		printf("   %s\n",s->c_str());
-	printf("New Airports with no boundaries:\n");
-	for(s=new_unbounded.begin();s!=new_unbounded.end();++s)		printf("   %s\n",s->c_str());
-	printf("Old Airports with boundaries:\n");
-	for(s=old_bounded.begin();s!=old_bounded.end();++s)		printf("   %s\n",s->c_str());
-	printf("Mixed Airports (new and old together):\n");
-	for(s=new_old.begin();s!=new_old.end();++s)		printf("   %s\n",s->c_str());
+	
+	#define PRINT_LIST(vec,cap)	\
+		printf(cap); \
+		for (set<int>::iterator bd = vec.begin(); bd != vec.end(); ++bd) { \
+			printf("   '%s' %s (%.6lf,%.06lf\n", \
+				gApts[*bd].icao.c_str(), gApts[*bd].name.c_str(), \
+				gApts[*bd].bounds.p1.x, \
+				gApts[*bd].bounds.p1.y); }
+	
+	PRINT_LIST(new_bounded,"New airports with boundaries.\n");
+	PRINT_LIST(new_unbounded,"New airports with no boundaries.\n");
+	PRINT_LIST(empty_bounded,"Boundary-only airports.\n");
+	PRINT_LIST(old_bounded,"Old airports with bounds.\n");
+	PRINT_LIST(new_old,"New-old mixes!\n");
 	return 0;
 }
 
