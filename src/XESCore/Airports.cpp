@@ -338,7 +338,7 @@ void BurnInAirport(
 	
 	faces.clear();
 	
-	if (!inAirport->boundaries.empty())
+	if (!inAirport->boundaries.empty() && !inFillWater)
 	{
 		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
 		{
@@ -411,7 +411,7 @@ void BurnInAirport(
 				winding[n] = t.Forward(winding[n]);
 			windings.push_back(Polygon2());
 
-			InsetPolygon2(winding, NULL, -30, true, windings.back(), NULL, NULL);
+			InsetPolygon2(winding, NULL, inFillWater ? -20 : -30, true, windings.back(), NULL, NULL);
 //			windings.back() = winding;
 			for(n = 0; n < windings.back().size(); ++n) 
 				windings.back()[n] = t.Reverse(windings.back()[n]);
@@ -488,7 +488,7 @@ void BurnInAirport(
 	// (Note: this WILL possibly delete water, but that water is totally surrounded
 	// by pavement - we can afford this hit.
 
-	if (inAirport->boundaries.empty())
+	if (inAirport->boundaries.empty() || inFillWater)
 	for (set<GISFace *>::iterator f = faces.begin(); f != faces.end(); ++f)
 	{
 		while ((*f)->holes_begin() != (*f)->holes_end())
@@ -577,6 +577,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	PROGRESS_START(prog, 0, 1, "Burning in airports...")
 	
 	// First we will burn in airport landuse onto the big map for every airport.
+	// Pass 1 - water-fill...a tight boundary to ensure land under everyone...only do this
+	// if we do NOT have a user-specified boundary.
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	{
@@ -587,6 +589,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		SimplifyAirportAreas(ioMap, faces, simple_faces, true);		// Simplify the airport surface area a bit.
 	}
 
+	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
+	// BUT...if we have user-specified boundaries, this is the only pass and we do fill water.
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	{
