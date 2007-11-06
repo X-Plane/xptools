@@ -243,7 +243,7 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName)
 	MFMemFile *	fi = MemFile_Open(inFileName);
 	if (!fi) return false;
 	
-	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_BigEndian);
+	MemFileReader	reader(MemFile_GetBegin(fi), MemFile_GetEnd(fi), platform_LittleEndian);
 	
 	int len = MemFile_GetEnd(fi) - MemFile_GetBegin(fi);
 	long words = len / sizeof(short);
