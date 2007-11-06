@@ -621,7 +621,8 @@ int	FindNaturalTerrain(
 		if (rec.temp_rng_min == rec.temp_rng_max || temp_rng == DEM_NO_DATA || (rec.temp_rng_min <= temp_rng && temp_rng <= rec.temp_rng_max))
 		if (rec.slope_heading_min == rec.slope_heading_max || slopeheading == DEM_NO_DATA || (rec.slope_heading_min <= slopeheading && slopeheading <= rec.slope_heading_max))
 		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
-		if (rec.terrain == NO_VALUE || terrain == NO_VALUE || terrain == rec.terrain)
+		// Ben says: v9 -- make sure that if the terrain is untagged that we don't use airport terrain -- that's an error!
+		if (rec.terrain == NO_VALUE/* || terrain == NO_VALUE*/ || terrain == rec.terrain)
 		if (rec.rel_elev_min == rec.rel_elev_max || relelevation == DEM_NO_DATA || (rec.rel_elev_min <= relelevation && relelevation <= rec.rel_elev_max))
 		if (rec.elev_range_min == rec.elev_range_max || elevrange == DEM_NO_DATA || (rec.elev_range_min <= elevrange && elevrange <= rec.elev_range_max))
 		if (rec.urban_density_min == rec.urban_density_max || urban_density == DEM_NO_DATA || (rec.urban_density_min <= urban_density && urban_density <= rec.urban_density_max))
