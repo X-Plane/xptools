@@ -1421,6 +1421,7 @@ int	SK_InsetPolygon(
 					AssertPrintf("We do not yet handle multiple simultaneous vertex events!");
 
 // I think this case works...
+// 11/6/07 - nope - fails on +33-097.xes.
 				if (our_cross == evtIter->second->cross)
 				if (!evtIter->second->reflex_event && SK_BisectorEventPossible(evtIter->second))
 					AssertPrintf("Unexpected bisector+reflex collision!");
