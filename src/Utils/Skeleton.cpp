@@ -1334,21 +1334,25 @@ int	SK_InsetPolygon(
 
 		SK_Event * evt = NULL;
 		bool made_change = false;
-		
+
+		// Find the event we want to use.  Note we search for ALL equal-time bisector-events first,  THEN
+		// all equal-time reflex events.  This is because reflex-bisector intersections are NOT handled
+		// correctly if the reflex-event is first...
 		for (EventMap::iterator eventIter = possible_events.first; eventIter != possible_events.second; ++eventIter)
+		if (!eventIter->second->reflex_event)
+		if (SK_BisectorEventPossible(eventIter->second))
 		{
-			if (eventIter->second->reflex_event)
-			if (SK_ReflexEventPossible(eventIter->second))
-			{
-				evt = eventIter->second;
-				break;
-			}
-			if (!eventIter->second->reflex_event)
-			if (SK_BisectorEventPossible(eventIter->second))
-			{
-				evt = eventIter->second;
-				break;
-			}
+			evt = eventIter->second;
+			break;
+		}
+		
+		if(evt==NULL)
+		for (EventMap::iterator eventIter = possible_events.first; eventIter != possible_events.second; ++eventIter)
+		if (eventIter->second->reflex_event)
+		if (SK_ReflexEventPossible(eventIter->second))
+		{
+			evt = eventIter->second;
+			break;
 		}
 
 #if GRAPHIC_LOGGING
@@ -1412,14 +1416,14 @@ int	SK_InsetPolygon(
 			++evtIter;
 			while (evtIter != events.end() && evtIter->first == base_time)
 			{
-//				if (our_cross == evtIter->second->cross)
-//				if (evtIter->second->reflex_event && SK_ReflexEventPossible(evtIter->second))
-//					AssertPrintf("We do not yet handle multiple simultaneous vertex events!");
+				if (our_cross == evtIter->second->cross)
+				if (evtIter->second->reflex_event && SK_ReflexEventPossible(evtIter->second))
+					AssertPrintf("We do not yet handle multiple simultaneous vertex events!");
 
 // I think this case works...
-//				if (our_cross == evtIter->second->cross)
-//				if (!evtIter->second->reflex_event && SK_BisectorEventPossible(evtIter->second))
-//					AssertPrintf("Unexpected bisector+reflex collision!");
+				if (our_cross == evtIter->second->cross)
+				if (!evtIter->second->reflex_event && SK_BisectorEventPossible(evtIter->second))
+					AssertPrintf("Unexpected bisector+reflex collision!");
 				++evtIter;
 			}
 
@@ -1680,7 +1684,7 @@ int	SK_InsetPolygon(
 	if (valid)
 		SK_InsetPolyIntoComplexPolygonList(world, outHoles);
 
-	if (steps != -1 && valid)
+	if (steps != 0 && valid)
 	{
 		for (ComplexPolygonVector::iterator poly = outHoles.begin(); poly != outHoles.end(); ++poly)
 		for (ComplexPolygon2::iterator part = poly->begin(); part != poly->end(); ++part)
@@ -1706,7 +1710,7 @@ bail:
 		InstallDebugAssertHandler(dbg);
 		InstallAssertHandler(rel);
 	
-	return steps != -1 ? (valid ? skeleton_OK : skeleton_InvalidResult) : skeleton_OutOfSteps;
+	return steps != 0 ? (valid ? skeleton_OK : skeleton_InvalidResult) : skeleton_OutOfSteps;
 	} catch (...) {
 
 	InstallDebugAssertHandler(dbg);
