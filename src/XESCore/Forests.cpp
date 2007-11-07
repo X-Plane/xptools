@@ -194,7 +194,7 @@ void GenerateForests(
 	
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi, ++ctr)	
 	{
-		if ((ctr % 1000) == 0 && inProg && inProg(0, 2, "Indexing mesh", (float) ctr / total)) return;
+		if (total && (ctr % 1000) == 0 && inProg && inProg(0, 2, "Indexing mesh", (float) ctr / total)) return;
 
 		if (ffi->info().terrain != terrain_Water)
 		{
@@ -224,7 +224,7 @@ void GenerateForests(
 		DebugAssert(!face->is_unbounded());
 		DebugAssert(face->mTerrainType != terrain_Water);
 
-		if ((ctr % gap) == 0 && inProg && inProg(1, 2, "Processing faces", (float) ctr / total)) return;
+		if (total && gap && (ctr % gap) == 0 && inProg && inProg(1, 2, "Processing faces", (float) ctr / total)) return;
 
 		// First we need to figure out what triangles ovrelap us.
 		set<int>						forest_types;

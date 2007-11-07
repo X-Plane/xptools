@@ -61,7 +61,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	for (Pmwx::Face_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->IsWater())
 	{
-		if (inProg && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
+		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
 
 		Pmwx::Ccb_halfedge_circulator iter, stop, last;
 		// This isn't totally trivial...there are basically two cases we want to look at:
@@ -122,7 +122,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
 	if (edge->mDominant)
 	{
-		if (inProg && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
+		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
 	
 		double	x1 =edge->source()->point().x;
 		double	y1 =edge->source()->point().y;

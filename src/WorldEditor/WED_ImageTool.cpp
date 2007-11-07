@@ -395,7 +395,8 @@ void		WED_ImageTool::GetOrthoPhotos(void)
 			{
 				double so_far = (y - min_y) + (x - min_x) * (max_y - min_y + 1);
 				double total = (max_x - min_x + 1) * (max_y - min_y + 1);
-				WED_ProgressFunc(0, 1, buf, so_far / total);
+				if(total > 0)
+					WED_ProgressFunc(0, 1, buf, so_far / total);
 				
 				for (int n = 0; n < 4; ++n)
 				{

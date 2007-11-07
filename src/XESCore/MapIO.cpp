@@ -289,7 +289,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (Pmwx::Vertex_const_iterator v = inMap.vertices_begin();
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 		
 			writer.WriteDouble(CGAL::to_double(v->point().x));
 			writer.WriteDouble(CGAL::to_double(v->point().y));
@@ -298,7 +298,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
 			he != inMap.halfedges_end(); ++he, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 		
 			writer.WriteInt(v_index[he->target()]);
 			writer.WriteDouble(CGAL::to_double(he->source()->point().x));
@@ -314,7 +314,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (f = inMap.faces_begin();
 			f != inMap.faces_end(); ++f, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 		
 			if (f->is_unbounded())
 				writer.WriteInt(0);
@@ -357,7 +357,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (Pmwx::Halfedge_const_iterator he = inMap.halfedges_begin();
 			he != inMap.halfedges_end(); ++he, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 		
 			WriteVector(writer, he->mSegments, WriteNetworkSegment);
 			WriteParamMap(writer, he->mParams);		
@@ -370,7 +370,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (f = inMap.faces_begin();
 			f != inMap.faces_end(); ++f, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 		
 			WriteParamMap(writer, f->mParams);
 			WriteVector(writer, f->mObjs, WriteObjPlacement);
@@ -388,7 +388,7 @@ void	WriteMap(FILE * fi, const Pmwx& inMap, ProgressFunc inProgress, int atomID)
 		for (Pmwx::Vertex_const_iterator v = inMap.vertices_begin();
 			v != inMap.vertices_end(); ++v, ++ctr)
 		{
-			if (inProgress && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
+			if (inProgress && total && (PROGRESS_RATIO) && (ctr % PROGRESS_RATIO) == 0) inProgress(0, 1, "Writing", (float) ctr / total);
 			
 			writer.WriteBulk(&v->mTunnelPortal, 1, false);
 		}
@@ -442,7 +442,7 @@ public:
 	GISVertex * scan_vertex (Pmwx& the_map)
 	{	
 		++mCount;
-		if (mProgress && mTotal && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
+		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
 	
 		double	x, y;
 		mReader->ReadDouble(x);
@@ -458,7 +458,7 @@ public:
 	void scan_halfedge (GISHalfedge* h)
 	{
 		++mCount;
-		if (mProgress && mTotal && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
+		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
 	
 		double	x1, y1, x2, y2;
 //		X_curve cv;
@@ -482,7 +482,7 @@ public:
 	void scan_face(GISFace* f) 
 	{
 		++mCount;
-		if (mProgress && mTotal && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
+		if (mProgress && mTotal && (PROGRESS_RATIO) && (mCount % PROGRESS_RATIO) == 0) mProgress(0, 1, "Reading", (double) mCount / (double) mTotal);
 	
 		int  num_of_holes, num_halfedges_on_outer_ccb, i = 0;
 
