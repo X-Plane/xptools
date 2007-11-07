@@ -602,6 +602,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				a->bounds += pt->ctrl;
 		}
 		
+		a->bounds.expand(0.001);
+		
 		#if OPENGL_MAP
 			GenerateOGL(&*a);
 		#endif
