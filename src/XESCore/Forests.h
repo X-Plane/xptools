@@ -37,4 +37,7 @@ void GenerateForests(
 				CDT&					ioMesh,
 				ProgressFunc			inProgress);
 
+void GetAllForestLUs(
+				set<int>&				out_types);
+
 #endif

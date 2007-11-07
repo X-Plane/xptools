@@ -376,3 +376,12 @@ void GenerateForests(
 	printf("Total forest polys = %d, total forest pts = %d, poly fail = %d\n", forest_poly_count, forest_pt_count, poly_fail);
 	
 }
+
+void GetAllForestLUs(
+				set<int>&				out_types)
+{
+	out_types.clear();
+	for(int n = 0; n < gNaturalTerrainTable.size(); ++n)
+	if(gNaturalTerrainTable[n].forest_type != NO_VALUE)
+		out_types.insert(gNaturalTerrainTable[n].name);
+}
