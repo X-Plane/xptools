@@ -134,10 +134,10 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	vector<PreinsetFace>	insets;
 
 	set<int>				the_types;
-				GetObjTerrainTypes		(the_types);
+	GetObjTerrainTypes		(the_types);
 	
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-	GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, gProgress);
+	GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
 
 	InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
 	DumpPlacementCounts();
@@ -152,9 +152,9 @@ static int DoInstantiateForests(const vector<const char *>& args)
 				
 	vector<PreinsetFace>	insets;
 	set<int>				the_types;
-	the_types.insert(terrain_Natural);
+	GetAllForestLUs(the_types);
 	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-	GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, gProgress);
+	GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, gProgress);
 	GenerateForests(gMap, insets, gTriangulationHi, gProgress);
 	return 0;
 }

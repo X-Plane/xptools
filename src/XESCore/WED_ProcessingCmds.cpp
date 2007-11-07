@@ -283,7 +283,7 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				
 				if (gFaceSelection.empty())
 				{
-					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
+					GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, WED_ProgressFunc);
 				} else {
 					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
@@ -297,11 +297,11 @@ static	void	WED_HandleProcMenuCmd(void *, void * i)
 				
 				vector<PreinsetFace>	insets;
 				set<int>				the_types;
-				the_types.insert(terrain_Natural);
+				GetAllForestLUs(the_types);
 				Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
 				if (gFaceSelection.empty())
 				{
-					GenerateInsets(gMap, gTriangulationHi, lim, the_types, insets, WED_ProgressFunc);
+					GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, WED_ProgressFunc);
 				} else {
 					GenerateInsets(gFaceSelection, insets, WED_ProgressFunc);
 				}
