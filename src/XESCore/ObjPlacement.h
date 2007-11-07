@@ -61,6 +61,7 @@ void	GenerateInsets(
 					CDT&					ioMesh,
 					const Bbox2&			inBounds,
 					const set<int>&			inTypes,
+					bool					inWantFeatures,
 					vector<PreinsetFace>&	outInsets,
 					ProgressFunc			func);
 

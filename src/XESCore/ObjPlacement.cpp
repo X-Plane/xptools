@@ -37,6 +37,8 @@
 #include "XUtils.h"
 #include "XESConstants.h"
 
+#define SKELETON_ITERATIONS 1000
+
 #define DEBUG_PLACEMENT 0
 
 #if DEBUG_PLACEMENT
@@ -1716,6 +1718,7 @@ void	GenerateInsets(
 					CDT&					ioMesh,
 					const Bbox2&			inBounds,
 					const set<int>&			inTypes,
+					bool					inWantFeatures,
 					vector<PreinsetFace>&	outInsets,
 					ProgressFunc			func)
 {
@@ -1760,7 +1763,7 @@ void	GenerateInsets(
 		SubBucket(inBounds.p1.x, inBounds.p2.x, fextent.p1.x, fextent.p2.x, TERRAIN_GRID, ix1, ix2);
 		SubBucket(inBounds.p1.y, inBounds.p2.y, fextent.p1.y, fextent.p2.y, TERRAIN_GRID, iy1, iy2);
 		
-		if (!f->mPointFeatures.empty()) want_it = true;
+		if(inWantFeatures && !f->mPointFeatures.empty()) want_it = true;
 		
 		if (!want_it)
 		for (y = iy1; y < iy2; ++y)
@@ -1775,7 +1778,7 @@ void	GenerateInsets(
 		{
 			ComplexPolygonVector		region;
 		
-			if (SK_InsetPolygon(bounds, lims, region, 1000) == skeleton_OK)
+			if (SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS) == skeleton_OK)
 			{
 				outInsets.push_back(PreinsetFace(f, region));
 				++good_poly;			
@@ -1815,7 +1818,7 @@ void	GenerateInsets(
 		FaceToComplexPolygon(*f, bounds, &lims, GetInsetForEdgeDegs, NULL);
 		ComplexPolygonVector		region;
 	
-		if (SK_InsetPolygon(bounds, lims, region, 1000) == skeleton_OK)
+		if (SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS) == skeleton_OK)
 		{
 			++good_poly;
 			outInsets.push_back(PreinsetFace(*f, region));
