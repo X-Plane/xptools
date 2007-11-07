@@ -180,5 +180,5 @@ void DemToVector(DEMGeo& ioDEM, Pmwx& ioMap, bool doSmooth, int inPositiveTerrai
 			newf->mTerrainType  = inPositiveTerrain;			
 	}
 	PROGRESS_DONE(func, 0, 1, "Building vectors...")	
-	printf("Ratio: %lf\n", (double) smooth_pts / (double) raw_pts);
+	printf("Ratio: %lf\n", raw_pts ? ((double) smooth_pts / (double) raw_pts) : 0.0);
 }
