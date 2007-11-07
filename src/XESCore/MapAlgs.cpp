@@ -582,7 +582,7 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 	int tot = ioMap.number_of_halfedges();
 	
 	for (Pmwx::Halfedge_iterator he = ioMap.halfedges_begin();
-		he != ioMap.halfedges_end(); ++he, ++he, ++tot, ++tot)
+		he != ioMap.halfedges_end(); ++he, ++he, ++ctr, ++ctr)
 	{
 		PROGRESS_CHECK(func,0,2,"Finding unneeded half-edges...",ctr,tot,1000);
 		Pmwx::Halfedge_handle h = he;
@@ -1563,11 +1563,13 @@ GISFace * SafeInsertRing(Pmwx * inPmwx, GISFace * parent, const vector<Point2>& 
 	if (!needs_slow)
 		return inPmwx->insert_ring(parent, inPoints);
 	
-	GISHalfedge * he;	
+	GISHalfedge * he = NULL;	
 	for (n = 0; n < inPoints.size(); ++n)
 	{
-		he = inPmwx->insert_edge(inPoints[n], inPoints[(n+1)%inPoints.size()], NULL, NULL);
+		if(inPoints[n] != inPoints[(n+1)%inPoints.size()])
+			he = inPmwx->insert_edge(inPoints[n], inPoints[(n+1)%inPoints.size()], NULL, NULL);
 	}
+	Assert(he);
 	return he->face();
 }
 
