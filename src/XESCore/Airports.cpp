@@ -46,6 +46,12 @@
 #define AIRPORT_BEZIER_SIMPLIFY	(3.0 / (DEG_TO_NM_LAT * NM_TO_MTR))
 #define AIRPORT_BEZIER_TESS	(25.0 / (DEG_TO_NM_LAT * NM_TO_MTR))
 
+enum apt_fill_mode {
+	fill_water2apt,		// Water becomes airport - tightest radius - ensure airport under runways.
+	fill_water2dirt,	// Slightly wider...make sure we have buffer around water.
+	fill_dirt2apt		// widest - if there is land, declare it part of the airport
+};
+
 inline Point2	ctrl_for_pt(const AptLinearSegment_t * lin)
 {
 	if(lin->code == apt_rng_crv || lin->code == apt_lin_crv || lin->code == apt_end_crv)
@@ -142,20 +148,30 @@ void	BezierToSegments(
 		SimplifyPolygonMaxMove(outWinding, inSimplify / (DEG_TO_NM_LAT * NM_TO_MTR), true, true);
 }
 
+inline int InsetForFill(apt_fill_mode m)
+{
+	if(m == fill_water2apt	)	return 20;
+	if(m == fill_water2dirt	)	return 25;
+	if(m == fill_dirt2apt	)	return 30;
+
+}
 	
 static void GetPadWidth(
 		bool						is_rwy,
 		double&						pad_width_m,
 		double&						pad_length_m,
-		bool						fill_water)
+		apt_fill_mode				fill_water)
 {
-	if (!fill_water)
+	if (fill_water == fill_dirt2apt)
 	{
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
-	} else {
+	} else if (fill_water == fill_water2apt) {
 		pad_width_m = is_rwy ? 30.0 : 25.0;
 		pad_length_m = is_rwy ? 30.0 : 25.0;
+	} else {
+		pad_width_m = is_rwy ? 35.0 : 30.0;
+		pad_length_m = is_rwy ? 35.0 : 30.0;
 	}
 }
 
@@ -163,21 +179,24 @@ static void GetPadWidth(
 		const AptPavement_t *		rwy,
 		double&						pad_width_m,
 		double&						pad_length_m,
-		bool						fill_water)
+		apt_fill_mode				fill_water)
 {
 	bool is_rwy = (rwy->name != "xxx");
-	if (!fill_water)
+	if (fill_water == fill_dirt2apt)
 	{
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
-	} else {
+	} else if(fill_water == fill_water2apt) {
 		pad_width_m = is_rwy ? 30.0 : 25.0;
 		pad_length_m = is_rwy ? 30.0 : 25.0;
+	} else {
+		pad_width_m = is_rwy ? 35.0 : 30.0;
+		pad_length_m = is_rwy ? 35.0 : 30.0;	
 	}
 }
 
 static void ExpandRunway(
-				const AptRunway_t* 	rwy, 
+				const AptRunway_t*		rwy, 
 				double					pad_width_meters,	
 				double					pad_length_meters,
 				Point2					pts[4])
@@ -212,6 +231,7 @@ static void ExpandRunway(
 	pts[1] = real_ends.p2 + rwy_right;
 	pts[0] = real_ends.p1 + rwy_right;	
 }
+
 static void ExpandRunway(
 				const AptHelipad_t* 	rwy, 
 				double					pad_width_meters,	
@@ -328,7 +348,7 @@ void BurnInPolygon(
 void BurnInAirport(
 				const AptInfo_t * 	inAirport,
 				Pmwx&				ioMap,
-				bool				inFillWater,
+				apt_fill_mode		inFillWater,
 				set<GISFace *>&		faces)
 {
 	// STEP 1
@@ -338,7 +358,7 @@ void BurnInAirport(
 	
 	faces.clear();
 	
-	if (!inAirport->boundaries.empty() && !inFillWater)
+	if (!inAirport->boundaries.empty() && inFillWater == fill_dirt2apt)
 	{
 		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
 		{
@@ -411,7 +431,7 @@ void BurnInAirport(
 				winding[n] = t.Forward(winding[n]);
 			windings.push_back(Polygon2());
 
-			InsetPolygon2(winding, NULL, inFillWater ? -20 : -30, true, windings.back(), NULL, NULL);
+			InsetPolygon2(winding, NULL, -InsetForFill(inFillWater), true, windings.back(), NULL, NULL);
 //			windings.back() = winding;
 			for(n = 0; n < windings.back().size(); ++n) 
 				windings.back()[n] = t.Reverse(windings.back()[n]);
@@ -450,7 +470,7 @@ void BurnInAirport(
 	{
 		if (faces.count((*e)->face()) &&
 			faces.count((*e)->twin()->face()))
-		if (inFillWater || 
+		if (inFillWater != fill_dirt2apt || 
 			((*e)->face()->mTerrainType != terrain_Water &&
 			 (*e)->twin()->face()->mTerrainType != terrain_Water &&
 			 (*e)->mSegments.empty()))
@@ -471,8 +491,8 @@ void BurnInAirport(
 	set<GISFace *>	puddles;
 	for (set<GISFace *>::iterator f = faces.begin(); f != faces.end(); ++f)
 	{
-		if (inFillWater || (*f)->mTerrainType != terrain_Water)
-			(*f)->mTerrainType = inFillWater ? terrain_Airport : terrain_Airport;
+		if (inFillWater != fill_dirt2apt || (*f)->mTerrainType != terrain_Water)
+			(*f)->mTerrainType = terrain_Airport;
 		else
 			puddles.insert(*f);
 			
@@ -488,7 +508,7 @@ void BurnInAirport(
 	// (Note: this WILL possibly delete water, but that water is totally surrounded
 	// by pavement - we can afford this hit.
 
-	if (inAirport->boundaries.empty() || inFillWater)
+	if (inAirport->boundaries.empty() || inFillWater != fill_dirt2apt)
 	for (set<GISFace *>::iterator f = faces.begin(); f != faces.end(); ++f)
 	{
 		while ((*f)->holes_begin() != (*f)->holes_end())
@@ -505,13 +525,13 @@ void BurnInAirport(
 
 // Given a destination map and faces from a DIFFERENT map, we produce a NEW set of SIMPLER faces that are made
 // by reducing the polygon complexity.
-void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<GISFace *>& outDstFaces, bool inFillWater)
+void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<GISFace *>& outDstFaces, apt_fill_mode inFillWater)
 {
 	for (set<GISFace *>::const_iterator i = inSrcFaces.begin(); i != inSrcFaces.end(); ++i)
 	{
 		Assert(!(*i)->is_unbounded());
 		Assert((*i)->holes_begin() == (*i)->holes_end());
-		DebugAssert((*i)->mTerrainType == terrain_Airport);
+		DebugAssert((*i)->mTerrainType == terrain_Airport || inFillWater == fill_water2dirt);
 		
 		Polygon2	orig;
 		Pmwx::Ccb_halfedge_circulator iter, stop;
@@ -526,24 +546,24 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<
 //			MakePolygonConvex(orig);
 //		printf("AFTER: %d\n", orig.size());
 
-		FillPolygonGaps(orig, inFillWater ? AIRPORT_INNER_FILLGAPS : AIRPORT_OUTER_FILLGAPS);
+		FillPolygonGaps(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_FILLGAPS : AIRPORT_OUTER_FILLGAPS);
 
-		SafeMakeMoreConvex(orig, inFillWater ? AIRPORT_INNER_FILL_AREA : AIRPORT_OUTER_FILL_AREA);
+		SafeMakeMoreConvex(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_FILL_AREA : AIRPORT_OUTER_FILL_AREA);
 		
 		DebugAssert(ValidatePolygonSimply(orig));
-		SimplifyPolygonMaxMove(orig, inFillWater ? AIRPORT_INNER_SIMPLIFY : AIRPORT_OUTER_SIMPLIFY, true, false);
+		SimplifyPolygonMaxMove(orig, inFillWater != fill_dirt2apt ? AIRPORT_INNER_SIMPLIFY : AIRPORT_OUTER_SIMPLIFY, true, false);
 		DebugAssert(ValidatePolygonSimply(orig));
 
 		Pmwx	temp;
 		GISFace * ff = temp.insert_ring(temp.unbounded_face(), orig);
-		ff->mTerrainType = terrain_Airport;
+		ff->mTerrainType = (inFillWater != fill_water2apt) ? terrain_AirportOuter : terrain_Airport;
 #if DEV
 		try {		
 #endif		
-		if (inFillWater)
+		if (inFillWater != fill_dirt2apt)
 			OverlayMap(inDstMap, temp);
 		else {
-			MergeMaps(inDstMap, temp, inFillWater, &outDstFaces, false, NULL);	
+			MergeMaps(inDstMap, temp, false, &outDstFaces, false, NULL);	
 			for (set<GISFace *>::iterator cleanMe = outDstFaces.begin(); cleanMe != outDstFaces.end(); ++cleanMe)
 				(*cleanMe)->mAreaFeature.mFeatType = NO_VALUE;
 		}
@@ -554,6 +574,25 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, const set<GISFace *>& inSrcFaces, set<
 		}
 #endif							
 	}
+}
+
+bool NeighborsWater(GISFace * f)
+{
+	Pmwx::Ccb_halfedge_circulator circ,stop;
+	circ = stop = f->outer_ccb();
+	do {
+		++circ;
+		if (circ->twin()->face()->IsWater()) return true;
+	} while (circ != stop);
+	for(Pmwx::Holes_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+	{
+		circ = stop = *h;
+		do {
+			++circ;
+			if (circ->twin()->face()->IsWater()) return true;
+		} while (circ != stop);
+	}
+	return false;
 }
 
 void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
@@ -585,8 +624,18 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
 		Pmwx	foo;
 		foo.unbounded_face()->mTerrainType = terrain_Natural;
-		BurnInAirport(&apts[n], foo, true, faces);					// Produce a map that is the airport boundary.
-		SimplifyAirportAreas(ioMap, faces, simple_faces, true);		// Simplify the airport surface area a bit.
+		BurnInAirport(&apts[n], foo, fill_water2dirt, faces);					// Produce a map that is the airport boundary.
+		SimplifyAirportAreas(ioMap, faces, simple_faces, fill_water2dirt);		// Simplify the airport surface area a bit.
+	}
+
+	for (int n = 0; n < apts.size(); ++n)
+	if (apts[n].kind_code == apt_airport)
+	{
+		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n, apts.size()*2);
+		Pmwx	foo;
+		foo.unbounded_face()->mTerrainType = terrain_Natural;
+		BurnInAirport(&apts[n], foo, fill_water2apt, faces);					// Produce a map that is the airport boundary.
+		SimplifyAirportAreas(ioMap, faces, simple_faces, fill_water2apt);		// Simplify the airport surface area a bit.
 	}
 
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
@@ -597,9 +646,9 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);	
 		Pmwx	foo;
 		foo.unbounded_face()->mTerrainType = terrain_Natural;
-		BurnInAirport(&apts[n], foo, false, faces);
+		BurnInAirport(&apts[n], foo, fill_dirt2apt, faces);
 		simple_faces.clear();	
-		SimplifyAirportAreas(ioMap, faces, simple_faces, false);
+		SimplifyAirportAreas(ioMap, faces, simple_faces, fill_dirt2apt);
 		if (dems)
 		{
 			working = DEM_NO_DATA;
@@ -634,11 +683,24 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 
 	PROGRESS_DONE(prog, 0, 1, "Burning in airports...")
 
+	for(Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he)
+	if (he->mDominant)
+	if ((he->face()->mTerrainType == terrain_Airport && he->twin()->face()->mTerrainType == terrain_AirportOuter) ||
+		(he->face()->mTerrainType == terrain_AirportOuter && he->twin()->face()->mTerrainType == terrain_Airport))
+	{
+		he->mParams[he_MustBurn] = 1.0;
+	}	
+
 	if (crop)
 	{
 		CropMap(ioMap, p1.x, p1.y, p2.x, p2.y, false, prog);
 		SimplifyMap(ioMap, kill_rivers, prog);
 	}
+
+	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if (f->mTerrainType == terrain_AirportOuter)
+	if (!f->is_unbounded())
+		f->mTerrainType = terrain_Airport;
 	
 }
 
@@ -650,7 +712,7 @@ void	GenBoundary(
 		Pmwx			foo;
 		set<GISFace *>	faces;		
 	foo.unbounded_face()->mTerrainType = terrain_Natural;
-	BurnInAirport(ioAirport, foo, false, faces);
+	BurnInAirport(ioAirport, foo, fill_dirt2apt, faces);
 	
 	for(Pmwx::Face_iterator f = foo.faces_begin(); f != foo.faces_end(); ++f)
 	if (!f->is_unbounded())
