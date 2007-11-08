@@ -881,6 +881,16 @@ bool	Is_CCW_Between(const Vector2& v1, const Vector2& v2, const Vector2& v3)
 	if (angle2 <= -PI)	angle2 += PI2;
 	if (angle3 <= -PI)	angle3 += PI2;
 	
+	// Special case - if we have to increase BOTH angle 2 and 3,
+	// we know that (1) angle 1 will be smaller than angle 2 after the increase AND
+	// (2) the compare of angle 2 and 3 is the smae whether or not we add.
+	// BUT adding PI2 causes floating point rounding to give us wrong answers for a few 
+	// rare cases.  So special-case this to avoid the add.
+	if (angle2 < angle1 && angle3 < angle1)
+	{
+		return angle2 < angle3;
+	}
+	
 	// Normalize angles 2 and 3 to be at least as big as angle 1 (represents counterclockwise rotation
 	// from angle 1), even if exceeds 360.
 	if (angle2 < angle1)	angle2 += PI2;
