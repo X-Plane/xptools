@@ -600,8 +600,9 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 		bool	river = h->mParams.find(he_IsRiver) != h->mParams.end();
 		if (river && (iWet || oWet)) river = false;	// Wipe out rivers that are inside water bodies or coastlines too.
 		if (inKillRivers) river = false;
+		bool must_burn = h->mParams.count(he_MustBurn);
 
-		if (!river && !stuff && !road && !coastline && !border && !lu_change)
+		if (!river && !stuff && !road && !coastline && !border && !lu_change && !must_burn)
 			deadList.push_back(he);
 	}
 	PROGRESS_DONE(func, 0, 2, "Finding unneeded half-edges...");
