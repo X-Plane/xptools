@@ -596,6 +596,8 @@ static void SK_CombinePolys(SK_Polygon * live, SK_Polygon * die)
 {
 	Assert(live->parent == die->parent || live == die->parent);	
 	live->children.insert(die->children.begin(), die->children.end());
+	for(set<SK_Polygon *>::iterator i = die->children.begin(); i != die->children.end(); ++i)
+		(*i)->parent = live;
 	die->parent->children.erase(die);
 	SK_Edge * iter, * stop;
 	if (die->ccb)
