@@ -76,6 +76,7 @@
 	TOKEN(he_TIGER_TLID)
 	TOKEN(he_IsRiver)
 	TOKEN(he_IsDryRiver)
+	TOKEN(he_MustBurn)
 
 	/* AREA PARAMS */
 	
@@ -563,6 +564,7 @@
 	TOKEN(terrain_Park)
 	TOKEN(terrain_ForestPark)
 	TOKEN(terrain_Airport)
+	TOKEN(terrain_AirportOuter)
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
 	// specific natural terrain after this!	
