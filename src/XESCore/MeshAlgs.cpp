@@ -946,14 +946,18 @@ static GISHalfedge * ExtendLanduseEdge(GISHalfedge * start)
 		do {
 			if (start != circ)
 			{
-				if (circ->face()->mTerrainType != circ->twin()->face()->mTerrainType)
+				if (circ->face()->mTerrainType != circ->twin()->face()->mTerrainType ||
+					circ->mParams.count(he_MustBurn) ||
+					circ->twin()->mParams.count(he_MustBurn))
 				{
 					Vector2 d(circ->target()->point(), circ->source()->point());
 					d.normalize();
 					if (dir_v.dot(d) > 0.999847695156 &&
 						!circ->mMark &&
 						circ->face()->mTerrainType == start->twin()->face()->mTerrainType &&
-						circ->twin()->face()->mTerrainType == start->face()->mTerrainType)
+						circ->twin()->face()->mTerrainType == start->face()->mTerrainType &&
+						circ->mParams.count(he_MustBurn) == 0 &&
+						circ->twin()->mParams.count(he_MustBurn) == 0)
 					{
 						DebugAssert(next == NULL);
 						next = circ->twin();
@@ -1068,7 +1072,8 @@ void	AddWaterMeshPoints(
 		Pmwx::Face_const_handle	f2 = he->twin()->face();
 		
 		if (!f1->is_unbounded() && !f2->is_unbounded() &&
-			f1->mTerrainType != f2->mTerrainType)
+			(f1->mTerrainType != f2->mTerrainType ||
+			he->mParams.count(he_MustBurn)))
 		{
 			GISHalfedge * extended1 = ExtendLanduseEdge(he);
 			GISHalfedge * extended2 = ExtendLanduseEdge(he->twin());
