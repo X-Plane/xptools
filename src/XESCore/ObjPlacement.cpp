@@ -1727,7 +1727,7 @@ void	GenerateInsets(
 	int ctr = 0;
 	int total = ioMap.number_of_faces();
 	int step = total / 200;
-	int good_poly = 0, bad_poly = 0, skip_poly = 0;
+	int good_poly = 0, bad_poly = 0, skip_poly = 0, complex_poly = 0;
 
 	char	used_types[TERRAIN_GRID][TERRAIN_GRID] = { 0 };
 	int ix1, ix2, iy1, iy2, x, y;
@@ -1778,18 +1778,21 @@ void	GenerateInsets(
 		{
 			ComplexPolygonVector		region;
 		
-			if (SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS) == skeleton_OK)
+			int	result = SK_InsetPolygon(bounds, lims, region, SKELETON_ITERATIONS);
+			if (result == skeleton_OK)
 			{
 				outInsets.push_back(PreinsetFace(f, region));
 				++good_poly;			
-			} else
-				++bad_poly;
+			} else {
+				if (result == skeleton_OutOfSteps)		++complex_poly;
+				else									++bad_poly;
+			}
 		} else
 			++skip_poly;
 		
 	}
 	PROGRESS_DONE(func, 0, 1, "Generating usable areas")	
-	printf("Good polys: %d bad polys: %d, ignored polys: %d\n", good_poly, bad_poly, skip_poly);
+	printf("Good polys: %d bad polys: %d, complex polys: %d, ignored polys: %d\n", good_poly, bad_poly, complex_poly, skip_poly);
 }
 
 
