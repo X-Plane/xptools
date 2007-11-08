@@ -187,6 +187,7 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, float outColor[4])
 	case terrain_GolfCourse:				red = 0.2;	green = 0.5;	blue = 0.0;	break;
 	case terrain_Cemetary:					red = 0.2;	green = 0.5;	blue = 0.0;	break;
 	case terrain_Airport:					red = 0.3;	green = 0.3;	blue = 0.3;	break;
+	case terrain_AirportOuter:				red = 0.3;	green = 0.3;	blue = 0.2;	break;
 	case terrain_Park:						red = 0.2;	green = 0.5;	blue = 0.0;	break;
 	case terrain_ForestPark:				red = 0.2;	green = 0.4;	blue = 0.0;	break;
 	}	
