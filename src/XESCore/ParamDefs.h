@@ -77,6 +77,7 @@
 	TOKEN(he_IsRiver)
 	TOKEN(he_IsDryRiver)
 	TOKEN(he_MustBurn)
+	TOKEN(he_Bridge)
 
 	/* AREA PARAMS */
 	
