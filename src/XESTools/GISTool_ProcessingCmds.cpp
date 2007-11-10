@@ -114,6 +114,13 @@ static int DoHydroSimplify(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoBridgeRebuild(const vector<const char *>& args)
+{
+	if (gVerbose)	printf("Rebuilding roads and bridgse near coastlines...\n");
+	BridgeRebuild(gMap, gProgress);
+	return 0;
+}
+
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Deriving raster parameters...\n");
@@ -196,6 +203,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
 { "-hydro",	 		1, 2, DoHydroReconstruct,"Rebuild coastlines from hydro model.",  "" },
 { "-hydrosimplify", 0, 0, DoHydroSimplify, 	"Simplify Coastlines.", 			  "" },
+{ "-hydrobridge",	0, 0, DoBridgeRebuild,	"Rebuild bridgse after hydro.",		  "" },
 { "-derivedems", 	0, 0, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
