@@ -307,6 +307,10 @@ public:
 	bool						mDominant;			// Is non-sided info stored on this
 													// Halfedge or my twin?
 
+	GISHalfedge *		dominant() 			{ return mDominant ? this : mTwin; }
+	const GISHalfedge *	dominant() const	{ return mDominant ? this : mTwin; }
+
+
 	int							mTransition;		// Transition type ID
 	GISNetworkSegmentVector		mSegments;			// Network segments along us
 	GISParamMap					mParams;
