@@ -578,10 +578,16 @@ char *	WED_SelectionTool::GetStatusText(void)
 		}
 		
 		for(GISParamMap::iterator p = the_face->mParams.begin(); p != the_face->mParams.end(); ++p)
-		{
 			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);
-		}
 	}
+	if (gEdgeSelection.size() > 1)
+	{
+		double t = 0;
+		for(set<GISHalfedge *>::iterator e = gEdgeSelection.begin(); e != gEdgeSelection.end(); ++e)
+		t += GetMapEdgeLengthMeters(*e);
+		n += sprintf(buf+n, "%.1f m ", t);		
+	}
+
 	if (gEdgeSelection.size() == 1)
 	{
 		double len = GetMapEdgeLengthMeters(*gEdgeSelection.begin());
@@ -590,6 +596,9 @@ char *	WED_SelectionTool::GetStatusText(void)
 		{
 			n += sprintf(buf+n, "%s->%s ", FetchTokenString(seg->mFeatType),FetchTokenString(seg->mRepType));
 		}
+		for(GISParamMap::iterator p = (*gEdgeSelection.begin())->mParams.begin(); p != (*gEdgeSelection.begin())->mParams.end(); ++p)
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
+			
 		if ((*gEdgeSelection.begin())->mTransition != 0)
 		{
 			n += sprintf(buf+n,"Beach=%d ", (*gEdgeSelection.begin())->mTransition);
@@ -607,8 +616,8 @@ char *	WED_SelectionTool::GetStatusText(void)
 	{
 		GISPointFeature_t * f = &gPointFeatureSelection.begin()->first->mPointFeatures[gPointFeatureSelection.begin()->second];
 		n += sprintf(buf+n, "%s ", FetchTokenString(f->mFeatType));
-		if (f->mParams.find(pf_Height) != f->mParams.end())
-			n += sprintf(buf+n, "agl=%f ",f->mParams[pf_Height]);
+		for(GISParamMap::iterator p = f->mParams.begin(); p != f->mParams.end(); ++p)
+			n += sprintf(buf+n, "%s:%lf ", FetchTokenString(p->first),p->second);		
 	}
 	if (gVertexSelection.size() == 1 && (*(gVertexSelection.begin()))->mTunnelPortal)
 	{
