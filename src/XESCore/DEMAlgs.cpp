@@ -1622,13 +1622,11 @@ static	void	FFTSplit(const DEMGeo& inSrc, DEMGeo& equiv, DEMGeo& reduc, int n)
 	float et, e;
 		
 	DEMGeo temp(inSrc);
-	temp.derez(n);	
-	
-	for (y  = 0; y < equiv.mHeight; ++y)
+	temp.derez(n);
+	for (y = 0; y < equiv.mHeight; ++y)
 	for (x = 0; x < equiv.mWidth; ++x)
 	{
 		et = temp.value_linear(inSrc.x_to_lon(x), inSrc.y_to_lat(y));
-		if (et == DEM_NO_DATA) et = temp.xy_nearest(inSrc.x_to_lon(x), inSrc.y_to_lat(y));
 		if (et != DEM_NO_DATA)
 		{
 			reduc(x,y) = et;
