@@ -538,40 +538,25 @@ inline float	DEMGeo::value_linear(double lon, double lat) const
 	x_fract -= (double) x;
 	y_fract -= (double) y;
 	
-	float	v1, v2, v3, v4;
+	float v1 = get(x    , y    );
+	float v2 = get(x + 1, y    );
+	float v3 = get(x    , y + 1);
+	float v4 = get(x + 1, y + 1);
+	float w1 = (1.0 - x_fract) * (1.0 - y_fract);
+	float w2 = (      x_fract) * (1.0 - y_fract);
+	float w3 = (1.0 - x_fract) * (      y_fract);
+	float w4 = (      x_fract) * (      y_fract);
+
+	if(v1 == DEM_NO_DATA) w1 = 0.0;
+	if(v2 == DEM_NO_DATA) w2 = 0.0;
+	if(v3 == DEM_NO_DATA) w3 = 0.0;
+	if(v4 == DEM_NO_DATA) w4 = 0.0;
 	
-	if (x_fract == 0.0)
-	{
-		if (y_fract == 0.0)
-		{
-			return  get(x    , y    );
-		} else {
-			v1 = get(x    , y    );
-			v2 = get(x    , y + 1);
-			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA) return DEM_NO_DATA;
-			return  v1 * (1.0 - y_fract) +
-					v2 * (      y_fract);
-		}
-	} else {
-		if (y_fract == 0.0)
-		{
-			v1 = get(x    , y    );
-			v2 = get(x + 1, y    );
-			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA) return DEM_NO_DATA;
-			return  v1 * (1.0 - x_fract) +
-					v2 * (      x_fract);
-		} else {
-			v1 = get(x    , y    );
-			v2 = get(x + 1, y    );
-			v3 = get(x    , y + 1);
-			v4 = get(x + 1, y + 1);
-			if (v1 == DEM_NO_DATA || v2 == DEM_NO_DATA || v3 == DEM_NO_DATA || v4 == DEM_NO_DATA) return DEM_NO_DATA;
-			return  v1 * (1.0 - x_fract) * (1.0 - y_fract) +
-					v2 * (      x_fract) * (1.0 - y_fract) +
-					v3 * (1.0 - x_fract) * (      y_fract) +
-					v4 * (      x_fract) * (      y_fract);
-		}
-	}
+	float w = w1 + w2 + w3 + w4;
+	
+	if (w == 0.0) return DEM_NO_DATA;
+
+	return (v1 * w1 + v2 * w2 + v3 * w3 + v4 * w4) / w;
 }
 
 inline void DEMGeo::zap_linear(double lon, double lat)
