@@ -38,6 +38,9 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file,cons
 // Simplify the coastlines of a complex map based on certain areas to cover.
 void	SimplifyCoastlines(Pmwx& ioMap, const Bbox2& bounds, ProgressFunc inFunc);
 
+// Try to rebuild bridges after hydro
+void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc);
+
 // For testing
 //void	SimplifyCoastlineFace(Pmwx& ioMap, GISFace * face);
 

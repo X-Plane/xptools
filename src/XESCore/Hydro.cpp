@@ -1062,6 +1062,272 @@ void	UpdateWaterWithMaskFile(Pmwx& inMap, DEMGeoMap& dems, const char * maskFile
 	wetness.swap(dems[dem_Wizard]);
 }
 
+#pragma mark -
+
+/******************************************************************************************************************************
+ * ROAD RECONSTRUCTION
+ ******************************************************************************************************************************/
+
+
+
+void TagOriginalBridges(Pmwx& io_map)
+{
+	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); ++e)
+	if(e->mDominant)
+	if(!e->mSegments.empty())	
+	{
+		e->mParams[he_Bridge] = (
+			!e->face()->is_unbounded() &&
+			!e->twin()->face()->is_unbounded() &&
+			e->face()->IsWater() &&
+			e->twin()->face()->IsWater()) ? 1.0 : 0.0;		
+	}
+}
+
+enum {
+	is_land,
+	is_water,
+	is_coast,
+	is_border };
+	
+typedef list<GISHalfedge *>	LongStrand;
+
+int CategorizeHalfedge(GISHalfedge * e)
+{
+	if (e->face()->is_unbounded() || e->twin()->face()->is_unbounded()) return is_border;
+	if(e->face()->IsWater() != e->twin()->face()->IsWater()) return is_coast;
+	return (e->face()->IsWater() ? is_water : is_land);
+}
+
+bool IsBridge(GISHalfedge * e)
+{
+	e = e->dominant();
+	if(e->mSegments.empty()) return false;
+	GISParamMap::iterator i = e->mParams.find(he_Bridge);
+	if (i == e->mParams.end()) return false;
+	return i->second == 1.0;
+}
+
+bool	BuildBypass(GISHalfedge * b, GISHalfedge * e, LongStrand& s)
+{
+	s.clear();
+	GISHalfedge * i = b->next();
+//	GISFace * r = i->face();
+//	if(e->face() != b->face()) return false;
+	while (i != b && i != e)
+	{
+//		if(i->face() != r) return false;
+		if(CategorizeHalfedge(i) != is_coast) return false;
+		s.push_back(i);
+		i = i->next();
+	}	
+	return (i == e);
+}
+
+
+int CategorizeVertex(GISVertex * v)
+{
+	int n = is_land;
+	Pmwx::Halfedge_around_vertex_circulator circ,stop;
+	circ=stop=v->incident_halfedges();
+	do {
+		++circ;
+		n = max(n,CategorizeHalfedge(circ));
+	} while(circ != stop);
+	return n;
+}
+
+bool HasRoad(GISHalfedge * e)
+{
+	return !e->dominant()->mSegments.empty();
+}
+
+GISHalfedge * NextOneRoad(GISHalfedge * r, bool allow_bridge)
+{
+	GISHalfedge * ret = NULL;
+	int n = 0;
+	Pmwx::Halfedge_around_vertex_circulator circ,stop;
+	circ=stop=r->target()->incident_halfedges();
+	do {
+		++circ;
+		if(r != &*circ && HasRoad(circ))
+		if(allow_bridge || !IsBridge(circ))
+		  { ++n; ret = circ; }
+	} while(circ != stop);
+	return (n == 1) ? ret->twin() : NULL;
+}
+
+GISHalfedge * PrevOneRoad(GISHalfedge * r, bool allow_bridge)
+{
+	GISHalfedge * ret = NULL;
+	int n = 0;
+	Pmwx::Halfedge_around_vertex_circulator circ,stop;
+	circ=stop=r->source()->incident_halfedges();
+	do {
+		++circ;
+		if(r->twin() != &*circ && HasRoad(circ)) 
+		if(allow_bridge || !IsBridge(circ))
+			{ ++n; ret = circ; }
+	} while(circ != stop);
+	return (n == 1) ? ret : NULL;
+}
+
+void	BuildLongStrand(GISHalfedge * seed, LongStrand& out_s)
+{
+	out_s.push_back(seed);
+	GISHalfedge * i = seed;
+	while (1)
+	{
+		i = PrevOneRoad(i,false);
+		if(!i) break;
+		if(i->dominant()->mMark) break;
+		if(CategorizeHalfedge(i) != is_water) break;
+		out_s.push_front(i);
+		i->mMark = 1;
+	}	
+	i = seed;
+	while (1)
+	{
+		i = NextOneRoad(i,false);
+		if(!i) break;
+		if(i->dominant()->mMark) break;
+		if(CategorizeHalfedge(i) != is_water) break;
+		out_s.push_back(i);
+		i->mMark = 1;
+	}	
+}
+
+bool AllSameType(const LongStrand& s)
+{
+	DebugAssert(!s.empty());
+	DebugAssert(!s.front()->dominant()->mSegments.empty());
+	int rt = s.front()->dominant()->mSegments.front().mFeatType;
+	for(LongStrand::const_iterator e = s.begin(); e != s.end(); ++e)
+	for(GISNetworkSegmentVector::iterator g = (*e)->dominant()->mSegments.begin(); g != (*e)->dominant()->mSegments.end(); ++g)
+	if(g->mFeatType != rt) return false;
+	return true;
+}
+
+double StrandLength(const LongStrand& s)
+{
+	double t = 0.0;
+	for(LongStrand::const_iterator e = s.begin(); e != s.end(); ++e)
+	t += LonLatDistMeters(
+		(*e)->source()->point().x,
+		(*e)->source()->point().y,
+		(*e)->target()->point().x,
+		(*e)->target()->point().y);
+	return t;
+}
+
+
+void	BridgeRebuild(Pmwx& ioMap, ProgressFunc inFunc)
+{
+	Pmwx::Halfedge_iterator		e;
+	list<GISHalfedge *>	bridge_segs;
+	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	if(e->mDominant)
+	{
+		e->mMark = 0;
+		if (IsBridge(e))
+			bridge_segs.push_back(e);
+	}
+	while(!bridge_segs.empty())
+	{
+		GISHalfedge * w = bridge_segs.front();
+		bridge_segs.pop_front();
+		GISHalfedge * nr = NextOneRoad(w,true);
+		GISHalfedge * pr = PrevOneRoad(w,true);
+		if(nr) nr = nr->dominant();
+		if(pr) pr = pr->dominant();
+		if (nr && !IsBridge(nr) && CategorizeHalfedge(nr) == is_water)
+		{
+			nr->mParams[he_Bridge] = 1.0;
+			bridge_segs.push_back(nr);
+		}
+		if (pr && !IsBridge(pr) && CategorizeHalfedge(pr) == is_water)
+		{
+			pr->mParams[he_Bridge] = 1.0;
+			bridge_segs.push_back(pr);
+		}
+	}
+
+	list<LongStrand>	strands;
+
+	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	if(e->mDominant)
+	if(!e->mMark)
+	if(!IsBridge(e))
+	if(HasRoad(e))
+	if(CategorizeHalfedge(e) == is_water)
+	{
+		e->mMark = 1;
+		strands.push_back(LongStrand());
+		BuildLongStrand(e,strands.back());
+	}
+	
+	for(list<LongStrand>::iterator s = strands.begin(); s != strands.end(); ++s)
+	if(CategorizeVertex(s->front()->source()) == is_coast &&
+	   CategorizeVertex(s->back()->target()) == is_coast)
+	{
+//		gMeshPoints.push_back(pair<Point2,Point3>(s->front()->source()->point(),Point3(1,1,1)));
+//		gMeshPoints.push_back(pair<Point2,Point3>(s->front()->target()->point(),Point3(1,1,0)));
+//		gMeshPoints.push_back(pair<Point2,Point3>(s->back()->source()->point(),Point3(1,0,1)));
+//		gMeshPoints.push_back(pair<Point2,Point3>(s->back()->target()->point(),Point3(1,0,0)));
+		double len = 0;
+		double strand_len = StrandLength(*s);
+		double bridge_len = strand_len;
+		
+		LongStrand l, r;
+		bool hl = BuildBypass(s->back(), s->front(), l);
+		bool hr = BuildBypass(s->front()->twin(), s->back()->twin(), r);
+		
+		if(!hl) l.clear();
+		if(!hr) r.clear();
+/*
+		for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
+		{
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->source()->point(),Point3(0,1,0)));
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(0,1,0)));				
+		}
+
+		for(LongStrand::iterator ss = r.begin(); ss != r.end(); ++ss)
+		{
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->source()->point(),Point3(1,1,0)));
+			gMeshLines.push_back(pair<Point2,Point3>((*ss)->target()->point(),Point3(1,1,0)));				
+		}
+*/		
+		double ll = hl ? StrandLength(l) : 9.9e9;
+		double rl = hr ? StrandLength(r) : 9.9e9;
+		
+		if (!AllSameType(*s)) bridge_len =  9.9e9;
+		
+		if (rl < ll) { swap(l,r); swap(rl,ll); }
+		
+		if(bridge_len < 500.0 && bridge_len < (ll / 1.2) && s->size() == 1)
+		{
+			for(LongStrand::iterator ss = s->begin(); ss != s->end(); ++ss)
+				(*ss)->dominant()->mParams[he_Bridge] = 1.0;
+		} else {
+			if(ll < (strand_len * 2.0))
+			{
+				for(LongStrand::iterator ss = l.begin(); ss != l.end(); ++ss)
+				{
+					(*ss)->dominant()->mSegments = s->front()->dominant()->mSegments;				
+				}
+			}
+		}
+	}
+	
+	for(e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	if(e->mDominant)	
+	if(!IsBridge(e))
+	if(HasRoad(e))
+	if(CategorizeHalfedge(e) == is_water)
+		e->mSegments.clear();
+}
+
+
 
 /******************************************************************************************************************************
  * MASTER HYDRO RECONSTRUCTION FOR GLOBAL DATA
@@ -1176,6 +1442,7 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, const char * hydro_dir, ProgressFunc inFunc)
 {
 	int borders[4];
+	TagOriginalBridges(ioMap);
 	UpdateWaterWithMaskFile(ioMap, ioDem, mask_file, inFunc);
 	ConformWater(ioDem, hydro_dir, false, borders);
 	BuildRivers		  (ioMap, ioDem, borders, inFunc);
