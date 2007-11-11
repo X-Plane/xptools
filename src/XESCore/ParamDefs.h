@@ -76,8 +76,8 @@
 	TOKEN(he_TIGER_TLID)
 	TOKEN(he_IsRiver)
 	TOKEN(he_IsDryRiver)
-	TOKEN(he_MustBurn)
-	TOKEN(he_Bridge)
+	TOKEN(he_MustBurn)				// Indicates that the half-edge must be turned into a triangle border.
+	TOKEN(he_Bridge)				// Indicates that this is a bridge in the original vector data, not an error in water-road merging.
 
 	/* AREA PARAMS */
 	
@@ -87,8 +87,8 @@
 	
 	/* POLYGONAL (AREA) FEATURE PARAMS */
 	
-	TOKEN(af_Height)
-	TOKEN(af_HeightObjs)
+	TOKEN(af_Height)				// Highest legal auto-gen obj we can put here
+	TOKEN(af_HeightObjs)			// Height of tallest obj in face
 	
 	TOKEN(af_WaterArea)				// square area in sq meters
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
@@ -565,7 +565,7 @@
 	TOKEN(terrain_Park)
 	TOKEN(terrain_ForestPark)
 	TOKEN(terrain_Airport)
-	TOKEN(terrain_AirportOuter)
+	TOKEN(terrain_AirportOuter)				// Temporary - we use two land-uses when building airports to make sure we have inner and outer area.
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
 	// specific natural terrain after this!	
