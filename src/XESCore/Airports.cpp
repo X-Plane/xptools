@@ -697,6 +697,16 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 
 	PROGRESS_DONE(prog, 0, 1, "Burning in airports...")
 
+	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if (f->mTerrainType == terrain_AirportOuter)
+	if (!f->is_unbounded())
+	{
+		set<GISFace *>	adjWater;
+		FindAdjacentWetFaces(f, adjWater);
+		if(adjWater.empty())
+			f->mTerrainType = terrain_Airport;
+	}
+
 	for(Pmwx::Halfedge_iterator he = ioMap.halfedges_begin(); he != ioMap.halfedges_end(); ++he)
 	if (he->mDominant)
 	if ((he->face()->mTerrainType == terrain_Airport && he->twin()->face()->mTerrainType == terrain_AirportOuter) ||
