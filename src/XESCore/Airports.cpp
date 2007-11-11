@@ -33,6 +33,12 @@
 #include "MapAlgs.h"
 #include "CompGeomUtils.h"
 	
+#define DEBUG_FLATTENING 0	
+
+#if DEBUG_FLATTENING
+#include "GISTool_Globals.h"
+#endif
+
 //#define AIRPORT_OUTER_SIMPLIFY	(40.0 / (DEG_TO_NM_LAT * NM_TO_MTR))
 //#define AIRPORT_INNER_SIMPLIFY	(25.0 / (DEG_TO_NM_LAT * NM_TO_MTR))
 
@@ -150,9 +156,9 @@ void	BezierToSegments(
 
 inline int InsetForFill(apt_fill_mode m)
 {
-	if(m == fill_water2apt	)	return 20;
-	if(m == fill_water2dirt	)	return 25;
-	if(m == fill_dirt2apt	)	return 30;
+	if(m == fill_water2apt	)	return 10;
+	if(m == fill_water2dirt	)	return 35;
+	if(m == fill_dirt2apt	)	return 40;
 
 }
 	
@@ -167,8 +173,8 @@ static void GetPadWidth(
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
 	} else if (fill_water == fill_water2apt) {
-		pad_width_m = is_rwy ? 30.0 : 25.0;
-		pad_length_m = is_rwy ? 30.0 : 25.0;
+		pad_width_m = is_rwy ? 20.0 : 15.0;
+		pad_length_m = is_rwy ? 20.0 : 15.0;
 	} else {
 		pad_width_m = is_rwy ? 35.0 : 30.0;
 		pad_length_m = is_rwy ? 35.0 : 30.0;
@@ -187,11 +193,11 @@ static void GetPadWidth(
 		pad_width_m = is_rwy ? 50.0 : 40.0;
 		pad_length_m = is_rwy ? 150.0 : 40.0;
 	} else if(fill_water == fill_water2apt) {
-		pad_width_m = is_rwy ? 30.0 : 25.0;
-		pad_length_m = is_rwy ? 30.0 : 25.0;
+		pad_width_m = is_rwy ? 20.0 : 15.0;
+		pad_length_m = is_rwy ? 20.0 : 15.0;
 	} else {
-		pad_width_m = is_rwy ? 35.0 : 30.0;
-		pad_length_m = is_rwy ? 35.0 : 30.0;	
+		pad_width_m = is_rwy ? 30.0 : 25.0;
+		pad_length_m = is_rwy ? 30.0 : 25.0;	
 	}
 }
 
@@ -607,6 +613,11 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	DEMGeo		working(elevation.mWidth,elevation.mHeight);
 	DEMGeo		transport_src(transport.mWidth, transport.mHeight);
 	
+	#if DEBUG_FLATTENING
+	gDem[dem_Wizard] = elevation;
+	gDem[dem_Wizard] = DEM_NO_DATA;
+	#endif
+	
 	if (dems)
 	{
 		transport_src.copy_geo_from(transport);
@@ -676,6 +687,9 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 				}
 			}		
 			elevation.overlay(working);
+			#if DEBUG_FLATTENING
+			gDem[dem_Wizard].overlay(working);
+			#endif
 			
 			ClipDEMToFaceSet(simple_faces, transport_src, transport, x1, y1, x2, y2);
 		}
