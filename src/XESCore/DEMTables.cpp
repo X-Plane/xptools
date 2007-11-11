@@ -45,6 +45,8 @@ LandUseTransTable			gLandUseTransTable;
 static	void	ValidateNaturalTerrain(void);
 static map<int,int>		sForests;
 
+static set<int>			sAirports;
+
 string	gNaturalTerrainFile;
 string	gLanduseTransFile;
 string	gReplacementClimate;
@@ -130,7 +132,7 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 {
 	BeachInfo_t	info;
 		
-	if (TokenizeLine(tokens, " fffffffffffffifii", 
+	if (TokenizeLine(tokens, " fffffffffffffifiii", 
 				&info.min_rain,
 				&info.max_rain,
 				&info.min_temp,
@@ -146,8 +148,9 @@ bool	ReadBeachInfo(const vector<string>& tokens, void * ref)
 				&info.min_len,
 				&info.require_open,
 				&info.min_area,
+				&info.require_airport,
 				&info.x_beach_type,
-				&info.x_backup) != 18) return false;
+				&info.x_backup) != 19) return false;
 
 	info.max_turn_convex = cosdeg(info.max_turn_convex);
 	info.max_turn_concave = cosdeg(info.max_turn_concave);
@@ -570,6 +573,11 @@ void	LoadDEMTables(void)
 	
 	ValidateNaturalTerrain();
 	
+	sAirports.clear();
+	for(int n = 0; n < gNaturalTerrainTable.size(); ++n)
+	if(gNaturalTerrainTable[n].terrain == terrain_Airport)
+		sAirports.insert(gNaturalTerrainTable[n].name);
+	
 	/*
 	printf("---forests---\n");
 	for (set<int>::iterator f = sForests.begin(); f != sForests.end(); ++f)
@@ -925,6 +933,11 @@ void	GetNaturalTerrainColor(int terrain, float rgb[3])
 bool	IsForestType(int inType)
 {
 	return sForests.count(inType) != 0;
+}
+
+bool	IsAirportTerrain(int t)
+{
+	return sAirports.count(t) != 0;
 }
 
 

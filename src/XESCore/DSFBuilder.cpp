@@ -364,6 +364,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
 
 	int lterrain = tri->info().terrain;
+	int is_apt = IsAirportTerrain(lterrain);
 	int i;	
 	
 	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
@@ -404,7 +405,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	
 	for (i = 0; i < gBeachInfoTable.size(); ++i)
 	{
-		if (slope >= gBeachInfoTable[i].min_slope && 
+		if (is_apt == gBeachInfoTable[i].require_airport &&
+			slope >= gBeachInfoTable[i].min_slope && 
 			slope <= gBeachInfoTable[i].max_slope &&
 			gBeachInfoTable[i].min_sea <= wave && 
 			wave <= gBeachInfoTable[i].max_sea &&

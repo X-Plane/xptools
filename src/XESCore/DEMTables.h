@@ -194,6 +194,7 @@ struct BeachInfo_t {
 	float		min_len;
 	int			require_open;
 	float		min_area;
+	int			require_airport;
 	int			x_beach_type;
 	int			x_backup;
 };
@@ -221,6 +222,8 @@ inline int		OtherVariant(int terrain);								// Returns a different variant of 
 inline int		AnyVariant(int terrain);								// Returns any variant of the terrain randomly
 inline int		SpecificVariant(int terrain, int i);					// Use i (0-4) as a seed - get variant
 void	GetForestMapping(map<int,int>& forests);
+
+bool	IsAirportTerrain(int t);
 
 
 extern	string	gNaturalTerrainFile;
