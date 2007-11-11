@@ -302,7 +302,7 @@ int ThinLine(list<Point2>& pts, double max_dist_move, double max_dist_seg)
  *
  ************************************************************************************************************************************************/
 
-RoadPrefs_t gRoadPrefs = { 10.0, 10000.0, 0.8, 1.0 };
+RoadPrefs_t gRoadPrefs = { 10.0, 50000.0, 0.8, 1.0 };
 
 struct	TensorSeed {
 	Point2		p;
