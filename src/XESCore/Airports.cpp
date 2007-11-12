@@ -176,28 +176,8 @@ static void GetPadWidth(
 		pad_width_m = is_rwy ? 20.0 : 15.0;
 		pad_length_m = is_rwy ? 20.0 : 15.0;
 	} else {
-		pad_width_m = is_rwy ? 35.0 : 30.0;
-		pad_length_m = is_rwy ? 35.0 : 30.0;
-	}
-}
-
-static void GetPadWidth(
-		const AptPavement_t *		rwy,
-		double&						pad_width_m,
-		double&						pad_length_m,
-		apt_fill_mode				fill_water)
-{
-	bool is_rwy = (rwy->name != "xxx");
-	if (fill_water == fill_dirt2apt)
-	{
-		pad_width_m = is_rwy ? 50.0 : 40.0;
-		pad_length_m = is_rwy ? 150.0 : 40.0;
-	} else if(fill_water == fill_water2apt) {
-		pad_width_m = is_rwy ? 20.0 : 15.0;
-		pad_length_m = is_rwy ? 20.0 : 15.0;
-	} else {
 		pad_width_m = is_rwy ? 30.0 : 25.0;
-		pad_length_m = is_rwy ? 30.0 : 25.0;	
+		pad_length_m = is_rwy ? 30.0 : 25.0;
 	}
 }
 
@@ -387,7 +367,7 @@ void BurnInAirport(
 			Point2	corners[4];
 			double	pad_width;
 			double	pad_height;
-			GetPadWidth(&inAirport->pavements[rwy], pad_width, pad_height, inFillWater);
+			GetPadWidth(inAirport->pavements[rwy].name != "xxx", pad_width, pad_height, inFillWater);
 			ExpandRunway(&inAirport->pavements[rwy],pad_width, pad_height, corners);
 			vector<Polygon2>	poly;
 			poly.push_back(Polygon2());
