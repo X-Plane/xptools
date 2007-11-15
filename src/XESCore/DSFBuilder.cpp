@@ -1322,7 +1322,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			
 			if (broken) 
 				continue;
-				
+
+			if(polyObj->mShape.size() > 254)
+				continue;
+							
 			cbs.BeginPolygon_f(
 					facades[polyObj->mRepType],
 					polyObj->mHeight, 2,
