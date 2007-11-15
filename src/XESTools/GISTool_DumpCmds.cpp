@@ -34,6 +34,7 @@
 #include "MapDefs.h"
 #include "FAA_Obs.h"
 #include "ParamDefs.h"
+#include "DSFLib.h"
 #include "MemFileUtils.h"
 #include "XChunkyFileUtils.h"
 #if OPENGL_MAP
@@ -197,9 +198,17 @@ static int DoDumpDSF(const vector<const char *>& args)
 	int err = 0;
 	for (int n = 0; n < args.size(); ++n)
 	{
+		if(DSFCheckSignature(args[n]) != dsf_ErrOK)
+		{
+			fprintf(stderr, "DSF Checksum failed for %s.\n", args[n]);
+			return 1;
+		}
 		err = PrintDSFFile(args[n], stdout, gVerbose);
 		if (err != 0)
+		{
 			fprintf(stderr, "Bad DSF %s.\n", args[n]);
+			return 1;
+		}
 	}
 	return 0;
 }

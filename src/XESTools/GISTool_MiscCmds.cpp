@@ -24,6 +24,8 @@
 #include "GISTool_MiscCmds.h"
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
+#include "DSFLib.h"
+#include "FileUtils.h"
 #include "PerfUtils.h"
 #include "SceneryPackages.h"
 #include "DEMTables.h"
@@ -148,6 +150,18 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 	return 1;
 }
 
+int KillBadDSF(const vector<const char *>& args)
+{
+	if (DSFCheckSignature(args[0]) != dsf_ErrOK)
+	{
+		if (gVerbose) printf("Checksum failed: deleting %s\n", args[0]);
+		FILE_delete_file(args[0],false);
+		return 1;
+	}
+	if(gVerbose) printf("Checksum okay for: %s\n", args[0]);
+	return 0;
+}
+
 int DoShowCoverage(const vector<const char *>& args)
 {
 	FILE * fi = fopen(args[0], "rb");
@@ -245,6 +259,7 @@ int DoDumpForests(const vector<const char *>& args)
 
 
 static	GISTool_RegCmd_t		sMiscCmds[] = {
+{ "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "" },
 { "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "" },
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
