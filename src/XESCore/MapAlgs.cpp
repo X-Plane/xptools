@@ -1200,7 +1200,7 @@ inline bool	__near_colinear(const Segment2& seg, Point2& p)
 		//
 		// This isn't a fix, but by rejecting these points we do slightly improve quality - quick BBox test.  NO WAY a point is outside the seg's
 		// bbox and still "near-colinear-on".  
-		if (p.x < seg.p1.x || p.x > seg.p2.x || p.y < seg.p1.y || p.y > seg.p2.y) return false;
+		if (p.x <= seg.p1.x || p.x >= seg.p2.x || p.y <= seg.p1.y || p.y >= seg.p2.y) return false;
 			
 		return (Vector2(seg.p1, seg.p2).dot(Vector2(seg.p1, p)) > 0.0) &&
 			   (Vector2(seg.p2, seg.p1).dot(Vector2(seg.p2, p)) > 0.0);
