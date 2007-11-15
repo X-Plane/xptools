@@ -122,8 +122,8 @@ struct	Vector2 {
 	
 	double	squared_length(void) const { return dx * dx + dy * dy; }
 	void 	normalize(void) { if (dx == 0.0) dy = (dy >= 0.0) ? 1.0 : -1.0; else if (dy == 0.0) dx = (dx >= 0.0) ? 1.0 : -1.0; else { double len = sqrt(dx * dx + dy * dy); if (len != 0.0) { len = 1.0 / len; dx *= len; dy *= len; } } }
-	Vector2 perpendicular_cw() { return Vector2(dy, -dx); }
-	Vector2 perpendicular_ccw() { return Vector2(-dy, dx); }
+	Vector2 perpendicular_cw() const { return Vector2(dy, -dx); }
+	Vector2 perpendicular_ccw() const { return Vector2(-dy, dx); }
 
 	double	dot(const Vector2& v) const { return dx * v.dx + dy * v.dy; }
 	bool	left_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) > 0.0; }
