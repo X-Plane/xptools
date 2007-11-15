@@ -46,7 +46,8 @@ enum {
 	dsf_ErrMisformattedScalingAtom,		/* A scaling atom is corrupted.																*/
 	dsf_ErrBadCommand,					/* An unknown command index was encountered.  (Usually do to a corrupt command sequence.)   */
 	dsf_ErrUserCancel,					/* The NextPass_f callback returned false to cancel reading the next pass.					*/
-	dsf_ErrPoolOutOfRange				/* A bad DSF point pool was selected.  (Usually a semantically corrupt file.)				*/
+	dsf_ErrPoolOutOfRange,				/* A bad DSF point pool was selected.  (Usually a semantically corrupt file.)				*/
+	dsf_ErrBadChecksum					/* MD5 signature is bad - indicates poorly made DSF?										*/
 };	
 
 /*
@@ -202,7 +203,7 @@ struct	DSFCallbacks_t {
 /* Returns true if successful, false if not. */
 int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
-
+int		DSFCheckSignature(const char * inPath);
 /************************************************************
  * DFS WRITING UTILS
  ************************************************************

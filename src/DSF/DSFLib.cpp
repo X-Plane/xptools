@@ -146,6 +146,50 @@ bail:
 	return result;
 }
 
+int		DSFCheckSignature(const char * inPath)
+{
+	FILE *			fi = NULL;
+	char *			mem = NULL;
+	unsigned int	file_size = 0;
+	int				result = dsf_ErrOK;
+	
+	fi = fopen(inPath, "rb");
+	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
+
+	fseek(fi, 0L, SEEK_END);
+	file_size = ftell(fi);
+	fseek(fi, 0L, SEEK_SET);
+	
+	mem = (char *) malloc(file_size);
+	if (!mem) { result = dsf_ErrOutOfMemory; goto bail; }
+
+	if (fread(mem, 1, file_size, fi) != file_size)
+		{ result = dsf_ErrCouldNotReadFile; goto bail; }
+
+	MD5_CTX ctx;
+	MD5Init(&ctx);
+	
+	char *	s = mem;
+	char *	d = mem + file_size - 16;
+	
+	while(s < d)
+	{
+		int l = d - s;
+		if (l > 1024) l = 1024;
+		MD5Update(&ctx, (unsigned char *) s, l);
+		s += l;
+	}
+	MD5Final(&ctx);
+
+	if(memcmp(ctx.digest, d, 16) != 0) result = dsf_ErrBadChecksum;
+		
+bail:
+	if (fi) fclose(fi);
+	if (mem) free(mem);	
+	return result;
+}
+
+
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
 {
 	/* Do basic file analysis and check all headers and other basic requirements. */	

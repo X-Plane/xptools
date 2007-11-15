@@ -22,6 +22,7 @@
  */
 #include "DSFLib.h"
 #include "AssertUtils.h"
+#include "FileUtils.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
 #if LIN
@@ -93,6 +94,14 @@ static	void	DSFSignMD5(const char * inPath)
 #endif
 	fclose(fi);
 }
+
+struct	StCloseAndKill {
+	StCloseAndKill(FILE * f, const char * p) : f_(f), p_(p) { }
+	~StCloseAndKill() { if(f_) { fclose(f_); FILE_delete_file(p_.c_str(), false); } }
+	void release() { f_ = NULL; }
+	FILE * f_;
+	string p_;
+};
 
 static bool	ErasePair(multimap<int, int>& ioMap, int key, int value);
 static bool	ErasePair(multimap<int, int>& ioMap, int key, int value)
@@ -761,6 +770,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	FILE * fi = fopen(inPath, "wb");
 	if (fi == NULL)
 		AssertPrintf("DSF File open for write failed: %s", inPath);
+	StCloseAndKill	noCrappyFiles(fi, inPath);
 	DSFHeader_t header;
 	memcpy(header.cookie, DSF_COOKIE, sizeof(header.cookie));
 	header.version = SWAP32(DSF_MASTER_VERSION);
@@ -1100,6 +1110,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	/******************** WRITE FOOTER **************************/
 	/************************************************************************************************************/
 
+	noCrappyFiles.release();
 	fclose(fi);
 	
 	DSFSignMD5(inPath);
