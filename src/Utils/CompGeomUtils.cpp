@@ -845,6 +845,24 @@ bool	IntersectLinesAroundJunction(
 		return false;
 }				
 
+bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2)
+{
+	DebugAssert(v1.dx != 0.0 || v1.dy != 0.0);		// No zero length allowed.
+	DebugAssert(v2.dx != 0.0 || v2.dy != 0.0);
+	DebugAssert(v1.dy != 0.0 || v1.dx < 0.0);		// Can't be horizontal facing to the right - that's our "test" pooint.
+	DebugAssert(v2.dy != 0.0 || v2.dx < 0.0);
+	DebugAssert(v1.dy != 0.0 || v2.dy != 0.0);		// Can't both be horizontal - they'd both be to the left.
+	
+	// Special case horizontal...if the first or second line is horizontal to the left we just have to know which hemisphere the other is in.
+	if(v1.dy == 0.0)	return v2.dy > 0.0;
+	if(v2.dy == 0.0)	return v1.dy < 0.0;
+	
+	if(v1.dy > 0.0 && v2.dy < 0.0)	return false;
+	if(v1.dy < 0.0 && v2.dy > 0.0)	return true;
+	return v2.perpendicular_ccw().dot(v1) > 0.0;
+}
+
+
 // TODO: theoretically lack of atan2 precision can cause this to have problems.
 // Pragmatically I'm not sure this happens, but it'd be better to solve it
 // by case-by-case analysis.
@@ -1172,12 +1190,12 @@ inline bool	IsBetterHullPt(const Point2& anchor, const Point2& best_so_far, cons
 	if (newer == anchor) return false;
 	
 	// Take the shortest side possible.
-	return Vector2(anchor, best_so_far).dot(Vector2(anchor, newer)) < 0.0;
-	
+	return Vector2(newer, best_so_far).dot(Vector2(newer, anchor)) < 0.0;	
 }
 
 void	MakePolygonConvex(Polygon2& ioPolygon)
 {
+	DebugAssert(ioPolygon.area() > 0);
 // This is "Jarvis March" (gift wrapping): start at the highest point (cause we KNOW it's on the hull)
 // and then for each pt see if it makes a better hull pt.  Since we know that in point in the poly is
 // to the 'right' of a side (going CCW) in the hull, we can test this with a candidate side of the hull
@@ -1217,7 +1235,7 @@ void	MakePolygonConvex(Polygon2& ioPolygon)
 	} while (start_pt != now_pt);
 	
 	ioPolygon.swap(new_poly);
-	
+
 	DebugAssert(ioPolygon.convex());
 
 }

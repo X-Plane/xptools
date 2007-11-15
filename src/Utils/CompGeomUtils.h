@@ -263,6 +263,7 @@ bool	IntersectLinesAroundJunction(
 				Point3&						outIntersection);
 
 
+bool	Span_Horizontal_CCW(const Vector2& v1, const Vector2& v2);
 
 // Given three vectors, if they originated from the same point, and you 
 // rotated counterclockwise from 1, would you hit 2 and then 3?
