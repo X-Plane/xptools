@@ -47,6 +47,11 @@
 
 #define NO_BORDER_SHARING 0
 
+#define DEBUG_DROPPED_PTS 0
+
+#if DEBUG_DROPPED_PTS
+#include "GISTool_Globals.h"
+#endif
 
 #if PROFILE_PERFORMANCE
 #define TIMER(x)	StElapsedTime	__PerfTimer##x(#x);
@@ -2566,12 +2571,29 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 				last_ht = now->vertex(CDT::cw(cross_side))->info().height;
 				intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
 			
-			} else {		
+			} else {
 				CGAL::Object o = CGAL::intersection(ray, crossed_seg);
 				if (CGAL::assign(last_pt, o))
 				{
-					last_ht = HeightWithinTri(inMesh, now, last_pt.x(), last_pt.y());
-					intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+					Bbox2 lim_ray(march_info.locate_pt.x(),march_info.locate_pt.y(),goal.x(),goal.y());
+					Bbox2 lim_seg(crossed_seg.source().x(), crossed_seg.source().y(), crossed_seg.target().x(), crossed_seg.target().y());
+					Point2	result(last_pt.x(),last_pt.y());
+					if(!lim_ray.contains(result))
+					{
+						#if DEBUG_DROPPED_PTS
+							printf("WARNING: failed intersection: %.10lf, %.10lf\n",last_pt.x(),last_pt.y());
+							gMeshPoints.push_back(pair<Point2,Point3>(Point2(last_pt.x(),last_pt.y()),Point3(1,1,0)));
+							gMeshLines.push_back(pair<Point2,Point3>(Point2(march_info.locate_pt.x(),march_info.locate_pt.y()),Point3(0,1,0)));
+							gMeshLines.push_back(pair<Point2,Point3>(Point2(goal.x(),goal.y()),Point3(0,1,0)));
+							gMeshLines.push_back(pair<Point2,Point3>(Point2(crossed_seg.source().x(),crossed_seg.source().y()),Point3(0,0,1)));
+							gMeshLines.push_back(pair<Point2,Point3>(Point2(crossed_seg.target().x(),crossed_seg.target().y()),Point3(0,0,1)));
+						#endif
+					} else {
+
+						last_ht = HeightWithinTri(inMesh, now, last_pt.x(), last_pt.y());
+						intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
+					}
+					
 				} else {
 #if DEV				
 					printf("Ray: %lf,%lf->%lf,%lf\nSide: %lf,%lf->%lf,%lf\n",
@@ -2588,6 +2610,7 @@ void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t&
 		{
 			last_pt = now->vertex(cross_side)->point();
 			last_ht = now->vertex(cross_side)->info().height;
+			printf("On Vertex: %lf, %lf\n", last_pt.x(), last_pt.y());
 			intermediates.push_back(Point3(last_pt.x(), last_pt.y(), last_ht));
 		} else
 			AssertPrintf("Cannot determine relationship between triangles!");

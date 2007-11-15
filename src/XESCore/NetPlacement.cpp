@@ -546,6 +546,14 @@ void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CD
 			else 
 			{
 				MarchHeightGo(inMesh, CDT::Point(pt.x, pt.y), info, these_pts);
+				#if DEV
+					Point3 prev(chain->nth_pt(n-1));
+					Bbox2	lim(prev.x,prev.y,pt.x,pt.y);
+					for(int i = 0; i < these_pts.size(); ++i)
+					{
+						DebugAssert(lim.contains(Point2(these_pts[i].x,these_pts[i].y)));
+					}
+				#endif
 				total += (these_pts.size()-1);
 				added += (these_pts.size()-2);
 				DebugAssert(!these_pts.empty());
