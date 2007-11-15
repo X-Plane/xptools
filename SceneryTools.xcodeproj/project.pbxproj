@@ -35,6 +35,7 @@
 				D6C68DE70BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE50BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE30BEFB3BE00C9F880 /* PBXTargetDependency */,
+				D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */,
 				D6C68DE10BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DDF0BEFB3BE00C9F880 /* PBXTargetDependency */,
 			);
@@ -472,10 +473,6 @@
 		D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
-		D67EF9740B6135F400D9190C /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
-		D67EF9750B6135F400D9190C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
-		D67EF9760B6135F400D9190C /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
-		D67EF9770B6135F400D9190C /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D67EF9780B6135F400D9190C /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
 		D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
 		D67EF97A0B6135F400D9190C /* Persistence.cp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cp */; };
@@ -603,6 +600,9 @@
 		D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D6C68E230BEFB6E700C9F880 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C690380BF0B91100C9F880 /* WED_GroupCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */; };
+		D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
 		D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E60C39840400BD789F /* GUI_Prefs.cpp */; };
 		D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */; };
@@ -886,6 +886,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8D0C4E890486CD37000505A6;
 			remoteInfo = ObjView;
+		};
+		D6CB54830CEC9DCB000E4393 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
+			remoteInfo = DDSTool;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -3766,6 +3773,7 @@
 				D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */,
 				D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */,
 				D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */,
+				D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3877,6 +3885,7 @@
 				D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */,
 				D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */,
 				D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */,
+				D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3925,6 +3934,7 @@
 				D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */,
 				D69FD74B0B6CF765008E3AEC /* unzip.c in Sources */,
 				D69FD74C0B6CF765008E3AEC /* zip.c in Sources */,
+				D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3932,10 +3942,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D67EF9740B6135F400D9190C /* DSFLib.cpp in Sources */,
-				D67EF9750B6135F400D9190C /* DSFLib_Print.cpp in Sources */,
-				D67EF9760B6135F400D9190C /* DSFPointPool.cpp in Sources */,
-				D67EF9770B6135F400D9190C /* DSFLibWrite.cpp in Sources */,
 				D67EF9780B6135F400D9190C /* EnvParser.c in Sources */,
 				D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */,
 				D67EF97A0B6135F400D9190C /* Persistence.cp in Sources */,
@@ -4308,6 +4314,11 @@
 			isa = PBXTargetDependency;
 			target = 8D0C4E890486CD37000505A6 /* ObjView */;
 			targetProxy = D6C68DEC0BEFB3BE00C9F880 /* PBXContainerItemProxy */;
+		};
+		D6CB54840CEC9DCB000E4393 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
+			targetProxy = D6CB54830CEC9DCB000E4393 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
