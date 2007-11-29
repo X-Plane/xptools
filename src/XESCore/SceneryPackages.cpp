@@ -70,6 +70,7 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	string 	package(inPackage);
 	FILE *	lib;
 	FILE *	ter;
+	FILE *	pol;
 	int image_ctr = 0, border_ctr = 0;
 
 	MakeDirExist(package.c_str());
@@ -82,15 +83,29 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	set<string>	imageFiles;
 	set<string> borderFiles;
 	
-	set<int>	predone;
+	set<int>			predone;
+	map<string, int>	has_pol;
 	
 	for (n = 0; n < gNaturalTerrainTable.size(); ++n)
 	{
 		if (predone.count(gNaturalTerrainTable[n].name)) continue;
 		predone.insert(gNaturalTerrainTable[n].name);
 		
+		string	pol_name(FetchTokenString(gNaturalTerrainTable[n].name));
+		string::size_type d = pol_name.find('/');
+		DebugAssert(d != pol_name.npos);
+		pol_name.erase(0,d);
+		pol_name.insert(0,"pol");
+		if(gNaturalTerrainTable[n].auto_vary)
+			pol_name.erase(pol_name.length()-3);
+		else if (gNaturalTerrainTable[n].related >= 0)
+			pol_name.erase(pol_name.length()-1);
+				
 		fprintf(lib, "EXPORT   lib/g8/%s.ter       %s.ter" CRLF,
 			FetchTokenString(gNaturalTerrainTable[n].name),FetchTokenString(gNaturalTerrainTable[n].name));
+			
+		if(has_pol.count(pol_name) == 0)
+			has_pol[pol_name] = n;
 			
 		lib_path = package + FetchTokenString(gNaturalTerrainTable[n].name) + ".ter";		
 		local_path(lib_path);		
@@ -164,6 +179,29 @@ void	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		fclose(ter);
 	}
 	
+	for(map<string, int>::iterator p = has_pol.begin(); p != has_pol.end(); ++p)
+	{
+		fprintf(lib, "EXPORT   lib/g8/%s.pol       %s.pol" CRLF, p->first.c_str(), p->first.c_str());
+
+		lib_path = package + p->first + ".pol";
+		local_path(lib_path);
+		dir_path = lib_path;
+		only_dir(dir_path);		
+		MakeDirExist(dir_path.c_str());
+
+		pol = fopen(lib_path.c_str(), "w");
+		fprintf(pol, "%c" CRLF "850" CRLF "DRAPED_POLYGON" CRLF CRLF, APL ? 'A' : 'I');
+		fprintf(pol, "TEXTURE %s" CRLF, gNaturalTerrainTable[p->second].base_tex.c_str());
+		if (!gNaturalTerrainTable[p->second].lit_tex.empty())
+			fprintf(pol, "TEXTURE_LIT %s" CRLF, gNaturalTerrainTable[p->second].lit_tex.c_str());		
+		
+		fprintf(pol, "SCALE %d %d" CRLF, (int) gNaturalTerrainTable[p->second].base_res, (int) gNaturalTerrainTable[p->second].base_res);
+		fprintf(pol, "NO_ALPHA" CRLF);
+		fprintf(pol, "SURFACE dirt" CRLF);
+		fprintf(pol, "LAYER_GROUP airports -1" CRLF);
+		fclose(pol);
+	}
+
 	fclose(lib);
 
 	if (make_stub_pngs)
