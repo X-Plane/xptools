@@ -906,6 +906,12 @@ proc clean_anim {} {
 		}
 	}
 }
+proc kill_dataref { dref } {
+	global ANIM_INNER
+	destroy $ANIM_INNER.label_$dref
+	destroy $ANIM_INNER.$dref
+	destroy $ANIM_INNER.sel_$dref
+}
 
 proc sync_dataref { dref name now minv maxv } {
 	global ANIM_INNER

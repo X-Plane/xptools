@@ -378,24 +378,32 @@ static void quote_dref(string& s)
 
 void	sync_datarefs()
 {
+	static int high_water = 0;
 //	printf("Got sync dataref, anim=%d\n",g_anim_inited);
 	if (!g_anim_inited) return;
 	g_tcl_mapping.clear();
-	tcl_command("clean_anim");
+//	tcl_command("clean_anim");
 	int n = 0;
 	for (map<string,dataref_info>::iterator dref = g_datarefs.begin(); dref != g_datarefs.end(); ++dref)
 	{
 		char buf[10];
 		sprintf(buf,"dr%d", n);
 		string tcl_name(buf);
-//		char debug[120];
 		string dref_q(dref->first);
 		quote_dref(dref_q);
 		tcl_command("sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
-//		sprintf(debug,"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}
+	int k;
+	for(k = n; k < high_water; ++k)
+	{
+		char buf[10];
+		sprintf(buf,"dr%d", k);
+		string tcl_name(buf);
+		tcl_command("kill_dataref %s", tcl_name.c_str());
+	}
+	high_water = n;
 }
 
 
@@ -795,7 +803,8 @@ static void anim_pre_func(ACObject * ob, Boolean is_primary_render)
 		glMatrixMode(GL_MODELVIEW_MATRIX);
 		glPushMatrix();
 		push_stack.push_back(vis);
-		vis = 1;
+		// Ben says: vis is NOT reset to true jsut by starting anim group!
+//		vis = 1;
 	}
 }
 
@@ -806,6 +815,11 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 	{
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
+		if (vis != push_stack.back())
+		{
+			if(vis)	{ glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);	glDepthMask(GL_FALSE); }
+			else	{ glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);	glDepthMask(GL_TRUE); }
+		}
 		vis = push_stack.back();
 		push_stack.pop_back();
 	}
@@ -864,7 +878,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			if (now_v >= k1 && now_v <= k2)
 			{
 				if (vis)
-					glTranslatef(9.9e12,9.9e12,9.9e9);
+					{ glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE); glDepthMask(GL_FALSE); }
 				vis = 0;
 			}
 			break;
@@ -874,7 +888,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			if (now_v >= k1 && now_v <= k2)
 			{
 				if (!vis)
-					glTranslatef(-9.9e12,-9.9e12,-9.9e12);
+					{ glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE); glDepthMask(GL_TRUE); }
 				vis = 1;
 			}
 			break;
