@@ -52,6 +52,8 @@ string	gLanduseTransFile;
 string	gReplacementClimate;
 string 	gReplacementRoads;
 
+#define R_VARY 0
+
 inline double cosdeg(double deg)
 {
 	if (deg == 0.0) return 1.0;
@@ -64,8 +66,14 @@ inline double cosdeg(double deg)
 
 static string	MakeLit(const string& inName)
 {
-	return inName.substr(0, inName.length()-4) + "_LIT.png";
+	return inName.substr(0, inName.length()-4) + "_LIT.dds";
 }
+
+void MakeRVariant(string& io_string)
+{
+	io_string.insert(io_string.length()-4,"_R");
+}
+
 
 static	bool	LowerCheckName(string& ioName)
 {
@@ -431,6 +439,12 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 		if (has_lit)			info.lit_tex = MakeLit(info.base_tex);
 		else					info.lit_tex.clear();
+
+		#if R_VARY
+		MakeRVariant(info.base_tex);
+		if(!info.vary_tex.empty())
+		MakeRVariant(info.vary_tex);
+		#endif
 		
 		int rn = gNaturalTerrainTable.size();
 		gNaturalTerrainTable.push_back(info);
@@ -468,13 +482,17 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 			tex_vari.erase(tex_vari.size()-4);
 			if (auto_vary == 2 && (rep == 2 || rep == 3))
 				tex_vari += "2";
-			tex_vari += ".png";
+			tex_vari += ".dds";
 			info.base_tex = tex_vari;
 
 			if (has_lit)
 				info.lit_tex = MakeLit(info.base_tex);
 			else
 				info.lit_tex.clear();
+			
+			#if R_VARY
+			MakeRVariant(info.base_tex);
+			#endif
 			
 			int rn = gNaturalTerrainTable.size();
 			gNaturalTerrainTable.push_back(info);
