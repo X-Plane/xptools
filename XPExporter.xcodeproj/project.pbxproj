@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		D622A9960AEA91C700035F64 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */; };
+		D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D648322A0D01C9B8003B9824 /* FileUtils.cpp */; };
+		D648322D0D01C9B8003B9824 /* FileUtils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D648322B0D01C9B8003B9824 /* FileUtils.h */; };
 		D6726CD70AEE476700E2668E /* obj_model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6726CD60AEE476700E2668E /* obj_model.cpp */; };
 		D6726E780AEE811400E2668E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6726E770AEE811400E2668E /* OpenGL.framework */; };
 		D6B331FD0B00CBFC001D7CCD /* ac_utils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6B331F70B00CBFC001D7CCD /* ac_utils.h */; };
@@ -93,12 +95,15 @@
 				D6F2F8110BC586080051E526 /* AssertUtils.h in CopyFiles */,
 				D6F2F8130BC586080051E526 /* md5.h in CopyFiles */,
 				D6FF83230C2DBC1900F22A73 /* obj_panel.h in CopyFiles */,
+				D648322D0D01C9B8003B9824 /* FileUtils.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D648322A0D01C9B8003B9824 /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
+		D648322B0D01C9B8003B9824 /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
 		D6726CD50AEE476700E2668E /* obj_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_model.h; sourceTree = "<group>"; };
 		D6726CD60AEE476700E2668E /* obj_model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = obj_model.cpp; sourceTree = "<group>"; };
 		D6726E770AEE811400E2668E /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -254,6 +259,8 @@
 		D6F2F0720BC1A9EF0051E526 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D648322A0D01C9B8003B9824 /* FileUtils.cpp */,
+				D648322B0D01C9B8003B9824 /* FileUtils.h */,
 				D6F2F80C0BC586080051E526 /* AssertUtils.cpp */,
 				D6F2F80D0BC586080051E526 /* AssertUtils.h */,
 				D6F2F80E0BC586080051E526 /* md5.c */,
@@ -371,6 +378,7 @@
 				D6F2F8100BC586080051E526 /* AssertUtils.cpp in Sources */,
 				D6F2F8120BC586080051E526 /* md5.c in Sources */,
 				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
+				D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
