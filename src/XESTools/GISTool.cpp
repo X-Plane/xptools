@@ -102,46 +102,17 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 
 int	main(int argc, char * argv[])
 {
-//	char * args[] = { "./GISTool_d", "-vpf", "/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/", "bnd,hydro,trans", "-90", "30", "-validate", "-save", "test.xes" };
-//	char * args[] = { "./GISTool_d", "-vpf", "/Volumes/GIS/data/vmap0/v0eur/vmaplv0/eurnasia/", "bnd,hydro,trans", "0", "30", "-validate", "-save", "test.xes" };
-//	char * args[] = { "./GISTool_d", "-apt", "/Users/bsupnik/Desktop/AptNav200503XP810/apt.dat", "-quiet", "-apttest" };
-//	char * args[] = { "./GISTool", "-vpf", "/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/", "bnd", "-120", "30", "-validate", "-bbox", "-save", "foo.xes" };
-//	char * args[] = { "./GISTool", "-extent", "-130", "20", "-60", "50", "-gshhs", "/Volumes/GIS/data/GSHHS/gshhs_1.3/gshhs_c.b", "-bbox", "-save", "foo.xes", "-validate" };
-//	char * args[] = { "./GISTool_d", "-apt", "/Volumes/GIS/data/apt.dat", "-apttest" };
-//	char * args[] = { "/code/XPTools/SceneryTools/GISTool_d", "-extent", "-118", "32", "-117", "33", "-load", "config/global_climate_smooth_rain.xes",
-//						"-crop", "-load", "/rendering_farm/blend_xes/+30-120/+32-118.xes", "-glcc", "/rendering_farm/glcc/lu_new.raw", "oge2_import.txt", "-oz", "/rendering_farm/DEM output-earth/+30-120/+32-118.oz",
-//									"-obs", "deg", "/rendering_farm/faa_obs/+32-118.obs", "-apt", "/rendering_farm/apts/+30-120/+32-118.apt", "-bbox", "-simplify", "-validate",
-//									"-spreadsheet", "/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt", "-upsample", "-calcslope", "-derivedems", "-buildroads",
-//									"-burnapts", "-zoning", "-calcmesh", "-assignterrain", "-save", "output/+30-120/+32-118.xes", "-exportdsf", "output" };
-//	char * args[] = { "/code/XPTools/SceneryTools/GISTool","-noprogress","-extent","-118","33","-117","34","-load","config/global_climate_smooth_rain.xes",
-//						"-crop","-load","/rendering_farm/us_xes/+30-120/+33-118.xes","-glcc","/rendering_farm/glcc/lu_new.raw","oge2_import.txt",
-//						"-oz","/rendering_farm/DEM output-earth/+30-120/+33-118.oz","-obs","deg","/rendering_farm/faa_obs/+33-118.obs","-apt","/rendering_farm/apts/+30-120/+33-118.apt",
-//						"-bbox","-simplify","-validate","-spreadsheet","/code/design++/Custom Scenery/global-scenery/spreadsheets/master_terrain.txt","-upsample","-calcslope",
-//						"-derivedems","-buildroads","-burnapts","-zoning","-calcmesh","-assignterrain","-exportdsf","/code/design++/Custom Scenery/a_rerender/" };
-//	char * args[]  = { "", "-load", "foo.xes", "-calcmesh" };
-//	char * args[] = { "./GISTool","-extent","-75","45","-60","60","-vpf","/Volumes/GIS/data/vmap0/v0noa/vmaplv0/noamer/","bnd","-75","45","-bbox","-cropsave","/Volumes/GIS/data/world_xes/" };
-
-//	char * args[] = { "./GISTool_d","-extent","-73","40","-72","41","-wetmask","/Volumes/GIS/data/swbd/","/Volumes/GIS/data/srtm_masks/" };
-//
-//	char * args[] = { "./GISTool_d","-floatdem","/Volumes/GIS/more_data/DEM3/+30-120/+36-113.DEM","-markoverlay","-readmask","test.raw","-oz","/Volumes/GIS/data/DEM output-earth/+30-120/+36-114.oz","-applyoverlay","-hgtzip","test.hgt.zip" };
-
-//	argv = args;
-//	argc = sizeof(args) / sizeof(args[0]);
-
 	if (argc == 1)	SelfTestAll();
 	
 	int result;
 	try {
 		
-//		StElapsedTime *	total = new StElapsedTime("Total time for operation");
-
 		// Set CGAL to throw an exception rather than just
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
 
 		int start_arg = 1;
 		{
-//			StElapsedTime	timer("Init");
 			if (argc < 2 || strcmp(argv[1], "-noinit"))
 				XESInit();
 			else
@@ -176,7 +147,6 @@ int	main(int argc, char * argv[])
 		if (can_profile)	chudReleaseRemoteAccess();
 		if (can_profile)	chudCleanup();
 #endif		
-//		delete total;
 
 		exit(result);
 
