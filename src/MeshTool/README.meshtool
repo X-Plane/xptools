@@ -1,0 +1,164 @@
+MeshTool Instructions and Release Notes
+
+Version History
+	12/28/07   Initial Draft
+
+-------------------------------------------------------------------------------
+USAGE
+-------------------------------------------------------------------------------
+
+MeshTool <script file> <climate file> <DEM file> <dump directory> <output file>
+
+MeshTool converts a polygon script, climate digest and DEM folder into a base
+DSF mesh.  It supports customizing coastlines via vector polygon data,
+burning in airporst, and adding custom orthophotos.
+
+
+-------------------------------------------------------------------------------
+DEM FILE FORMAT
+-------------------------------------------------------------------------------
+
+The mesh must be a 1201x1201 SRTM DEM, that is, big endian 16-bit shorts, with
+no voids.  Geographic projection.  The mesh covers the entire tile.  You
+are responsible for all flattening and conditioning.
+	 
+-------------------------------------------------------------------------------
+SCRIPT FILE FORMAT (POLYGON FILE)
+-------------------------------------------------------------------------------
+
+The general model for Mesh Tool polygons is a series of overlapping simple 
+polygons that cover the DSF.  Each polygon sets up a certain terrain type,
+potentially replacing the terrain below it.  These polygons are strictly 
+vector - there is no requirement that they be square or grid-shaped.  An
+adaptive mesh is then built that automatically puts triangle boundaries around
+the polygons to form the boundaries.  Four terrain types are supported:
+
+- Water: forms X-plane water, with reflections, etc.
+- Land: builds natural "landuse" terrain, varying the actual terrain by 
+  elevation and climate.
+- Airport: builds airport surface areas, with the grass type varying with
+  climate.
+- Custom: puts in a custom-defined terrain, which can either be orthophoto
+  or landuse style, and can optionally show water where there is allpha.
+ 
+Rules for polyogons:
+
+	All polygons must be CCW.
+	All polygons must be simple.
+	Polygons do not have holes.
+	All polygons must have at least 3 sides.
+	Polygons do not have to be convex.
+	Polygons cannot exceed the DSF tile bounds.
+	Polygons may overlap.  Later polygons overwrite earlier ones (holes can be 
+	done this way).
+
+
+DEFINE_CUSTOM_TERAIN <transparency> <terrain_name>
+transparency: 0 or 1.  
+	0 means no water is put underneath, alpha now allowed.
+	1 menas water put underneath, transparency is allowed
+terrain_name: file path to a custom .ter or .png/.dds file
+
+Performance tip: turning on water-under-terrain increases the cost of drawing 
+the terrain a lot - the water is fully drawn first and then over-drawn.  So use
+this option only if you really need it; it's expensive!
+
+PROJECT_POINT <lon> <lat> <s> <t>
+
+If a custom terrain is going to be an orthophoto (not land use), four 
+PROEJCT_POINT records must follow, mapping lat-lon to texture coordinates.
+ST must be [0..1].
+
+WATER_POLY
+
+begins defining a water polygon (lake or ocean)
+
+APT_POLY
+
+begins defining an airport surface area polygon.  The area is NOT flattened,
+but special terrain is used.
+
+LAND_POLY
+
+begins defining a polygon of default land use...natural terrain is placed based
+on slope and climate data.
+
+CUSTOM_POLY <terrain_name>
+
+Starts a polygon of custom terrain..terrain_name must match a previous 
+define_custom_terrain line.
+
+POLYGON_POINT <lon> <lat>
+
+Adds a point to the CCW boundary of a polygon.  
+
+END_POLY
+
+ends the previous polygon
+
+-------------------------------------------------------------------------------
+EXAMPLE:
+-------------------------------------------------------------------------------
+
+DEFINE_CUSTOM_TERRAIN 1 foo.ter
+PROJECT_POINT -117.3 34.1 0 0
+PROJECT_POINT -117.2 34.1 1 0
+PROJECT_POINT -117.2 34.4 1 1
+PROJECT_POINT -117.3 34.4 0 1
+
+LAND_POLY
+POLYGON_POINT -118 34
+POLYGON_POINT -117 34
+POLYGON_POINT -117 35
+POLYGON_POINT -118 35
+END_POLY
+
+WATER_POLY
+POLYGON_POINT -117.75 34.25
+POLYGON_POINT -117.25 34.25
+POLYGON_POINT -117.25 34.75
+POLYGON_POINT -117.75 34.75
+END_POLY
+
+APT_POLY
+POLYGON_POINT -118 34
+POLYGON_POINT -117 34
+POLYGON_POINT -117 34.5
+POLYGON_POINT -118 34.5
+END_POLY
+
+CUSTOM_POLY foo.ter
+POLYGON_POINT -117.3 34.1
+POLYGON_POINT -117.2 34.1
+POLYGON_POINT -117.2 34.4
+POLYGON_POINT -117.3 34.4
+END_POLY
+
+
+-------------------------------------------------------------------------------
+CLIMATE FILES
+-------------------------------------------------------------------------------
+
+MeshTool requires a climate/landuse digest in .xes format.  .xes is a GIS 
+container format used by Laminar Research for imported data.  You must download
+a .xes file for your DSF tile from Laminar Research and pass it as input to
+MeshTool!
+
+-------------------------------------------------------------------------------
+DUMP DIRECTORY
+-------------------------------------------------------------------------------
+
+MeshTool requires a directory that contains sub-folders (e.g. +30-120) for any
+DSF tile you generate.  MeshTool places .txt files that describe the borders
+of the DSF tile into these sub-directories.  If you don't have a dump directory
+with sub-folders, MeshTool will fail.
+
+MeshTool also reads the borders, so if you render two adjacent tiles, the 
+borders will be coordinated.  It does not matter what order you render your
+tiles in, as long as they are rendered one at a time.
+
+WARNING: if you make two adjacent tiles and the polygon definitions at the 
+border do not match up (e.g. the border has water on one side and land on the
+other) the results may be unpredictable.
+
+
