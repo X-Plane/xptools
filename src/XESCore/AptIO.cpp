@@ -435,7 +435,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().sealanes.back().id[0],
 				&outApts.back().sealanes.back().ends.p1.y,
 				&outApts.back().sealanes.back().ends.p1.x,
-				&outApts.back().sealanes.back().id[2],
+				&outApts.back().sealanes.back().id[1],
 				&outApts.back().sealanes.back().ends.p2.y,
 				&outApts.back().sealanes.back().ends.p2.x) != 9)
 			ok = "Illegal new seaway";
