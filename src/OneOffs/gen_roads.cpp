@@ -791,13 +791,13 @@ printf("#### Six-lane highways.  1-13 = normal/overpass, 76-88 = suspension/meta
 		hwy_ovr_e(0);
 	road_end();
 
-	hwy_start(2,92, "net_SixLaneUSHighwayOnewaySuspensionBridge");
+	hwy_start(2,92, "net_FourLaneUSHighwayOnewaySuspensionBridge");
 		hwy_sus_s(0);
 		hwy_4oneway();
 		hwy_sus_e(0);
 	road_end();
 
-	hwy_start(2,93, "net_SixLaneUSHighwayOnewayArchBridge");
+	hwy_start(2,93, "net_FourLaneUSHighwayOnewayArchBridge");
 		hwy_arc_s(1);
 		hwy_4oneway();
 		hwy_arc_e(1);
