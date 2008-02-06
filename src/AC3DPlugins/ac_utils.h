@@ -24,6 +24,7 @@
 #ifndef AC_UTILS_H
 #define AC_UTILS_H
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include <vector>
 #include <set>

@@ -49,6 +49,7 @@ attributes.
 
 */
 
+#include "TclStubs.h"
 #include "ac_plugin.h"
 #include "undoable.h"
 
@@ -378,12 +379,13 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			builder->SetAttribute1(attr_Offset, now_poly_os);
 
 			OBJ_get_hard(obj, buf);
+			int deck = OBJ_get_deck(obj);
 			if(buf[0] == 0)
 				builder->SetAttribute(attr_No_Hard);
 			else if (strcmp(buf,"object")==0)
-				builder->SetAttribute(attr_Hard);
+				builder->SetAttribute(deck ? attr_Hard_Deck : attr_Hard);
 			else
-				builder->SetAttribute1Named(attr_Hard, 0.0, buf);
+				builder->SetAttribute1Named(deck ? attr_Hard_Deck : attr_Hard, 0.0, buf);
 
 			now_blend = OBJ_get_blend(obj);
 			if (now_blend <= 0.0)

@@ -22,6 +22,7 @@
  */
 
 #include "obj_update.h"
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include "ac_utils.h"
 #include "obj_model.h"

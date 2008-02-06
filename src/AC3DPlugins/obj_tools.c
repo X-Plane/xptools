@@ -23,6 +23,7 @@
 
 #include "obj_tools.h"
 #include "ac_utils.h"
+#include "undoable.h"
 #include "bitmap_match.h"
 #include "obj_radius.h"
 #include "XObjDefs.h"
@@ -579,4 +580,27 @@ void do_optimize_selection(float do_optimize)
 	
 	redraw_all();
 	tcl_command("hier_update");
+}
+
+static void sel_if_light(ACObject * who)
+{
+	if(strcmp(ac_entity_get_class_name(who),AC_CLASS_LIGHT)==0)
+		ac_select_object(who);
+
+	List *kids = ac_object_get_childrenlist(who);
+
+    for (List * p = kids; p != NULL; p = p->next)
+        sel_if_light((ACObject *)p->data);	
+}
+
+
+void do_sel_lights(void)
+{
+	add_undoable_change_selection("Select all lights");
+	clear_selection();	
+	sel_if_light(ac_get_world());
+	tcl_command("hier_update");
+	redraw_all();
+	display_status();	
+	
 }

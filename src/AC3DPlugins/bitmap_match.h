@@ -24,6 +24,7 @@
 #ifndef BITMAP_MATCH_H
 #define BITMAP_MATCH_H
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 
 int	bitmap_match(		

@@ -29,6 +29,7 @@
 #include "uv_mapper.h"
 #include "obj_update.h"
 #include "obj_editor.h"
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,6 +56,12 @@ AC3D_PLUGIN_FUNC char *AC3DPluginAbout();
 
 AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 {
+	const char * emsg = TCL_init_stubs();
+	if(emsg)
+	{	
+		message_dialog("X-Plane export plugin cannot load: %s", emsg);
+		return -1;
+	}
 	prefs_init();
 
 	/* This code is taken from an example...if we had TCL scripts to provide us with a 
@@ -101,6 +108,8 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 	ac_add_command_full("xplane_uv_copy", CAST_CMD(do_uv_copy), 0, NULL, "ac3d xplane_uv_copy", "Copy UV map from an object.");
 	ac_add_command_full("xplane_uv_paste", CAST_CMD(do_uv_paste), 0, NULL, "ac3d xplane_uv_paste", "Project UV map onto a new object.");
 
+	ac_add_command_full("xplane_sel_lights", CAST_CMD(do_sel_lights), 0, NULL, "ac3d xplane_sel_lights", "Select lights.");
+
 	ac_add_command_full("xplane_make_subpanel", CAST_CMD(do_make_panel_subtexes), 0, NULL, "ac3d xplane_make_subpanel", "Make sub-panel texes from main panel.");
 
 	ac_add_command_full("xplane_optimize_selection", CAST_CMD(do_optimize_selection), 1, "f", "ac3d xplane_optimize_selection", "Optimize selection for x-plane.");
@@ -120,6 +129,6 @@ AC3D_PLUGIN_FUNC int AC3DPluginExit()
 
 AC3D_PLUGIN_FUNC char *AC3DPluginAbout()
 {
-    return("OBJ8 Import/Export Plugin v3.0.1r1 - by Ben Supnik");
+    return("OBJ8 Import/Export Plugin v3.1b1 - by Ben Supnik");
 }
 

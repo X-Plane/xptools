@@ -24,6 +24,7 @@
 #include "obj_anim.h"
 #include "obj_model.h"
 #include "obj_editor.h"
+#include "undoable.h"
 #include "ac_plugin.h"
 #include <ac_plugin.h>
 #if APL
@@ -583,13 +584,14 @@ static void set_anim_enable(float n)
 		redraw_all();
 }
 
+// null dref for all anim!
 static void sel_if_has(ACObject * who, const char *dref)
 {
 	char	buf[512];
 	if (OBJ_get_anim_type(who) != anim_none)
 	{
 		OBJ_get_anim_dataref(who,buf);
-		if(strcmp(buf,dref)==0)
+		if(dref == NULL || strcmp(buf,dref)==0)
 		{
 			ac_select_object(who);
 		}
@@ -623,6 +625,7 @@ static void set_anim_now(int argc, char * argv[])
 static void set_sel_now(int argc, char * argv[])
 {
 	if (argc <= 1) return;
+	add_undoable_change_selection("Select animation");
 	map<string,string>::iterator who = g_tcl_mapping.find(argv[1]);
 	if (who != g_tcl_mapping.end())
 	{
@@ -635,6 +638,16 @@ static void set_sel_now(int argc, char * argv[])
 			display_status();
 		}
 	}
+}
+
+static void select_all_anim(void)
+{
+	add_undoable_change_selection("Select all animations");
+	clear_selection();		
+	sel_if_has(ac_get_world(),NULL);
+	tcl_command("hier_update");
+	redraw_all();
+	display_status();	
 }
 
 
@@ -975,12 +988,13 @@ static void	rescale_sel(int argc, char * argv[])
 void setup_obj_anim(void)
 {
 	g_anim_inited = 1;
-	Tcl_CreateExitHandler(anim_exit_cb, NULL);
+	tcl_stubs.Tcl_CreateExitHandler(anim_exit_cb, NULL);
 	ac_set_pre_render_object_callback(anim_pre_func);
 	ac_set_post_render_object_callback(anim_post_func);
 	ac_add_command_full("xplane_set_anim_enable", CAST_CMD(set_anim_enable), 1, "f", "ac3d xplane_set_anim_enable <0 or 1>", "set animation on or off");
 	ac_add_command_full("xplane_set_anim_now", CAST_CMD(set_anim_now), 2, "argv", "ac3d xplane_set_anim_now <n> <t>", "set dataref n to time t");
 	ac_add_command_full("xplane_anim_select", CAST_CMD(set_sel_now), 2, "argv", "ac3d xplane_anim_select<n>", "select all objects using dtaref n");	
+	ac_add_command_full("xplane_anim_select_all", CAST_CMD(select_all_anim), 0, NULL, "ac3d xplane_anim_select_all", "select all animated objects");
 	ac_add_command_full("xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, "argv", "ac3d xplane_set_anim_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_add_keyframe", CAST_CMD(add_keyframe), 3, "argv", "ac3d xplane_add_keyframe <kf index> <obj idx>", "set animation to this keyframe");	
 	ac_add_command_full("xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, "argv", "ac3d xplane_delete_keyframe <kf index> <obj idx>", "set animation to this keyframe");	

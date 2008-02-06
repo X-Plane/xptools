@@ -39,13 +39,13 @@ TCL_linked_vari::TCL_linked_vari(Tcl_Interp * iinterp, const char * tcl_name, TC
 	strcpy(var_name,tcl_name);
 	set(initial);	
 
-	if (Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
+	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
 		message_dialog("Internal error setting trace on %s.", var_name);
 }
 
 TCL_linked_vari::~TCL_linked_vari()
 {
-	Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
+	tcl_stubs.Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
 	free(var_name);
 }
 
@@ -54,9 +54,9 @@ void	TCL_linked_vari::set(int value)
 //	printf("Setting %s to %d\n", var_name, value);
 	var = value;
 	setting = 1;
-	Tcl_Obj * obj = Tcl_NewIntObj(var);	
+	Tcl_Obj * obj = tcl_stubs.Tcl_NewIntObj(var);	
 	Tcl_IncrRefCount(obj);
-	if (Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
+	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
 		message_dialog("Internal tcl error - could not create variable %s", var_name);	
 	Tcl_DecrRefCount(obj);
 	setting = 0;
@@ -73,19 +73,19 @@ char * TCL_linked_vari::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 //	printf("Trace on %s called with flags %x\n", me->var_name, flags);
 	if (me->setting) return NULL;
 
-    Tcl_Obj * result = Tcl_GetObjResult(interp);
+    Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
 	
-    Tcl_Obj * value = Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
+    Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
     if (value != NULL) 
 	{
-		if (Tcl_GetIntFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
+		if (tcl_stubs.Tcl_GetIntFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
 		{
 			if (me->cb)
 				me->cb(me->var, me->ref, me);
 		} else 
 		{		
-			Tcl_SetObjResult(interp, result);
+			tcl_stubs.Tcl_SetObjResult(interp, result);
 //			Tcl_Obj * tmpPtr = Tcl_NewObj();
 //			Tcl_IncrRefCount(tmpPtr);
 //			Tcl_SetVar2Ex(me->interp, me->var_name, NULL, tmpPtr, TCL_GLOBAL_ONLY);
@@ -114,13 +114,13 @@ TCL_linked_vard::TCL_linked_vard(Tcl_Interp * iinterp, const char * tcl_name, TC
 	strcpy(var_name,tcl_name);
 	set(initial);
 	
-	if (Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
+	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
 		message_dialog("Internal error setting trace on %s.", var_name);	
 }
 
 TCL_linked_vard::~TCL_linked_vard()
 {
-	Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
+	tcl_stubs.Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
 	free(var_name);
 }
 
@@ -132,10 +132,10 @@ void	TCL_linked_vard::set(double value)
 //	Tcl_Obj * obj = Tcl_NewDoubleObj(var);	
 char buf[200];
 	sprintf(buf,"%.03lf", value);
-	Tcl_Obj * obj = Tcl_NewStringObj(buf,-1);
+	Tcl_Obj * obj = tcl_stubs.Tcl_NewStringObj(buf,-1);
 
 	Tcl_IncrRefCount(obj);
-	if (Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
+	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY) == NULL)
 		message_dialog("Internal tcl error - could not create variable %s", var_name);
 	Tcl_DecrRefCount(obj);
 	setting = 0;
@@ -152,21 +152,21 @@ char * TCL_linked_vard::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 //	printf("Trace on %s called with flags %x\n", me->var_name, flags);
 	if (me->setting) return NULL;
 	
-    Tcl_Obj * result = Tcl_GetObjResult(interp);
+    Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
 	
-    Tcl_Obj * value = Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
+    Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
     if (value != NULL) 
 	{
 		Tcl_IncrRefCount(value);
-		if (Tcl_GetDoubleFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
+		if (tcl_stubs.Tcl_GetDoubleFromObj(NULL/*me->interp*/, value, &me->var)== TCL_OK)
 		{
 			if (me->cb)
 				me->cb(me->var, me->ref, me);
 		} 
 		else 
 		{		
-			Tcl_SetObjResult(interp, result);
+			tcl_stubs.Tcl_SetObjResult(interp, result);
 			
 //			Tcl_Obj * tmpPtr = Tcl_NewObj();
 //			Tcl_IncrRefCount(tmpPtr);
@@ -195,13 +195,13 @@ TCL_linked_vars::TCL_linked_vars(Tcl_Interp * iinterp, const char * tcl_name, TC
 	strcpy(var_name,tcl_name);
 	set(initial);
 
-	if (Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
+	if (tcl_stubs.Tcl_TraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this)) != TCL_OK)
 		message_dialog("Internal error setting trace on %s.", var_name);	
 }
 
 TCL_linked_vars::~TCL_linked_vars()
 {
-	Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
+	tcl_stubs.Tcl_UntraceVar(interp, var_name, TCL_TRACE_WRITES, tcl_trace_cb, reinterpret_cast<ClientData>(this));
 	free(var_name);
 }
 
@@ -211,9 +211,9 @@ void	TCL_linked_vars::set(const char * value)
 	var = value;
 	if (var.empty()) var = string("none");
 	setting = 1;
-	Tcl_Obj * obj = var.empty() ? Tcl_NewObj() : Tcl_NewStringObj(var.c_str(), -1);	
+	Tcl_Obj * obj = var.empty() ? tcl_stubs.Tcl_NewObj() : tcl_stubs.Tcl_NewStringObj(var.c_str(), -1);	
 	Tcl_IncrRefCount(obj);
-	if (Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY)==NULL)
+	if (tcl_stubs.Tcl_SetVar2Ex(interp, var_name, NULL, obj, TCL_GLOBAL_ONLY)==NULL)
 		message_dialog("Internal tcl error - could not create variable %s", var_name);	
 	Tcl_DecrRefCount(obj);
 	setting = 0;
@@ -230,14 +230,14 @@ char * TCL_linked_vars::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 //	printf("Trace on %s called with flags %x\n", me->var_name, flags);
 	if (me->setting) return NULL;
 
-    Tcl_Obj * result = Tcl_GetObjResult(interp);
+    Tcl_Obj * result = tcl_stubs.Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
 	
-    Tcl_Obj * value = Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
+    Tcl_Obj * value = tcl_stubs.Tcl_GetVar2Ex(me->interp, me->var_name,NULL, TCL_GLOBAL_ONLY);
     if (value != NULL) 
 	{
 		int len;
-		const char * c = Tcl_GetStringFromObj(value, &len);
+		const char * c = tcl_stubs.Tcl_GetStringFromObj(value, &len);
 		if (c)
 		{
 			me->var = string(c,c+len);
@@ -252,7 +252,7 @@ char * TCL_linked_vars::tcl_trace_cb(ClientData clientData, Tcl_Interp *interp, 
 			}
 		} else 
 		{
-			Tcl_SetObjResult(interp, result);
+			tcl_stubs.Tcl_SetObjResult(interp, result);
 			message_dialog("Ben has not hit this case yet - trace call wtih no string conv in a string-linked var!\n");
 //			Tcl_ResetResult(interp);
 		}		

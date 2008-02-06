@@ -22,6 +22,7 @@
  */
 
 #include "bitmap_match.h"
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include <stdio.h>
 #include <string.h>

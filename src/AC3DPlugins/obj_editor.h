@@ -24,6 +24,7 @@
 #ifndef OBJ_EDITOR
 #define OBJ_EDITOR
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 
 void		OBJ_editor_init(void);

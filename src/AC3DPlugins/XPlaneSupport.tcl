@@ -465,6 +465,7 @@ proc xplane_light_sync_all {} {
 proc xplane_obj_sync { idx container } {
 	global xplane_anim_type$idx
 	global xplane_blend_enable$idx
+	global xplane_hard_surf$idx
 	global xplane_anim_keyframe_count$idx
 	global MAX_KEYFRAMES
 	pack forget $container.obj.none
@@ -510,6 +511,8 @@ proc xplane_obj_sync { idx container } {
 	
 	pack forget $container.obj.none.blend_level	
 	if { [set xplane_blend_enable$idx] == 0} { pack $container.obj.none.blend_level }
+	pack forget $container.obj.none.is_deck
+	if { [set xplane_hard_surf$idx] != "none"} { pack $container.obj.none.is_deck -after $container.obj.none.hard_surf_btn }
 }
 
 
@@ -549,6 +552,7 @@ proc xplane_inspector {} {
 			global xplane_blend_enable$idx
 			global xplane_blend_level$idx
 			global xplane_hard_surf$idx
+			global xplane_is_deck$idx
 
 			global xplane_light_type$idx
 			global xplane_light_red$idx
@@ -642,9 +646,11 @@ proc xplane_inspector {} {
 				menubutton $container.obj.none.hard_surf_btn -menu $container.obj.none.hard_surf_btn.menu -direction flush -textvariable xplane_hard_surf$idx -padx 30 -pady 5
 				menu $container.obj.none.hard_surf_btn.menu
 				foreach surf $xplane_hard_surface_options {
-					$container.obj.none.hard_surf_btn.menu add radiobutton -label $surf -variable xplane_hard_surf$idx
+					$container.obj.none.hard_surf_btn.menu add radiobutton -label $surf -variable xplane_hard_surf$idx -command "xplane_obj_sync_all"
 				}
-				pack $container.obj.none.hard_surf_label $container.obj.none.hard_surf_btn
+				checkbutton $container.obj.none.is_deck -text "Deck" -variable xplane_is_deck$idx
+				pack $container.obj.none.hard_surf_label $container.obj.none.hard_surf_btn 
+				pack $container.obj.none.is_deck
 				checkbutton $container.obj.none.use_materials -text "Use AC3D Materials" -variable xplane_use_materials$idx
 				pack $container.obj.none.use_materials
 				checkbutton $container.obj.none.blend_enable -text "Blending" -variable xplane_blend_enable$idx -command "xplane_obj_sync_all"
@@ -967,11 +973,12 @@ proc xplane_anim_window {} {
 
 		checkbutton .xp_anim.enable -text "Show Animation" -variable xplane_anim_enable		
 		button	.xp_anim.sync -text "Resync" -command "ac3d xplane_resync_anim"
-		grid .xp_anim.enable .xp_anim.sync -sticky nw
+		button  .xp_anim.sel_all -text "Select All Animation" -command "ac3d xplane_anim_select_all"
+		grid .xp_anim.enable .xp_anim.sync .xp_anim.sel_all -sticky nw
 
 #		frame .xp_anim.drefs
 		set ANIM_INNER [ ScrolledVertCanvas_hack .xp_anim.drefs 300 500 { 0 0 300 10000 } ]
-		grid .xp_anim.drefs -columnspan 2 -sticky news
+		grid .xp_anim.drefs -columnspan 3 -sticky news
 		 
 		grid rowconfigure .xp_anim 0 -weight 0 -pad 0
 		grid rowconfigure .xp_anim 1 -weight 100 -pad 0
@@ -1015,6 +1022,7 @@ set UI(menu_xplane) .mbar.xplane.menu
 if {$USE_PANEL_EDIT} {
   .mbar.xplane.menu add command -label "X-Plane Panel Properties..." -command "xplane_panel_dialog"
 }
+.mbar.xplane.menu add command -label "Select All Lights" -command "ac3d xplane_sel_lights"
 .mbar.xplane.menu add command -label "Calculate X-Plane LOD..." -command "ac3d xplane_calc_lod"
 .mbar.xplane.menu add command -label "Make LOD Group" -command "ac3d xplane_make_named_group LOD"
 .mbar.xplane.menu add command -label "Calculate Batches For a Selection..." -command "ac3d xplane_optimize_selection 0"

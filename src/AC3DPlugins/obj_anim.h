@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include "TclStubs.h"
 #include <ac_plugin.h>
 using std::string;
 using std::vector;

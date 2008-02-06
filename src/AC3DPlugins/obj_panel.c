@@ -23,6 +23,7 @@
 
 #include "obj_panel.h"
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include "ac_utils.h"
 #include "tcl_utils.h"

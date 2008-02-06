@@ -49,6 +49,7 @@ attributes.
 
 */
 
+#include "TclStubs.h"
 #include "ac_plugin.h"
 #include "undoable.h"
 
@@ -229,6 +230,7 @@ ACObject *	do_obj8_load(char *filename)
 
     	float	no_blend = -1.0;
     	string	hard_poly;
+		int		deck = 0;
     	float	offset = 0;
     	
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
@@ -245,6 +247,7 @@ ACObject *	do_obj8_load(char *filename)
 					OBJ_set_poly_os(stuff_obj, offset);
 					OBJ_set_blend(stuff_obj, no_blend);
 					OBJ_set_hard(stuff_obj, hard_poly.c_str());
+					OBJ_set_deck(stuff_obj,deck);
 					sprintf(strbuf, "POLY_OS=%d HARD=%s BLEND=%s",
 						(int) offset, hard_poly.c_str(), no_blend >= 0.0 ? "no":"yes");
 					object_set_name(stuff_obj, strbuf);
@@ -336,12 +339,21 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case attr_Hard:
 				if (hard_poly != cmd->name) stuff_obj = NULL;
+				if(deck == 1) stuff_obj = NULL;
 				hard_poly = cmd->name;
+				deck = 0;
+				break;
+			case attr_Hard_Deck:
+				if (hard_poly != cmd->name) stuff_obj = NULL;
+				if(deck == 0) stuff_obj = NULL;
+				hard_poly = cmd->name;
+				deck = 1;
 				break;
 			case attr_No_Hard:
 				if (!hard_poly.empty()) stuff_obj = NULL;
 				hard_poly.clear();
-				break;
+				deck = 0;
+				break;				
 			case attr_Offset:
 				if (offset != cmd->params[0]) stuff_obj = NULL;
 				offset = cmd->params[0];

@@ -24,6 +24,7 @@
 #ifndef DSF_EXPORT_H
 #define DSF_EXPORT_H
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 
 

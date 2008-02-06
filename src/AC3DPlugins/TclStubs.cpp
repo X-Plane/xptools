@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2008, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,14 +21,32 @@
  *
  */
 
-#ifndef UV_MAPPER_H
-#define UV_MAPPER_H
-
 #include "TclStubs.h"
-#include <ac_plugin.h>
-
-void do_uv_map(void);
-void do_uv_copy(void);
-void do_uv_paste(void);
-
+#if APL
+#include <dlfcn.h>
 #endif
+
+TCL_stubs tcl_stubs = { 0 };
+
+const char * TCL_init_stubs(void)
+{
+	int lost = 0;
+#if IBM
+	HMODULE	hmod = GetModuleHandle("tcl85");	
+	if(hmod == NULL) hmod = GetModuleHandle("tcl84");	
+	if(hmod == NULL) return "Could not locate tcl84 or tcl85";
+#endif	
+#if APL
+#define TCL_PROC(ret,name,args) \
+	tcl_stubs.name = (ret (*) args) dlsym(RTLD_DEFAULT,#name); \
+	if(tcl_stubs.name == NULL) ++lost;
+#else
+#define TCL_PROC(ret,name,args) \
+	tcl_stubs.name = (ret (*) args) GetProcAddress(hmod,#name); \
+	if(tcl_stubs.name == NULL) ++lost;
+#endif	
+	TCL_PROCS
+#undef TCL_PROC
+	if (lost != 0) return "Could not locate all TCL functions.";
+	return NULL;
+}

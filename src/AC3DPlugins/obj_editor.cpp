@@ -89,6 +89,7 @@ static ACObject * get_sel_single_light(int n)
 
 #define	SIMPLE_PROPERTY_MAPPINGS_OBJ	\
 	SIMPLE_PROPERTY_STR(hard_surf,get_sel_single_obj,OBJ_set_hard,OBJ_get_hard,"","none") \
+	SIMPLE_PROPERTY_INT(is_deck,get_sel_single_obj,OBJ_set_deck,OBJ_get_deck) \
 	SIMPLE_PROPERTY_FLT(poly_os,get_sel_single_obj,OBJ_set_poly_os,OBJ_get_poly_os) \
 	SIMPLE_PROPERTY_STR(anim_dataref,get_sel_single_obj,OBJ_set_anim_dataref,OBJ_get_anim_dataref,"","") \
 	SIMPLE_PROPERTY_INT(anim_keyframe_count, get_sel_single_obj,OBJ_set_anim_keyframe_count,OBJ_get_anim_keyframe_count) \

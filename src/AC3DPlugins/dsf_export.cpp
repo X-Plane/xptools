@@ -28,6 +28,7 @@
 #ifdef Boolean
 #undef Boolean
 #endif
+#include "TclStubs.h"
 #include <ac_plugin.h>
 #include "dsf_export.h"
 

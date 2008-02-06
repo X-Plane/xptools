@@ -11,6 +11,16 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
+Version 3.1b2
+	- Support for ATTR_hard_deck
+	- Bug fix in importing hard surfaces!
+	- Compatibility with AC3D 6.3
+Version 3.1b1
+	- Animation is faster
+	- Key Frames
+	- Sub-Panel Interface
+	- Select all animation button
+	- Select all lights menu command
 Version 3.0.2
 	- Update old object updates lights
 	- Bulk update command
@@ -174,6 +184,15 @@ problem.
 
 WARNING: for OBJ7 objects, you can only place the panel texture on quads.  AC3D
 will warn you if you try to export an OBJ7 object that violates this rule.
+
+In X-Plane 9 you can use up to 4 "sub-panel" regions.  Pick "X-Plane Panel
+Properties..." and enable the "Enable sub-panels" check box.  You can then
+pick the number of sub-areas of the 2-d panel that you will use in the model
+and their coordinates.  (The position can be anything but the dimensions of
+the sub-panels must be powers of 2.)  Then pick "Make subpanel..." and select
+a reference bitmap.  The plugin will create up to four new textures in the 
+textures sub-menu (called panel0.sub, panel1.sub, etc.) that show what those
+sub-regions contain.  You can then use the panelX.sub textures in your model.
 
 -------------------------------------------------------------------------------
 ONE-VS-TWO-SIDED GEOMETRY AND FLAT-VS-SMOOTH SHADING
@@ -385,20 +404,21 @@ Low Value/High Value
 	For a show/hide animation, this is the range that the dataref must
 	be in to cause the object to appear or disappear.
 
-Value 0/Value 1
+Value 0..Value 1..Value N
 
 	These are the values that the dataref must take on to map to the
-	beginning and end of the animation.
+	various key frames of the animation.
 	
-Angle 0/Angle 1
+Angle 0..Angle 1..Angle N
 
-	For rotations, this defines the angles to rotate for each dataref.
+	For rotations, this defines the angles to rotate for each dataref,
+	mapped to each value.
 	
 Anchor
 
 	For translations, this defines which point in the translation 
-	(0 or 1) represents no movement of your model.  The default is
-	0.
+	(0, 1, 2, etc.) represents no movement of your model.  The default 
+	is 0.
 	
 Dataref
 
@@ -408,6 +428,11 @@ Dataref
 	
 You can click the "go" button next to the value 0 and value 1 fields to change
 the current preview of your model to this time.
+
+The "add" and "delete" buttons can be used to add keyframes.  Objects start 
+with two key frames, animating linearly between them.  By adding more key
+frames you can create more complex relationships between the dataref value and
+the animations.
 
 Use the "Animation time..." command to show the animation time controller 
 window.  This window has the following options:

@@ -40,6 +40,7 @@ namespace cgd {
 #include "CompGeomDefs3.h"
 }
 
+#include "TclStubs.h"
 #include <ac_plugin.h>
 
 #include "ac_utils.h"

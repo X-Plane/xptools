@@ -231,6 +231,7 @@ const char *	OBJ_get_name(ACObject * obj, char * buf)
 
 
 STR_PROP(hard,hard_surf)
+INT_PROP(deck,deck)
 FLT_PROP(blend,blend)
 FLT_PROP(poly_os,poly_os)
 INT_PROP(use_materials,use_materials)

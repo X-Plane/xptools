@@ -28,7 +28,7 @@
 #include <vector>
 using std::string;
 using std::vector;
-#include <tcl/tcl.h>
+#include "TclStubs.h"
 
 class	TCL_linked_vari;
 class	TCL_linked_vard;
