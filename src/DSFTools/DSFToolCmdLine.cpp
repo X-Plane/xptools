@@ -45,9 +45,9 @@ int main(int argc, char * argv[])
 	
 	if(!strcmp(argv[1],"--auto_config"))
 	{
-		printf("CMD .env .dsf %s -env2overlay \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .txt .dsf %s -text2dsf \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .dsf .txt %s -dsf2text \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .env .dsf \"%s\" -env2overlay \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .txt .dsf \"%s\" -text2dsf \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dsf .txt \"%s\" -dsf2text \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		return 0;
 	}
 	
