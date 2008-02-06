@@ -82,8 +82,9 @@ void	XObjBuilder::SetAttribute(int attr)
 	case attr_Tex_Normal:	cockpit = -2;	break;
 	case attr_No_Blend:		no_blend = 0.5;	break;
 	case attr_Blend:		no_blend = -1.0;break;
-	case attr_Hard:			hard = "object";break;
-	case attr_No_Hard:		hard = "";		break;
+	case attr_Hard:			hard = "object";deck=0;break;
+	case attr_Hard_Deck:	hard = "object";deck=1;break;
+	case attr_No_Hard:		hard = "";deck=0;break;
 	case attr_Reset: 
 		diffuse[0] = 1.0; diffuse[1] = 1.0; diffuse[2] = 1.0;
 		emission[0] = 0.0; emission[1] = 0.0; emission[2] = 0.0;
@@ -107,6 +108,12 @@ void XObjBuilder::SetAttribute1Named(int attr, float v, const char * s)
 	if (attr == attr_Hard)
 	{
 		hard = s ? s : "";
+		deck=0;
+	}
+	else if (attr == attr_Hard_Deck)
+	{
+		hard = s ? s : "";
+		deck=1;
 	}
 	else if (attr == attr_Layer_Group)
 	{
@@ -400,6 +407,7 @@ void	XObjBuilder::AssureLOD(void)
 void	XObjBuilder::SetDefaultState(void)
 {
 	o_hard = hard = "";
+	o_deck = deck = 0;
 	o_flat = flat = 0;
 	o_two_sided = two_sided = 0;
 	o_no_blend = no_blend = -1.0;
@@ -422,13 +430,14 @@ void XObjBuilder::SyncAttrs(void)
 		o_flat = flat;
 	}
 	
-	if (hard != o_hard)
+	if (hard != o_hard || deck != o_deck)
 	{
 		lod->cmds.push_back(XObjCmd8()); 
-		lod->cmds.back().cmd = hard.empty() ? attr_No_Hard : attr_Hard;
+		lod->cmds.back().cmd = hard.empty() ? attr_No_Hard : (deck ? attr_Hard_Deck : attr_Hard);
 		if (hard != "object" && !hard.empty())
 			lod->cmds.back().name = hard;
 		o_hard = hard;
+		o_deck = deck;
 	}
 	
 	if (two_sided != o_two_sided)

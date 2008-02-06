@@ -775,8 +775,16 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			cmd.cmd = attr_Hard;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
-			outObj.lods.back().cmds.push_back(cmd);
 			if (cmd.name.empty()) cmd.name = "object";
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+		// ATTR_hard_deck [<type>]
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_hard_deck", xtrue))
+		{
+			cmd.cmd = attr_Hard_Deck;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);			
+			if (cmd.name.empty()) cmd.name = "object";
+			outObj.lods.back().cmds.push_back(cmd);
 		}
 		// ATTR_no_blend <level>
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_no_blend", xtrue))
@@ -1065,6 +1073,12 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					fprintf(fi,"ATTR_hard" CRLF);
 				else
 					fprintf(fi,"ATTR_hard %s" CRLF, cmd->name.c_str());
+				break;
+			case attr_Hard_Deck:
+				if (cmd->name == "object")
+					fprintf(fi,"ATTR_hard_deck" CRLF);
+				else
+					fprintf(fi,"ATTR_hard_deck %s" CRLF, cmd->name.c_str());
 				break;
 			case attr_No_Blend:
 				if (cmd->params[0] == 0.5)

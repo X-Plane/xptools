@@ -96,6 +96,7 @@ enum {
 	attr_No_Blend,
 	attr_Blend,
 	attr_Hard,
+	attr_Hard_Deck,
 	attr_No_Hard,
 	
 	anim_Begin,

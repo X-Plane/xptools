@@ -90,6 +90,7 @@ struct	XObjLOD8;
  	XObjLOD8 *	lod;
 
  	string		hard;				string	o_hard;
+	int			deck;				int		o_deck;
  	int			flat;				int		o_flat;
  	int			two_sided;			int		o_two_sided;
  	float		no_blend;			float	o_no_blend;

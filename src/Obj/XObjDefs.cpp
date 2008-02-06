@@ -65,6 +65,7 @@ cmd_info	gCmds[] = {
 {	attr_Blend,			type_Attr,		"ATTR_blend",		0,0,1},
 {	attr_No_Hard,		type_Attr,		"ATTR_no_hard",		0,0,1},
 {	attr_Hard,			type_Attr,		"ATTR_hard",		0,0,1},
+{	attr_Hard_Deck,		type_Attr,		"ATTR_hard_deck",	0,0,1},
 {	anim_Begin,			type_Anim,		"ANIM_begin",		0,0,1},
 {	anim_End,			type_Anim,		"ANIM_end",			0,0,1},
 {	anim_Rotate,		type_Anim,		"ANIM_rotate",		7,0,1},
