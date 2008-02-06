@@ -60,10 +60,9 @@ pascal void event_proc(NavEventCallbackMessage callBackSelector, NavCBRecPtr cal
 {
 }
 
-const char * GetApplicationPath(void)
+const char * GetApplicationPath(char * pathBuf, int pathLen)
 {
-	static	char		pathBuf[1024];
-	ProcessInfoRec		pir;
+/*	ProcessInfoRec		pir;
 	FSSpec				spec;
 	Str255				pStr;
 	ProcessSerialNumber	psn = { 0, kCurrentProcess };
@@ -74,7 +73,13 @@ const char * GetApplicationPath(void)
 	OSErr err = FSSpecToPathName(&spec, pathBuf, sizeof(pathBuf));
 	if (err != noErr)
 		return NULL;
-	return pathBuf;
+*/
+	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());		
+	CFStringRef	main_path = CFURLCopyFileSystemPath(main_url, kCFURLPOSIXPathStyle);
+	CFStringGetCString(main_path,pathBuf,pathLen,kCFStringEncodingMacRoman);
+	CFRelease(main_url);
+	CFRelease(main_path);
+	return pathBuf;	
 }
 
 int		GetFilePathFromUser(

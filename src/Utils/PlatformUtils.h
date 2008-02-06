@@ -63,7 +63,7 @@ void	EndianFlipLong(long * ioLong);
  * This routine returns a fully qualified path to the application.
  *
  */
-const char * GetApplicationPath(void);
+const char * GetApplicationPath(char * pathBuf, int pathLen);
 
 /*
  * GetFilePathFromUser takes a prompting C-string and fills in the buffer with a path
