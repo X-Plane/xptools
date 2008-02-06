@@ -35,9 +35,11 @@
 #include "XGrinderShell.h"
 #include "XGrinderApp.h"
 #include "MemFileUtils.h"
-
+#include "PlatformUtils.h"
 #include <string>
 #include <vector>
+#include <sys/stat.h>
+
 
 using std::string;
 using std::vector;
@@ -68,6 +70,8 @@ static vector<conversion_info*>			conversions;
 static xmenu							conversion_menu;
 static map<string,conversion_info *>	selected_conversions;
 
+static char * g_me = NULL;
+
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref);
 static void	sync_menu_checks();
 static void sub_str(string& io_str, const string& key, const string& rep);
@@ -96,8 +100,17 @@ static void	sync_menu_checks()
 
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref)
 {
+	if(isDir) return true;
+	if(strstr(fileName,".icns")) return true;
+	if(g_me && strcmp(fileName, g_me)==0) return true;
+	if(fileName[0] == '.') return true;
 	char pipe_buf[1024];
-	sprintf(pipe_buf,"%s/%s --auto_config", ref,fileName);
+	sprintf(pipe_buf,"%s/%s",ref,fileName);
+	struct stat ss;
+	if(stat(pipe_buf,&ss) != 0) return true;
+	if((ss.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) return true;
+	if((ss.st_mode & S_IFMT) != S_IFREG) return true;
+	sprintf(pipe_buf,"\"%s/%s\" --auto_config", ref,fileName);
 	FILE * fi = popen(pipe_buf, "r");		
 	if (fi)
 	{
@@ -209,11 +222,15 @@ void	grind_file(const char * inFileName)
 			for(vector<flag_menu_info>::iterator m = flag_menus.begin(); m != flag_menus.end(); ++m)
 			for(vector<flag_item_info>::iterator i = m->items.begin(); i != m->items.end(); ++i)
 			if(!i->item_name.empty())
-			if(i->enabled)
 			{
-				if (sub_flags.count(i->token) > 0)
-					sub_flags[i->token] += " ";					
-				sub_flags[i->token] += i->flag;
+				if(i->enabled)
+				{
+					if (sub_flags.count(i->token) > 0)
+						sub_flags[i->token] += " ";					
+					sub_flags[i->token] += i->flag;
+				} else if (!i->radio) {
+					sub_flags[i->token] = "";
+				}
 			}
 			string cmd_line = c->cmd_string;
 			sub_str(cmd_line,"INFILE", fname);
@@ -264,7 +281,7 @@ int	XGrinderMenuPick(xmenu menu, int item)
 
 void	XGrindInit(string& t)
 {
-	char base[2048];
+/*	char base[2048];
 	char resp[2048];
 	CFURLRef	res_url = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());	
 	CFURLRef	main_url = CFBundleCopyBundleURL(CFBundleGetMainBundle());		
@@ -283,6 +300,21 @@ void	XGrindInit(string& t)
 //	file_cb("DSFTool");
 //	file_cb("DDSTool");
 //	file_cb("ObjConverter");
+*/
+	char	base[2048];
+	GetApplicationPath(base,sizeof(base));
+	
+	char * last_sep = base;
+	char * p = base;
+	while(*p)
+	{
+		if(*p == '/' || *p == '\\') last_sep = p;
+		++p;
+	}
+	*last_sep++=0;
+	g_me=last_sep;
+	
+	MF_GetDirectoryBulk(base, file_cb, base);
 	
 	// sort conversions
 	

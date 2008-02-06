@@ -28,7 +28,7 @@ int main(int argc, const char * argv[])
 
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
-		printf("CMD .png .dds %s DDS_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .dds \"%s\" DDS_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
 		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");

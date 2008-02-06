@@ -199,11 +199,11 @@ int main(int argc, const char * argv[])
 {
 	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
 	{
-		printf("CMD .obj .3ds %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .obj .dxf %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .obj .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .dxf .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .3ds .obj %s CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .3ds \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .dxf \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");
 		printf("RADIO CO_UNITS 0 --inches Inches\n");
 		printf("RADIO CO_UNITS 0 --feet Feet\n");
