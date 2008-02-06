@@ -23,6 +23,7 @@
 #ifndef DEMTABLES_H
 #define DEMTABLES_H
 
+#include "CompGeomDefs2.h"
 #include "ConfigSystem.h"
 #include "ProgressUtils.h"
 #include "AssertUtils.h"
@@ -110,6 +111,7 @@ struct	NaturalTerrainInfo_t {
 //	int				comp_alpha_invert;
 	int				proj_angle;	
 	string			border_tex;
+	int				custom_ter;
 	
 	// Forests!
 	int				forest_type;
@@ -235,6 +237,21 @@ void	LoadDEMTables(void);
 void	CheckDEMRuleCoverage(ProgressFunc func);
 void	GetNaturalTerrainColor(int terrain, float rgb[3]);
 
+/************************************************************************
+ * CUSTOM TEXTURES
+ ************************************************************************/
+enum {
+	tex_not_custom = 0,
+	tex_custom = 1,
+	tex_custom_water = 2
+};
+
+struct tex_proj_info {
+	Point2	corners[4];
+	Point2	ST[4];
+};
+typedef map<int,tex_proj_info>		TexProjTable;
+extern TexProjTable					gTexProj;
 
 
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)

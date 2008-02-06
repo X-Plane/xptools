@@ -179,6 +179,57 @@ float GetParamConst(const GISFace * face, int e)
 
 #define	INLAND_BLEND_DIST 5.0
 
+inline bool IsCustomOverWater(int n)
+{
+	if (n == terrain_Water)	return false;
+	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_water;
+}
+inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
+{	
+	double v1_dx = p2.x - p1.x;
+	double v1_dy = p2.y - p1.y;
+	double v2_dx = p3.x - p2.x;
+	double v2_dy = p3.y - p2.y;
+	return (v1_dx * v2_dy - v1_dy * v2_dx) * 0.5;
+}
+
+static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_info * info)
+{
+	Point2 p(lon, lat);
+	double total1 = tri_area(info->corners[0],info->corners[1],info->corners[2]);
+	double total2 = tri_area(info->corners[0],info->corners[2],info->corners[3]);
+	
+	double a1_0 = tri_area(info->corners[1],info->corners[2],p);
+	double a1_1 = tri_area(info->corners[2],info->corners[0],p);
+	double a1_2 = tri_area(info->corners[0],info->corners[1],p);
+
+	double a2_0 = tri_area(info->corners[2],info->corners[3],p);
+	double a2_2 = tri_area(info->corners[3],info->corners[0],p);
+	double a2_3 = tri_area(info->corners[0],info->corners[2],p);
+	
+	double most_neg_1 = min(min(a1_0,a1_1),a1_2);
+	double most_neg_2 = min(min(a2_0,a2_2),a2_3);
+	
+	if (most_neg_1 < most_neg_2)
+	{
+		// use 2
+		double r0 = a2_0 / total2;
+		double r2 = a2_2 / total2;
+		double r3 = a2_3 / total2;
+		s = info->ST[0].x * r0 + info->ST[2].x * r2 + info->ST[3].x * r3;
+		t = info->ST[0].y * r0 + info->ST[2].y * r2 + info->ST[3].y * r3;
+	}
+	else
+	{
+		// use 2
+		double r0 = a1_0 / total1;
+		double r1 = a1_1 / total1;
+		double r2 = a1_2 / total1;
+		s = info->ST[0].x * r0 + info->ST[1].x * r1 + info->ST[2].x * r2;
+		t = info->ST[0].y * r0 + info->ST[1].y * r1 + info->ST[2].y * r2;
+	}		
+}
+
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
 {
 	double lon, lat;
@@ -498,7 +549,10 @@ string		get_terrain_name(int composite)
 		return FetchTokenString(composite);
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
-		return string("lib/g8/") + FetchTokenString(composite) + ".ter";
+		if(gNaturalTerrainTable[gNaturalTerrainIndex[composite]].custom_ter != tex_not_custom)
+			return FetchTokenString(composite);
+		else
+			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
 	}
 
 //	DebugAssert(!"bad terrain.");
@@ -603,7 +657,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int>::iterator 		obdef;
 		map<int, int, ObjPrio>::iterator obdef_prio;
 		set<int>::iterator				border_lu;
-		bool							is_water;
+		bool							is_water, is_overwater;
 		list<CDT::Face_handle>::iterator nf;
 
 		Pmwx::Face_iterator						pf;
@@ -748,6 +802,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
+		if(IsCustomOverWater(fi->info().terrain))
+		{
+			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
+			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_Water);
+		}
+
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
 		{
 			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
@@ -820,6 +880,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT LOW RES ORTHOPHOTO PATCHES
 		 ***************************************************************************************************************************************/	
 
+		is_overwater = IsCustomOverWater(lu_ranked->first);
 		is_water = lu_ranked->first == terrain_Water;
 #if !NO_ORTHO		
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
@@ -928,7 +989,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first)
+				if (f->info().terrain == lu_ranked->first || (IsCustomOverWater(f->info().terrain) && lu_ranked->first == terrain_Water))
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -938,7 +999,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			}
 			fan_builder.CalcFans();
 			TriFan_t * fan;
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, dsf_Flag_Physical, is_water ? 6 : 5, writer1);			
+			
+			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
+			
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 6 : (pinfo ? 7 : 5), writer1);			
 			while ((fan = fan_builder.GetNextFan()) != NULL)
 			{
 				++total_tri_fans;
@@ -951,6 +1015,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				coords8[4] =-fan->center->info().normal[1];						
 				if (is_water)
 					coords8[5] = GetWaterBlend(fan->center, waterType);
+				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
 				DebugAssert(coords8[3] >= -1.0);
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
@@ -964,6 +1029,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				coords8[4] =-avert->info().normal[1];						
 				if (is_water)
 					coords8[5] = GetWaterBlend(avert, waterType);
+				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);					
 				DebugAssert(coords8[3] >= -1.0);
 				DebugAssert(coords8[3] <=  1.0);
 				DebugAssert(coords8[4] >= -1.0);
@@ -979,6 +1045,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[4] =-avert->info().normal[1];						
 					if (is_water)
 						coords8[5] = GetWaterBlend(avert, waterType);
+					else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);						
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
@@ -1013,6 +1080,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						coords8[4] =-f->vertex(v)->info().normal[1];						
 						if (is_water)
 							coords8[5] = GetWaterBlend(f->vertex(v), waterType);
+						else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
 						DebugAssert(coords8[3] >= -1.0);
 						DebugAssert(coords8[3] <=  1.0);
 						DebugAssert(coords8[4] >= -1.0);

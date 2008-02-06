@@ -42,6 +42,9 @@ BeachIndex					gBeachIndex;
 
 LandUseTransTable			gLandUseTransTable;
 
+TexProjTable					gTexProj;
+
+
 static	void	ValidateNaturalTerrain(void);
 static map<int,int>		sForests;
 
@@ -187,6 +190,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	info.urban_square = 0;
 	info.map_rgb[0] = info.map_rgb[1] = info.map_rgb[2] = 0.5;
 	info.temp_rng_min = info.temp_rng_max = 0.0;
+	info.custom_ter = tex_not_custom;
 	
 	if (tokens[0] == "STERRAIN")
 	{
