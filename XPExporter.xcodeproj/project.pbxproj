@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D60E91290D5A448C0065D79F /* TclStubs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60E91270D5A448C0065D79F /* TclStubs.cpp */; };
+		D60E912A0D5A448C0065D79F /* TclStubs.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D60E91280D5A448C0065D79F /* TclStubs.h */; };
 		D622A9960AEA91C700035F64 /* prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F0AEA70A4AD19C00E9C6D4 /* prefs.cpp */; };
 		D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D648322A0D01C9B8003B9824 /* FileUtils.cpp */; };
 		D648322D0D01C9B8003B9824 /* FileUtils.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D648322B0D01C9B8003B9824 /* FileUtils.h */; };
@@ -96,12 +98,15 @@
 				D6F2F8130BC586080051E526 /* md5.h in CopyFiles */,
 				D6FF83230C2DBC1900F22A73 /* obj_panel.h in CopyFiles */,
 				D648322D0D01C9B8003B9824 /* FileUtils.h in CopyFiles */,
+				D60E912A0D5A448C0065D79F /* TclStubs.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D60E91270D5A448C0065D79F /* TclStubs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = TclStubs.cpp; sourceTree = "<group>"; };
+		D60E91280D5A448C0065D79F /* TclStubs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TclStubs.h; sourceTree = "<group>"; };
 		D648322A0D01C9B8003B9824 /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
 		D648322B0D01C9B8003B9824 /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
 		D6726CD50AEE476700E2668E /* obj_model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = obj_model.h; sourceTree = "<group>"; };
@@ -207,6 +212,8 @@
 		D6DEA849098E96A20061BE4C /* AC3DPlugins */ = {
 			isa = PBXGroup;
 			children = (
+				D60E91270D5A448C0065D79F /* TclStubs.cpp */,
+				D60E91280D5A448C0065D79F /* TclStubs.h */,
 				D6FF83200C2DBC1900F22A73 /* obj_panel.c */,
 				D6FF83210C2DBC1900F22A73 /* obj_panel.h */,
 				D6F2F7C50BC5818E0051E526 /* ac3d_prefix.h */,
@@ -379,6 +386,7 @@
 				D6F2F8120BC586080051E526 /* md5.c in Sources */,
 				D6FF83220C2DBC1900F22A73 /* obj_panel.c in Sources */,
 				D648322C0D01C9B8003B9824 /* FileUtils.cpp in Sources */,
+				D60E91290D5A448C0065D79F /* TclStubs.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
