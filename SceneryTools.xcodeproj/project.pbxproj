@@ -13,6 +13,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				D60734330D197A2300E08F61 /* PBXTargetDependency */,
 				D61C26EF0B6155A10092E098 /* PBXTargetDependency */,
 				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
 				D61C26EB0B61559C0092E098 /* PBXTargetDependency */,
@@ -29,6 +30,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DEB0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -52,6 +54,78 @@
 		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
 		D60617F10C14D18C007BA5C9 /* gradient.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EF0C14D18C007BA5C9 /* gradient.png */; };
 		D6061A1C0C150845007BA5C9 /* header.png in Resources */ = {isa = PBXBuildFile; fileRef = D6061A1B0C150844007BA5C9 /* header.png */; };
+		D60734150D197A1100E08F61 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
+		D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
+		D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
+		D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
+		D60734190D197A1100E08F61 /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
+		D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
+		D607341B0D197A1100E08F61 /* Persistence.cp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cp */; };
+		D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
+		D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
+		D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
+		D607341F0D197A1100E08F61 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37880AB22C85003949C5 /* md5.c */; };
+		D60734200D197A1100E08F61 /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
+		D60734210D197A1100E08F61 /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
+		D60734220D197A1100E08F61 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
+		D60734230D197A1100E08F61 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D60734240D197A1100E08F61 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D60734260D197A1100E08F61 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		D60734270D197A1100E08F61 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
+		D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60734510D197B1100E08F61 /* MeshTool.cpp */; };
+		D607346F0D197B9800E08F61 /* GISTool_Globals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38880AB22C85003949C5 /* GISTool_Globals.cpp */; };
+		D60734700D197BA200E08F61 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
+		D607347B0D197BC000E08F61 /* assertions.C in Sources */ = {isa = PBXBuildFile; fileRef = D656B3630B518D69003FF84F /* assertions.C */; };
+		D60734800D197BD700E08F61 /* AptIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38330AB22C85003949C5 /* AptIO.cpp */; };
+		D60734810D197BD800E08F61 /* Beaches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38350AB22C85003949C5 /* Beaches.cpp */; };
+		D60734830D197BDE00E08F61 /* ConfigSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */; };
+		D60734840D197BE000E08F61 /* DEMAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */; };
+		D60734850D197BE100E08F61 /* DEMDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38400AB22C85003949C5 /* DEMDefs.cpp */; };
+		D60734860D197BE200E08F61 /* DEMIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38420AB22C85003949C5 /* DEMIO.cpp */; };
+		D60734870D197BE300E08F61 /* DEMTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38440AB22C85003949C5 /* DEMTables.cpp */; };
+		D60734880D197BE400E08F61 /* DEMToVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38460AB22C85003949C5 /* DEMToVector.cpp */; };
+		D60734890D197BE600E08F61 /* DSFBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38480AB22C85003949C5 /* DSFBuilder.cpp */; };
+		D607348A0D197BEC00E08F61 /* EnumSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384A0AB22C85003949C5 /* EnumSystem.cpp */; };
+		D607348B0D197BEF00E08F61 /* EuroRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384C0AB22C85003949C5 /* EuroRoads.cpp */; };
+		D607348C0D197BF300E08F61 /* GreedyMesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38500AB22C85003949C5 /* GreedyMesh.cpp */; };
+		D607348E0D197C0400E08F61 /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
+		D607348F0D197C0600E08F61 /* MapDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38570AB22C85003949C5 /* MapDefs.cpp */; };
+		D60734900D197C0800E08F61 /* MapIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38590AB22C85003949C5 /* MapIO.cpp */; };
+		D60734910D197C0800E08F61 /* MeshAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC385B0AB22C85003949C5 /* MeshAlgs.cpp */; };
+		D60734920D197C0A00E08F61 /* MeshDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC385E0AB22C85003949C5 /* MeshDefs.cpp */; };
+		D60734930D197C0A00E08F61 /* MeshIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38600AB22C85003949C5 /* MeshIO.cpp */; };
+		D60734940D197C0E00E08F61 /* NetPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38630AB22C85003949C5 /* NetPlacement.cpp */; };
+		D60734950D197C1200E08F61 /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
+		D60734960D197C1300E08F61 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
+		D60734970D197C1500E08F61 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
+		D60734980D197C1600E08F61 /* SimpleIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */; };
+		D60734990D197C1900E08F61 /* TriFan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38710AB22C85003949C5 /* TriFan.cpp */; };
+		D607349A0D197C1F00E08F61 /* XESIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387A0AB22C85003949C5 /* XESIO.cpp */; };
+		D60734B40D197C8900E08F61 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
+		D60734B50D197C8E00E08F61 /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
+		D60734BB0D197C9900E08F61 /* GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377E0AB22C85003949C5 /* GISUtils.cpp */; };
+		D60734BC0D197CA300E08F61 /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
+		D60734BD0D197CA500E08F61 /* ProgressUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37990AB22C85003949C5 /* ProgressUtils.cpp */; };
+		D60734C20D197CC000E08F61 /* NetTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38650AB22C85003949C5 /* NetTables.cpp */; };
+		D60734C80D197CD100E08F61 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
+		D60734C90D197CD800E08F61 /* alpha.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5787E0C7E33B200FCB4C1 /* alpha.cpp */; };
+		D60734CA0D197CD900E08F61 /* colourblock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578830C7E33B200FCB4C1 /* colourblock.cpp */; };
+		D60734CB0D197CDA00E08F61 /* clusterfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578810C7E33B200FCB4C1 /* clusterfit.cpp */; };
+		D60734CC0D197CDB00E08F61 /* colourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578850C7E33B200FCB4C1 /* colourfit.cpp */; };
+		D60734CD0D197CDB00E08F61 /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
+		D60734CE0D197CDC00E08F61 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
+		D60734CF0D197CDC00E08F61 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
+		D60734D00D197CDD00E08F61 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
+		D60734D10D197CDE00E08F61 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
+		D60734E00D197D1300E08F61 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
+		D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
+		D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
+		D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
+		D60734EE0D197D3300E08F61 /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
+		D60734F30D197D4700E08F61 /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
+		D60734F40D197D4800E08F61 /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
+		D60734F50D197D4900E08F61 /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
+		D607357C0D19832500E08F61 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
 		D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC850C0385AA00992876 /* scroll_btn_h.png */; };
 		D607AC8A0C0385AA00992876 /* scroll_btn_v.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC860C0385AA00992876 /* scroll_btn_v.png */; };
 		D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC870C0385AA00992876 /* scrollbar_h.png */; };
@@ -357,9 +431,6 @@
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D65E4C390B654908004D7887 /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
-		D66FD8830C933D5F004AD565 /* DSFTool in Resources */ = {isa = PBXBuildFile; fileRef = D67EF84B0B5E5C8700D9190C /* DSFTool */; };
-		D66FD8840C933D60004AD565 /* ObjConverter in Resources */ = {isa = PBXBuildFile; fileRef = D67EF9890B6135F400D9190C /* ObjConverter */; };
-		D66FD8850C933D60004AD565 /* DDSTool in Resources */ = {isa = PBXBuildFile; fileRef = D6C579D60C7E3C7B00FCB4C1 /* DDSTool */; };
 		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
 		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
 		D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083020C1A4DBB00F33E06 /* earth_21.jpg */; };
@@ -768,6 +839,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D60734100D197A1100E08F61;
+			remoteInfo = MeshTool;
+		};
+		D60734340D197A2700E08F61 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D60734100D197A1100E08F61;
+			remoteInfo = MeshTool;
+		};
 		D61C26E80B61559A0092E098 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -802,27 +887,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
-		};
-		D66FD87B0C933D42004AD565 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
-			remoteInfo = DDSTool;
-		};
-		D66FD87D0C933D45004AD565 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF96F0B6135F400D9190C;
-			remoteInfo = ObjConverter;
-		};
-		D66FD88D0C933D8A004AD565 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D67EF84A0B5E5C8700D9190C;
-			remoteInfo = DSFTool;
 		};
 		D6C68DDB0BEFB3A400C9F880 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -891,7 +955,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
+			remoteGlobalIDString = D6C579BC0C7E3C7B00FCB4C1;
 			remoteInfo = DDSTool;
 		};
 /* End PBXContainerItemProxy section */
@@ -907,6 +971,8 @@
 		D60617EE0C14D18C007BA5C9 /* disclose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = disclose.png; sourceTree = "<group>"; };
 		D60617EF0C14D18C007BA5C9 /* gradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient.png; sourceTree = "<group>"; };
 		D6061A1B0C150844007BA5C9 /* header.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = header.png; sourceTree = "<group>"; };
+		D607342C0D197A1100E08F61 /* MeshTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MeshTool; sourceTree = BUILT_PRODUCTS_DIR; };
+		D60734510D197B1100E08F61 /* MeshTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshTool.cpp; sourceTree = "<group>"; };
 		D607AC850C0385AA00992876 /* scroll_btn_h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scroll_btn_h.png; sourceTree = "<group>"; };
 		D607AC860C0385AA00992876 /* scroll_btn_v.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scroll_btn_v.png; sourceTree = "<group>"; };
 		D607AC870C0385AA00992876 /* scrollbar_h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scrollbar_h.png; sourceTree = "<group>"; };
@@ -1792,6 +1858,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D60734250D197A1100E08F61 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D60734260D197A1100E08F61 /* Carbon.framework in Frameworks */,
+				D60734270D197A1100E08F61 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D624353B0AE401EF004F00E3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1885,6 +1960,7 @@
 				D65E4B3A0B65427C004D7887 /* RenderFarm */,
 				D6ED37490B67964D00D5484E /* WED.app */,
 				D6C579D60C7E3C7B00FCB4C1 /* DDSTool */,
+				D607342C0D197A1100E08F61 /* MeshTool */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1935,6 +2011,14 @@
 			children = (
 			);
 			name = "Configuration Files";
+			sourceTree = "<group>";
+		};
+		D60734500D197AF600E08F61 /* MeshTool */ = {
+			isa = PBXGroup;
+			children = (
+				D60734510D197B1100E08F61 /* MeshTool.cpp */,
+			);
+			path = MeshTool;
 			sourceTree = "<group>";
 		};
 		D607B7950C0B831400992876 /* tables */ = {
@@ -2180,6 +2264,7 @@
 				D6BC366E0AB22C84003949C5 /* Env */,
 				D6BC36770AB22C84003949C5 /* GUI */,
 				D6BC36B90AB22C84003949C5 /* Mac Infrastructure */,
+				D60734500D197AF600E08F61 /* MeshTool */,
 				D6BC36CC0AB22C84003949C5 /* Network */,
 				D6BC36DC0AB22C84003949C5 /* Obj */,
 				D6BC36F40AB22C84003949C5 /* ObjEdit */,
@@ -3242,6 +3327,22 @@
 			productReference = 508344B209E5C41E0093A071 /* ObjView.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D60734100D197A1100E08F61 /* MeshTool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D60734280D197A1100E08F61 /* Build configuration list for PBXNativeTarget "MeshTool" */;
+			buildPhases = (
+				D60734110D197A1100E08F61 /* Sources */,
+				D60734250D197A1100E08F61 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MeshTool;
+			productName = DSFTool;
+			productReference = D607342C0D197A1100E08F61 /* MeshTool */;
+			productType = "com.apple.product-type.tool";
+		};
 		D62435240AE401EF004F00E3 /* RenderFarmUI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D62435410AE401EF004F00E3 /* Build configuration list for PBXNativeTarget "RenderFarmUI" */;
@@ -3288,9 +3389,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D66FD88E0C933D8A004AD565 /* PBXTargetDependency */,
-				D66FD87C0C933D42004AD565 /* PBXTargetDependency */,
-				D66FD87E0C933D45004AD565 /* PBXTargetDependency */,
 			);
 			name = XGrinder;
 			productInstallPath = "$(HOME)/Applications";
@@ -3371,7 +3469,6 @@
 				D6ED369B0B67964D00D5484E /* Resources */,
 				D6ED369C0B67964D00D5484E /* Sources */,
 				D6ED373A0B67964D00D5484E /* Frameworks */,
-				D603D0050C2B004300C9C122 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3402,6 +3499,7 @@
 				D65E4B200B65427C004D7887 /* RenderFarm */,
 				D67EF96F0B6135F400D9190C /* ObjConverter */,
 				D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */,
+				D60734100D197A1100E08F61 /* MeshTool */,
 				D61C26E70B6155960092E098 /* Build Tools */,
 				D6C68DDD0BEFB3B300C9F880 /* Build All */,
 			);
@@ -3429,9 +3527,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D66FD8830C933D5F004AD565 /* DSFTool in Resources */,
-				D66FD8840C933D60004AD565 /* ObjConverter in Resources */,
-				D66FD8850C933D60004AD565 /* DDSTool in Resources */,
 				D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3556,22 +3651,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		D603D0050C2B004300C9C122 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nzip -j $BUILT_PRODUCTS_DIR/$EXECUTABLE_NAME$NATIVE_ARCH.zip $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\n\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		8D0C4E8F0486CD37000505A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -3610,6 +3689,83 @@
 				D6C57F420C831B7F00FCB4C1 /* zip.c in Sources */,
 				D6C57F430C831B8400FCB4C1 /* ZLIBUtils.cpp in Sources */,
 				D6C57F440C831B8600FCB4C1 /* unzip.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D60734110D197A1100E08F61 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D60734150D197A1100E08F61 /* DSFLib.cpp in Sources */,
+				D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */,
+				D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */,
+				D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */,
+				D60734190D197A1100E08F61 /* EnvParser.c in Sources */,
+				D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */,
+				D607341B0D197A1100E08F61 /* Persistence.cp in Sources */,
+				D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */,
+				D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */,
+				D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */,
+				D607341F0D197A1100E08F61 /* md5.c in Sources */,
+				D60734200D197A1100E08F61 /* PlatformUtils.mac.cpp in Sources */,
+				D60734210D197A1100E08F61 /* EndianUtils.c in Sources */,
+				D60734220D197A1100E08F61 /* unzip.c in Sources */,
+				D60734230D197A1100E08F61 /* zip.c in Sources */,
+				D60734240D197A1100E08F61 /* FileUtils.cpp in Sources */,
+				D60734520D197B1100E08F61 /* MeshTool.cpp in Sources */,
+				D607346F0D197B9800E08F61 /* GISTool_Globals.cpp in Sources */,
+				D60734700D197BA200E08F61 /* XESInit.cpp in Sources */,
+				D607347B0D197BC000E08F61 /* assertions.C in Sources */,
+				D60734800D197BD700E08F61 /* AptIO.cpp in Sources */,
+				D60734810D197BD800E08F61 /* Beaches.cpp in Sources */,
+				D60734830D197BDE00E08F61 /* ConfigSystem.cpp in Sources */,
+				D60734840D197BE000E08F61 /* DEMAlgs.cpp in Sources */,
+				D60734850D197BE100E08F61 /* DEMDefs.cpp in Sources */,
+				D60734860D197BE200E08F61 /* DEMIO.cpp in Sources */,
+				D60734870D197BE300E08F61 /* DEMTables.cpp in Sources */,
+				D60734880D197BE400E08F61 /* DEMToVector.cpp in Sources */,
+				D60734890D197BE600E08F61 /* DSFBuilder.cpp in Sources */,
+				D607348A0D197BEC00E08F61 /* EnumSystem.cpp in Sources */,
+				D607348B0D197BEF00E08F61 /* EuroRoads.cpp in Sources */,
+				D607348C0D197BF300E08F61 /* GreedyMesh.cpp in Sources */,
+				D607348E0D197C0400E08F61 /* MapAlgs.cpp in Sources */,
+				D607348F0D197C0600E08F61 /* MapDefs.cpp in Sources */,
+				D60734900D197C0800E08F61 /* MapIO.cpp in Sources */,
+				D60734910D197C0800E08F61 /* MeshAlgs.cpp in Sources */,
+				D60734920D197C0A00E08F61 /* MeshDefs.cpp in Sources */,
+				D60734930D197C0A00E08F61 /* MeshIO.cpp in Sources */,
+				D60734940D197C0E00E08F61 /* NetPlacement.cpp in Sources */,
+				D60734950D197C1200E08F61 /* ObjTables.cpp in Sources */,
+				D60734960D197C1300E08F61 /* ParamDefs.cpp in Sources */,
+				D60734970D197C1500E08F61 /* SceneryPackages.cpp in Sources */,
+				D60734980D197C1600E08F61 /* SimpleIO.cpp in Sources */,
+				D60734990D197C1900E08F61 /* TriFan.cpp in Sources */,
+				D607349A0D197C1F00E08F61 /* XESIO.cpp in Sources */,
+				D60734B40D197C8900E08F61 /* BitmapUtils.cpp in Sources */,
+				D60734B50D197C8E00E08F61 /* CompGeomUtils.cpp in Sources */,
+				D60734BB0D197C9900E08F61 /* GISUtils.cpp in Sources */,
+				D60734BC0D197CA300E08F61 /* PolyRasterUtils.cpp in Sources */,
+				D60734BD0D197CA500E08F61 /* ProgressUtils.cpp in Sources */,
+				D60734C20D197CC000E08F61 /* NetTables.cpp in Sources */,
+				D60734C80D197CD100E08F61 /* perlin.cpp in Sources */,
+				D60734C90D197CD800E08F61 /* alpha.cpp in Sources */,
+				D60734CA0D197CD900E08F61 /* colourblock.cpp in Sources */,
+				D60734CB0D197CDA00E08F61 /* clusterfit.cpp in Sources */,
+				D60734CC0D197CDB00E08F61 /* colourfit.cpp in Sources */,
+				D60734CD0D197CDB00E08F61 /* colourset.cpp in Sources */,
+				D60734CE0D197CDC00E08F61 /* maths.cpp in Sources */,
+				D60734CF0D197CDC00E08F61 /* rangefit.cpp in Sources */,
+				D60734D00D197CDD00E08F61 /* singlecolourfit.cpp in Sources */,
+				D60734D10D197CDE00E08F61 /* squish.cpp in Sources */,
+				D60734E00D197D1300E08F61 /* XObjReadWrite.cpp in Sources */,
+				D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */,
+				D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */,
+				D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */,
+				D60734EE0D197D3300E08F61 /* XFileTwiddle.mac.cpp in Sources */,
+				D60734F30D197D4700E08F61 /* ErrMsg.cpp in Sources */,
+				D60734F40D197D4800E08F61 /* MacSpec.cpp in Sources */,
+				D60734F50D197D4900E08F61 /* XFileTwiddle.cpp in Sources */,
+				D607357C0D19832500E08F61 /* Zoning.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4230,6 +4386,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		D60734330D197A2300E08F61 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D60734100D197A1100E08F61 /* MeshTool */;
+			targetProxy = D60734320D197A2300E08F61 /* PBXContainerItemProxy */;
+		};
+		D60734350D197A2700E08F61 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D60734100D197A1100E08F61 /* MeshTool */;
+			targetProxy = D60734340D197A2700E08F61 /* PBXContainerItemProxy */;
+		};
 		D61C26E90B61559A0092E098 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D67EF96F0B6135F400D9190C /* ObjConverter */;
@@ -4254,21 +4420,6 @@
 			isa = PBXTargetDependency;
 			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
 			targetProxy = D66FD8790C933D39004AD565 /* PBXContainerItemProxy */;
-		};
-		D66FD87C0C933D42004AD565 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */;
-			targetProxy = D66FD87B0C933D42004AD565 /* PBXContainerItemProxy */;
-		};
-		D66FD87E0C933D45004AD565 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF96F0B6135F400D9190C /* ObjConverter */;
-			targetProxy = D66FD87D0C933D45004AD565 /* PBXContainerItemProxy */;
-		};
-		D66FD88E0C933D8A004AD565 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D67EF84A0B5E5C8700D9190C /* DSFTool */;
-			targetProxy = D66FD88D0C933D8A004AD565 /* PBXContainerItemProxy */;
 		};
 		D6C68DDC0BEFB3A400C9F880 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4386,7 +4537,10 @@
 		C0E91ACB08A95435008D54AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
+				ARCHS = (
+					ppc,
+					i386,
+				);
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_AUTO_VECTORIZATION = NO;
 				GCC_DYNAMIC_NO_PIC = YES;
@@ -4423,6 +4577,57 @@
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
+			};
+			name = Release;
+		};
+		D60734290D197A1100E08F61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PRODUCT_NAME = MeshTool;
+			};
+			name = Debug;
+		};
+		D607342A0D197A1100E08F61 /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PRODUCT_NAME = MeshTool;
+			};
+			name = DebugOpt;
+		};
+		D607342B0D197A1100E08F61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = "$(HOME)/bin";
+				OTHER_LDFLAGS = (
+					/usr/local/lib/libgeotiff.a,
+					/usr/local/lib/libproj.a,
+					/usr/local/lib/libjpeg.a,
+					/usr/local/lib/libpng.a,
+					/usr/local/lib/libtiff.a,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = MeshTool;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -4477,6 +4682,7 @@
 		D62435430AE401EF004F00E3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -4523,6 +4729,7 @@
 		D65E4B390B65427C004D7887 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"$(inherited)",
@@ -4620,6 +4827,7 @@
 		D6BC3CC90AB2330E003949C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					/usr/local/lib/libdime.a,
@@ -4946,6 +5154,16 @@
 				C0E91ACA08A95435008D54AB /* Debug */,
 				D6F01D7B0CDABA8D00A3F1B0 /* DebugOpt */,
 				C0E91ACB08A95435008D54AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D60734280D197A1100E08F61 /* Build configuration list for PBXNativeTarget "MeshTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D60734290D197A1100E08F61 /* Debug */,
+				D607342A0D197A1100E08F61 /* DebugOpt */,
+				D607342B0D197A1100E08F61 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
