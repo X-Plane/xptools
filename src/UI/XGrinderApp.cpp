@@ -65,7 +65,7 @@ public:
 };
 
 XGrinderWin::XGrinderWin() : XWin(1, gTitle.c_str(), 
-	xwin_style_movable | xwin_style_centered | xwin_style_visible,
+	xwin_style_resizable  | xwin_style_centered | xwin_style_visible,
 	50, 100, 512, 100)	
 {
 }
