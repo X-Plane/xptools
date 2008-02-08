@@ -26,6 +26,10 @@
 #define	BAD_FORMAT_ERR		1001
 #define	CANNOT_OPEN_ERR		1002
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int	ReadEnvFile(const char * envFileName);
 
 const char *	StripFileName(const char * inFilePath, char inSeparator);
@@ -88,5 +92,8 @@ void	AcceptCustomTexture(
 					short	inIndex,
 					char *	inName);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

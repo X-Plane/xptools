@@ -106,6 +106,14 @@ extern	std::vector<PathInfo>			gRiverVectors;
 extern	std::vector<std::string>		gTextures;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void	ClearEnvData(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

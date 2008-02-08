@@ -43,7 +43,7 @@ static 	int	ReadTerrain606(FILE * inFile, PlatformType inFileEndian);
 static	int	ReadTerrain610(FILE * inFile, PlatformType inFileEndian, long inLat, long inLon);
 static	int ReadObstacles(FILE * inFile, PlatformType inFileEndian);
 static	int ReadTextures(FILE * inFile);
-static	int ReadPaths(FILE * inFile, PlatformType inEndian, long inLat, long inLon, bool inHasTaxiways, bool inHasRivers);
+static	int ReadPaths(FILE * inFile, PlatformType inEndian, long inLat, long inLon, int inHasTaxiways, int inHasRivers);
 static	int	ReadSpecificPath(FILE * inFile, PlatformType inEndian, long inLat, long inLon, void (* acceptFunc)(double, double, int));
 static	int	ReadPreciseSpecificPath(FILE * inFile, PlatformType inEndian, long inLat, long inLon, void (* acceptFunc)(double, double, int));
 
@@ -177,12 +177,13 @@ int	ReadTerrain606(FILE * inFile, PlatformType inFileEndian)
 	for (v = 0; v < kEnvHeight; ++v)
 		for (h = 0; h < kEnvWidth; ++h)
 		{
+			int custom;
 			if (fread(&vertex, sizeof(vertex), 1, inFile) != 1)
 				return BAD_FORMAT_ERR;
 				
 			EndianSwapBuffer(inFileEndian, platform_Native, kEndianSwapVertex606, &vertex);
 			
-			int	custom = ((vertex.texture / 1000) % 10) > 0;
+			custom = ((vertex.texture / 1000) % 10) > 0;
 			
 			AcceptVertex(h, v, vertex.latitude, vertex.longitude, vertex.altitude,
 					vertex.texture % 1000, 
@@ -208,7 +209,7 @@ int	ReadTerrain606(FILE * inFile, PlatformType inFileEndian)
  */
 int	ReadTerrain610(FILE * inFile, PlatformType inFileEndian, long inLat, long inLon)
 {
-		int	h,	v;
+		int	h,	v, custom;
 		Vertex610	vertex;
 		float		altitude;
 		double		lat, lon;
@@ -229,7 +230,7 @@ int	ReadTerrain610(FILE * inFile, PlatformType inFileEndian, long inLat, long in
 			lat += (double) inLat;
 			lon += (double) inLon;
 			
-			int	custom = ((vertex.texture / 1000) % 10) > 0;
+			custom = ((vertex.texture / 1000) % 10) > 0;
 			
 			AcceptVertex(h, v,lat, lon, altitude,
 					vertex.texture % 1000, 
@@ -320,7 +321,7 @@ int ReadTextures(FILE * inFile)
  *
  */
 
-int ReadPaths(FILE * inFile, PlatformType inEndian, long inLat, long inLon, bool inHasTaxiways, bool inHasRivers)
+int ReadPaths(FILE * inFile, PlatformType inEndian, long inLat, long inLon, int inHasTaxiways, int inHasRivers)
 {
 //	printf("Getting paths, taxiways? %s\n", inHasTaxiways ? "yes" : "no");
 	/* All path data is stored the same way in the following order in the file:
