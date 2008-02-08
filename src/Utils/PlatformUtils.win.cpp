@@ -36,10 +36,9 @@ void	EndianFlipLong(long * ioLong)
 	// Not necessary on WINTEL machines.
 }
 
-const char * GetApplicationPath(void)
+const char * GetApplicationPath(char * pathBuf, int sz)
 {
-	static	char	pathBuf[1024];
-	if (GetModuleFileName(NULL, pathBuf, sizeof(pathBuf)))
+	if (GetModuleFileName(NULL, pathBuf, sz))
 		return pathBuf;
 	else
 		return NULL;
