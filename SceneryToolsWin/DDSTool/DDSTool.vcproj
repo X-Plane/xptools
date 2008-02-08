@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="ObjView"
-	ProjectGUID="{EB1A0B58-F86A-42C6-99AE-4770789B397C}"
+	Name="DDSTool"
+	ProjectGUID="{397ECD58-7250-43E3-A3B8-7469D598DC74}"
 	>
 	<Platforms>
 		<Platform
@@ -37,11 +37,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=""
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
-				ForcedIncludeFiles=""
-				ForcedUsingFiles=""
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -104,9 +99,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough=""
-				ForcedIncludeFiles=""
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -119,7 +111,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib glu32.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -155,113 +146,17 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath="..\..\src\XPTools\ViewObj.cpp"
-				>
-			</File>
 			<Filter
-				Name="Obj"
+				Name="XPTools"
 				>
 				<File
-					RelativePath="..\..\src\Obj\ObjDraw.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\ObjDraw.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\ObjPointPool.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\ObjPointPool.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjBuilder.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjBuilder.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjDefs.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjDefs.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjReadWrite.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Obj\XObjReadWrite.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="ObjEdit"
-				>
-				<File
-					RelativePath="..\..\src\ObjEdit\OE_Zoomer3d.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\ObjEdit\OE_Zoomer3d.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="UI"
-				>
-				<File
-					RelativePath="..\..\src\UI\XGUIApp.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XGUIApp.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWin.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWin.win.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWin32DND.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWin32DND.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWinGL.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\UI\XWinGL.win.cpp"
+					RelativePath="..\..\src\XPTools\DDSTool.cpp"
 					>
 				</File>
 			</Filter>
 			<Filter
 				Name="Utils"
 				>
-				<File
-					RelativePath="..\..\src\Utils\AssertUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\AssertUtils.h"
-					>
-				</File>
 				<File
 					RelativePath="..\..\src\Utils\BitmapUtils.cpp"
 					>
@@ -271,91 +166,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\Utils\EndianUtils.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\EndianUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\GeoUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\GeoUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\MatrixUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\MatrixUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\MemFileUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\MemFileUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\ObjUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\ObjUtils.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\Utils\PlatformUtils.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\Utils\PlatformUtils.win.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\TexUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\TexUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\trackball.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\trackball.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\unzip.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\unzip.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\XUtils.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\XUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\zip.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\Utils\zip.h"
 					>
 				</File>
 			</Filter>
@@ -403,10 +218,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\libsrc\squish-1.10\config.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\libsrc\squish-1.10\maths.cpp"
 					>
 				</File>
@@ -423,31 +234,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\libsrc\squish-1.10\simd.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\libsrc\squish-1.10\simd_float.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\libsrc\squish-1.10\simd_sse.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\libsrc\squish-1.10\simd_ve.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\libsrc\squish-1.10\singlecolourfit.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\libsrc\squish-1.10\singlecolourfit.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\libsrc\squish-1.10\singlecolourlookup.inl"
 					>
 				</File>
 				<File
@@ -471,10 +262,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath="..\..\src\XPTools\ObjView.rc"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>
