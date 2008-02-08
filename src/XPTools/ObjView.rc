@@ -1,7 +1,6 @@
 /* exe icon */
 100 					ICON 		ObjView_icons.ico
 /* Versioning info */
-#include "..\WEDCore\WED_Version.h"
 #include <winver.h>
 
 VS_VERSION_INFO		VERSIONINFO
@@ -15,7 +14,7 @@ BEGIN
 		BLOCK "040904E4"
 		BEGIN
 			VALUE "CompanyName",		"Laminar Research"
-			VALUE "FileDescription",	"Object Viezer"
+			VALUE "FileDescription",	"Object Viewer"
 			VALUE "FileVersion",		"3.0a1"
 			VALUE "ProductVersion",		3,0,0,1
 			VALUE "LegalCopyright",		"Copyright 2007, Laminar Research"
