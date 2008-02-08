@@ -30,7 +30,13 @@
 #include "EnvWrite.h"
 #include "EnvDefs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 const char *	StripFileName(const char * inFilePath, char inSeparator);
+#ifdef __cplusplus
+}
+#endif
 
 static	long	ENCODE_LAT_LON(double lat, double lon, double latRef, double lonRef);
 
