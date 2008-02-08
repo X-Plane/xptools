@@ -33,6 +33,7 @@
 */
 
 #ifdef _WIN32
+#undef _POSIX_
 #include <io.h>
 #else
 #include <unistd.h>
@@ -174,7 +175,7 @@ bool
 dimeInput::setFile(const char * const filename)
 {
 #ifdef _WIN32
-  int fd = open(filename, O_RDONLY | O_BINARY);
+  int fd = _open(filename, O_RDONLY | O_BINARY);
 #else
   int fd = open(filename, O_RDONLY);
 #endif
