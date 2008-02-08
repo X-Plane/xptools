@@ -40,6 +40,10 @@
 #include <vector>
 #include <sys/stat.h>
 
+#if IBM
+#define popen _popen
+#define pclose _pclose
+#endif
 
 using std::string;
 using std::vector;
@@ -108,7 +112,11 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 	sprintf(pipe_buf,"%s/%s",ref,fileName);
 	struct stat ss;
 	if(stat(pipe_buf,&ss) != 0) return true;
+#if IBM
+	if((ss.st_mode & S_IEXEC) == 0) return true;
+#else
 	if((ss.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) return true;
+#endif
 	if((ss.st_mode & S_IFMT) != S_IFREG) return true;
 	sprintf(pipe_buf,"\"%s/%s\" --auto_config", ref,fileName);
 	FILE * fi = popen(pipe_buf, "r");		
