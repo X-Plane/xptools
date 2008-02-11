@@ -158,6 +158,7 @@ void		WED_PackageMgr::Rescan(void)
 
 string		WED_PackageMgr::ComputePath(const string& package, const string& rel_file) const
 {
+	if(rel_file.size() >= 2 && rel_file[1] == ':') return rel_file;
 	return system_path + DIR_STR CUSTOM_PACKAGE_PATH DIR_STR + package + DIR_STR + rel_file;
 }
 
@@ -165,7 +166,13 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 {	
 	string prefix = ComputePath(package,string());
 	string partial(full_file);
-	
+
+#if IBM
+	if(prefix.size() >= 2 && partial.size() >= 2 &&
+		prefix[1] == ':' && partial[1] == ':' &&
+		prefix[0] != partial[0]) return full_file;
+#endif
+
 	int n = 0;
 	do {
 		int p = prefix.find_first_of("\\/:", n);
