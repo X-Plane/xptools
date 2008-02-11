@@ -106,6 +106,7 @@ int main(int argc, const char * argv[])
 {
 #if IBM
 	gInstance = hInstance;
+	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);
 #endif
 	GUI_MemoryHog::InstallNewHandler();
 	GUI_InitClipboard();
