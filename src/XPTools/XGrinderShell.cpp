@@ -102,6 +102,27 @@ static void	sync_menu_checks()
 		XWin::CheckMenuItem(m->menu, i, m->items[i].enabled);		
 }
 
+#if IBM
+bool IsConsoleApp(const char * path)
+{
+	FILE * fi = fopen(path,"rb");
+	if(!fi) return false;
+	IMAGE_DOS_HEADER h;
+	if(fread(&h,1,sizeof(h),fi) != sizeof(h)) goto bail;
+	if(h.e_magic != IMAGE_DOS_SIGNATURE) goto bail;
+	if(fseek(fi,h.e_lfanew,SEEK_SET)==-1) goto bail;
+	IMAGE_NT_HEADERS nt;
+	if(fread(&nt,1,sizeof(nt),fi) != sizeof(nt)) goto bail;
+	if(nt.Signature != IMAGE_NT_SIGNATURE) goto bail;
+	fclose(fi);
+	return nt.OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI ||
+		nt.OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_POSIX_CUI;
+bail:
+	fclose(fi);
+	return false;
+}
+#endif
+
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref)
 {
 	if(isDir) return true;
@@ -118,6 +139,9 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 	if((ss.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH)) == 0) return true;
 #endif
 	if((ss.st_mode & S_IFMT) != S_IFREG) return true;
+#if IBM
+	if(!IsConsoleApp(pipe_buf)) return true;
+#endif
 	sprintf(pipe_buf,"\"%s/%s\" --auto_config", ref,fileName);
 	FILE * fi = popen(pipe_buf, "r");		
 	if (fi)
@@ -184,7 +208,11 @@ static void spool_job(const char * cmd_line)
 	if(log == NULL) log = stdout;
 	fprintf(log,"%s\n",cmd_line);
 	XGrinder_ShowMessage("%s",cmd_line);
-	FILE * pipe = popen(cmd_line, "r");
+	string quoted(cmd_line);
+#if IBM
+	quoted = "\"" + quoted + "\"";
+#endif
+	FILE * pipe = popen(quoted.c_str(), "r");
 	while(!feof(pipe))
 	{
 		char buf[1000];
