@@ -953,8 +953,6 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 #elif IBM
 
-	FILE * pp = fopen("log.txt","a");
-
 	char path[MAX_PATH], SearchPath[MAX_PATH];
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;		
@@ -962,26 +960,18 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
 
-	fprintf(pp,"Searching: %s\n",path);
-
 	hFind = FindFirstFile(path, &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		fprintf(pp,"Invalid handle on search.\n");
-		fclose(pp);
 		return false;
 	} 
 	else 
 	{
-		fprintf(pp,"Got a first file: %s attrs=%d\n", FindFileData.cFileName,FindFileData.dwFileAttributes);
-
 		if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 		{
 			if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 			{
-				fprintf(pp,"Passed first file to eval and got true, bailing.\n");
-				fclose(pp);
 				FindClose(hFind);
 				return true;
 			}
@@ -989,21 +979,16 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 		while (FindNextFile(hFind, &FindFileData) != 0)
 		{
-			fprintf(pp,"Got another file: %s attrs=%d\n", FindFileData.cFileName,FindFileData.dwFileAttributes);
 			if ( !( (strcmp(FindFileData.cFileName, ".") == 0) || (strcmp(FindFileData.cFileName, "..") == 0) ) )
 			{
 				if (cbFunc(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 				{
-					fprintf(pp,"Passed another file to eval and got true, bailing.\n");
-					fclose(pp);
 					FindClose(hFind);
 					return true;
 				}
 			}
 		}
 	}
-	fprintf(pp,"Finished iteration loop.\n");
-	fclose(pp);
 	FindClose(hFind);
 	return true;
 #else

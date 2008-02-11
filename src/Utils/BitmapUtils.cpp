@@ -1137,6 +1137,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 {
 	int result = -1;
 	TIFFErrorHandler	errH = TIFFSetWarningHandler(IgnoreTiffWarnings);
+	TIFFErrorHandler	errH2= TIFFSetErrorHandler(IgnoreTiffWarnings);
     TIFF* tif = TIFFOpen(inFilePath, "r");
     if (tif == NULL) goto bail;
 
