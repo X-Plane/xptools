@@ -39,7 +39,7 @@ int main(int argc, const char * argv[])
 	}
 
 	if (argc < 4) { 
-		printf("Usage: %s --png2dds <input_file> <output_file>|-\n",argv[0]); exit(1); 
+		printf("Usage: %s --png2dxt <input_file> <output_file>\n",argv[0]); exit(1); 
 	}
 	
 	if(strcmp(argv[1],"--png2dxt")==0 ||
