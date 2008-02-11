@@ -154,7 +154,8 @@ public:
 	
 	bool		GetLocation(const char* scale, const char * theme, double w, double s, double n, double e,
 						int& x1, int& x2, int& y1, int& y2,
-						int& layer);
+						int& layer,
+						string& status);
 	void		Purge(void);
 
 private:

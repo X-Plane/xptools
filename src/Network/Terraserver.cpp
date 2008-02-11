@@ -114,14 +114,14 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 	for (int n = 0; n < 9; ++n)
 		info[n].clear();
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTheme"));
 
 	sprintf(req_string, SOAP_GETTHEMEINFO, inTheme);
 	
 	HTTPConnection	con(
-						"www.terraserver-usa.com",
+						"terraserver-usa.com",
 						80);
 	
 	HTTPRequest		client(
@@ -183,14 +183,14 @@ int	GetThemeInfo(const char *inTheme, string	info[9])
 int		FetchTile(const char * scale, const char * theme, int domain, int x, int y, ImageInfo * destBitmap, int pixLeft, int pixTop)
 {
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTile"));
 
 	sprintf(req_string, SOAP_GETTILE, theme, scale, domain, x, y);
 	
 	HTTPConnection	con(
-						"www.terraserver-usa.com",
+						"terraserver-usa.com",
 						80);
 	HTTPRequest		client(
 						&con,
@@ -260,14 +260,14 @@ int		FetchTilePositioning(const char * scale, const char * theme, int domain, in
 						double	coords[4][2])
 {
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTileMetaFromTileId"));
 
 	sprintf(req_string, SOAP_GETTILEMETAFROMTILEID, theme, scale, domain, x, y);
 	
 	HTTPConnection	con(
-						"www.terraserver-usa.com",
+						"terraserver-usa.com",
 						80);
 	HTTPRequest		client(
 						&con,
@@ -341,14 +341,14 @@ int	GetTilesForArea(const char * scale,
 			int		tiles[4][3])
 {
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetAreaFromRect"));
 
 	sprintf(req_string, SOAP_GETAREAFROMRECT,	inLonWest, inLatNorth, inLonEast, inLatSouth, theme, scale);		
 	
 	HTTPConnection	con(
-						"www.terraserver-usa.com",
+						"terraserver-usa.com",
 						80);
 	HTTPRequest		client(
 						&con,
@@ -459,7 +459,7 @@ void	AsyncConnectionPool::ServiceImage(HTTPRequest * req)
 	if (!(*i)->DoProcessing())
 	{
 		delete *i;
-		*i = new HTTPConnection("www.terraserver-usa.com",80);
+		*i = new HTTPConnection("terraserver-usa.com",80);
 	}
 
 	if (!req->IsQueued() && !req->IsDone())
@@ -484,7 +484,7 @@ void	AsyncConnectionPool::ServiceImage(HTTPRequest * req)
 		}
 		else if (mImageCon.size() < mMaxCons)
 		{
-			mImageCon.push_back(new HTTPConnection("www.terraserver-usa.com",80));
+			mImageCon.push_back(new HTTPConnection("terraserver-usa.com",80));
 			req->Retry(mImageCon.back());
 			mImageCon.back()->DoProcessing();
 		}
@@ -499,7 +499,7 @@ void	AsyncConnectionPool::ServiceLocator(HTTPRequest * req)
 		mLocatorCon = NULL;
 	}
 	if (mLocatorCon == NULL)
-		mLocatorCon = new HTTPConnection("www.terraserver-usa.com",80);
+		mLocatorCon = new HTTPConnection("terraserver-usa.com",80);
 	if (!req->IsQueued() && !req->IsDone())
 		req->Retry(mLocatorCon);
 	mLocatorCon->DoProcessing();
@@ -529,7 +529,7 @@ AsyncImage::AsyncImage(AsyncConnectionPool * pool, const char * scale, const cha
 void AsyncImage::TryCoords(void)
 {
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTileMetaFromTileId"));
 
@@ -549,7 +549,7 @@ void AsyncImage::TryCoords(void)
 void AsyncImage::TryImage()
 {
 	FieldMap	fields;
-	fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+	fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 	fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 	fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetTile"));
 
@@ -799,6 +799,7 @@ void	AsyncImage::Draw(double coords[4][2])
 
 AsyncImageLocator::AsyncImageLocator(AsyncConnectionPool * pool)
 {
+	mHas=false;
 	mPool = pool;
 	mFetch = NULL;
 	mNorth = mSouth = mEast = mWest = -9.9e9;
@@ -810,13 +811,15 @@ AsyncImageLocator::~AsyncImageLocator()
 
 bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, double w, double s, double e, double n,
 					int& x1, int& x2, int& y1, int& y2,
-					int& layer)
+					int& layer, string& status)
 {
 	if (mFetch)
 	{
 		if (!mFetch->IsDone())
+		{
 			mPool->ServiceLocator(mFetch);
-		else {
+			status = "Contacting Server...";
+		} else {
 
 			int responseNum = mFetch->GetResponseNum();
 			if ((responseNum >= 200) && (responseNum <= 299))
@@ -895,6 +898,10 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 					}
 					delete root;			
 				}
+			} else {
+				char buf[512];
+				sprintf(buf,"%d ",mFetch->GetResponseNum());
+				status = buf + mFetch->GetResponseName();
 			}
 			delete mFetch;
 			mFetch = NULL;
@@ -903,9 +910,9 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 	
 	if (w != mWest || e != mEast || s != mSouth || n != mNorth)
 	if (mFetch == NULL)
-	{
+	{		
 		FieldMap	fields;
-		fields.insert(FieldMap::value_type("Host", "www.terraserver-usa.com"));
+		fields.insert(FieldMap::value_type("Host", "terraserver-usa.com"));
 		fields.insert(FieldMap::value_type("Content-Type", "text/xml; charset=utf-8"));
 		fields.insert(FieldMap::value_type("SOAPAction", "http://terraservice-usa.com/GetAreaFromRect"));
 
@@ -928,6 +935,7 @@ bool	AsyncImageLocator::GetLocation(const char* scale, const char * theme, doubl
 	
 	if (mHas)
 	{
+		status = "";
 		x1 = mX1;
 		x2 = mX2;
 		y1 = mY1;
