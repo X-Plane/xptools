@@ -42,14 +42,6 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 {
 	StateChanged();
 	
-	int pc = rhs->CountProperties();
-	for (int p = 0; p < pc; ++p)
-	{
-		PropertyVal_t v;
-		rhs->GetNthProperty(p, v);
-		this->SetNthProperty(p, v);
-	}
-	
 	int nn = rhs->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
@@ -57,6 +49,14 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 		WED_Thing * new_child = dynamic_cast<WED_Thing *>(child->Clone());
 		new_child->SetParent(this, n);		
 	}		
+
+	int pc = rhs->CountProperties();
+	for (int p = 0; p < pc; ++p)
+	{
+		PropertyVal_t v;
+		rhs->GetNthProperty(p, v);
+		this->SetNthProperty(p, v);
+	}	
 }
 
 void 			WED_Thing::ReadFrom(IOReader * reader)
