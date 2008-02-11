@@ -92,7 +92,7 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 	for(int z = (NUM_LEVELS-1); z >= 0; --z)
 	{
 		total_loaded += mImages[z].size();
-		if (mLocator[z]->GetLocation(ResString(z), mData.c_str(), w, s, e, n, mX1[z], mX2[z], mY1[z], mY2[z], mDomain[z]))
+		if (mLocator[z]->GetLocation(ResString(z), mData.c_str(), w, s, e, n, mX1[z], mX2[z], mY1[z], mY2[z], mDomain[z], mStatus))
 		{
 			mHas[z] = 1;
 			if(mX2[z]-mX1[z] < x_lim && mY2[z]-mY1[z] < y_lim)
@@ -140,7 +140,7 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 	
 	
 	char buf[1024];
-	sprintf(buf,"%d of %d (%f%% done, %d errors).  %d ppm Mem use: %d",total_now,total_vis,total_vis ? (100.0 * (float) total_now / (float) total_vis) : 100.0, total_err, 1 << top_res, total_loaded);
+	sprintf(buf,"%d of %d (%f%% done, %d errors).  %d ppm Mem use: %d %s",total_now,total_vis,total_vis ? (100.0 * (float) total_now / (float) total_vis) : 100.0, total_err, top_res == -1 ? 0 : (1 << top_res), total_loaded, mStatus.c_str());
 	float clr[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, buf);
 	

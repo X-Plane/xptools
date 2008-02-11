@@ -63,6 +63,7 @@ private:
 	string									mData;
 	int										mRes;
 	bool									mVis;
+	string									mStatus;
 
 };
 
