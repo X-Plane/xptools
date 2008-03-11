@@ -449,7 +449,6 @@
 		D67683570CC67B790032B90C /* colourset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578870C7E33B200FCB4C1 /* colourset.cpp */; };
 		D67683580CC67B7A0032B90C /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
 		D67683590CC67B7B0032B90C /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D676835A0CC67B7C0032B90C /* singlecolourlookup.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */; };
 		D676835B0CC67B7C0032B90C /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D67683600CC67B8D0032B90C /* GISTool_CoreCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38820AB22C85003949C5 /* GISTool_CoreCmds.cpp */; };
 		D67683610CC67B8D0032B90C /* GISTool_DemCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38840AB22C85003949C5 /* GISTool_DemCmds.cpp */; };
@@ -640,7 +639,6 @@
 		D6C578B80C7E33B200FCB4C1 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
 		D6C578B90C7E33B200FCB4C1 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
 		D6C578BB0C7E33B200FCB4C1 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
-		D6C578BC0C7E33B200FCB4C1 /* singlecolourlookup.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */; };
 		D6C578BE0C7E33B200FCB4C1 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
 		D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
@@ -820,7 +818,6 @@
 		D6F00F7B0CCD7F5D00A3F1B0 /* maths.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578910C7E33B200FCB4C1 /* maths.cpp */; };
 		D6F00F7C0CCD7F5D00A3F1B0 /* rangefit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C578930C7E33B200FCB4C1 /* rangefit.cpp */; };
 		D6F00F7D0CCD7F5E00A3F1B0 /* squish.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789E0C7E33B200FCB4C1 /* squish.cpp */; };
-		D6F00F7E0CCD7F5E00A3F1B0 /* singlecolourlookup.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6C5789C0C7E33B200FCB4C1 /* singlecolourlookup.inl */; };
 		D6F00F7F0CCD7F5F00A3F1B0 /* singlecolourfit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C5789A0C7E33B200FCB4C1 /* singlecolourfit.cpp */; };
 		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
@@ -965,6 +962,9 @@
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D60418960D86E15200AF6E16 /* README.meshtool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.meshtool; sourceTree = "<group>"; };
+		D604189C0D86E22100AF6E16 /* README.DDSTool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.DDSTool; sourceTree = "<group>"; };
+		D604189D0D86E22100AF6E16 /* README.XGrinder */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.XGrinder; sourceTree = "<group>"; };
 		D60616290C14BAC0007BA5C9 /* WED_UIMeasurements.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_UIMeasurements.h; sourceTree = "<group>"; };
 		D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_UIMeasurements.cpp; sourceTree = "<group>"; };
 		D606164E0C14BE46007BA5C9 /* ui_measurements.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ui_measurements.txt; sourceTree = "<group>"; };
@@ -2016,6 +2016,7 @@
 		D60734500D197AF600E08F61 /* MeshTool */ = {
 			isa = PBXGroup;
 			children = (
+				D60418960D86E15200AF6E16 /* README.meshtool */,
 				D60734510D197B1100E08F61 /* MeshTool.cpp */,
 			);
 			path = MeshTool;
@@ -3056,6 +3057,8 @@
 		D6BC38B10AB22C85003949C5 /* XPTools */ = {
 			isa = PBXGroup;
 			children = (
+				D604189C0D86E22100AF6E16 /* README.DDSTool */,
+				D604189D0D86E22100AF6E16 /* README.XGrinder */,
 				D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */,
 				D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */,
 				D67EF9930B61367100D9190C /* ConvertObjUI.cpp */,
@@ -3519,7 +3522,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D676835A0CC67B7C0032B90C /* singlecolourlookup.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3636,7 +3638,6 @@
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
-				D6C578BC0C7E33B200FCB4C1 /* singlecolourlookup.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3645,7 +3646,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */,
-				D6F00F7E0CCD7F5E00A3F1B0 /* singlecolourlookup.inl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
