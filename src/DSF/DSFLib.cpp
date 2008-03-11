@@ -336,7 +336,8 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		planeSizes.push_back(aSize);
 		planarData.push_back(vector<unsigned short>());
 		planarData.back().resize(aSize * pCount);
-		poolAtom.DecompressShort(pCount, aSize, 1, (short *) &*planarData.back().begin());
+		if(aSize)
+			poolAtom.DecompressShort(pCount, aSize, 1, (short *) &*planarData.back().begin());
 //		printf("[%0d] point pool depth %d, count %d\n", n, pCount, aSize);
 //		for (int n = 0; n < planarData.back().size(); ++n)
 //			printf("  %04X", planarData.back()[n]);
@@ -352,7 +353,8 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		planeSizes32.push_back(aSize);
 		planarData32.push_back(vector<unsigned long>());
 		planarData32.back().resize(aSize * pCount);
-		poolAtom.DecompressInt(pCount, aSize, 1, (int *) &*planarData32.back().begin());
+		if(aSize)
+			poolAtom.DecompressInt(pCount, aSize, 1, (int *) &*planarData32.back().begin());
 //		printf("[%0d] point pool 32 depth %d, count %d\n", n, pCount, aSize);
 //		for (int n = 0; n < planarData.back().size(); ++n)
 //			printf("  %04X", planarData.back()[n]);
