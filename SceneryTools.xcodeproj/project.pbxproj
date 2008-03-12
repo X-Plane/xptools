@@ -1824,6 +1824,7 @@
 		D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureNode.cpp; sourceTree = "<group>"; };
 		D6F8E4B80C3C861C007A2EA7 /* WED_TextureNode.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_TextureNode.h; sourceTree = "<group>"; };
 		D6F8E4D20C3D4DB1007A2EA7 /* ILibrarian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ILibrarian.h; sourceTree = "<group>"; };
+		D6FE97C80D8858D30025D144 /* README_FIRST */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README_FIRST; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
 		D6FEC6ED0BE0F019006A99CC /* WED_CreateLineTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreateLineTool.h; sourceTree = "<group>"; };
@@ -3057,6 +3058,7 @@
 		D6BC38B10AB22C85003949C5 /* XPTools */ = {
 			isa = PBXGroup;
 			children = (
+				D6FE97C80D8858D30025D144 /* README_FIRST */,
 				D604189C0D86E22100AF6E16 /* README.DDSTool */,
 				D604189D0D86E22100AF6E16 /* README.XGrinder */,
 				D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */,
