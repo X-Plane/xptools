@@ -53,6 +53,17 @@ void	CGALFailure(
 
 int	main(int argc, char * argv[])
 {
+	if(argc == 2 && !strcmp(argv[1],"--version"))
+	{
+		fprintf(stdout, "MeshTool version 1.0b1, compiled " __DATE__ ".\n");
+		exit(0);
+	}
+		
+	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
+	{
+		exit(0);
+	}
+		
 	try {
 		
 		// Set CGAL to throw an exception rather than just

@@ -1,6 +1,7 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	3/11/08    Beta 1
 	12/28/07   Initial Draft
 
 -------------------------------------------------------------------------------
@@ -12,7 +13,6 @@ MeshTool <script file> <climate file> <DEM file> <dump directory> <output file>
 MeshTool converts a polygon script, climate digest and DEM folder into a base
 DSF mesh.  It supports customizing coastlines via vector polygon data,
 burning in airporst, and adding custom orthophotos.
-
 
 -------------------------------------------------------------------------------
 DEM FILE FORMAT
@@ -142,7 +142,14 @@ CLIMATE FILES
 MeshTool requires a climate/landuse digest in .xes format.  .xes is a GIS 
 container format used by Laminar Research for imported data.  You must download
 a .xes file for your DSF tile from Laminar Research and pass it as input to
-MeshTool!
+MeshTool.  
+
+Climate/landuse digest files can be fetched here:
+
+http://update.x-plane.com/MeshTool/
+
+They are stored in groups of up to 100 files, numbered by the latitude and
+longitude of the southwest corner of the 10x10 square.
 
 -------------------------------------------------------------------------------
 DUMP DIRECTORY
