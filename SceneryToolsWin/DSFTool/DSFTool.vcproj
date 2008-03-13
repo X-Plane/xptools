@@ -200,6 +200,14 @@
 				<File
 					RelativePath="..\..\src\Env\EnvParser.c"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\..\src\Env\EnvParser.h"
