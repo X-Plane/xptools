@@ -42,7 +42,7 @@ int main(int argc, char * argv[])
 	InstallAssertHandler(AssertShellBail);
 
 	if (argc < 2) goto help;
-	
+
 	if(!strcmp(argv[1],"--auto_config"))
 	{
 		printf("CMD .env .dsf \"%s\" -env2overlay \"INFILE\" \"OUTFILE\"\n", argv[0]);
@@ -109,14 +109,14 @@ int main(int argc, char * argv[])
 		}		
 		if (!strcmp(argv[n], "--version"))
 		{
-			fprintf(err_fi, "dsftool 1.2, Copyright 2007 Laminar Research.\n");
+			fprintf(err_fi, "DSFTool 1.3, Copyright 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
 		}
 	}
 	
 	return 0;
 help:
 	fprintf(err_fi, "Usage: dsftool --dsf2text [dsffile] [textfile]\n");
-	fprintf(err_fi, "		dsftool --text2dsf [textfile] [dsffile]\n");
+	fprintf(err_fi, "       dsftool --text2dsf [textfile] [dsffile]\n");
 	fprintf(err_fi, "       dsftool --env2overlay [envfile] [dsffile]\n");
 	fprintf(err_fi, "       dsftool --version\n");
 	fprintf(err_fi, "Please note: dsftool still supports single-hyphen (-dsf2text) syntax for backward compatibility.\n");
