@@ -1,4 +1,4 @@
-DSF2Text Instructions and Release Notes
+DSFTool Instructions and Release Notes
 
 Version History
 
@@ -19,48 +19,44 @@ Version History
 	 						Command line options can take one or two dashes.
 	 						Tool can show version.
 	 						Total capacity for polygons increased a lot.
-	 
+     3/11/08 - 1.3			Support for XGrinder automation.
+								 
 -------------------------------------------------------------------------------
 OVERVIEW
 -------------------------------------------------------------------------------
 
-DSF2Text is a utility that converts X-plane Distribution Scenery Format (DSF)
+DSFTool is a utility that converts X-plane Distribution Scenery Format (DSF)
 files to a text format and back again.
 
-DSF2Text can also extract the custom objects from an ENV file and build an
+DSFTool can also extract the custom objects from an ENV file and build an
 overlay DSF.
 
-WARNING: Working with DSF files as text DSF2Text is intended primarily for
+WARNING: Working with DSF files as text DSFTool is intended primarily for
 programmers who want to create DSF files.
 
 WARNING: this utility does NOT work with Mars ENV files!
+
+Note: Previously the UI version was called DSF2Text; now both are called 
+DSFTool.
 
 -------------------------------------------------------------------------------
 SYSTEM REQUIREMENTS AND INSTALLATION
 -------------------------------------------------------------------------------
 
-DSF2Text is provided for Windows and Mac OS X.  To install DSF2Text, simply
-unzip the compressed archive.  The applications can be used anywhere.
+DSFTool is provided for Windows and Mac OS X.  To install DSFTool, simply
+unzip the compressed archive.  To use DSFTool with XGrinder, make sure both
+executables are in the same directory.
 
 -------------------------------------------------------------------------------
-USING DSF2TEXT
+USING DSFTool
 -------------------------------------------------------------------------------
 
-DSF2Text comes in two forms: a command line tool and a drag-and-drop
-application.  (Both are provided for both platforms.)  The drag-and-drop
-version has the name DSF2Text, while the command line version has the name
-DSFTool.
-
-WARNING: On the Macintosh text output cannot be interchanged between the GUI
-and command line versions of DSF2Text because they use different line endings.
+DSFTool can be used via the command-line or in conjunction with XGrinder.  To
+use DSFTool with XGrinder, simply drag a .txt, .dsf or .env file into the 
+XGrinder window.
 
 WARNING: If DSF crashes, check your line endings!  I have had reports that
 TextEdit on the Mac ruines line endings.
-
-To use the drag-and-drop version of DSF2Text, simply double click it, then drag
-a text (.txt) or DSF (.dsf) or ENV (.env) file into the window.  DSF2Text will 
-convert the file based on its suffix and create a new file with a new
-extension appended, in the same directory as the source file.
 
 SUFFIX			CONVERSION
 TXT				Text -> DSF*
@@ -69,13 +65,13 @@ ENV				ENV -> Overlay DSF
 
 * DSFs can be converted to text and back for full or overlay DSFs.
 
-WARNING: DSF2Text is slow, especially when converting text back to a DSF file.
-Conversion can take ten minutes or more.  DSF2Text will be unresponsive while
+WARNING: DSFTool is slow, especially when converting text back to a DSF file.
+Conversion can take ten minutes or more.  DSFTool will be unresponsive while
 it is working, but you should see elevated CPU usage.
 
 The syntax for the command line version is:
 
-DSFTool --dsf2text <dsf file> <text file> 
+DSFTool --dsf2text <input dsf> <output text>
 
 to convert from DSF to text and
 
@@ -90,28 +86,28 @@ to read from stdin/stdout instead of a text file.  This allows for piped usage
 of DSFTool, e.g. 
 
 cat file.txt | ./DSFTool -text2dsf - output.dsf
-./DSFTool -dsf2text foo.dsf - | grep OBJECT_DEF | wc -l
+./DSFTool -DSFTool foo.dsf - | grep OBJECT_DEF | wc -l
 
-Piping is not available for DSF and ENV files.  When converting to a binary
+Piping is not available for DSF and ENV output files.  When converting to a binary
 file, status messages are sent to stdout and error messages to stderr.  When
 converting to text, all messages are sent to stderr so that piped output is
 strictly the DSF contents.  The result code indicates a successful conversion.
 
 -------------------------------------------------------------------------------
-DSF2TEXT FILE FORMAT
+DSFTool FILE FORMAT
 -------------------------------------------------------------------------------
 
-The DSF2Text file format starts out with a typical X-Plane header:
+The DSFTool file format starts out with a typical X-Plane header:
 
 A
 800
-DSF2TEXT
+DSFTool
 
 It then consists of a series of commands, each one taking up one line.  In this
 reference, properties in <inequality signs> are to be filled in with real 
 values in the file.
 
-The DSF2Text file format is not an exact replication of DSF - some of the 
+The DSFTool file format is not an exact replication of DSF - some of the 
 complexities of point pools and other compression schemes are omitted.  However
 the basic notion of indexed building block definitions, patches, etc. are all
 preserved, so it may help to read the DSF spec before trying to understand
@@ -124,7 +120,7 @@ convert it to text and look through it.)  The file format is:
 
 DIVISIONS <number>
 
-	This is a meta-command that instructs DSF2Text to use a certain number of 
+	This is a meta-command that instructs DSFTool to use a certain number of 
 	point pools to allocate points.  More pools generally means more accuracy
 	in storage, but may also increase file size if improperly used.  The 
 	default is four divisons if this command is omitted, resulting in sixteen
