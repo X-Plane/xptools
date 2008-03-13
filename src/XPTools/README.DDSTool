@@ -1,0 +1,110 @@
+-------------------------------------------------------------------------------
+
+
+                                  DDS TOOL
+
+
+-------------------------------------------------------------------------------
+CHANGE HISTORY:
+-------------------------------------------------------------------------------
+
+Version 3/11/08 Initial Version
+
+-------------------------------------------------------------------------------
+SYSTEM REQUIREMENTS AND INSTALLATION
+-------------------------------------------------------------------------------
+
+DDSTool runs on any Macintosh or Winodws machine that runs X-Plane.  It is a
+single executable that can be decompressed into any directory; for 
+compatibility with X-Grinder it must be in the same directory as X-Grinder.
+See the X-Grinder documentation for more details.
+
+-------------------------------------------------------------------------------
+USING DDSTool
+-------------------------------------------------------------------------------
+
+DDSTool converts PNG files to DDS files for use with X-Plane.  DDS always takes
+a PNG file and creates a DDS file of the same name but with the .dds suffix.
+
+To convert a PNG file using XGrinder and DDSTool, simply drag the PNG file
+into the X-Grinder window.
+
+The command-line syntax for DDSTool is:
+
+DDSTool <mode flag> <src file> <dst file>
+
+DDSTool provides five modes of conversion.  These options list both the menu
+choice in XGrinder and the command-line option.  See the next section for 
+details on DXT1 vs. DXT3 vs. DXT5.
+
+Auto-pick compression
+--png2dxt
+
+In this mode DDSTool will use DXT1 compression for PNG files with no alpha
+channel and DXT5 for PNG files with an alpha channel.
+
+Use DXT1 Compression (1-bit alpha)
+--png2dxt1
+
+In this mode, the PNG file is always compressed using DXT1.
+
+Use DXT3 Compression (high-freq alpha)
+--png2dxt3
+
+In this mode, the PNG file is always compressed using DXT3.
+
+Use DXT5 Compression (smooth alpha)
+--png2dxt5
+
+In this mode, the PNG file is always compressed using DXT5.
+
+Use no compression (requires mipmap)
+--png2rgb
+
+This mode builds an uncompressed RGB DDS file.  The image file must contain 
+the entire mipmap tree (justified to the bottom of the PNG file with each mip
+to the right of the previous one).  
+
+This mode is NOT recommended for scenery use; there are only a few very special
+cases where X-Plane will allow an uncompressed DDS file, and generally they
+do not occur in either third party airplanes or third party scenery!
+
+-------------------------------------------------------------------------------
+FORMS OF DXT COMPRESSION
+-------------------------------------------------------------------------------
+
+DXT1, DXT3, and DXT5 are the compression schemes that DDSTool can write into a
+DDS image file; they differ in how the alpha channel (transparency) of the 
+image is handled:
+
+* DXT1 contains "1-bit" alpha - that is, the alpha is either 100% opaque or
+  totally transparent.  The 1-bit alpha is part of the color information of
+  the image; there is no RGB color data behind the transparent parts.  This can
+  lead to artifacts around the edges of the image file.  DXT1 files use half
+  the VRAM of DXT3/DXT5, offering an 8:1 compression ratio over RGB+alpha vs.
+  a 4:1 compression ratio for DXT3/DXT5.
+  
+  Use DXT1 when your image contains no alpha information, or when the alpha
+  is just a sharp mask and a no-blend attribute prevents "color bleed" near
+  the edges of the image.
+  
+  NOTE: X-Plane will treat DXT1 as having alpha if there is at least one 
+  transparent pixel; it wil treat the image as not having an alpha channel if
+  there are no transparent pixels.  This means that you can use DXT1 for night
+  lighting masks as long as you don't have translucency (variable alpha) in
+  your night lighting texture.
+  
+* DXT3 contains 4-bit uncompressed alpha; smooth transitions of alpha will
+  look like they have distinct "steps", but very high frequency alpha
+  transitions can always be preserved.  Use DXT3 compression only if your image
+  has a complex alpha channel with rapid changes, and DXT5 produces noticeable
+  artifacts.
+  
+* DXT5 contains a compressed alpha channel; the compression can capture gentle
+  washes of alpha reasonably well, and can also capture high frequency data.
+  DXT5 is usually the best choice for any image with translucency; if your
+  image has alpha, try DXT5 first.
+
+The technical details of the DXTn compression schemes can be found here:
+
+http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt

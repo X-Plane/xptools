@@ -197,11 +197,16 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 int main(int argc, const char * argv[])
 {
+	if(argc == 2 && !strcmp(argv[1],"--version"))
+	{
+		printf("ObjConverter 3.0b1, Copyight 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
+		return 0;
+	}
 	if(argc == 2 && !strcmp(argv[1],"--auto_config"))
 	{
 		printf("CMD .obj .3ds \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj .dxf \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .obj .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");
@@ -226,7 +231,7 @@ int main(int argc, const char * argv[])
 		return 0;
 	}
 
-	if (argc < 4) { printf("Usage: %s [options ...] --conversion input_file output_file\n",argv[0]); exit(1); }
+	if (argc < 4) { printf("Usage: %s [options ...] --conversion input_file output_file\n       %s --version\n",argv[0],argv[0]); exit(1); }
 	for (int a = 1; a < argc-3; ++a)
 	{
 			 if (!strcmp(argv[a],"--inches"))		gUnits = unit_Inches;

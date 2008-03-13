@@ -26,6 +26,11 @@ int main(int argc, const char * argv[])
 {
 	// DDSTool --png2dds <infile> <outfile>
 
+	if (argc == 2 && strcmp(argv[1],"--version")==0)
+	{
+		printf("DDSTool 1.0b1, Coyright 2008 Laminar Research.  Compiled on " __DATE__ ".\n");
+		return 0;
+	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
 		printf("CMD .png .dds \"%s\" DDS_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
@@ -39,7 +44,9 @@ int main(int argc, const char * argv[])
 	}
 
 	if (argc < 4) { 
-		printf("Usage: %s --png2dxt <input_file> <output_file>\n",argv[0]); exit(1); 
+		printf("Usage: %s --png2dds <input_file> <output_file>|-\n",argv[0]); 
+		printf("       %s --version\n",argv[0]);
+		exit(1); 
 	}
 	
 	if(strcmp(argv[1],"--png2dxt")==0 ||

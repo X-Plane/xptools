@@ -1,0 +1,53 @@
+-------------------------------------------------------------------------------
+
+
+					X-PLANE SCENERY TOOLS RELEASE NOTES
+
+
+-------------------------------------------------------------------------------
+SCENERY TOOLS MARCH 08
+-------------------------------------------------------------------------------
+
+This is the first release of the combined X-Plane scenery tools.  This 
+distribution combines the following tools into one package:
+
+- DSF2Text (now renamed DSFTool)
+- ObjConverter
+- ObjView
+
+This release also introduces three new tools:
+
+- XGrinder replaces the UI versions of ObjConveter and DSF2Text, providing a
+  single drag & drop interface to all of the command-line file converters.
+  
+- DDSTool provides high quality X-Plane cmopatible PNG->DDS conversion for 
+  Mac and Windows.
+  
+- MeshTool allows you to build base meshes with orthophotos from your own GIS
+  data.
+  
+At this point WorldEditor and the AC3D export plugin are stil separate
+releases.
+
+-------------------------------------------------------------------------------
+INSTALLATION, SYSTEM REQUIREMENTS AND LICENSING
+-------------------------------------------------------------------------------
+
+The scenery tools simply need to be unzipped somewhere on your hard drive.  In
+order for XGrinder to provide a UI around the command-line tools, all of the 
+tools need to stay in the same directory.
+
+The scenery tools should work on any computer that can run X-Plane 864.
+
+The scenery tools are open source; code original to Laminar Research is 
+availble via the MIT/X11 license; various required libraries have licenses
+that are compatible with either MIT/X11 or GPL.
+
+The source code for these tools is all available at:
+
+http://scenery.x-plane.com/code.php
+
+The latest scenery tools can be found at:
+
+http://scenery.x-plane.com/tools.php
+

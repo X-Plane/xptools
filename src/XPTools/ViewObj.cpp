@@ -85,6 +85,15 @@ void	MyVertexConverter(double lat, double lon, double h, float * x, float * y, f
 	*z = h;
 }
 
+float DistForLOD8(const XObj8& obj, int lod)
+{
+	if(obj.lods.empty()) return 0.0;
+	--lod;
+	if(lod < 0) lod = 0;
+	if (lod >= obj.lods.size()) lod = obj.lods.size()-1;
+	return 0.5 * (obj.lods[lod].lod_near + obj.lods[lod].lod_far);
+}
+
 class	XObjWin;
 
 XObjWin *	gReceiver = NULL;
@@ -93,8 +102,8 @@ float	gCamDist = 200;
 map<string, pair<string, GLenum> >		gDayTextures;
 //map<string, pair<string, GLenum> >		gNightTextures;
 
-static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
-static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate);
+static	void		PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist);
+static	void		PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist);
 static	GLenum		FindTexture(const string& inName, bool inNight);
 static	void		AccumTexture(const string& inFileName);
 static	void		ReloadTexture(const string& inName);
@@ -164,6 +173,7 @@ private:
 //	float	mYTrans;
 	bool	mSolid;
 	bool	mLit;
+	int		mLOD;
 	bool	mAnimate;
 	bool	mLighting;
 	bool	mMeasureOnOpen;
@@ -202,7 +212,7 @@ void	MyObjReceiver(double x, double y, double z, double r, const char * obj, voi
 XObjWin::XObjWin(const char * inFileName) : XWinGL(1, inFileName ? inFileName : "Drag Obj Here", 
 	xwin_style_resizable | xwin_style_visible | xwin_style_centered,
 	50, 50, 600, 600, sWindows.empty() ? NULL : *sWindows.begin()),
-	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false)
+	/*(mScale(1.0),*/ mSolid(true), mShowCulled(false), /*mShowBounds(false), */mLit(false), mAnimate(false), mLighting(true), mMeasureOnOpen(false), /*mXTrans(0), mYTrans(0), */mFloors(1), mIsObj8(false),mLOD(1)
 {
 	mPts.push_back(Point2(-10.0,  10.0));
 	mPts.push_back(Point2( 10.0,  10.0));
@@ -294,8 +304,8 @@ void			XObjWin::GLDraw(void)
 		
 	glScalef(mScale, mScale, mScale);
 */	
-	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate);
-	else			PlotOneObj(mObj, mShowCulled, mLit, mLighting, mSolid, mAnimate);
+	if (mIsObj8)	PlotOneObj8(mObj8, mShowCulled, mLit, mLighting, mSolid, mAnimate, DistForLOD8(mObj8,mLOD));
+	else			PlotOneObj(mObj, mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0);
 	
 		
 	for (vector<ObjPlacement_t>::iterator p = mObjInst.begin(); p != mObjInst.end(); ++p)
@@ -305,7 +315,7 @@ void			XObjWin::GLDraw(void)
 		glTranslatef(p->x, p->y, p->z);
 		glRotatef(-p->r, 0.0, 1.0, 0.0);
 		if (mObjDB.find(p->obj) != mObjDB.end())
-			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate);		
+			PlotOneObj(mObjDB[p->obj], mShowCulled, mLit, mLighting, mSolid, mAnimate, 0.0f);		
 		glPopMatrix();
 	}
 	
@@ -646,6 +656,11 @@ int			XObjWin::KeyPressed(char inKey, long, long, long)
 		}			
 #endif		
 		break;
+	case '1':mLOD=1;break;
+	case '2':mLOD=2;break;
+	case '3':mLOD=3;break;
+	case '4':mLOD=4;break;
+	case '5':mLOD=5;break;
 	case 'D':
 	case 'd':
 		mFloors--;
@@ -943,8 +958,8 @@ static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
 	
 	if (inLighting)
 	{
-		lgt_amb[0] = lgt_amb[1] = lgt_amb[2] = 0.2;
-		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.8;		
+		lgt_amb[0] = lgt_amb[1] = lgt_amb[2] = 0.5;
+		lgt_dif[0] = lgt_dif[1] = lgt_dif[2] = 0.5;		
 	}
 	if (inLit) {
 		lgt_dif[0] *= 0.01;
@@ -1022,7 +1037,7 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 	glEnable(GL_NORMALIZE);
 }
 
-void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
+void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist)
 {
 	inLighting = false;	// NEVER light these - it don't work yet!
 	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
@@ -1038,7 +1053,7 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 		setup_baseline_ogl(true);		
 		info.backside = true;
 		CHECK_ERR();
-		ObjDraw(inObj, 0.0, &sCallbacks, &info);
+		ObjDraw(inObj, dist, &sCallbacks, &info);
 		CHECK_ERR();
 	}	
 
@@ -1047,7 +1062,7 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 	setup_baseline_ogl(false);	
 	info.backside = false;
 	CHECK_ERR();
-	ObjDraw(inObj, 0.0, &sCallbacks, &info);
+	ObjDraw(inObj, dist, &sCallbacks, &info);
 	CHECK_ERR();
 
 	glPointSize(1);
@@ -1055,7 +1070,7 @@ void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting
 }
 
 
-void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate)
+void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist)
 {
 	CHECK_ERR();
 
@@ -1070,7 +1085,7 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 		setup_baseline_ogl(true);		
 		info.backside = true;
 		CHECK_ERR();
-		ObjDraw8(inObj, 0.0, &sCallbacks, &info);
+		ObjDraw8(inObj, dist, &sCallbacks, &info);
 		CHECK_ERR();
 	}
 
@@ -1078,7 +1093,7 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 	setup_baseline_ogl(false);			
 	info.backside = false;
 	CHECK_ERR();
-	ObjDraw8(inObj, 0.0, &sCallbacks, &info);
+	ObjDraw8(inObj, dist, &sCallbacks, &info);
 	CHECK_ERR();
 
 	glPointSize(1);

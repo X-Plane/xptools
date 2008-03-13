@@ -1,0 +1,108 @@
+-------------------------------------------------------------------------------
+
+
+                           X - G R I N D E R
+
+
+-------------------------------------------------------------------------------
+CHANGE HISTORY:
+-------------------------------------------------------------------------------
+
+Version 1.0b1 3/11/08
+	- Initial Release
+
+XGrinder is an application that lets you utilize command-line utilities to
+process files using a drag & drop interface, with menus to select from the
+various tool options.
+
+XGrinder is meant to replace the "user interface" versions of DSF2Text and
+ObjConverter; instead one drag & drop tool provides user interface to both of
+these utilities, as well as the new DDSTool for image file conversion.
+
+-------------------------------------------------------------------------------
+SYSTEM REQUIREMENTS AND INSTALLATION
+-------------------------------------------------------------------------------
+
+XGrinder will run on any system that can run X-Plane; minimum operating systems
+are:
+ - OS X 10.3.9 (OS X 10.4 recommended)
+ - Windows 98 SP2 (Windows XP recommended)
+ 
+IMPORTANT: X-Grinder needs to sit in the same directory as the command-line
+tools that it will provide access to!  If you unzip the basic tools
+installation, this will already be the case.  If you move XGrinder, be sure to
+move the tools too!
+
+-------------------------------------------------------------------------------
+USING XGRINDER
+-------------------------------------------------------------------------------
+
+When XGrinder is running, a single window will show the status of conversion;
+drag files to this window to convert them.  A series of menus will let you 
+configure options for each tool.
+
+Documentation on tool-specific options can be found in the README for each 
+tool.
+
+The convert menu will contain a series of optoins for a given file format
+(grouped by extension of the file to be translated) and indicate which tool
+will do the conversion.
+
+-------------------------------------------------------------------------------
+FOR DEVELOPERS: INTEGRATING WITH XGRINDER
+-------------------------------------------------------------------------------
+
+If you make a command-line tool that processes single files, you can integrate
+your tool with XGrinder.  Your tool must meet the following requirements:
+
+- OS X: the tool must be a non-bundled command-line tool.  XGrinder avoids
+  launching bundles to avoid triggering GUI-based applications in the same
+  folder as XGrinder.
+- Windows: the tool must be flagged or the command-line subsystem, not the
+  GUI subsystem; this avoids triggering apps with UI.
+- Both: the tool's file must be marked executable on disk (on Windows this
+  is faked by the OS; your tool must have the extension .exe).
+- Both: your tool must, when run with the single command-line argument
+  --auto_config, print to standard output a series of "script" commands to
+  indicate its capabilities to XGrinder.
+  
+The basic syntax of the configuration output is as follows:
+
+CMD <src extension> <dst extension> <cmd line>
+This indicates one possible conversion.
+- Src extension is the extension that this tool converts from.
+- Dst extension is the extensino that this tool converts to.
+- Cmd line is the shell line to run, with spaces allowed.
+For the hsell line, be sure to quote paths that might contain spaces in them.
+Any tokens defined by options below will be substituted before running.  The 
+special tokens INFILE and OUTFILE are the names of the input file (as dragged)
+and the outpt file (the input file with the suffixes revised).
+
+OPTIONS <menu name>
+Defines a new menu for tool-specific options; options that follow will go in this
+menu.
+
+DIV
+Defines a divider in the menu.
+
+RADIO|CHECK <token> <initial> <flag> <menu name>
+- Token is the name of the token that will be substituded in the command line; the
+  substitution happens for all conversions for your tool, but not for other tools.
+- Initial: 0 or 1 indicating the initial value for this menu item; use this to
+  configure defaults.
+- Flag: the flag that will be passed to your tool in place of the token if this 
+  item is picked.
+- Menu name: the name of the menu item, spaces allowed.
+If the option is a radio button, only one menu item that shares this token can be
+selected at once.  If the option is a check-box, then all of the items are 
+independent.  Note that if a check-item is 0, the token will be the empty string.
+
+EXAMPLE: ./DDSTool --auto_config
+
+CMD .png .dds "./DDSTool" DDS_MODE "INFILE" "OUTFILE"
+OPTIONS DDSTool
+RADIO DDS_MODE 1 --png2dxt Auto-pick compression
+RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)
+RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)
+RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)
+RADIO DDS_MODE 0 --png2rgb Use no compression (requires mipmap)

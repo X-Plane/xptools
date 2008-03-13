@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>ObjView</string>
 	<key>CFBundleGetInfoString</key>
-	<string>ObjView 3.0a1 Copyright 2007, Laminar Research</string>
+	<string>ObjView 3.0b1 Copyright 2008, Laminar Research</string>
 	<key>CFBundleIconFile</key>
 	<string>ObjView_icons.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.0a1</string>
+	<string>3.0b1</string>
 	<key>CFBundleVersion</key>
 	<string>398</string>
 	<key>LSHasLocalizedDisplayName</key>

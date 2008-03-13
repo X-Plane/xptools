@@ -2,295 +2,163 @@
 
 
 
-
-
-
-
                               O B J     C O N V E R T E R 
 
 
 
-
-
-
-
 -------------------------------------------------------------------------------
-
 CHANGE HISTORY:
-
 -------------------------------------------------------------------------------
 
-
-
+Version 3.0b1 3/11/08
+	- Compatibility with X-Grinder
+	- VRML support dropped
 Version 2.0b2 9/27/05
-
 	- Bug fix for animation
-
 Version 2.0b1 9/20/05
-
 	- Support for OBJ8
 
-
-
 ObjConverter is a utility that converts 3-d models from various file formats  
-
 to X-Plane object version 7 or 8 files. ÊAn X-Plane object file (.obj) contains 
-
 geometry and texture information describing one 'object' for X-Plane scenery. 
-
 An X-Plane object can be one building or many nearby buildings, contain only a
-
 few polygons, or be a detailed model. ÊTypically you create an object in a 3-d
-
 modeling program like AutoCad, 3D Studio Max, LightWave, SketchUp, ObjectMaker, 
-
 etc., and then convert it to an X-Plane object version 7/8 file for use in 
-
 scenery.
 
-
-
 ObjConverter can also convert files to 3DS or DXF format. ÊThis can be useful 
-
 in case you need to do additional editing, but converting the objects sometimes 
-
 removes information from the object files.
 
-
-
 WARNING: the OBJ format described here is X-Plane's OBJ format, which is 
-
 totally different from the Alias/Wavefront OBJ format.  This program does not
-
 work with WaveFront files!
 
-
-
 -------------------------------------------------------------------------------
-
 SYSTEM REQUIREMENTS AND INSTALLATION
-
 -------------------------------------------------------------------------------
-
-
 
 ObjConverter requires OS X 10.2 (10.3 recommended) or Windows 98 SP2 or newer.
-
 Generally it will run on any machine that can run X-Plane.
 
-
-
-Simply decompress the .zip or .sit file; ObjConverter is totally stand-alone.
-
-
+Simply decompress the .zip file; to use ObjConverter with XGrinder, make sure
+that both applications are in the same folder!
 
 -------------------------------------------------------------------------------
-
 USING OBJCONVERTER
-
 -------------------------------------------------------------------------------
 
+To use ObjConverter with XGrinder, simply start XGrinder, then drag OBJ files
+Into the XGrinder window.  
 
+To use ObjConverter from the command-line, the syntax is:
 
-To use ObjConverter, start the program, then drag files into the ObjConverter
-
-window to convert them. ÊFor each file you drag onto ObjConverter, ObjConverter
-
-will create a new .obj file with the same name and a _new extension. Ê
-
-ObjConverter files will be created with the same line-ending format as the 
-
-platform you are working on.
-
-
+./ObjConverter <flags> <conversion> <input file> <output file>
 
 -------------------------------------------------------------------------------
-
 LIMITATIONS
-
 -------------------------------------------------------------------------------
-
-
 
 Conversions can be "lossy", meaning not all data can be converted from one
-
 format to another.  In particular, OBJ7 files will lose OBJ8-only features and
-
 OBJ8 files will lose OBJ7only features.  Try to do the minimum number of
-
 conversions, and try to avoid round-trip conversions (e.g. 3DS to OBJ and 
-
 back.)
 
-
-
 -------------------------------------------------------------------------------
-
 CONVERSION FORMATS
-
 -------------------------------------------------------------------------------
-
-
 
 ObjConverter can convert from the following formats:
 
-
-
-	3DS, DXF, OBJ (versions 2, 7 and 8), VRML97
-
-
+	3DS, DXF, OBJ (versions 2, 7 and 8)
 
 It can export to:
 
-
-
 	OBJ versions 7 and 8, 3DS and DXF.
-
-
 
 Here are some conversion limitations:
 
-
-
 DXF: This format does not support textures or tex coordinate information.
-
 3DS: This format does not support lines or lights.
-
 OBJ7/8: These formats do not support multiple textures or hiearchial structure.
 
-VRML97: Only some VRML97 files will be readable.
-
-
-
 When a format does not support a feature, the information will be stripped.
-
 So for example if you convert an object from OBJ7 to DXF you will lose your
-
 texture coordinates and information.  If you convert from OBJ8 to 3DS you
-
 will lose your lines.  If you convert from DXF to OBJ8 you will lose your
-
 layers.
 
-
-
 Generally you should avoid converting from OBJ to another format when possible.
-
 Use OBJ as your final destination format for shipping, but use your modeler's
-
 native format for editing.  (Think of this like using photoshop - when you
-
 save as a PNG you lose your layers - if you edit the PNG you won't get them
-
 back.  The same problem happens with modeler structures and groups when 
-
 converting to OBJ.)
-
-
 
 Usually 3DS is the best format to convert from for textured objects.
 
+The command-line conversion flags are:
 
+--obj23ds
+--obj2dxf
+--obj2obj
+--3ds2obj
+--dxf2obj
 
 -------------------------------------------------------------------------------
-
 CONVERSION SETTINGS
-
 -------------------------------------------------------------------------------
-
  
-
 Here is a list of the conversion settings from the menubar.  Please note that
-
-the conversion options only apply to conversions from DXF, VRML or 3DS; for
-
+the conversion options only apply to conversions from DXF, or 3DS; for
 OBJ files the settings are always defaulted to the correct settings for OBJs.
-
  
-
 Units:
-
  You may choose either inches, feet or meters for the conversion. ÊThis is the
-
  distance that 1 "unit" length in your source object will hold in the X-Plane
-
  world. ÊObjConverter cannot read any kind of unit hints from your source files.
-
  Usually a 3d program will always export a file with the same units. ÊThe 
-
  default is meters.
 
-
+Command line: --inches, --meters, --feet
 
 Center Object Horizontally:
-
  When this object is checked, the object will be moved horizontally so that an 
-
  approximate center of the object is used as the anchor point in X-Plane. Ê
-
  (The object will rotate around this point in WorldMaker too.) ÊUse this 
-
  option if your object appears far away from the placement point in WorldMaker.
 
-
+Command line: --center
 
 Flip X, Y or Z axis:
-
  ObjConverter can flip the orientation of any of the axes in the object. Ê
-
  However this may cause polygons to face in the wrong direction and become 
-
  invisible. ÊThis is provided as an advanced option only.
 
-
+Command line: --flip_x, --flip_y, --flip_z
 
 Polygons are Clockwise/Counterclockwise:
-
  This defines the orientation of a polygon's vertices when facing it from the 
-
  outside of the object. Êmost 3-d programs use counterclockwise polygons. Ê
-
  (X-Plane uses clockwise polygons; ObjConverter will swap as necessary.) Ê
 
- Note: for a VRML file or the polygon orientation is specified in the file, 
-
- so this option has no effect on VRML files.
-
-
-
 Y Axis is up/Z axis is up:
-
  This defines which axis faces up in the model. ÊMost 3-d programs use the Z
-
  axis to indicate up. ÊHowever, others use the Y axis for up. ÊX-Plane always 
-
  uses the Y axis; ObjConverter will rotate your model as needed.
 
-
+Command line: --axis_y, --axis_z
 
 Saves as OBJ7
-
  This is ObjConverter's default setting and causes ObjConverter to save all 
-
  output as X-Plane 7 .obj files.
 
-
+command line: --obj7
 
 Saves as OBJ8
-
  This  causes ObjConverter to save all output as X-Plane 8 .obj files.
 
-
-
-Save as 3DS
-
- This causes ObjConverter to create 3D Studio Max (3DS) format files.
-
-
-
-Save as DXF
-
- This caues ObjConverter to save AutoCad Data Exchange (DXF) files.
-
-
+command line: --obj8
 
