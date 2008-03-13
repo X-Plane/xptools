@@ -11,7 +11,7 @@ CHANGE HISTORY:
 -------------------------------------------------------------------------------
 KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
-Version 3.1b2
+Version 3.1r1
 	- Support for ATTR_hard_deck
 	- Bug fix in importing hard surfaces!
 	- Compatibility with AC3D 6.3
@@ -279,6 +279,12 @@ Polygon hardness
 	be physically interactive and select what surface type the polygon
 	acts like (e.g. grass, dirt, etc.).  The surface type "object" emulates
 	the perfectly smooth surface that X-Plane 7 and 8 provided.
+	
+	For X-Plane 9, you can also mark a hard surface as a "deck".  If a hard
+	surface is a deck, the user can fly under the hard surface and land on
+	top of it.  If a hard surface is not a deck, the user can land on top of
+	it, but attempting to travel under the deck will result in the plane
+	crashing into the hard surface.
 		
 Polygon Offset
 
@@ -849,7 +855,7 @@ X-Plane OBJ."
 "This model has non-quad surfaces that use the panel texture.  Only quad 
 surfaces may use the panel texture in OBJ7."
 
-"This model has non-quad surfaces that rae marked as hard.  Only quad surfaces
+"This model has non-quad surfaces that are marked as hard.  Only quad surfaces
 may be hard in OBJ7."
     
 	Hard polygons and panel-textured polygons are only available for quads in
