@@ -63,6 +63,15 @@ KNOWN ISSUES
 VERSION HISTORY
 -------------------------------------------------------------------------------
 
+1.0b5 - 3/26/07
+
+Fixed: no crash when duplicating runways
+Fixed: images can span drives on Windows
+Fixed: no infinite loops of TIFF errors
+Fixed: no infinite loops of missing-disk errors
+Fixed: bezier nodes snap when the parent polygon is selected
+Fixed: terraserver works again
+
 1.0b4 - 10/18/07
 
 Fixed: apt.dat 810 import works
