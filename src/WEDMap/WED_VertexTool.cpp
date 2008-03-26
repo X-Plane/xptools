@@ -793,7 +793,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		{
 			bt->GetLocation(loc);
 			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
-			if (sel->IsSelected(e))
+//			if (sel->IsSelected(e))
 			{
 				if (bt->GetControlHandleLo(loc))
 					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
