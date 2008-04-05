@@ -36,7 +36,7 @@
 #if APL
 #pragma options align=mac68k
 #endif
-#if IBM
+#if IBM || LIN
 #pragma pack(push, 2)
 #endif
 
@@ -65,7 +65,7 @@ struct	BMPImageDesc {
 #if APL
 #pragma options align=reset
 #endif
-#if IBM
+#if IBM || LIN
 #pragma pack(pop)
 #endif
 
@@ -90,7 +90,7 @@ struct	BMPImageDesc {
 #define DDSCAPS_MIPMAP          0x00400000l
 #define DDSCAPS_COMPLEX         0x00000008l
 
-#if APL
+#if APL || LIN
 	#define DWORD unsigned int
 #endif
 	

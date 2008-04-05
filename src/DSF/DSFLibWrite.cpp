@@ -25,11 +25,6 @@
 #include "FileUtils.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
-#if LIN
-#define PROTOTYPES 1
-#include <sys/types.h> /* to get caddr_t for md5 */
-#include "md5global.h"
-#endif
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
@@ -66,9 +61,6 @@
 static	void	DSFSignMD5(const char * inPath)
 {
 	unsigned char buf[1024];
-#if LIN
-	unsigned char digest[16];
-#endif
 	FILE * fi = fopen(inPath, "rb");
 	if (fi == NULL) return;	
 	MD5_CTX ctx;
@@ -80,18 +72,10 @@ static	void	DSFSignMD5(const char * inPath)
 		if (c == 0) break;
 		MD5Update(&ctx, buf, c);
 	}
-#if LIN	
-	MD5Final(digest,&ctx);
-#else
 	MD5Final(&ctx);
-#endif
 	fclose(fi);
 	fi = fopen(inPath, "ab");
-#if LIN	
-	fwrite(digest, 1, 16, fi);
-#else
 	fwrite(ctx.digest, 1, 16, fi);
-#endif
 	fclose(fi);
 }
 

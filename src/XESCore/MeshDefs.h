@@ -24,7 +24,7 @@
 #define MESHDEFS_H
 
 #include "ParamDefs.h"
-#include "DemDefs.h"
+#include "DEMDefs.h"
 
 class GISFace;
 

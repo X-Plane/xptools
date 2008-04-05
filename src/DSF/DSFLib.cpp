@@ -36,9 +36,6 @@
 #include "DSFLib.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
-#if LIN
-#include "md5global.h"
-#endif
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
@@ -152,6 +149,7 @@ int		DSFCheckSignature(const char * inPath)
 	char *			mem = NULL;
 	unsigned int	file_size = 0;
 	int				result = dsf_ErrOK;
+	char * s, *d;
 	
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -169,8 +167,8 @@ int		DSFCheckSignature(const char * inPath)
 	MD5_CTX ctx;
 	MD5Init(&ctx);
 	
-	char *	s = mem;
-	char *	d = mem + file_size - 16;
+	s = mem;
+	d = mem + file_size - 16;
 	
 	while(s < d)
 	{

@@ -24,7 +24,7 @@
 #include "PlatformUtils.h"
 #include <stdio.h>
 #include <errno.h>
-#include <setjmp.h>
+//#include <setjmp.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>

@@ -75,6 +75,8 @@ using namespace std;
 
 #define SUPPORT_STL
 
+#ifdef __cplusplus 
+
 #if __MWERKS__							// metrowerks compiler
 	#include <hash_map>
 	using namespace std;				// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
@@ -92,7 +94,7 @@ using namespace std;
 //		#define __powerpc__
 //	#endif
 	
-	#if APL
+	#if APL || LIN
 		#include <ext/hash_map>
 		#include <ext/hash_fun.h>
 
@@ -126,6 +128,8 @@ using namespace std;
 	#define HASH_PARENT(x,y)
 	#define _MSL_THROW throw()
 #endif
+
+#endif /* __cplusplus */
 
 #if defined(_MSC_VER) && !defined(__MWERKS__)
 	

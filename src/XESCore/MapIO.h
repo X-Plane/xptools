@@ -58,3 +58,4 @@ void	WriteMap(FILE * fi, const 	Pmwx& inMap, ProgressFunc inProgress, int atomID
 void	ReadMap(XAtomContainer& container, Pmwx& inMap, ProgressFunc inProgress, int atomID, const TokenConversionMap& c);
 
 #endif
+

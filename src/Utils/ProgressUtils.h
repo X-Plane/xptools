@@ -41,3 +41,4 @@ bool	ConsoleProgressFunc(
 						float			inProgress);
 
 #endif
+

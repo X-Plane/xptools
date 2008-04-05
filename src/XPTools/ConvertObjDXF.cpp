@@ -21,7 +21,7 @@
  *
  */
 #include "ConvertObjDXF.h"
-#include <dime/convert/layerData.h>
+#include <dime/convert/layerdata.h>
 #include <dime/Input.h>
 #include <dime/Output.h>
 #include <dime/Model.h>
