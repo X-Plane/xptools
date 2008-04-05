@@ -7,6 +7,10 @@ INCLUDES=\
 	-Isrc/DSF \
 	-Isrc/Obj \
 	-Isrc/Utils \
+	-Isrc/XESCore \
+	-Isrc/XESTools \
+	-Ilibsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1 \
+	-Ilibsrc/CGAL-3.0/include \
 	-Ilibsrc/squish-1.10
 
 CFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h
@@ -57,6 +61,9 @@ src/XPTools/ConvertObjDXF.o
 
 SRC_DDSTool+=$(SRC_squish)
 
+SRC_MeshTool=\
+src/MeshTool/MeshTool.o
+
 %.o: %.cp
 	$(CPP) $(CFLAGS) -c $< -o $@
 
@@ -75,6 +82,9 @@ ddstool: $(SRC_DDSTool)
 objconverter: $(SRC_ObjConverter)
 	$(LINK) -o ObjConverter -l3ds -ldime $(SRC_ObjConverter)
 
+meshtool: $(SRC_MeshTool)
+	$(LINK) -o MeshTool $(SRC_MeshTool)
+
 clean:
-	rm -f $(SRC_DSFTool)
+	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool)
 
