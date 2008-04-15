@@ -184,6 +184,13 @@ inline bool IsCustomOverWater(int n)
 	if (n == terrain_Water)	return false;
 	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter == tex_custom_water;
 }
+
+inline bool IsCustom(int n)
+{
+	if (n == terrain_Water)	return false;
+	return gNaturalTerrainTable[gNaturalTerrainIndex[n]].custom_ter != tex_not_custom;
+}
+
 inline double tri_area(const Point2& p1, const Point2& p2, const Point2& p3)
 {	
 	double v1_dx = p2.x - p1.x;
@@ -549,7 +556,7 @@ string		get_terrain_name(int composite)
 		return FetchTokenString(composite);
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
-		if(gNaturalTerrainTable[gNaturalTerrainIndex[composite]].custom_ter != tex_not_custom)
+		if(IsCustom(composite))
 			return FetchTokenString(composite);
 		else
 			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
@@ -563,6 +570,7 @@ string		get_terrain_name(int composite)
 struct SortByLULayer {
 	bool operator()(const int& lhs, const int& rhs) const {
 		if (lhs >= terrain_Natural && rhs >= terrain_Natural)
+		if (!IsCustom(lhs) && !IsCustom(rhs))
 			return LowerPriorityNaturalTerrain(lhs,rhs);
 		return lhs < rhs;
 	}
@@ -749,7 +757,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
 	{
 		fi->info().flag = 0;
-		
+
 		if (fi->vertex(0)->point().y() >= inLanduse.mNorth &&
 			fi->vertex(1)->point().y() >= inLanduse.mNorth &&		
 			fi->vertex(2)->point().y() >= inLanduse.mNorth)			continue;
