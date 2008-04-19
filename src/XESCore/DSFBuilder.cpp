@@ -234,7 +234,11 @@ static void ProjectTex(double lon, double lat, double& s, double& t, tex_proj_in
 		double r2 = a1_2 / total1;
 		s = info->ST[0].x * r0 + info->ST[1].x * r1 + info->ST[2].x * r2;
 		t = info->ST[0].y * r0 + info->ST[1].y * r1 + info->ST[2].y * r2;
-	}		
+	}
+	if(s > -0.001 & s < 0.0) s = 0.0;		
+	if(t > -0.001 & t < 0.0) t = 0.0;		
+	if(s <  1.001 & s > 1.0) s = 1.0;		
+	if(t <  1.001 & t > 1.0) t = 1.0;		
 }
 
 static double GetWaterBlend(CDT::Vertex_handle v_han, const DEMGeo& dem)
