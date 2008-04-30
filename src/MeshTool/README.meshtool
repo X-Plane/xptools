@@ -1,6 +1,7 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	4/30/08    Beta 2
 	3/11/08    Beta 1
 	12/28/07   Initial Draft
 
@@ -169,3 +170,10 @@ border do not match up (e.g. the border has water on one side and land on the
 other) the results may be unpredictable.
 
 
+-------------------------------------------------------------------------------
+VERSION HISTORY
+-------------------------------------------------------------------------------
+
+BETA 2
+- Fixed: clamping of ST coordinates (caused "could not sink vertex".)
+- Fixed: multiple custom terrain types export correctly.

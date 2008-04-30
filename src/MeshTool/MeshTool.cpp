@@ -55,7 +55,7 @@ int	main(int argc, char * argv[])
 {
 	if(argc == 2 && !strcmp(argv[1],"--version"))
 	{
-		fprintf(stdout, "MeshTool version 1.0b1, compiled " __DATE__ ".\n");
+		fprintf(stdout, "MeshTool version 1.0b2, compiled " __DATE__ ".\n");
 		exit(0);
 	}
 		
