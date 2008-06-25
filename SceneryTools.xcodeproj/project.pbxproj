@@ -4531,7 +4531,6 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Debug;
@@ -4577,7 +4576,6 @@
 				ONLY_LINK_ESSENTIAL_SYMBOLS = NO;
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = Release;
@@ -5132,7 +5130,6 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "libsrc/expat/xmlparse $(inherited)";
 			};
 			name = DebugOpt;
