@@ -22,7 +22,7 @@
  */
 #include "WED_SelectionTool.h"
 
-#include <geos/operation/buffer/BufferOp.h>
+//#include <geos/operation/buffer/BufferOp.h>
 
 #include "WED_MapZoomer.h"
 #include "WED_Globals.h"
@@ -47,6 +47,7 @@
 #include "XPLMGraphics.h"
 #include "MemFileUtils.h"
 #include "Hydro.h"
+/*
 //#include <geos_c.h>
 #include <geos/geom/Geometry.h> 
 #include <geos/geom/GeometryCollection.h> 
@@ -73,7 +74,7 @@
 //#include <geos/operation/overlay/OverlayOp.h>
 //#include <geos/geom/BinaryOp.h>
 //#include <geos/version.h> 
-
+*/
 #include "BitmapUtils.h"
 #include "TensorRoads.h"
 
@@ -86,7 +87,7 @@
 #endif
 
 const	int kPointClickSlop = 4;
-
+/*
 void dump_geos_recursive(const geos::geom::Geometry * g, GISPolyObjPlacementVector& objs)
 {
 	int kids = g->getNumGeometries();
@@ -147,7 +148,7 @@ void dump_geos_recursive(const geos::geom::Geometry * g, GISPolyObjPlacementVect
 	}
 }
 
-
+*/
 
 template <typename __InputIterator, typename  __Ref>
 void ApplyRange(__InputIterator begin, __InputIterator end, void (* func)(typename __InputIterator::value_type, __Ref), __Ref ref)
