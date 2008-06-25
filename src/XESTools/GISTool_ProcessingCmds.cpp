@@ -58,6 +58,7 @@ static int DoSpreadsheet(const vector<const char *>& args)
 static int DoRoads(const vector<const char *>& args)
 {
 	BuildRoadsForFace(gMap, gDem[dem_Elevation], gDem[dem_Slope], gDem[dem_UrbanDensity], gDem[dem_UrbanRadial], gDem[dem_UrbanSquare], NULL,  gProgress, NULL, NULL);
+	return 0;
 }
 
 
