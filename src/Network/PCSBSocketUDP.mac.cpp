@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2004, Ben Supnik and Chris Serio.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -20,18 +20,9 @@
  * THE SOFTWARE.
  *
  */
-/*
- * PLEASE DO NOT REDISTRIBUTE THIS FILE!!!!!!!!!!!!!!!!!!
- *
- * This file is (c) Copyright 2003 Ben Supnik and Chris Serio, all rights reserved.
- *
- * This file is donated to Austin Meyer for use in X-Plane projects; it originally
- * comes from XSquawkBox.  Please use it for X-Plane and X-Plane related code,
- * but please do not redistribute it.
- *
- */
 
 #include "PCSBSocketUDP.h"
+#include <Carbon/Carbon.h>
 
 PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
 {
@@ -67,32 +58,7 @@ PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
 	}
 	
 	::OTSetNonBlocking(mMacSocket);
-	
-    
-      	TOption		option;
-      	TOptMgmt	request;
-      	TOptMgmt	result;
-      	
-      option.len = kOTFourByteOptionSize;
-      option.level = INET_IP;
-      option.name = kIP_BROADCAST;
-      option.status = 0;
-      option.value[0] = T_YES;
-      
-      request.opt.buf = (UInt8 *) &option;
-      request.opt.len = sizeof(option);
-      request.flags = T_NEGOTIATE;
-      
-      result.opt.buf = (UInt8 *) &option;
-      result.opt.maxlen = sizeof(option);
-      	
-	err = OTOptionManagement(mMacSocket, &request, &result);
-	
-	InetInterfaceInfo	us;
-	
-	OTInetGetInterfaceInfo(&us,0);
-	mBroadcastAddress = us.fBroadcastAddr;
-	mBroadcastAddress = 0xFFFFFFFF;
+			
 }
 
 PCSBSocketUDP::~PCSBSocketUDP()
@@ -138,9 +104,6 @@ long	PCSBSocketUDP::WriteData(
 							unsigned long		inDstIP,
 							unsigned short		inDstPort)
 {
-	if (inDstIP == 0xFFFFFF)
-		inDstIP = mBroadcastAddress;
-		
 		InetAddress		remoteAddress;
 		TUnitData		packet;
 		

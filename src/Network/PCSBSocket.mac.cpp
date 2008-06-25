@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2004, Ben Supnik and Chris Serio.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -20,22 +20,12 @@
  * THE SOFTWARE.
  *
  */
-/*
- * PLEASE DO NOT REDISTRIBUTE THIS FILE!!!!!!!!!!!!!!!!!!
- *
- * This file is (c) Copyright 2003 Ben Supnik and Chris Serio, all rights reserved.
- *
- * This file is donated to Austin Meyer for use in X-Plane projects; it originally
- * comes from XSquawkBox.  Please use it for X-Plane and X-Plane related code,
- * but please do not redistribute it.
- *
- */
+
+
 #include "PCSBSocket.h"
-#if defined(__MWERKS__)
-	#include <Carbon.h>
-#else
-	#include <Carbon/Carbon.h>
-#endif
+#include <Carbon/Carbon.h>
+//#include <OpenTransport.h>
+//#include <OpenTransportProviders.h>
 
 // Use this to dump printfs out for the very low level open transport code!
 #define	LOG_MAC_SOCKETS	0

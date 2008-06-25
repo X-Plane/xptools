@@ -26,10 +26,7 @@
 #define BLOCKING 0
 #define NON_BLOCKING 1
 
-#ifndef IBM
-	#error YOU MUST DEFINE IBM TO USE THIS FILE!
-#endif
-
+extern int errno;
 /* Construct a UDP socket around a port number.  The port has no connection
 * status. */
 	
@@ -37,36 +34,33 @@ PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
 {
 	int nResult;
 	sIn.sin_family = AF_INET;
-	sIn.sin_addr.S_un.S_addr = INADDR_ANY;					//Let windows pick a suitable addy
+	sIn.sin_addr.s_addr=htonl(INADDR_ANY);					//Let linux pick a suitable addy
 	sIn.sin_port = htons(inPort);							//Set the local port or if 0 let windows assign one
 
 	mWinSocket = socket(PF_INET,SOCK_DGRAM,IPPROTO_UDP);	//start the socket for UDP comms
 
-	if(mWinSocket == INVALID_SOCKET)
+	if(mWinSocket == -1)
 	{
-		WSAGetLastError();
 		throw udp_Exception_UnknownError;
 	}
 
-	if (bind(mWinSocket, (SOCKADDR*)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
+	if (bind(mWinSocket, (sockaddr*)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
 	{
-		int error = WSAGetLastError();
 		// This is almost always because our port is in use.
-		closesocket(mWinSocket);
+		close(mWinSocket);
 		throw udp_Exception_BindFailed;
 	}
 
-	unsigned long nSetSocketType = NON_BLOCKING;
-	nResult = ioctlsocket(mWinSocket,FIONBIO,&nSetSocketType);	//set to non-blocking
-	if(nResult == SOCKET_ERROR)
+	nResult = fcntl(mWinSocket, F_SETFL, O_NONBLOCK); //set to non-blocking
+	if(nResult != 0)
 	{
-		closesocket(mWinSocket);
+		close(mWinSocket);
 		throw udp_Exception_UnknownError;
 	}
 }
 PCSBSocketUDP::~PCSBSocketUDP()
 {
-	closesocket(mWinSocket);
+	close(mWinSocket);
 }
 		
 /* This method reads data if there is any.  It returns the number of 
@@ -81,26 +75,25 @@ long PCSBSocketUDP::ReadData(
 				unsigned long *		outSrcIP,
 				unsigned short *	outSrcPort)
 {
-	SOCKADDR_IN remoteAddress;
+	sockaddr_in remoteAddress;
 	int fromlen = sizeof(remoteAddress);
 	remoteAddress.sin_family = AF_INET;
 	remoteAddress.sin_port = 0;
-	remoteAddress.sin_addr.S_un.S_addr = 0;
+	remoteAddress.sin_addr.s_addr = 0;
 	
-	WSASetLastError(0);
 	int result = recvfrom(mWinSocket, 
 						 (char*)outBuf, 
 						 outBufLength,
 						 0,
-						 (SOCKADDR*)&remoteAddress,
-						 &fromlen);
+						 (sockaddr*)&remoteAddress,
+						 (socklen_t*)&fromlen);
 		
-	*outSrcIP = ntohl(remoteAddress.sin_addr.S_un.S_addr);
+	*outSrcIP = ntohl(remoteAddress.sin_addr.s_addr);
 	*outSrcPort = ntohs(remoteAddress.sin_port);
 	
-	if (result == SOCKET_ERROR)
+	if (result == -1)
 	{
-		if(WSAGetLastError() != WSAEWOULDBLOCK)
+		if(errno != EAGAIN)
 		{
 			return -1;
 		}
@@ -121,12 +114,11 @@ long PCSBSocketUDP::WriteData(
 				unsigned long		inDstIP,
 				unsigned short		inDstPort)
 {
-	SOCKADDR_IN destAddress;
+	sockaddr_in destAddress;
 	int tolen = sizeof(destAddress);
 	destAddress.sin_family = AF_INET;
 	destAddress.sin_port = htons(inDstPort);
-	destAddress.sin_addr.S_un.S_addr = htonl(inDstIP);
-	WSASetLastError(0);
+	destAddress.sin_addr.s_addr = htonl(inDstIP);
 	int result = sendto(mWinSocket, 
 						 (char*)inBuf, 
 						 inBufLength,
@@ -134,7 +126,7 @@ long PCSBSocketUDP::WriteData(
 						 (sockaddr*)&destAddress,
 						 tolen);
 	
-	if (result == SOCKET_ERROR)
+	if (result == -1)
 	{
 		return -1;
 	}

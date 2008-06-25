@@ -1,37 +1,48 @@
-/*
+/* 
  * Copyright (c) 2004, Ben Supnik and Chris Serio.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
  * THE SOFTWARE.
  *
  */
-
 #include "PCSBSocket.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/ioctl.h>
+#if LIN
+	#include <asm/ioctls.h>
+#endif
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+
+
 
 #define MAJOR_VERSION_REQUIRED 2
 #define MINOR_VERSION_REQUIRED 0
 #define BLOCKING 0
 #define NON_BLOCKING 1
-
-#ifndef IBM
-	#error YOU MUST DEFINE IBM TO USE THIS FILE!
-#endif
 
 //FILE * hexdump = fopen("hexdump.txt","w");
 //extern FILE * hexdump;
@@ -50,35 +61,34 @@ PCSBSocket::PCSBSocket(unsigned short inPort, bool inServer)
 	mIsAServer = false;
 
 	sIn.sin_family = AF_INET;
-	sIn.sin_addr.S_un.S_addr = INADDR_ANY;					//Let windows pick a suitable addy
+	sIn.sin_addr.s_addr = INADDR_ANY;					//Let windows pick a suitable addy
 	sIn.sin_port = htons(inPort);							//Set the local port or if 0 let windows assign one
 
-	mWinSocket = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);	//start the socket for TCP/IP comms
+	mLinSocket = socket(PF_INET,SOCK_STREAM,0);	//start the socket for TCP/IP comms
 
-	if(mWinSocket == INVALID_SOCKET)
+	if(mLinSocket == -1)
 	{
 		socketStatus = status_Error;
 		return;
 	}
-	if (setsockopt(mWinSocket, IPPROTO_TCP, TCP_NODELAY, (const char *)&on,
-      sizeof(on))<0)
-   {
-	   printf("-----------------------Could not set TCP_NODELAY on port %d-------------\n",inPort);
-   }
-	if (bind(mWinSocket, (LPSOCKADDR)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
+	if (setsockopt(mLinSocket, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(on))<0)
+	{
+		printf("-----------------------Could not set TCP_NODELAY on port %d-------------\n",inPort);
+	}
+	if (bind(mLinSocket, (struct sockaddr*)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
 	{
 		socketStatus = status_Error;
 		return;
 	}
 
 	unsigned long nSetSocketType = NON_BLOCKING;
-	nResult = ioctlsocket(mWinSocket,FIONBIO,&nSetSocketType);	//set to non-blocking
+	nResult = ioctl(mLinSocket,FIONBIO,&nSetSocketType);	//set to non-blocking
 
 	//We're a server so start listening!
 	if(inServer)
 	{
 		mIsAServer = true;
-		if(listen(mWinSocket, SOMAXCONN))
+		if(listen(mLinSocket, SOMAXCONN))
 		{
 			printf("Could not enable listening!");
 			socketStatus = status_Error;
@@ -88,33 +98,26 @@ PCSBSocket::PCSBSocket(unsigned short inPort, bool inServer)
 
 }
 
-PCSBSocket::PCSBSocket(SOCKET inWorkerSocket)
+PCSBSocket::PCSBSocket(int inWorkerSocket)
 {
-	mWinSocket = inWorkerSocket;
+	mLinSocket = inWorkerSocket;
 	socketStatus = status_Connected;
 	mReceivedRelease = false;
 	mSentRelease = false;
 	mIsAServer = false;
 
 	unsigned long nSetSocketType = NON_BLOCKING;
-	int nResult = ioctlsocket(mWinSocket,FIONBIO,&nSetSocketType);	//set to non-blocking
+	int nResult = ioctl(mLinSocket,FIONBIO,&nSetSocketType);	//set to non-blocking
 
 }
 /* Start up the networking DLL for the first time.  Returns true if
 	the DLL is ok and sockets can be used. */
-
+	
 /* BAS - note: we ignore the init and shutdown DLL since we can recursively
  * open winsock. :-) */
 bool PCSBSocket::StartupNetworking(bool inInitDLL)
 {
-	WORD wVersionRequired = MAKEWORD(MAJOR_VERSION_REQUIRED,MINOR_VERSION_REQUIRED);
-	WSADATA wsaData;
-
-	if(WSAStartup(wVersionRequired, &wsaData) != NO_ERROR)	//Startup the Winsock2 dll
-		return false;
-
-	if (wsaData.wVersion != wVersionRequired)				//Check for version
-		return false;
+	/* Rock on. We don't need to do this networking startup bullcrap. */
 
 	return true;
 
@@ -123,20 +126,21 @@ bool PCSBSocket::StartupNetworking(bool inInitDLL)
 	  to be closed down. */
 void PCSBSocket::ShutdownNetworking(bool inCloseDLL)
 {
-	WSACleanup();
+	/* this is a REAL os where networking is on by default! */
 }
 /* Close the socket.  you will be forcefully disconnected if necessary. */
 
 PCSBSocket::~PCSBSocket()
 {
-	closesocket(mWinSocket);
+	shutdown(mLinSocket, SHUT_RDWR);
+	close(mLinSocket);
 }
 
 PCSBSocket * PCSBSocket::Accept()
 {
-	SOCKET workerSocket = accept(mWinSocket,NULL,NULL);
+	int workerSocket = accept(mLinSocket,NULL,NULL);
 	socketStatus = status_Ready;
-	if(workerSocket == SOCKET_ERROR)
+	if(workerSocket == -1)
 			return NULL;	// No one called.
 
 	return new PCSBSocket(workerSocket);	// Return a new socket object.
@@ -146,18 +150,18 @@ PCSBSocket * PCSBSocket::Accept()
 
 PCSBSocket::Status PCSBSocket::GetStatus(void)
 {
-	TIMEVAL timeout;
+	struct timeval timeout;
 	timeout.tv_sec = 0;				//no timeout!
 	timeout.tv_usec = 0;			//no timeout!
 	if ((socketStatus == status_Ready) && mIsAServer)
 	{
 		fd_set socketSetRead;
 		FD_ZERO(&socketSetRead);
-		FD_SET(mWinSocket,&socketSetRead);
-		int nReturn = select(NULL,&socketSetRead,NULL,NULL,&timeout);
+		FD_SET(mLinSocket,&socketSetRead);
+		int nReturn = select(mLinSocket+1,&socketSetRead,NULL,NULL,&timeout);
 		if (nReturn > 0)
 		{
-			if(FD_ISSET(mWinSocket,&socketSetRead))	//Able to read on it?
+			if(FD_ISSET(mLinSocket,&socketSetRead))	//Able to read on it?
 				{
 					socketStatus = status_Connecting;
 					return socketStatus;
@@ -181,13 +185,13 @@ PCSBSocket::Status PCSBSocket::GetStatus(void)
 		fd_set socketSetWrite,socketSetError;
 		FD_ZERO(&socketSetWrite);
 		FD_ZERO(&socketSetError);
-		FD_SET(mWinSocket,&socketSetWrite);		//macro to form set
-		FD_SET(mWinSocket,&socketSetError);
-		int nReturn = select(NULL,NULL,&socketSetWrite,&socketSetError,&timeout);
+		FD_SET(mLinSocket,&socketSetWrite);		//macro to form set
+		FD_SET(mLinSocket,&socketSetError);
+		int nReturn = select(mLinSocket+1,NULL,&socketSetWrite,&socketSetError,&timeout);
 		// Check to see if our connection completed.
 		if (nReturn > 0)
 		{
-			if((FD_ISSET(mWinSocket,&socketSetWrite)) && !(FD_ISSET(mWinSocket,&socketSetError)))
+			if((FD_ISSET(mLinSocket,&socketSetWrite)) && !(FD_ISSET(mLinSocket,&socketSetError)))
 			{	//If the socket is ready to write with no errors
 				socketStatus = status_Connected;
 				return socketStatus;
@@ -224,17 +228,18 @@ bool PCSBSocket::ReceivedRelease(void)
 void PCSBSocket::Connect(unsigned long inIP, unsigned short inPort)
 {
 	socketStatus = status_Connecting;
-	SOCKADDR_IN sOut;
+	struct sockaddr_in sOut;
 	int nResult;
 
 	sOut.sin_family = AF_INET;
-	sOut.sin_port = htons(inPort);				//set the remote connection port
-	sOut.sin_addr.S_un.S_addr = htonl(inIP);	//set the remote IP to connect to
-	nResult = connect(mWinSocket,(LPSOCKADDR)&sOut,sizeof(sOut));	//connect
-	if(nResult == SOCKET_ERROR)
+	sOut.sin_port = htons(inPort);			//set the remote connection port
+	sOut.sin_addr.s_addr = htonl(inIP);		//set the remote IP to connect to
+	nResult = connect(mLinSocket,(sockaddr*)&sOut,sizeof(sOut));	//connect
+	if(nResult == -1)
 	{
-		if(WSAGetLastError() != WSAEWOULDBLOCK)		//If it's a mere blocking error, check if connection completed by using select()
+		if((errno != EAGAIN) && (errno != EWOULDBLOCK) && (errno != EINPROGRESS))		//If it's a mere blocking error, check if connection completed by using select()
 		{
+			printf("error = %d", errno);
 			socketStatus = status_Error;
 		}
 	}
@@ -252,16 +257,15 @@ void PCSBSocket::Connect(unsigned long inIP, unsigned short inPort)
 long PCSBSocket::ReadData(void* outBuf,long inLength)
 {
 	int nReturn;
-	nReturn = recv(mWinSocket,(char*)outBuf,inLength,NULL);
-	if(nReturn == SOCKET_ERROR)
+	nReturn = recv(mLinSocket,(char*)outBuf,inLength,0);
+	if(nReturn == -1)
 	{
-		nReturn = WSAGetLastError();
-		if(nReturn == WSAEWOULDBLOCK)
+		if(errno == EAGAIN)
 		{
 			//printf("No Data on Socket yet!\n");
 			return 0;	// ** Signal no data
 		}
-		else if((nReturn == WSAECONNRESET)||(nReturn == WSAENOTCONN)||(nReturn == WSAETIMEDOUT)||(nReturn == WSAECONNABORTED))
+		else if((errno == ECONNABORTED) || (errno == ECONNREFUSED) || (errno == ECONNRESET) || (errno == EHOSTUNREACH) || (errno == ENETDOWN) || (errno == ENETRESET) || (errno == ENETUNREACH) || (errno == ETIMEDOUT))
 		{
 			socketStatus = status_Disconnected;
 			return -1;
@@ -299,24 +303,19 @@ long PCSBSocket::ReadData(void* outBuf,long inLength)
 long PCSBSocket::WriteData(const void* inBuf,long inLength)
 {
 	int nReturn;
-
+	
 	//fprintf(hexdump,"\n");
 	//DumpHex(hexdump,(char*)inBuf,inLength);
 	//fflush(hexdump);
-
-	nReturn = send(mWinSocket,(char*)inBuf,inLength,NULL);
-	if(nReturn == SOCKET_ERROR)
+	
+	nReturn = send(mLinSocket,(char*)inBuf,inLength,NULL);
+	if(nReturn == -1)
 	{
-		nReturn = WSAGetLastError();
-		if(nReturn == WSAEWOULDBLOCK)
+		if(errno == EWOULDBLOCK)
 		{
 			return 0;	// ** Signal no data
 		}
-		else if((nReturn == WSAECONNRESET)||  //These errors are okay. They signal the obvious.
-				(nReturn == WSAENOTCONN)||
-				(nReturn == WSAETIMEDOUT)||
-				(nReturn == WSAECONNABORTED)||
-				(nReturn == WSAESHUTDOWN))
+		else if((errno == ECONNABORTED) || (errno == ECONNREFUSED) || (errno == ECONNRESET) || (errno == EHOSTUNREACH) || (errno == ENETDOWN) || (errno == ENETRESET) || (errno == ENETUNREACH) || (errno == ETIMEDOUT))
 		{
 			socketStatus = status_Disconnected;
 			return -1;
@@ -335,7 +334,7 @@ long PCSBSocket::WriteData(const void* inBuf,long inLength)
 
 void PCSBSocket::Disconnect(void)
 {
-	shutdown(mWinSocket,SD_SEND|SD_RECEIVE);
+	shutdown(mLinSocket,SHUT_RDWR);
 	socketStatus = status_Disconnected;
 }
 
@@ -345,7 +344,7 @@ void PCSBSocket::Disconnect(void)
 
 void PCSBSocket::Release(void)
 {
-	if(shutdown(mWinSocket,SD_SEND)==SOCKET_ERROR)
+	if(shutdown(mLinSocket,SHUT_WR)==-1)
 		socketStatus = status_Error;
 	mSentRelease = true;
 }
@@ -357,85 +356,18 @@ void PCSBSocket::Release(void)
 void PCSBSocket::GetAddresses(ConnectionData* dataStruct)
 {
 	int nReturn;
-	SOCKADDR_IN tempStruct;
-	int sizeStruct = sizeof(tempStruct);
+	struct sockaddr_in tempStruct;
+	socklen_t sizeStruct = sizeof(tempStruct);
 	/***********************Remote Addresses****************************/
-	nReturn = getpeername(mWinSocket,(LPSOCKADDR)&tempStruct,&sizeStruct);
-	dataStruct->remoteIP = ntohl(tempStruct.sin_addr.S_un.S_addr);
+	nReturn = getpeername(mLinSocket,(struct sockaddr*)&tempStruct,&sizeStruct);
+	dataStruct->remoteIP = ntohl(tempStruct.sin_addr.s_addr);
 	dataStruct->remotePort = ntohs(tempStruct.sin_port);
 	/***********************Local Addresses****************************/
-	nReturn = getsockname(mWinSocket,(LPSOCKADDR)&tempStruct,&sizeStruct);
-	dataStruct->localIP = ntohl(tempStruct.sin_addr.S_un.S_addr);
+	nReturn = getsockname(mLinSocket,(struct sockaddr*)&tempStruct,&sizeStruct);
+	dataStruct->localIP = ntohl(tempStruct.sin_addr.s_addr);
 	dataStruct->localPort = ntohs(tempStruct.sin_port);
 
 }
-
- /* This function traverses an array of PCSBSockets and returns the
-  * number of sockets that have I/O that needs to be done. The function
-  * also sets any array element to 0 that does not need work done to it.
-  * Therefore, after the function returns normally, the only array elements
-  * that are non-null are ones that need to have work done. The function
-  * shall return a -1 if the timeout has elapsed and -2 if there was a socket
-  * error.*/
-int PCSBSocket::WaitForSockets(PCSBSocket** inSockets, int inCount, long inTimeout)
-{
-	int nReturn;
-	TIMEVAL timeout;
-	fd_set socketSetWrite, socketSetRead;
-
-	//Set the timeout for the select
-	timeout.tv_sec = inTimeout;
-	timeout.tv_usec = 0;
-	FD_ZERO(&socketSetWrite);
-	FD_ZERO(&socketSetRead);
-
-	//The default set array size is 64. If we have more than
-	//that, we have a problem that we need to deal with by breaking
-	//the checks up into pieces
-	//
-	//TODO: FIX THIS KNOWN PROBLEM!
-	//For now, just pray that inCount < 64
-
-	//Set up the "set" that we want to look through for reads and writes
-	for(int n = 0; n < inCount; n++)
-	{
-		//We can't write to a listener socket and winsock will
-		//barf if we try.
-		if(inSockets[n]->mIsAServer == false)
-			FD_SET(inSockets[n]->mWinSocket, &socketSetWrite);
-		FD_SET(inSockets[n]->mWinSocket, &socketSetRead);
-	}
-
-	//Check the sockets.
-	//The massive nasty first argument just determines the maximum size of all possible sets
-	//and adds 1.
-	nReturn = select(((socketSetRead.fd_count > socketSetWrite.fd_count)?(socketSetRead.fd_count + 1) : (socketSetWrite.fd_count + 1)), 
-					 &socketSetRead, 
-					 &socketSetWrite, 
-					 NULL, 
-					 &timeout);
-	//The operation timed out
-	if(nReturn == 0)
-		return 0;
-	//If there was no error, let's check to see what needs to be done
-	if(nReturn != SOCKET_ERROR)
-	{
-		for(int n = 0; n < inCount; n++)
-		{
-			//See if any reads or writes are ready. If there isn't,
-			//null out that array element.
-			if(!(FD_ISSET(inSockets[n]->mWinSocket, &socketSetRead)) &&
-			   !(FD_ISSET(inSockets[n]->mWinSocket, &socketSetWrite)))
-			inSockets[n] = 0;
-		}
-		return nReturn;
-	}
-	else
-	{
-		return -1;	//This is an error!
-	}
-}
-
 /**********************************************************************
 * DNS Access
 **********************************************************************/
@@ -444,10 +376,10 @@ int PCSBSocket::WaitForSockets(PCSBSocket** inSockets, int inCount, long inTimeo
 
 unsigned long PCSBSocket::LookupAddress(const char* inAddress)
 {
-	HOSTENT* host;
+	struct hostent* host;
 	struct in_addr *ipAddress;
 	unsigned long ip;
-
+	
 	//try it as an IP first
 	ip = inet_addr(inAddress);
 	if (ip != INADDR_NONE)

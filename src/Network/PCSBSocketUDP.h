@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2004, Ben Supnik and Chris Serio.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -20,28 +20,24 @@
  * THE SOFTWARE.
  *
  */
-/*
- * PLEASE DO NOT REDISTRIBUTE THIS FILE!!!!!!!!!!!!!!!!!!
- *
- * This file is (c) Copyright 2003 Ben Supnik and Chris Serio, all rights reserved.
- *
- * This file is donated to Austin Meyer for use in X-Plane projects; it originally
- * comes from XSquawkBox.  Please use it for X-Plane and X-Plane related code,
- * but please do not redistribute it.
- *
- */
+
 #ifndef _PCSBSocket_UDP_h_
 #define _PCSBSocket_UDP_h_
 
-#if _WIN32
+#if IBM
 	#include <Winsock2.h>
 	#include <Ws2tcpip.h>
+#elif 0
+	#include <Carbon/Carbon.h>
 #else
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <netdb.h>
+	#include <arpa/inet.h>
+	#include <sys/types.h>
+	#include <unistd.h>
+	#include <fcntl.h>
+	#include <errno.h>
 #endif
 
 /* These longs are thrown from the constructor if we can't init. */
@@ -71,7 +67,7 @@ public:
 							unsigned short *	outSrcPort);
 							
 	/* This method writes data to the UDP socket and returns the number of 
-	 * bytes written or -1 for an error.  Pass in the IP and port youare sending to. */
+	 * bytes written or -1 for an error.  Pass in the IP and port you are sending to. */
 							
 			long	WriteData(
 							void *				inBuf,
@@ -81,14 +77,14 @@ public:
 
 private:
 
-#if _WIN32
+#if IBM
 		SOCKET				mWinSocket;		//our socket
 		SOCKADDR_IN			sIn;			//our address struct
-public:
-		ULONG				mBroadcastAddress;
-#else		
+#elif 0		
 		EndpointRef			mMacSocket;
-		InetHost			mBroadcastAddress;
+#else
+		int					mWinSocket;
+		sockaddr_in			sIn;
 #endif		
 							
 };

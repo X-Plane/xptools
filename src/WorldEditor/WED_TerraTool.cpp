@@ -64,8 +64,8 @@ void	WED_TerraTool::DrawFeedbackUnderlay(
 	if (!inCurrent && !mHas) return;
 	double	s, n, e, w;
 	GetZoomer()->GetMapVisibleBounds(w, s, e, n);
-
-	if (mLocator->GetLocation(ResString(), mData.c_str(), w, s, e, n, mX1, mX2, mY1, mY2, mDomain))
+	string status;
+	if (mLocator->GetLocation(ResString(), mData.c_str(), w, s, e, n, mX1, mX2, mY1, mY2, mDomain, status))
 	{
 		mHas = 1;
 		for (int x = mX1; x < mX2; ++x)
