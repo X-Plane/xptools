@@ -4671,8 +4671,6 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeos.a,
-					/usr/local/lib/libgeos_c.a,
 					/usr/local/lib/libgeotiff.a,
 					/usr/local/lib/libfreetype.a,
 					/usr/local/lib/libproj.a,
@@ -4698,8 +4696,6 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeos.a,
-					/usr/local/lib/libgeos_c.a,
 					/usr/local/lib/libgeotiff.a,
 					/usr/local/lib/libfreetype.a,
 					/usr/local/lib/libproj.a,
@@ -4983,8 +4979,6 @@
 					"-fpermissive",
 				);
 				OTHER_LDFLAGS = (
-					/usr/local/lib/libgeos.a,
-					/usr/local/lib/libgeos_c.a,
 					/usr/local/lib/libgeotiff.a,
 					/usr/local/lib/libfreetype.a,
 					/usr/local/lib/libproj.a,
