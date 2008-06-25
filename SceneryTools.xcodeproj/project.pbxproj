@@ -191,8 +191,6 @@
 		D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D00AB22C84003949C5 /* HTTPClient.cpp */; };
-		D62435C90AE40392004F00E3 /* PCSBSocket.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D30AB22C84003949C5 /* PCSBSocket.mac.cpp */; };
-		D62435CB0AE40392004F00E3 /* PCSBSocketUDP.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D60AB22C84003949C5 /* PCSBSocketUDP.mac.cpp */; };
 		D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D80AB22C84003949C5 /* Terraserver.cpp */; };
 		D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36DA0AB22C84003949C5 /* XMLObject.cpp */; };
 		D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37330AB22C85003949C5 /* AptElev.cpp */; };
@@ -276,6 +274,10 @@
 		D62FD0090BD54B9F00ED6CF8 /* WED_AirportChain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0080BD54B9F00ED6CF8 /* WED_AirportChain.cpp */; };
 		D62FD0B70BD555B800ED6CF8 /* WED_Taxiway.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */; };
 		D62FD0D90BD55AE000ED6CF8 /* WED_AirportBoundary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */; };
+		D633FA6D0E12DF7400A3913F /* PCSBSocket.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */; };
+		D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
+		D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */; };
+		D633FA8F0E12E02F00A3913F /* PCSBSocket.lin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */; };
 		D6367D1A0B82123400091AFC /* WED_Select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6367D180B82123400091AFC /* WED_Select.cpp */; };
 		D63680BA0B8A0F4B00091AFC /* GUI_Destroyable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63680B90B8A0F4B00091AFC /* GUI_Destroyable.cpp */; };
 		D636817C0B8AC62600091AFC /* WED_GISPoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D636817B0B8AC62600091AFC /* WED_GISPoint.cpp */; };
@@ -710,8 +712,6 @@
 		D6ED36B80B67964D00D5484E /* GUI_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369A0AB22C84003949C5 /* GUI_Timer.cpp */; };
 		D6ED36B90B67964D00D5484E /* GUI_Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369C0AB22C84003949C5 /* GUI_Window.cpp */; };
 		D6ED36BA0B67964D00D5484E /* HTTPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D00AB22C84003949C5 /* HTTPClient.cpp */; };
-		D6ED36BB0B67964D00D5484E /* PCSBSocket.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D30AB22C84003949C5 /* PCSBSocket.mac.cpp */; };
-		D6ED36BC0B67964D00D5484E /* PCSBSocketUDP.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36D60AB22C84003949C5 /* PCSBSocketUDP.mac.cpp */; };
 		D6ED36BE0B67964D00D5484E /* XMLObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36DA0AB22C84003949C5 /* XMLObject.cpp */; };
 		D6ED36BF0B67964D00D5484E /* AptElev.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37330AB22C85003949C5 /* AptElev.cpp */; };
 		D6ED36C00B67964D00D5484E /* FontMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37580AB22C85003949C5 /* FontMgr.cpp */; };
@@ -1070,6 +1070,8 @@
 		D62FD0B60BD555B800ED6CF8 /* WED_Taxiway.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Taxiway.cpp; sourceTree = "<group>"; };
 		D62FD0D70BD55AE000ED6CF8 /* WED_AirportBoundary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AirportBoundary.h; sourceTree = "<group>"; };
 		D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBoundary.cpp; sourceTree = "<group>"; };
+		D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PCSBSocket.lin.cpp; sourceTree = "<group>"; };
+		D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PCSBSocketUDP.lin.cpp; sourceTree = "<group>"; };
 		D6367D180B82123400091AFC /* WED_Select.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Select.cpp; sourceTree = "<group>"; };
 		D6367D190B82123400091AFC /* WED_Select.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Select.h; sourceTree = "<group>"; };
 		D63680B80B8A0F4B00091AFC /* GUI_Destroyable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Destroyable.h; sourceTree = "<group>"; };
@@ -2428,9 +2430,11 @@
 				D6BC36D00AB22C84003949C5 /* HTTPClient.cpp */,
 				D6BC36D10AB22C84003949C5 /* HTTPClient.h */,
 				D6BC36D20AB22C84003949C5 /* PCSBSocket.h */,
+				D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */,
 				D6BC36D30AB22C84003949C5 /* PCSBSocket.mac.cpp */,
 				D6BC36D40AB22C84003949C5 /* PCSBSocket.win.cpp */,
 				D6BC36D50AB22C84003949C5 /* PCSBSocketUDP.h */,
+				D633FA6C0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp */,
 				D6BC36D60AB22C84003949C5 /* PCSBSocketUDP.mac.cpp */,
 				D6BC36D70AB22C84003949C5 /* PCSBSocketUDP.win.cpp */,
 				D6BC36D80AB22C84003949C5 /* Terraserver.cpp */,
@@ -3791,8 +3795,6 @@
 				D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */,
 				D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */,
 				D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */,
-				D62435C90AE40392004F00E3 /* PCSBSocket.mac.cpp in Sources */,
-				D62435CB0AE40392004F00E3 /* PCSBSocketUDP.mac.cpp in Sources */,
 				D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */,
 				D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */,
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
@@ -3932,6 +3934,8 @@
 				D67684530CC699070032B90C /* WED_EditCommands.cpp in Sources */,
 				D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */,
 				D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */,
+				D633FA6D0E12DF7400A3913F /* PCSBSocket.lin.cpp in Sources */,
+				D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4198,8 +4202,6 @@
 				D6ED36B80B67964D00D5484E /* GUI_Timer.cpp in Sources */,
 				D6ED36B90B67964D00D5484E /* GUI_Window.cpp in Sources */,
 				D6ED36BA0B67964D00D5484E /* HTTPClient.cpp in Sources */,
-				D6ED36BB0B67964D00D5484E /* PCSBSocket.mac.cpp in Sources */,
-				D6ED36BC0B67964D00D5484E /* PCSBSocketUDP.mac.cpp in Sources */,
 				D6ED36BE0B67964D00D5484E /* XMLObject.cpp in Sources */,
 				D6ED36BF0B67964D00D5484E /* AptElev.cpp in Sources */,
 				D6ED36C00B67964D00D5484E /* FontMgr.cpp in Sources */,
@@ -4382,6 +4384,8 @@
 				D6C578B90C7E33B200FCB4C1 /* rangefit.cpp in Sources */,
 				D6C578BB0C7E33B200FCB4C1 /* singlecolourfit.cpp in Sources */,
 				D6C578BE0C7E33B200FCB4C1 /* squish.cpp in Sources */,
+				D633FA8B0E12E02000A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
+				D633FA8F0E12E02F00A3913F /* PCSBSocket.lin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
