@@ -499,9 +499,6 @@ int		XPTextField(
 				}
 			}
 
-#if !DEV
-um?
-#endif			
 //			if ((descLen-scrollPos) > charWidth)
 //				descLen = charWidth + scrollPos;
 				
@@ -740,9 +737,6 @@ um?
 							
 			if (XPGetWidgetProperty(inWidget, xpProperty_ActiveEditSide, NULL))
 			{
-#if !DEV
-um?
-#endif			
 //				if (insertStart < scrollPos)
 //					scrollPos = insertStart;
 //				if ((scrollPos + charWidth) < insertEnd)
@@ -756,9 +750,6 @@ um?
 			
 			if (me.empty())
 				scrollPos = 0;
-#if !DEV
-um?	Use scrollLim?
-#endif
 //			else if (scrollPos >= (me.size() - charWidth))
 //				scrollPos = me.size() - charWidth;
 
