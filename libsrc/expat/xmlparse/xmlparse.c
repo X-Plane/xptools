@@ -3656,7 +3656,7 @@ int keyeq(KEY s1, KEY s2)
 }
 
 static
-unsigned long hash(KEY s)
+unsigned long expat_hash(KEY s)
 {
   unsigned long h = 0;
   while (*s)
@@ -3676,10 +3676,10 @@ NAMED *lookup(HASH_TABLE *table, KEY name, size_t createSize)
       return 0;
     table->size = INIT_SIZE;
     table->usedLim = INIT_SIZE / 2;
-    i = hash(name) & (table->size - 1);
+    i = expat_hash(name) & (table->size - 1);
   }
   else {
-    unsigned long h = hash(name);
+    unsigned long h = expat_hash(name);
     for (i = h & (table->size - 1);
          table->v[i];
          i == 0 ? i = table->size - 1 : --i) {
@@ -3697,7 +3697,7 @@ NAMED *lookup(HASH_TABLE *table, KEY name, size_t createSize)
       for (i = 0; i < table->size; i++)
 	if (table->v[i]) {
 	  size_t j;
-	  for (j = hash(table->v[i]->name) & (newSize - 1);
+	  for (j = expat_hash(table->v[i]->name) & (newSize - 1);
 	       newV[j];
 	       j == 0 ? j = newSize - 1 : --j)
 	    ;
