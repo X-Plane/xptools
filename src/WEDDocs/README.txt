@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 
-                       WORLD-EDITOR 1.0b4 RELEASE NOTES
+                       WORLD-EDITOR 1.0r1 RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ SYSTEM REQUIREMENTS
 
 WED should run on any Windows or Macintosh computer capable of running X-Plane.
 WED binaries are not available for Linux, and the code is not fully portable to
-Linux.
+Linux.  Users have reported mixed results with WINE.
 
 -------------------------------------------------------------------------------
 INSTALLATION INSTRUCTIONS
@@ -62,6 +62,9 @@ KNOWN ISSUES
 -------------------------------------------------------------------------------
 VERSION HISTORY
 -------------------------------------------------------------------------------
+1.0r1 - 7/10/07
+
+New Manual
 
 1.0b5 - 3/26/07
 
