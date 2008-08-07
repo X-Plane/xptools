@@ -26,7 +26,7 @@
 #if APL
 #include <OpenGL/gl.h>
 #else
-#include <gl/gl.h>
+#include <GL/gl.h>
 #endif
 
 static	inline	float	Interp2d(

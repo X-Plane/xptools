@@ -23,11 +23,11 @@
 #include "OE_Zoomer3d.h"
 #include "trackball.h"
 #include "MatrixUtils.h"
-#include "GEoUtils.h"
+#include "GeoUtils.h"
 #if APL
 	#include <OpenGL/glu.h>
 #else
-	#include <gl/glu.h>
+	#include <GL/glu.h>
 #endif
 #include <math.h>
 

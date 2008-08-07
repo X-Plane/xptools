@@ -27,9 +27,9 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <gl/gl.h>
-	#include <gl/glu.h>
-	#include <gl/glext.h>
+	#include <GL/gl.h>
+	#include <GL/glu.h>
+	#include <GL/glext.h>
 #endif
 #include "squish.h"
 

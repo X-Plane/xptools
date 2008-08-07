@@ -25,7 +25,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 #include <math.h>
 #include <algorithm>
