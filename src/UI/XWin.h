@@ -42,22 +42,13 @@
 #define xmenu HMENU
 #endif
 
-#if SOTHIS_H4X
+#if LIN
 #define xmenu void*
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
-#include <string>
-#include <vector>
-#include <map>
 #include "xdnd.h"
-
-using std::vector;
-using std::string;
 
 enum {
   _NET_WM_STATE_REMOVE,
@@ -69,7 +60,7 @@ typedef struct tagPOINT {
   int x;
   int y;
 } POINT, *PPOINT;
-#endif // SOTHIS_H4X
+#endif
 
 #define	BUTTON_DIM 16
 
@@ -95,9 +86,9 @@ public:
 #if IBM
 		typedef HDC		XContext;
 #endif				
-#ifdef SOTHIS_H4X
+#if LIN
         typedef Window	XContext;
-#endif  // SOTHIS_H4X
+#endif
 
 							XWin(int default_dnd);
 							XWin(
@@ -192,11 +183,9 @@ public:
 
 #endif			
 
-#ifdef SOTHIS_H4X
+#if LIN
         Window                  mWindow;
         Display*                _mDisplay;
-        GLXWindow               mGlxWindow;
-        GLXFBConfig*            mFbConfig;
         XSetWindowAttributes    windowAttr;
         int                     attrMask;
         GC                      defGC;
@@ -213,7 +202,7 @@ public:
         static void WinEventHandler(XAnyEvent* xevent, int* visualstate);
         static void RegisterClass(Display* display, XVisualInfo* xvisual);
         virtual	void ReceiveFilesFromDrag(const vector<string>& inFiles);
-#endif // SOTHIS_H4X
+#endif
 
 };
 

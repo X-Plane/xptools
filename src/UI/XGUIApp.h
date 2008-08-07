@@ -31,3 +31,4 @@ void	XGrindFiles(const vector<string>& fileList);
 void	XGrindInit(void);
 
 #endif
+

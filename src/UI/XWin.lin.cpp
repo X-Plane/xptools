@@ -1,7 +1,5 @@
 #include "XWin.h"
 
-#if SOTHIS_H4X
-
 // this will only work with one diplay and visual, so no native multiscreen support
 // (Xinerama and such will work anyway), but makes life much easier
 
@@ -525,4 +523,4 @@ int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int curren
     return -1;
 }
 
-#endif // SOTHIS_H4X
+

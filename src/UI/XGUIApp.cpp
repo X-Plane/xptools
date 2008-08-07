@@ -127,7 +127,7 @@ puke:
 	return noErr;
 }
 #endif
-#if SOTHIS_H4X
+#if LIN
 int main(int argc, char* argv[])
 {
     Display* display = NULL;
@@ -190,4 +190,5 @@ int main(int argc, char* argv[])
     XCloseDisplay(display);
     return 0;
 }
-#endif // SOTHIS_H4X
+#endif
+

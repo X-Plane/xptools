@@ -39,7 +39,7 @@
 #include <gl/glext.h>
 #endif
 
-#ifdef SOTHIS_H4X
+#if LIN
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
@@ -48,7 +48,7 @@
 #include <GL/glext.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
-#endif // SOTHIS_H4X
+#endif
 
 
 #if IBM
@@ -139,10 +139,9 @@ private:
 		
 #endif		
 
-#ifdef SOTHIS_H4X
-	    GLXWindow		mGlxWindow;
+#if LIN
 	    GLXContext		mContext;
-#endif // SOTHIS_H4X
+#endif
 
 };
 
