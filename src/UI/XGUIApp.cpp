@@ -127,3 +127,67 @@ puke:
 	return noErr;
 }
 #endif
+#if SOTHIS_H4X
+int main(int argc, char* argv[])
+{
+    Display* display = NULL;
+    XVisualInfo* xvisual = NULL;
+    GLXFBConfig* fbConfig = NULL;
+    GLXFBConfig currFbConfig;
+    XEvent xevent;
+    Atom wmp;
+    Atom wdw;
+    int haveVisual = 0;
+    int nfbConfig = 0;
+    int fbAttr[] = {GLX_DRAWABLE_TYPE,
+                    GLX_WINDOW_BIT,
+                    GLX_RENDER_TYPE,
+                    GLX_RGBA_BIT,
+                    GLX_DOUBLEBUFFER,
+                    True,
+                    GLX_STENCIL_SIZE, 8,
+                    GLX_DEPTH_SIZE, 16,
+                    None
+                   };
+
+    display = XOpenDisplay(NULL);
+    if (!display)
+    {
+        fprintf(stderr, "failed to open the default display (:0).\n");
+        return 1;
+    }
+    fbConfig = glXChooseFBConfig(display, DefaultScreen(display), fbAttr, &nfbConfig);
+    if (fbConfig == NULL)
+    {
+        XCloseDisplay(display);
+        fprintf(stderr, "display doesn't support current configuration. glxext not loaded?\n");
+        return 1;
+    }
+    for (int i = 0; i < nfbConfig; i++)
+    {
+        xvisual = glXGetVisualFromFBConfig(display, fbConfig[i]);
+        if (!xvisual) continue;
+        currFbConfig = fbConfig[i];
+        haveVisual = 1;
+        break;
+    }
+    if (!haveVisual)
+    {
+        XCloseDisplay(display);
+        fprintf(stderr, "wasn't able to find an applicable visual\n");
+        return 1;
+    }
+    wmp = XInternAtom(display, "WM_PROTOCOLS", False);
+    wdw = XInternAtom(display, "WM_DELETE_WINDOW", False);
+    XWin::RegisterClass(display, xvisual);
+    XGrindInit();
+    while (haveVisual)
+    {
+        XNextEvent(display, &xevent);
+        XWin::WinEventHandler((XAnyEvent*)&xevent, &haveVisual);
+        if (!haveVisual) break;
+    }
+    XCloseDisplay(display);
+    return 0;
+}
+#endif // SOTHIS_H4X

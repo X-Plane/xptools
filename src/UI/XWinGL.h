@@ -39,6 +39,18 @@
 #include <gl/glext.h>
 #endif
 
+#ifdef SOTHIS_H4X
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/keysym.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#endif // SOTHIS_H4X
+
+
 #if IBM
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
@@ -126,6 +138,11 @@ private:
 		HGLRC			mContext;
 		
 #endif		
+
+#ifdef SOTHIS_H4X
+	    GLXWindow		mGlxWindow;
+	    GLXContext		mContext;
+#endif // SOTHIS_H4X
 
 };
 
