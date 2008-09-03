@@ -510,16 +510,10 @@
 		D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B29F40C5661A100A21ABC /* line_WideBrokenDouble.png */; };
 		D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */ = {isa = PBXBuildFile; fileRef = D67B29F50C5661A100A21ABC /* line_WideBrokenSingle.png */; };
 		D67EF4F10B5CF9F400D9190C /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
-		D67EF4F30B5CF9F400D9190C /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
-		D67EF4F40B5CF9F400D9190C /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
-		D67EF4F50B5CF9F400D9190C /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
-		D67EF4F60B5CF9F400D9190C /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D67EF4F70B5CF9F400D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D67EF4F80B5CF9F400D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D67EF4FA0B5CF9F400D9190C /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
 		D67EF4FB0B5CF9F400D9190C /* XGrinderApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC375A0AB22C85003949C5 /* XGrinderApp.cpp */; };
-		D67EF4FC0B5CF9F400D9190C /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
-		D67EF4FD0B5CF9F400D9190C /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D67EF5000B5CF9F400D9190C /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D67EF5020B5CF9F400D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF5030B5CF9F400D9190C /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
@@ -674,6 +668,8 @@
 		D6CB545F0CEC9CAF000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CB54730CEC9DAC000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */; };
+		D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
 		D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E60C39840400BD789F /* GUI_Prefs.cpp */; };
 		D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */; };
@@ -682,6 +678,8 @@
 		D6E064820BDD32010070E31C /* map_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E064810BDD32010070E31C /* map_tools.png */; };
 		D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */; };
 		D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */; };
+		D6EAD1BC0E6DBA8A00FC011A /* PVRTGeometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */; };
+		D6EAD5520E6DFC3600FC011A /* PVRTTriStrip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.cpp */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.cpp */; };
 		D6ED369F0B67964D00D5484E /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -1666,12 +1664,12 @@
 		D6BC38970AB22C85003949C5 /* MapBuckets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapBuckets.h; sourceTree = "<group>"; };
 		D6BC38980AB22C85003949C5 /* MapDefs_TEST.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MapDefs_TEST.cpp; sourceTree = "<group>"; };
 		D6BC38990AB22C85003949C5 /* MapViewer.pch */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapViewer.pch; sourceTree = "<group>"; };
-		D6BC389A0AB22C85003949C5 /* MapViewerPCH */ = {isa = PBXFileReference; lastKnownFileType = file; path = MapViewerPCH; sourceTree = "<group>"; };
+		D6BC389A0AB22C85003949C5 /* MapViewerPCH */ = {isa = PBXFileReference; lastKnownFileType = text; path = MapViewerPCH; sourceTree = "<group>"; };
 		D6BC389B0AB22C85003949C5 /* MapViewerREL.pch */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapViewerREL.pch; sourceTree = "<group>"; };
 		D6BC389C0AB22C85003949C5 /* MapViewerRelease.pch */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapViewerRelease.pch; sourceTree = "<group>"; };
-		D6BC389D0AB22C85003949C5 /* MapViewerReleasePCH */ = {isa = PBXFileReference; lastKnownFileType = file; path = MapViewerReleasePCH; sourceTree = "<group>"; };
+		D6BC389D0AB22C85003949C5 /* MapViewerReleasePCH */ = {isa = PBXFileReference; lastKnownFileType = text; path = MapViewerReleasePCH; sourceTree = "<group>"; };
 		D6BC389E0AB22C85003949C5 /* MapViewerWin.PCH */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MapViewerWin.PCH; sourceTree = "<group>"; };
-		D6BC389F0AB22C85003949C5 /* MapViewerWinPCH */ = {isa = PBXFileReference; lastKnownFileType = file; path = MapViewerWinPCH; sourceTree = "<group>"; };
+		D6BC389F0AB22C85003949C5 /* MapViewerWinPCH */ = {isa = PBXFileReference; lastKnownFileType = text; path = MapViewerWinPCH; sourceTree = "<group>"; };
 		D6BC38A00AB22C85003949C5 /* MiscFuncs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MiscFuncs.cpp; sourceTree = "<group>"; };
 		D6BC38A10AB22C85003949C5 /* MiscFuncs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MiscFuncs.h; sourceTree = "<group>"; };
 		D6BC38A60AB22C85003949C5 /* NGSPrefix.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = NGSPrefix.h; sourceTree = "<group>"; };
@@ -1773,6 +1771,8 @@
 		D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DDSTool.cpp; sourceTree = "<group>"; };
 		D6C690360BF0B91100C9F880 /* WED_GroupCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GroupCommands.h; sourceTree = "<group>"; };
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
+		D6CD435A0E68A61F0071A622 /* XObjWriteEmbedded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XObjWriteEmbedded.h; sourceTree = "<group>"; };
+		D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XObjWriteEmbedded.cpp; sourceTree = "<group>"; };
 		D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_rotatehead.png; sourceTree = "<group>"; };
 		D6E023E60C39840400BD789F /* GUI_Prefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Prefs.cpp; sourceTree = "<group>"; };
 		D6E023E80C39841200BD789F /* WED_PackageMgr.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PackageMgr.cpp; sourceTree = "<group>"; };
@@ -1787,6 +1787,11 @@
 		D6E0658C0BDE42240070E31C /* WED_VertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VertexTool.cpp; sourceTree = "<group>"; };
 		D6E067750BDE91990070E31C /* WED_ToolInfoAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ToolInfoAdapter.h; sourceTree = "<group>"; };
 		D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ToolInfoAdapter.cpp; sourceTree = "<group>"; };
+		D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTGeometry.cpp; sourceTree = "<group>"; };
+		D6EAD1B80E6DBA8A00FC011A /* PVRTGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGeometry.h; sourceTree = "<group>"; };
+		D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTGlobal.h; sourceTree = "<group>"; };
+		D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PVRTTriStrip.cpp; sourceTree = "<group>"; };
+		D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PVRTTriStrip.h; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
 		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
@@ -1983,6 +1988,7 @@
 		20286C2AFDCF999611CA2CEA /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				D6EAD1900E6DBA8900FC011A /* SDK */,
 				D656B28F0B518951003FF84F /* libsrc */,
 				D6BC361B0AB22C84003949C5 /* src */,
 			);
@@ -2470,6 +2476,8 @@
 				D6BC36F10AB22C84003949C5 /* XObjReadWrite.h */,
 				D6BC36F20AB22C84003949C5 /* XProtoDefs.h */,
 				D6BC36F30AB22C84003949C5 /* XRoadDefs.h */,
+				D6CD435A0E68A61F0071A622 /* XObjWriteEmbedded.h */,
+				D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */,
 			);
 			path = Obj;
 			sourceTree = "<group>";
@@ -3172,6 +3180,26 @@
 			path = "libsrc/squish-1.10";
 			sourceTree = "<group>";
 		};
+		D6EAD1900E6DBA8900FC011A /* SDK */ = {
+			isa = PBXGroup;
+			children = (
+				D6EAD1B60E6DBA8A00FC011A /* PVR */,
+			);
+			path = SDK;
+			sourceTree = "<group>";
+		};
+		D6EAD1B60E6DBA8A00FC011A /* PVR */ = {
+			isa = PBXGroup;
+			children = (
+				D6EAD54F0E6DFC3600FC011A /* PVRTGlobal.h */,
+				D6EAD5500E6DFC3600FC011A /* PVRTTriStrip.cpp */,
+				D6EAD5510E6DFC3600FC011A /* PVRTTriStrip.h */,
+				D6EAD1B70E6DBA8A00FC011A /* PVRTGeometry.cpp */,
+				D6EAD1B80E6DBA8A00FC011A /* PVRTGeometry.h */,
+			);
+			path = PVR;
+			sourceTree = "<group>";
+		};
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
@@ -3495,9 +3523,11 @@
 		20286C28FDCF999611CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 20286C29FDCF999611CA2CEA /* SceneryTools */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				8D0C4E890486CD37000505A6 /* ObjView */,
 				D6BC3CAF0AB2330E003949C5 /* ObjConverterUI */,
@@ -4056,16 +4086,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D67EF4F10B5CF9F400D9190C /* XWin.mac.cpp in Sources */,
-				D67EF4F30B5CF9F400D9190C /* ObjPointPool.cpp in Sources */,
-				D67EF4F40B5CF9F400D9190C /* XObjBuilder.cpp in Sources */,
-				D67EF4F50B5CF9F400D9190C /* XObjDefs.cpp in Sources */,
-				D67EF4F60B5CF9F400D9190C /* XObjReadWrite.cpp in Sources */,
 				D67EF4F70B5CF9F400D9190C /* AssertUtils.cpp in Sources */,
 				D67EF4F80B5CF9F400D9190C /* EndianUtils.c in Sources */,
 				D67EF4FA0B5CF9F400D9190C /* PlatformUtils.mac.cpp in Sources */,
 				D67EF4FB0B5CF9F400D9190C /* XGrinderApp.cpp in Sources */,
-				D67EF4FC0B5CF9F400D9190C /* ObjConvert.cpp in Sources */,
-				D67EF4FD0B5CF9F400D9190C /* ObjUtils.cpp in Sources */,
 				D67EF5000B5CF9F400D9190C /* XUtils.cpp in Sources */,
 				D67EF50E0B5CFA2000D9190C /* XGrinderShell.cpp in Sources */,
 				D67EF5B70B5D34BE00D9190C /* MemFileUtils.cpp in Sources */,
@@ -4123,6 +4147,10 @@
 				D67EF9C80B61426D00D9190C /* ObjUtils.cpp in Sources */,
 				D69FD75A0B6CF8B5008E3AEC /* unzip.c in Sources */,
 				D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */,
+				D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */,
+				D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */,
+				D6EAD1BC0E6DBA8A00FC011A /* PVRTGeometry.cpp in Sources */,
+				D6EAD5520E6DFC3600FC011A /* PVRTTriStrip.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4787,6 +4815,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					/usr/local/lib/lib3ds.a,
@@ -4803,6 +4836,11 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					/usr/local/lib/lib3ds.a,
@@ -5010,6 +5048,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INSTALL_PATH = "$(HOME)/bin";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/SDK/ac3d\"";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					/usr/local/lib/lib3ds.a,
