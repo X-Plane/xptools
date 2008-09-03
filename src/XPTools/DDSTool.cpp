@@ -22,6 +22,63 @@
  */
 
 #include "BitmapUtils.h"
+
+struct raw_header {
+	int	width;
+	int height;
+	int channels;
+};
+
+static int WriteToRaw(const ImageInfo& info, const char * outf)
+{
+	raw_header h;
+	h.width = info.width;
+	h.height = info.height;
+	h.channels = info.channels;
+
+	int sbp = h.channels;
+	int dbp = sbp >= 3 ? 2 : 1;
+
+	unsigned char * storage = (unsigned char *) malloc(h.width * h.height * dbp);
+	
+	for(int y = 0; y < h.height; ++y)
+	for(int x = 0; x < h.width; ++x)
+	{
+		unsigned char * srcb = (unsigned char*)info.data + h.width * sbp * y + x * sbp;
+		unsigned char * dstb = storage + h.width * dbp * y + dbp * x;
+		if(info.channels == 1)
+		{
+			*dstb = *srcb;
+		}
+		else if (info.channels == 3)
+		{
+			*((unsigned short *) dstb) = 
+			((srcb[2] & 0xF8) << 8) |
+			((srcb[1] & 0xFC) << 3) |
+			((srcb[0] & 0xF8) >> 3);		
+		}
+		else if (info.channels == 4)
+		{
+			*((unsigned short *) dstb) = 
+			((srcb[2] & 0xF0) << 8) |
+			((srcb[1] & 0xF0) << 4) |
+			((srcb[0] & 0xF0) << 0) |
+			((srcb[3] & 0xF0) >> 4);
+		}
+	}
+
+	FILE * fi = fopen(outf,"wb");
+	if(fi)
+	{
+		fwrite(&h,1,sizeof(h),fi);
+		fwrite(storage,1,h.width * h.height * dbp,fi);
+		fclose(fi);
+	}
+	free(storage);	
+	return 0;
+}
+
+
 int main(int argc, const char * argv[])
 {
 	// DDSTool --png2dds <infile> <outfile>
@@ -40,6 +97,8 @@ int main(int argc, const char * argv[])
 		printf("RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb Use no compression (requires mipmap)\n");
+		printf("CMD .png .pv2 ./texturetool -e PVRTC --bits-per-pixel-2 -m -o \"OUTFILE\" \"INFILE\"\n");
+		printf("CMD .png .raw \"%s\" --png2raw \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		return 0;
 	}
 
@@ -89,6 +148,32 @@ int main(int argc, const char * argv[])
 		}
 		return 0;
 	} 
+	else if(strcmp(argv[1],"--png2raw")==0)
+	{
+		ImageInfo	info;
+		if (CreateBitmapFromPNG(argv[2], &info, false)!=0)
+		{
+			printf("Unable to open png file %s\n", argv[2]);
+			return 1;
+		}
+		
+		char buf[1024];
+		const char * outf = argv[3];
+		if(strcmp(outf,"-")==0)
+		{
+			strcpy(buf,argv[2]);
+			buf[strlen(buf)-4]=0;
+			strcat(buf,".raw");
+			outf=buf;
+		}
+		
+		if (WriteToRaw(info, outf)!=0)
+		{
+			printf("Unable to write DDS file %s\n", argv[3]);
+			return 1;
+		}
+		return 0;				
+	}
 	else if(strcmp(argv[1],"--png2rgb")==0)
 	{
 		ImageInfo	info;
@@ -104,7 +189,7 @@ int main(int argc, const char * argv[])
 		{
 			strcpy(buf,argv[2]);
 			buf[strlen(buf)-4]=0;
-			strcat(buf,".dds");
+			strcat(buf,".raw");
 			outf=buf;
 		}
 		

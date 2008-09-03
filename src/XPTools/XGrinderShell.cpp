@@ -307,8 +307,9 @@ int	XGrinderMenuPick(xmenu menu, int item)
 				if (m->items[n].item_name.empty()) break;
 				m->items[n].enabled = 0;
 			}			
-		}
-		m->items[item].enabled = true;
+			m->items[item].enabled = true;
+		} else
+			m->items[item].enabled = !m->items[item].enabled;
 		sync_menu_checks();
 		return 1;
 	}
