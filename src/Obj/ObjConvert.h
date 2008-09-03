@@ -38,5 +38,6 @@ void	Obj8_ConsolidateIndexCommands(XObj8& obj8);
 // This calculates OBJ8 normals frmo tris, editing the point pool.
 void	Obj8_CalcNormals(XObj8& obj8);
 
+bool	Obj8_Optimize(XObj8& obj8);
 
 #endif

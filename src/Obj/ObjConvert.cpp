@@ -23,6 +23,8 @@
 #include "ObjConvert.h"
 #include "XObjDefs.h"
 #include <math.h>
+#include "PVRTGeometry.h"
+#include "PVRTTriStrip.h"
 
 static bool operator==(const vec_tex& lhs, const vec_tex& rhs);
 bool operator==(const vec_tex& lhs, const vec_tex& rhs) 
@@ -533,3 +535,77 @@ void	Obj8ToObj7(const XObj8& obj8, XObj& obj7)
 	special_tris_to_quads(obj7);
 }
 
+
+bool	Obj8_Optimize(XObj8& obj8)
+{
+	typedef	pair<int, int>		idx_range;
+	typedef vector<idx_range>	idx_range_vector;
+	
+	idx_range_vector ranges;
+	
+	for(vector<XObjLOD8>::iterator L = obj8.lods.begin(); L != obj8.lods.end(); ++L)
+	for(vector<XObjCmd8>::iterator C = L->cmds.begin(); C != L->cmds.end(); ++C)
+	{
+		if(C->cmd == obj8_Tris)
+		{
+			idx_range me(C->idx_offset, C->idx_offset + C->idx_count);
+			for(idx_range_vector::iterator iter = ranges.begin(); iter != ranges.end(); ++iter)
+			if(iter->first < me.second &&
+			   iter->second > me.first)
+			{
+				printf("Sorry, the IDX range [%d,%d] overlaps with [%d,%d] so we cannot optimize.\n",
+					me.first, me.second, iter->first, iter->second);
+				return false;
+			}
+			
+			ranges.push_back(me);
+			
+		}
+	}
+	vector<unsigned short>	idx16;
+	for(vector<int>::iterator idx_iter = obj8.indices.begin(); idx_iter != obj8.indices.end(); ++idx_iter)
+	{
+		if (*idx_iter > 65535)
+		{
+			printf("Sorry, we cannot optimize because the indices cannot be reduced to 16 bits.\n");
+			return false;
+		}
+		idx16.push_back(*idx_iter);
+	}
+	
+	for(idx_range_vector::iterator r = ranges.begin(); r != ranges.end(); ++r)
+	{
+		PVRTTriStripList(
+			&idx16[r->first],
+			(r->second - r->first) / 3);
+	
+	
+/*	
+		PVRTGeometrySort(
+			obj8.geo_tri.get(0),
+			&idx16[r->first],
+			32,
+			obj8.geo_tri.count(),
+			(r->second - r->first) / 3,
+			obj8.geo_tri.count(),
+			(r->second - r->first) / 3,
+			PVRTGEOMETRY_SORT_VERTEXCACHE | PVRTGEOMETRY_SORT_IGNOREVERTS);			
+*/
+	}
+
+/*
+	PVRTGeometrySort(
+		obj8.geo_tri.get(0),
+		&idx16[0],
+		32,
+		obj8.geo_tri.count(),
+		idx16.size() / 3,
+		obj8.geo_tri.count(),
+		idx16.size() / 3,
+		0);
+*/
+	obj8.indices.clear();
+	obj8.indices.insert(obj8.indices.end(),idx16.begin(), idx16.end());
+	
+	return true;
+}
