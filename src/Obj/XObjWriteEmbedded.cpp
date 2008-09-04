@@ -136,6 +136,48 @@ inline void grow_sphere(float cur[4], const float add[4])
 	Assert(sqr(cur[3] - add[3]) >= pythag_sqr(cur[0]-add[0] , cur[1]-add[1] , cur[2]-add[2]) && cur[3] >= add[3]);
 }
 
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+// LIGHT HANDLING
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
+struct named_light_info_t {
+	const char *	name;
+	int				custom;
+	const char *	dataref;
+};	
+
+static named_light_info_t k_light_info[] = {
+	"airplane_landing",			1,		"sim/graphics/animation/lights/airplane_landing_light",
+	"airplane_nav_l",			1,		"sim/graphics/animation/lights/airplane_nav_light_l",
+	"airplane_nav_r",			1,		"sim/graphics/animation/lights/airplane_nav_light_r",
+	"airplane_strobe",			1,		"sim/graphics/animation/lights/airplane_strobe_light",
+	"airplane_beacon",			1,		"sim/graphics/animation/lights/airplane_beacon_light",
+
+	"rwy_ww",					0,		"sim/graphics/animation/lights/runway_ww",
+	"rwy_wy",					0,		"sim/graphics/animation/lights/runway_wy",
+	"rwy_yw",					0,		"sim/graphics/animation/lights/runway_yw",
+	"rwy_yy",					0,		"sim/graphics/animation/lights/runway_yy",
+	0,0,0
+};
+
+int light_from_name(const char * name)
+{
+	int n = 0;
+	while(k_light_info[n].name)
+	{
+		if(strcmp(k_light_info[n].name,name)==0) return n;
+		++n;
+	}
+	printf("ERROR: unknown light %s\n", name);
+	exit(1);
+	return -1;
+}
+
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+// MEMORY BLOCK UTILITY
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+// A crude memory accumulator - fixed size - we can predict that an OBJe command list won't be that big, and that we have a LOT of memory on the converter machine.
+
 struct	mem_block {
 
 	unsigned char *		begin;
@@ -158,6 +200,21 @@ struct	mem_block {
 	template <class T>
 	T *		accum(T v) { return (T *) accum_mem(&v,sizeof(T)); }
 };
+
+int accum_str(vector<string>& strs, const string& ns)
+{
+	for(int n = 0; n < strs.size(); ++n)
+	{
+		if(strs[n] == ns) return n;
+	}
+	strs.push_back(ns);
+	return strs.size()-1;
+}
+
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+// OBJe structures
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+// This MUST be kept in sync with the dest app.
 
 enum {
 	setup_tex=0,
@@ -187,9 +244,11 @@ enum {
 	attr_show=20,		// float v1, v2, dref
 	attr_hide=21,		// float v1, v2, dref
 
-	attr_light_named=22,	// ushort light idx float x, y, z
+	attr_light_named=22,	// uchar light idx float x, y, z
 
-	cmd_stop=23
+	attr_light_bulk=23,		// ucahr light idx ushort count, float [xyz] x count
+
+	cmd_stop=24
 	
 };	
 	
@@ -226,11 +285,22 @@ struct master_header_t {
 	int		str_len;
 };
 
+
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+//••••OBJECT COMPILATION••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
 bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 {
 	// find scale from points
 	vector<string>			str;
-	
+
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	// SCALING CALCS
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
 	float max_c = 0;
 	float max_t = 0;
 	
@@ -273,14 +343,18 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		scale_up_nrm = 1.0;
 	}
 
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	// MAIN PROPERTIES
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
 	embed_props_t	embed_props;
 	embed_props.layer_group = 1950;
 	embed_props.ref_count = 0;
-	embed_props.tex_day = str.size();	str.push_back(inObj.texture);	
+	embed_props.tex_day = accum_str(str,inObj.texture);	
 	if(inObj.texture_lit.empty())
 		embed_props.tex_lit = 0;
 	else
-		{embed_props.tex_lit = str.size();	str.push_back(inObj.texture_lit);}
+		{embed_props.tex_lit = accum_str(str,inObj.texture_lit);}
 
 	embed_props.cull_xyzr[0] = 
 	embed_props.cull_xyzr[1] =
@@ -290,8 +364,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	float min_xyz[3], max_xyz[3];
 	
 	Assert(inObj.geo_tri.count() > 0);
-	
-	
+
 	bounding_sphere(inObj.geo_tri.get(0),inObj.geo_tri.count(),8,min_xyz,max_xyz,embed_props.cull_xyzr);
 	if(inObj.geo_lines.count() > 0)
 	{
@@ -369,6 +442,10 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 		embed_props.geo_size = 4;
 	}
 
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	// BUILD VBOS
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	
 	// build index list
 	vector<unsigned short>	idx;
 	for(vector<int>::const_iterator I = inObj.indices.begin(); I != inObj.indices.end(); ++I)
@@ -442,6 +519,10 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			geo_float.push_back(rgbaf);
 		}
 	}
+
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	// TRANSLATE COMMAND LIST
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 
 	unsigned char * last_lod = 0;
 	unsigned short * patch_lod;
@@ -633,8 +714,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 				cmds.accum<float>(i->key);
 				cmds.accum<float>(i->v[0]);
 			}
-			cmds.accum<unsigned char>(str.size());
-			str.push_back(inObj.animation[C->idx_offset].dataref);
+			cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 			Assert(str.size() < 256);
 			break;		
 		case anim_Translate:
@@ -657,8 +737,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 					cmds.accum<float>(i->v[1] * scale_up_vert);
 					cmds.accum<float>(i->v[2] * scale_up_vert);
 				}
-				cmds.accum<unsigned char>(str.size());
-				str.push_back(inObj.animation[C->idx_offset].dataref);
+				cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 				Assert(str.size() < 256);
 			}
 			break;		
@@ -667,8 +746,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			cmds.accum<unsigned char>(attr_hide);
 			cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].key);
 			cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[1].key);
-			cmds.accum<unsigned char>(str.size());
-			str.push_back(inObj.animation[C->idx_offset].dataref);
+			cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 			Assert(str.size() < 256);
 			break;
 		case anim_Show:
@@ -676,23 +754,49 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			cmds.accum<unsigned char>(attr_show);
 			cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[0].key);
 			cmds.accum<float>(inObj.animation[C->idx_offset].keyframes[1].key);
-			cmds.accum<unsigned char>(str.size());
-			str.push_back(inObj.animation[C->idx_offset].dataref);
+			cmds.accum<unsigned char>(accum_str(str,inObj.animation[C->idx_offset].dataref));
 			Assert(str.size() < 256);
 			break;
 		case obj8_LightCustom:			// all in name??  param is pos?
 			Assert(!"No custom lights.\n");
 			break;
 		case obj8_LightNamed:
-			cmds.accum<unsigned char>(attr_light_named);
-			cmds.accum<unsigned char>(str.size());
-			str.push_back(C->name);
-			Assert(str.size() < 256);
-			cmds.accum<float>(C->params[0]);
-			cmds.accum<float>(C->params[1]);
-			cmds.accum<float>(C->params[2]);
-			vbo_mode = no_mode;
-			tex_mode = no_mode;
+			{
+				bool custom = k_light_info[light_from_name(C->name.c_str())].custom;
+				vector<XObjCmd8>::const_iterator E = C;
+				while(E != L->cmds.end() && E->cmd == obj8_LightNamed && C->name == E->name)
+				{
+					++E;
+					if(custom)
+						break;
+				}				
+				if(custom)				
+				{
+					cmds.accum<unsigned char>(attr_light_named);
+					cmds.accum<unsigned char>(accum_str(str,k_light_info[light_from_name(C->name.c_str())].dataref));
+					Assert(str.size() < 256);
+					cmds.accum<float>(C->params[0] * scale_up_vert);
+					cmds.accum<float>(C->params[1] * scale_up_vert);
+					cmds.accum<float>(C->params[2] * scale_up_vert);
+				}
+				else
+				{
+					cmds.accum<unsigned char>(attr_light_bulk);
+					cmds.accum<unsigned char>(accum_str(str,k_light_info[light_from_name(C->name.c_str())].dataref));
+					Assert(str.size() < 256);
+					cmds.accum<unsigned short>(E - C);
+					for(vector<XObjCmd8>::const_iterator l = C; l != E; ++l)
+					{
+						cmds.accum<float>(l->params[0] * scale_up_vert);
+						cmds.accum<float>(l->params[1] * scale_up_vert);
+						cmds.accum<float>(l->params[2] * scale_up_vert);
+					}
+					C = E;
+					--C;
+				}
+				vbo_mode = no_mode;
+				tex_mode = no_mode;
+			}
 			break;
 		case attr_Layer_Group:
 			if(C->name == "terrain"						 )	embed_props.layer_group = 5 + C->params[0];
@@ -760,6 +864,10 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 	if(patch_lod && last_lod)
 		*patch_lod = end_cmd - last_lod;
 
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+	// WRITE OUT
+	//••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+
 	// Master header calc
 	master_header_t	mheader;
 	mheader.magic[0] = 'O';
@@ -805,7 +913,7 @@ bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj, int USE_SHORT)
 			fwrite(s->c_str(),1,s->length()+1,fi);
 		
 		fclose(fi);
-	return 1;
+		return 1;
 	}
 	return 0;
 }
