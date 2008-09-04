@@ -25,8 +25,6 @@
 
 /* Copyright NVIDIA Corporation, 2000. */
 
-/* $Id$ */
-
 #ifndef __MATRIX_H__
 #define __MATRIX_H__
 

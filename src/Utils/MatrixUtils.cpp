@@ -30,11 +30,6 @@
 
 
 
-/* $Id$ */
-
-
-
-
 
 #include "hl_types.h"
 
