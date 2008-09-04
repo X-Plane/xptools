@@ -97,7 +97,8 @@ int main(int argc, const char * argv[])
 		printf("RADIO DDS_MODE 0 --png2dxt3 Use DXT3 Compression (high-freq alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb Use no compression (requires mipmap)\n");
-		printf("CMD .png .pv2 ./texturetool -e PVRTC --bits-per-pixel-2 -m -o \"OUTFILE\" \"INFILE\"\n");
+		printf("CMD .png .pv2 ./texturetool -e PVRTC --bits-per-pixel-2 -m -o \"OUTFILE\" -p \"INFILE_preview.png\" \"INFILE\"\n");
+		printf("CMD .png .pv4 ./texturetool -e PVRTC --bits-per-pixel-4 -m -o \"OUTFILE\" -p \"INFILE_preview.png\" \"INFILE\"\n");
 		printf("CMD .png .raw \"%s\" --png2raw \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		return 0;
 	}
