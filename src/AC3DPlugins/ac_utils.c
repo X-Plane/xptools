@@ -41,7 +41,6 @@ int		is_parent_of(ACObject * parent, ACObject * child)
 void	find_all_objects(ACObject * root, vector<ACObject *>& output)
 {
 	List *kids = ac_object_get_childrenlist(root);
-	printf("Find all objs called on %s\n",ac_object_get_name(root));
 	output.push_back(root);
 
     for (List * p = kids; p != NULL; p = p->next)
@@ -57,7 +56,6 @@ void	find_all_selected_objects(vector<ACObject *>& output)
 	{	
 		for (List * i = objs; i; i=i->next)
 		{
-			printf("  sel list has: %s  \n", ac_object_get_name((ACObject *) i->data));
 			find_all_objects((ACObject *) i->data, output);
 		}
 		list_free(&objs);
@@ -345,6 +343,39 @@ Surface * obj_get_first_surf(ACObject * obj)
 	}
 	return NULL;
 }
+
+void	  obj_sel_st(ACObject * obj, float st_bounds[4], vector<Surface *>& out_surf)
+{
+	List * sl = ac_object_get_surfacelist(obj);
+	for(List * s = sl; s; s = s->next)
+	{
+		surf_sel_st((Surface *) s->data, st_bounds,out_surf);
+	}
+	
+}
+
+void	  surf_sel_st(Surface * s, float st_bounds[4], vector<Surface *>& out_surf)
+{
+	bool is_in = false;
+	for(List * v = s->vertlist; v; v = v->next)
+	{		
+		SVertex * vs = (SVertex *) v->data;
+
+		if(vs->tx >= st_bounds[0] &&
+		   vs->tx <= st_bounds[2] &&
+		   vs->ty >= st_bounds[1] &&
+		   vs->ty <= st_bounds[3])
+		{
+			is_in =true;
+			break;
+		}
+	}
+	if(is_in)
+	{
+		out_surf.push_back(s);
+	}
+}
+
 
 void	get_all_used_texes(ACObject * obj, set<int>& out_texes)
 {

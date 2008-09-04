@@ -34,6 +34,7 @@ set SUBPANEL_DIM 4
 set USE_KEYFRAMES 1
 set USE_PANEL_EDIT 1
 
+set IPHONE 1
 
 
 ##########################################################################################################################################################
@@ -104,6 +105,57 @@ proc xplane_update_dir {} {
 ##########################################################################################################################################################
 
 ac3d add_pref window_geom_xplane_rescale_dialog ""
+ac3d add_pref window_geom_xplane_seltex_dialog ""
+
+proc xplane_tex_select_dialog {} {
+	global stex_s1
+	global stex_t1
+	global stex_s1
+	global stex_t2
+
+	if ![winfo exists .xp_seltex] {
+		set stex_s1 0
+		set stex_t1 0
+		set stex_s2 1
+		set stex_t2 1
+
+		new_toplevel_tracked .xp_seltex "Rescale texture coordinates" prefs_window_geom_xplane_seltex_dialog
+		label	.xp_seltex.s1_stex_label -text "Select Left:"
+		spinbox .xp_seltex.s1_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_s1 -width 15
+		label	.xp_seltex.t1_stex_label -text "Select Bottom:"
+		spinbox .xp_seltex.t1_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_t1 -width 15
+		label	.xp_seltex.s2_stex_label -text "Select Right:"
+		spinbox .xp_seltex.s2_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_s2 -width 15
+		label	.xp_seltex.t2_stex_label -text "Select Top:"
+		spinbox .xp_seltex.t2_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_t2 -width 15
+		frame	.xp_seltex.buttons
+		button	.xp_seltex.buttons.apply -text "Remap Selected" -command {
+			set strarg "\"$stex_s1 $stex_t1 $stex_s2 $stex_t2 \""
+			eval ac3d xplane_select_tex $strarg
+			ac3d redraw_all
+		}
+		pack	.xp_seltex.buttons.apply -side left
+
+		grid 	.xp_seltex.s1_stex_label .xp_seltex.s1_stex_spinbox -sticky news
+		grid 	.xp_seltex.t1_stex_label .xp_seltex.t1_stex_spinbox -sticky news
+		grid 	.xp_seltex.s2_stex_label .xp_seltex.s2_stex_spinbox -sticky news
+		grid 	.xp_seltex.t2_stex_label .xp_seltex.t2_stex_spinbox -sticky news
+		grid 	.xp_seltex.buttons -columnspan 4 -sticky ns
+
+		grid	columnconfigure .xp_seltex { 1 3 } -weight 1 -minsize 40
+
+	}
+
+	wm deiconify .xp_seltex
+	raise        .xp_seltex
+}
+
+
+
+
+
+
+
 
 proc xplane_tex_rescale_dialog {} {
 	global old_s1
@@ -782,17 +834,21 @@ proc xplane_inspector_update { name1 name2 op } {
 	xplane_inspector_sync
 }
 
+if {$IPHONE} {
+	set xplane_light_options [list none rwy_ww rwy_wy rwy_yw rwy_yy airplane_landing airplane_nav_l airplane_nav_r airplane_strobe airplane_beacon ]
 
-set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
-	headlight taillight \
-	airplane_landing airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
-	ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
-	carrier_datum carrier_waveoff carrier_meatball1 carrier_meatball2 carrier_meatball3	carrier_meatball4 carrier_meatball5	carrier_mast_strobe	carrier_deck_blue_s	carrier_deck_blue_w \
-	carrier_deck_blue_n	carrier_deck_blue_e	carrier_pitch_lights carrier_foul_line_red carrier_foul_line_white carrier_center_white	carrier_edge_white carrier_thresh_white \
-	frigate_SGSI_lo	frigate_SGSI_on	frigate_SGSI_hi	frigate_deck_green oilrig_deck_blue \
-	town_light_60 town_light_90 town_light_150 town_light_180 town_light_220 town_light_280 0town_light_330 town_light_350 town_light_omni \
-	town_tiny_light_60 town_tiny_light_90 town_tiny_light_150 town_tiny_light_180 town_tiny_light_220 town_tiny_light_280 town_tiny_light_330 town_tiny_light_350 town_tiny_light_omni \
-	obs_strobe_day obs_strobe_night obs_red_day obs_red_night]
+} else {
+	set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
+		headlight taillight \
+		airplane_landing airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
+		ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
+		carrier_datum carrier_waveoff carrier_meatball1 carrier_meatball2 carrier_meatball3	carrier_meatball4 carrier_meatball5	carrier_mast_strobe	carrier_deck_blue_s	carrier_deck_blue_w \
+		carrier_deck_blue_n	carrier_deck_blue_e	carrier_pitch_lights carrier_foul_line_red carrier_foul_line_white carrier_center_white	carrier_edge_white carrier_thresh_white \
+		frigate_SGSI_lo	frigate_SGSI_on	frigate_SGSI_hi	frigate_deck_green oilrig_deck_blue \
+		town_light_60 town_light_90 town_light_150 town_light_180 town_light_220 town_light_280 0town_light_330 town_light_350 town_light_omni \
+		town_tiny_light_60 town_tiny_light_90 town_tiny_light_150 town_tiny_light_180 town_tiny_light_220 town_tiny_light_280 town_tiny_light_330 town_tiny_light_350 town_tiny_light_omni \
+		obs_strobe_day obs_strobe_night obs_red_day obs_red_night]
+}
 	
 set xplane_hard_surface_options [list none object water concrete asphalt grass dirt gravel lakebed snow shoulder blastpad]
 set xplane_layer_group_options [list none terrain beaches shoulders taxiways runways markings airports roads objects light_objects cars]
@@ -1030,6 +1086,7 @@ if {$USE_PANEL_EDIT} {
 
 .mbar.xplane.menu add separator
 .mbar.xplane.menu add command -label "Remap Texture Coordinates..." -command "xplane_tex_rescale_dialog"
+.mbar.xplane.menu add command -label "Select by Texture Coordinates..." -command "xplane_tex_select_dialog"
 .mbar.xplane.menu add command -label "Change Texture..." -command "ac3d xplane_change_texture"
 .mbar.xplane.menu add command -label "Make Transparent" -command "ac3d xplane_make_transparent"
 .mbar.xplane.menu add command -label "Make Night Lighting" -command "ac3d xplane_make_night"

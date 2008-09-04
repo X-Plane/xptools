@@ -68,6 +68,8 @@ int get_selection_bounds(float minv[3], float maxv[3]);
 void move_child_to_head(ACObject * parent, ACObject * child);
 
 Surface * obj_get_first_surf(ACObject * obj);
+void	  obj_sel_st(ACObject * obj, float st_bounds[4], vector<Surface *>& out_surf);
+void	  surf_sel_st(Surface * obj, float st_bounds[4], vector<Surface *>& out_surf);
 
 void	get_all_used_texes(ACObject * obj, set<int>& out_texes);
 

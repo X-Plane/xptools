@@ -90,6 +90,7 @@ AC3D_PLUGIN_FUNC int AC3DPluginInit(AC3DPluginInitData *d)
 //	ac_register_file_importer("XAutoCarLoad", ".car", "X-Auto Car File", do_car_load, "X-Auto Car File Import Plugin"); 
 	
 	ac_add_command_full("xplane_rescale_tex", CAST_CMD(do_rescale_tex), 1, "s", "string of <os1> <ot1> <os2> <ot2> <ns1> <nt1> <ns2> <nt2>", "rescale selected obj texes");
+	ac_add_command_full("xplane_select_tex", CAST_CMD(do_select_tex), 1, "s", "string of <s1> <t1> <s2> <t2>", "select surface by tex coodrs");	
 
 	ac_add_command_full("xplane_calc_lod", CAST_CMD(do_calc_lod), 0, NULL, "ac3d xplane_change_tex", "Calculates x-plane LOD params.");
 	ac_add_command_full("xplane_change_texture", CAST_CMD(do_change_tex), 0, NULL, "ac3d xplane_change_texture", "Changes textures.");

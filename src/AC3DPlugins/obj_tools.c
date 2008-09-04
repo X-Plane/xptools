@@ -176,6 +176,35 @@ void do_change_tex(void)
 */		
 }
 
+void do_select_tex(const char * config)
+{
+	float st[4];
+	
+	if (sscanf(config,"%f %f %f %f", st,st+1,st+2,st+3) != 4)
+	{
+		printf("Bad args %s to rescale tex.\n",config);
+		return;
+	}
+	vector<ACObject *> all;
+	vector<Surface *> who;
+	clear_selection();
+	find_all_objects(ac_get_world(),all);
+	for(vector<ACObject *>::iterator i = all.begin(); i != all.end(); ++i)
+		obj_sel_st(*i,st, who);
+		
+	List * surf_list = NULL;
+	for(vector<Surface *>::iterator i = who.begin(); i != who.end(); ++i)
+	{
+		list_add_item_head(&surf_list, *i);
+	}
+	clear_selection();
+	ac_selection_select_surfacelist(surf_list);
+		
+	list_free(&surf_list);
+		
+	redraw_all();
+}
+
 void do_rescale_tex(const char * config)
 {
 	float old_s1,  old_t1,  old_s2,  old_t2,
