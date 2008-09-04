@@ -417,6 +417,9 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 
 int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 {
+	// For iphone!!
+	return false;
+	
 	if (!is_coast(inEdge, inMesh))	return false;
 
 	CDT::Face_handle tri = inEdge.edge.first;
@@ -557,13 +560,15 @@ void FixBeachContinuity(
 string		get_terrain_name(int composite) 
 {
 	if (composite == terrain_Water)
-		return FetchTokenString(composite);
+//		return FetchTokenString(composite);
+		return "RESOURCE:water.ter";
 	else if (gNaturalTerrainIndex.count(composite) > 0)
 	{
 		if(IsCustom(composite))
 			return FetchTokenString(composite);
 		else
-			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
+			return FetchTokenString(composite);
+//			return string("lib/g8/") + FetchTokenString(composite) + ".ter";
 	}
 
 //	DebugAssert(!"bad terrain.");
@@ -909,80 +914,36 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				}
 			}
 			fan_builder.CalcFans();
-			TriFan_t * fan;
 			cbs.BeginPatch_f(lu_ranked->second, ORTHO_NEAR_LOD, ORTHO_FAR_LOD, 0, 5, writer1);
-			while ((fan = fan_builder.GetNextFan()) != NULL)
+			list<CDT::Vertex_handle>				primv;
+			list<CDT::Vertex_handle>::iterator		vert;			
+			int										primt;
+			while(1)
 			{
-				++total_tri_fans;
-				total_tri_fan_pts += fan->faces.size();
-				cbs.BeginPrimitive_f(dsf_TriFan, writer1);
-				coords8[0] = fan->center->point().x();
-				coords8[1] = fan->center->point().y();
-				coords8[2] = fan->center->info().height;
-				coords8[3] = fan->center->info().normal[0];
-				coords8[4] =-fan->center->info().normal[1];						
-				DebugAssert(coords8[3] >= -1.0);
-				DebugAssert(coords8[3] <=  1.0);
-				DebugAssert(coords8[4] >= -1.0);
-				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer1);						
-				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
-				coords8[0] = avert->point().x();
-				coords8[1] = avert->point().y();
-				coords8[2] = avert->info().height;
-				coords8[3] = avert->info().normal[0];
-				coords8[4] =-avert->info().normal[1];						
-				DebugAssert(coords8[3] >= -1.0);
-				DebugAssert(coords8[3] <=  1.0);
-				DebugAssert(coords8[4] >= -1.0);
-				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer1);						
-				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
+				primt = fan_builder.GetNextPrimitive(primv);
+				if(primv.empty()) break;
+				if(primt != dsf_Tri)
 				{
-					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
-					coords8[0] = avert->point().x();
-					coords8[1] = avert->point().y();
-					coords8[2] = avert->info().height;
-					coords8[3] = avert->info().normal[0];
-					coords8[4] =-avert->info().normal[1];						
+					++total_tri_fans;
+					total_tris += (primv.size() - 2);
+				} else {
+					total_tris += (primv.size() / 3);
+					tris_this_patch += (primv.size() / 3);
+				}
+				if
+				cbs.BeginPrimitive_f(primt, writer1);				
+				for(vert = primv.begin(); vert != primv.end(); ++vert)
+				{
+					coords8[0] = (*vert)->point().x();
+					coords8[1] = (*vert)->point().y();
+					coords8[2] = (*vert)->info().height;
+					coords8[3] = (*vert)->info().normal[0];
+					coords8[4] =-(*vert)->info().normal[1];						
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
 					cbs.AddPatchVertex_f(coords8, writer1);						
-				}
-				cbs.EndPrimitive_f(writer1);
-				fan_builder.DoneWithFan(fan);
-			}
-			if (!fan_builder.Done())
-			{
-				cbs.BeginPrimitive_f(dsf_Tri, writer1);
-				tris_this_patch = 0;
-				while (!fan_builder.Done())
-				{
-					if (tris_this_patch >= MAX_TRIS_PER_PATCH)
-					{
-						cbs.EndPrimitive_f(writer1);
-						cbs.BeginPrimitive_f(dsf_Tri, writer1);				
-						tris_this_patch = 0;
-					}				
-					++total_tris;
-					f = fan_builder.GetNextRemainingTriangle();
-					for (v = 2; v >= 0; --v)
-					{
-						coords8[0] = f->vertex(v)->point().x();
-						coords8[1] = f->vertex(v)->point().y();
-						coords8[2] = f->vertex(v)->info().height;
-						coords8[3] = f->vertex(v)->info().normal[0];
-						coords8[4] =-f->vertex(v)->info().normal[1];
-						DebugAssert(coords8[3] >= -1.0);
-						DebugAssert(coords8[3] <=  1.0);
-						DebugAssert(coords8[4] >= -1.0);
-						DebugAssert(coords8[4] <=  1.0);
-						cbs.AddPatchVertex_f(coords8, writer1);
-					}
-//					cbs.EndPrimitive_f(writer1);
-					++tris_this_patch;
 				}
 				cbs.EndPrimitive_f(writer1);
 			}
@@ -1010,99 +971,42 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				}
 			}
 			fan_builder.CalcFans();
-			TriFan_t * fan;
 			
-			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-			
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 6 : (pinfo ? 7 : 5), writer1);			
-			while ((fan = fan_builder.GetNextFan()) != NULL)
+			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;			
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, is_overwater ? dsf_Flag_Overlay : dsf_Flag_Physical, is_water ? 5 : (pinfo ? 7 : 5), writer1);			
+			list<CDT::Vertex_handle>				primv;
+			list<CDT::Vertex_handle>::iterator		vert;			
+			int										primt;			
+			while(1)
 			{
-				++total_tri_fans;
-				total_tri_fan_pts += fan->faces.size();
-				cbs.BeginPrimitive_f(dsf_TriFan, writer1);
-				coords8[0] = fan->center->point().x();
-				coords8[1] = fan->center->point().y();
-				coords8[2] = fan->center->info().height;
-				coords8[3] = fan->center->info().normal[0];
-				coords8[4] =-fan->center->info().normal[1];						
-				if (is_water)
-					coords8[5] = GetWaterBlend(fan->center, waterType);
-				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
-				DebugAssert(coords8[3] >= -1.0);
-				DebugAssert(coords8[3] <=  1.0);
-				DebugAssert(coords8[4] >= -1.0);
-				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer1);						
-				avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
-				coords8[0] = avert->point().x();
-				coords8[1] = avert->point().y();
-				coords8[2] = avert->info().height;
-				coords8[3] = avert->info().normal[0];
-				coords8[4] =-avert->info().normal[1];						
-				if (is_water)
-					coords8[5] = GetWaterBlend(avert, waterType);
-				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);					
-				DebugAssert(coords8[3] >= -1.0);
-				DebugAssert(coords8[3] <=  1.0);
-				DebugAssert(coords8[4] >= -1.0);
-				DebugAssert(coords8[4] <=  1.0);
-				cbs.AddPatchVertex_f(coords8, writer1);						
-				for (nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
+				primt = fan_builder.GetNextPrimitive(primv);
+				if(primv.empty()) break;
+				if(primt != dsf_Tri)
 				{
-					avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
-					coords8[0] = avert->point().x();
-					coords8[1] = avert->point().y();
-					coords8[2] = avert->info().height;
-					coords8[3] = avert->info().normal[0];
-					coords8[4] =-avert->info().normal[1];						
-					if (is_water)
-						coords8[5] = GetWaterBlend(avert, waterType);
-					else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);						
+					++total_tri_fans;
+					total_tris += (primv.size() - 2);
+				} else {
+					total_tris += (primv.size() / 3);
+					tris_this_patch += (primv.size() / 3);
+				}
+				cbs.BeginPrimitive_f(primt, writer1);				
+				for(vert = primv.begin(); vert != primv.end(); ++vert)
+				{
+					coords8[0] = (*vert)->point().x();
+					coords8[1] = (*vert)->point().y();
+					coords8[2] = (*vert)->info().height;
+					coords8[3] = (*vert)->info().normal[0];
+					coords8[4] =-(*vert)->info().normal[1];						
+	//				if (is_water)
+	//					coords8[5] = GetWaterBlend(vert, waterType);
+	//				else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
 					DebugAssert(coords8[4] <=  1.0);
 					cbs.AddPatchVertex_f(coords8, writer1);						
-					++debug_sub_tri_fan;
 				}
-				cbs.EndPrimitive_f(writer1);
-				fan_builder.DoneWithFan(fan);
-			}
-			if (!fan_builder.Done())
-			{
-				cbs.BeginPrimitive_f(dsf_Tri, writer1);				
-				tris_this_patch = 0;
-				while (!fan_builder.Done())
-				{
-					if (tris_this_patch >= MAX_TRIS_PER_PATCH)
-					{
-						cbs.EndPrimitive_f(writer1);
-						cbs.BeginPrimitive_f(dsf_Tri, writer1);				
-						tris_this_patch = 0;
-					}				
-					++total_tris;
-					f = fan_builder.GetNextRemainingTriangle();
-					CHECK_TRI(f->vertex(2),f->vertex(1),f->vertex(0));
-					for (v = 2; v >= 0; --v)
-					{
-						coords8[0] = f->vertex(v)->point().x();
-						coords8[1] = f->vertex(v)->point().y();
-						coords8[2] = f->vertex(v)->info().height;
-						coords8[3] = f->vertex(v)->info().normal[0];
-						coords8[4] =-f->vertex(v)->info().normal[1];						
-						if (is_water)
-							coords8[5] = GetWaterBlend(f->vertex(v), waterType);
-						else if (pinfo)	ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
-						DebugAssert(coords8[3] >= -1.0);
-						DebugAssert(coords8[3] <=  1.0);
-						DebugAssert(coords8[4] >= -1.0);
-						DebugAssert(coords8[4] <=  1.0);
-						cbs.AddPatchVertex_f(coords8, writer1);						
-					}
-					++tris_this_patch;
-					++debug_sub_tri_fan;					
-				}
-				cbs.EndPrimitive_f(writer1);
+				cbs.EndPrimitive_f(writer1);				
 			}
 			cbs.EndPatch_f(writer1);
 			++total_patches;
@@ -1200,6 +1104,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	 * BEACH EXPORT
 	 ****************************************************************/
 	
+	if(0)
 	if(writer1)
 	{
 		// Beach export - we are going to export polygon rings/chains out of

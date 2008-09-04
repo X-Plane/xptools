@@ -41,6 +41,10 @@ struct	TriFan_t {
 												// so it can readjust itself.  (Poor man's priority q)
 };
 
+struct TriStrip_t {
+	list<CDT::Vertex_handle>		strip;
+};
+
 class	TriFanBuilder {
 public:
 	TriFanBuilder(CDT * inMesh);
@@ -48,15 +52,20 @@ public:
 
 	void		AddTriToFanPool(CDT::Face_handle inFace);	
 	void		CalcFans(void);
-
-	TriFan_t *			GetNextFan(void);
-	void				DoneWithFan(TriFan_t * inFan);
-	CDT::Face_handle	GetNextRemainingTriangle(void);
-	bool				Done(void) { return queue.empty(); }
+	
+	int					GetNextPrimitive(list<CDT::Vertex_handle>& out_handles);
+	
+	void				GetNextTriFan(list<CDT::Vertex_handle>& out_handles);
+	void				GetRemainingTriangles(list<CDT::Vertex_handle>& out_handles);
 	
 	void				Validate(void);
 	
 private:
+
+	TriFan_t *			GetNextFan(void);
+	void				DoneWithFan(TriFan_t * inFan);	
+	CDT::Face_handle	GetNextRemainingTriangle(void);
+	
 
 	void		PullFaceFromFan(CDT::Face_handle f, TriFan_t * fan);
 

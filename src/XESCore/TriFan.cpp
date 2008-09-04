@@ -21,6 +21,7 @@
  *
  */
 #include "TriFan.h"
+#include "DSFLib.h"	// for tri fan defs
 
 TriFanBuilder::TriFanBuilder(CDT * inMesh) : mesh(inMesh)
 {
@@ -151,6 +152,52 @@ CDT::Face_handle 	TriFanBuilder::GetNextRemainingTriangle(void)
 	}	
 	return ff;
 }
+
+int			TriFanBuilder::GetNextPrimitive(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+	GetNextTriFan(out_handles);
+	if(!out_handles.empty())	return dsf_TriFan;
+	
+	GetRemainingTriangles(out_handles);
+								return dsf_Tri;
+}
+
+
+void		TriFanBuilder::GetNextTriFan(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+	TriFan_t * fan = GetNextFan();
+	if(fan)
+	{
+		out_handles.push_back(fan->center);
+		CDT::Vertex_handle avert = (*fan->faces.begin())->vertex(CDT::cw((*fan->faces.begin())->index(fan->center)));
+		out_handles.push_back(avert);
+		for (list<CDT::Face_handle>::iterator nf = fan->faces.begin(); nf != fan->faces.end(); ++nf)
+		{
+			avert = (*nf)->vertex(CDT::ccw((*nf)->index(fan->center)));
+			out_handles.push_back(avert);				
+		}
+		DoneWithFan(fan);
+	}
+}
+
+void		TriFanBuilder::GetRemainingTriangles(list<CDT::Vertex_handle>& out_handles)
+{
+	out_handles.clear();
+	CDT::Face_handle	f;
+	while(1)
+	{
+		f = GetNextRemainingTriangle();
+		if(f == NULL) 
+			break;
+		for (int v = 2; v >= 0; --v)
+		{
+			out_handles.push_back(f->vertex(v));
+		}
+	}
+}
+
 
 void TriFanBuilder::PullFaceFromFan(CDT::Face_handle f, TriFan_t * victim)
 {
