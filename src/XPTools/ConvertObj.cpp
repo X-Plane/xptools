@@ -49,7 +49,6 @@ enum {
 	axis_Z,
 	save_OBJ7,
 	save_OBJ8,
-	save_OBJe,
 	
 	size_16,
 	size_32
@@ -62,7 +61,7 @@ static	int	gFlipY = 0;
 static	int	gFlipZ = 0;
 static	int	gPoly = poly_CCW;
 static	int	gAxis = axis_Z;
-static	int	gSave = save_OBJ7;
+static	int	gSave = save_OBJ8;
 static	int	gBitSize = size_16;
 
 static int	gOptimize = 0;
@@ -162,16 +161,6 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 
 			if (!XObj8Write(inDstFile, obj8))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
-		else if (gSave == save_OBJe)
-		{
-			if (XObjRead(inSrcFile, obj))						Obj7ToObj8(obj,obj8);
-			else if (!XObj8Read(inSrcFile, obj8))				{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
-
-			if(gOptimize)
-				Obj8_Optimize(obj8);
-			
-			if (!XObjWriteEmbedded(inDstFile, obj8, gBitSize==size_16))			{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-		}
 		else
 		{
 				 if (XObj8Read(inSrcFile, obj8))				Obj8ToObj7(obj8,obj);
@@ -179,8 +168,17 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 			
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
-
 	}
+	if(strcmp(inConvertFlag,"--obj2obe")==0)
+	{
+			 if (XObjRead(inSrcFile, obj))					Obj7ToObj8(obj,obj8);
+		else if (!XObj8Read(inSrcFile, obj8))				{ printf("Error: unable to open OBJ file %s\n",inSrcFile); exit(1); }
+
+		if(gOptimize)
+			Obj8_Optimize(obj8);
+		if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }	
+	}	
+	
 	if(strcmp(inConvertFlag,"--3ds2obj")==0)
 	{
 		if (!ReadObj3DS(inSrcFile, obj, gPoly == poly_CCW))	{ printf("Error: unable to read DXF file %s\n", inSrcFile); exit(1); }
@@ -194,15 +192,6 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 				Obj8_Optimize(obj8);
 			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-		}
-		else if (gSave == save_OBJe)
-		{
-			Obj7ToObj8(obj,obj8);
-			
-			if(gOptimize)
-				Obj8_Optimize(obj8);
-			
-			if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
 		else
 		{
@@ -223,16 +212,8 @@ void	XGrindFile(const char * inConvertFlag, const char * inSrcFile, const char *
 				Obj8_Optimize(obj8);
 			
 			if (!XObj8Write(inDstFile, obj8))				{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-		}
-		else if (gSave == save_OBJe)
-		{
-			Obj7ToObj8(obj,obj8);
-			
-			if(gOptimize)
-				Obj8_Optimize(obj8);
-			
-			if (!XObjWriteEmbedded(inDstFile, obj8,gBitSize==size_16))		{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
-		} else
+		} 
+		else
 		{
 			if (!XObjWrite(inDstFile, obj))					{ printf("Error: unable to write OBJ file %s\n",inDstFile); exit(1); }
 		}
@@ -253,8 +234,9 @@ int main(int argc, const char * argv[])
 		printf("CMD .obj .3ds \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj23ds \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj .dxf \"%s\" CO_UNITS CO_CENTER CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2dxf \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .obj _new.obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_BS CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");
 		printf("RADIO CO_UNITS 0 --inches Inches\n");
 		printf("RADIO CO_UNITS 0 --feet Feet\n");
@@ -277,8 +259,7 @@ int main(int argc, const char * argv[])
 		printf("RADIO CO_BS 0 --32 32-bit vertices\n");
 		printf("DIV\n");
 		printf("RADIO CO_OBJ8 0 --obj7 Write OBJ version 7\n");
-		printf("RADIO CO_OBJ8 0 --obj8 Write OBJ version 8\n");
-		printf("RADIO CO_OBJ8 1 --obje Write OBJ version 8 embedded\n");
+		printf("RADIO CO_OBJ8 1 --obj8 Write OBJ version 8\n");
 		return 0;
 	}
 
@@ -304,7 +285,6 @@ int main(int argc, const char * argv[])
 
 		else if (!strcmp(argv[a],"--obj7"))			gSave = save_OBJ7;
 		else if (!strcmp(argv[a],"--obj8"))			gSave = save_OBJ8;
-		else if (!strcmp(argv[a],"--obje"))			gSave = save_OBJe;
 		
 		else if (!strcmp(argv[a],"--16"))			gBitSize = size_16;
 		else if (!strcmp(argv[a],"--32"))			gBitSize = size_32;
