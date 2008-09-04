@@ -57,7 +57,7 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		TERRAIN_NEAR_LOD			 0.0
 #define		TERRAIN_FAR_LOD				-1.0
 #define		TERRAIN_NEAR_BORDER_LOD 	 0.0
-#define		TERRAIN_FAR_BORDER_LOD		 40000
+#define		TERRAIN_FAR_BORDER_LOD		 5000
 
 #define		ORTHO_NEAR_LOD			100000.0
 #define		ORTHO_FAR_LOD			-1.0
