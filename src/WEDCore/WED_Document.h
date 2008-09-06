@@ -24,14 +24,14 @@
 #ifndef WED_DOCUMENT_H
 #define WED_DOCUMENT_H
 
-#include "WED_Globals.h"
+//#include "WED_Globals.h"
 #include "GUI_Destroyable.h"
-#include "MeshDefs.h"
+//#include "MeshDefs.h"
 #include "AptDefs.h"
 #include "ILibrarian.h"
 #include "IDocPrefs.h"
 #include "MapDefs.h"
-#include "DEMDefs.h"
+//#include "DEMDefs.h"
 //#include "WED_Properties.h"
 #include "SQLUtils.h"
 #include "WED_Archive.h"
@@ -100,11 +100,11 @@ public:
 
 	// LEGACY STUFF
 	
-	Pmwx				gMap;
-	DEMGeoMap			gDem;
-	CDT					gTriangulationHi;
-	AptVector			gApts;
-	AptIndex			gAptIndex;
+//	Pmwx				gMap;
+//	DEMGeoMap			gDem;
+//	CDT					gTriangulationHi;
+//	AptVector			gApts;
+//	AptIndex			gAptIndex;
 
 	static	bool	TryCloseAll(void);
 

@@ -99,3 +99,4 @@ bool	WED_Application::CanQuit(void)
 //	if (ConfirmMessage("Are you sure you want to quit WED", "Quit", "Cancel"))	return true;	return false;
 	return WED_Document::TryCloseAll();
 }
+

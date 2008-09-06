@@ -51,7 +51,7 @@
 
 
 #include "GUI_ScrollerPane.h"
-#include "GUI_Textfield.h"
+#include "GUI_TextField.h"
 #include "GUI_Splitter.h"
 
 #define	REGISTER_LIST	\

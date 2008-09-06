@@ -5,9 +5,22 @@ DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DDEV=0 -LIL=1 -BIG=0
 INCLUDES=\
 	-Isrc/Env \
 	-Isrc/DSF \
+	-Isrc/GUI \
+	-Isrc/Interfaces \
 	-Isrc/Obj \
 	-Isrc/ObjEdit \
+	-Isrc/OGLE \
 	-Isrc/UI \
+	-Isrc/WEDCore \
+	-Isrc/WEDDocs \
+	-Isrc/WEDEntities \
+	-Isrc/WEDImportExport \
+	-Isrc/WEDLayers \
+	-Isrc/WEDMap \
+	-Isrc/WEDProperties \
+	-Isrc/WEDResources \
+	-Isrc/WEDWindows \
+	-Isrc/WorldEditor \
 	-Isrc/XPCompat \
 	-Isrc/XPWidgets \
 	-Isrc/Utils \
@@ -15,7 +28,8 @@ INCLUDES=\
 	-Isrc/XESTools \
 	-Ilibsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1 \
 	-Ilibsrc/CGAL-3.0/include \
-	-Ilibsrc/squish-1.10
+	-Ilibsrc/squish-1.10 \
+	-I/usr/include/freetype2
 
 CFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h
 CPPFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h
@@ -83,6 +97,29 @@ src/UI/xdnd.o \
 src/UI/XGUIApp.o \
 src/XPTools/ViewObj.o
 
+SRC_WED=\
+src/UI/FontMgr.o \
+src/UI/XGUIApp.o \
+src/UI/XWinGL.lin.o \
+src/UI/XWin.lin.o \
+src/WEDCore/WED_Application.o \
+src/WEDCore/WED_AppMain.o \
+src/WEDCore/WED_Archive.o \
+src/WEDCore/WED_Buffer.o \
+src/WEDCore/WED_Document.o \
+src/WEDCore/WED_EnumSystem.o \
+src/WEDCore/WED_Errors.o \
+src/WEDCore/WED_FastBuffer.o \
+src/WEDCore/WED_Package.o \
+src/WEDCore/WED_PackageMgr.o \
+src/WEDCore/WED_Persistent.o \
+src/WEDCore/WED_Properties.o \
+src/WEDCore/WED_PropertyHelper.o \
+src/WEDCore/WED_TexMgr.o \
+src/WEDCore/WED_UndoLayer.o \
+src/WEDCore/WED_UndoMgr.o
+
+
 SRC_ObjView+=$(SRC_squish)
 SRC_DDSTool+=$(SRC_squish)
 
@@ -112,6 +149,9 @@ objconverter: $(SRC_ObjConverter)
 
 meshtool: $(SRC_MeshTool)
 	$(LINK) -o MeshTool $(SRC_MeshTool)
+
+wed: $(SRC_WED)
+	$(LINK) -o WED $(SRC_WED)
 
 clean:
 	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool)

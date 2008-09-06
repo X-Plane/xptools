@@ -46,6 +46,11 @@
 	
 */
 
+#if !DEV
+	#error address this for real
+#endif
+#undef KeyPress
+
 class	GUI_Commander;
 
 class	GUI_Commander_Notifiable {
@@ -99,3 +104,4 @@ private:
 };
 
 #endif
+

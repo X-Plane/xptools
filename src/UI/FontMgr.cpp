@@ -33,8 +33,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #else
-#include <gl.h>
-#include <glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
 /*
