@@ -6,6 +6,10 @@ INCLUDES=\
 	-Isrc/Env \
 	-Isrc/DSF \
 	-Isrc/Obj \
+	-Isrc/ObjEdit \
+	-Isrc/UI \
+	-Isrc/XPCompat \
+	-Isrc/XPWidgets \
 	-Isrc/Utils \
 	-Isrc/XESCore \
 	-Isrc/XESTools \
@@ -59,6 +63,27 @@ src/XPTools/ConvertObj3DS.o \
 src/XPTools/ConvertObj.o \
 src/XPTools/ConvertObjDXF.o
 
+SRC_ObjView=\
+src/Obj/ObjPointPool.o \
+src/Obj/XObjDefs.o \
+src/Obj/XObjReadWrite.o \
+src/Obj/ObjDraw.o \
+src/ObjEdit/OE_Zoomer3d.o \
+src/Utils/ObjUtils.o \
+src/Utils/BitmapUtils.o \
+src/Utils/TexUtils.o \
+src/Utils/trackball.o \
+src/Utils/XUtils.o \
+src/Utils/GeoUtils.o \
+src/Utils/MatrixUtils.o \
+src/Utils/PlatformUtils.lin.o \
+src/UI/XWin.lin.o \
+src/UI/XWinGL.lin.o \
+src/UI/xdnd.o \
+src/UI/XGUIApp.o \
+src/XPTools/ViewObj.o
+
+SRC_ObjView+=$(SRC_squish)
 SRC_DDSTool+=$(SRC_squish)
 
 SRC_MeshTool=\
@@ -72,6 +97,9 @@ src/MeshTool/MeshTool.o
 
 %.o: %.cpp
 	$(CPP) $(CFLAGS) -c $< -o $@
+
+objview: $(SRC_ObjView)
+	$(LINK) -o ObjView -lGL -lGLU -lpng $(SRC_ObjView)
 
 dsftool: $(SRC_DSFTool)
 	$(LINK) -o DSFTool $(SRC_DSFTool)
