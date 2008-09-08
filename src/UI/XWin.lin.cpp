@@ -4,7 +4,9 @@
 // (Xinerama and such will work anyway), but makes life much easier
 
 static Display*        mDisplay = 0;
-static XVisualInfo*    mXVisual = 0;
+static Visual*         mXVisual = 0;
+static int             a_defDepth = 0;
+static int             a_screenNumber = 0;
 static bool            sIniting = false;
 static std::map<Window, XWin*> sWindows;
 
@@ -78,10 +80,12 @@ int XWin::windowShowed(Display* display, XEvent* event, XPointer arg)
     return (event->type == MapNotify) && (event->xmap.window == (Window)arg);
 }
 
-void XWin::RegisterClass(Display* display, XVisualInfo* xvisual)
+void XWin::RegisterClass(Display* display, int screen, int depth, Visual* visual)
 {
     mDisplay = display;
-    mXVisual = xvisual;
+    mXVisual = visual;
+    a_defDepth = depth;
+    a_screenNumber = screen;
     return;
 }
 
@@ -328,12 +332,11 @@ XWin::XWin(int default_dnd)
     windowAttr.border_pixel = 0;
     windowAttr.event_mask = StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
                             KeyPressMask | KeyReleaseMask | PointerMotionMask | ExposureMask;
-    windowAttr.colormap = XCreateColormap(mDisplay, RootWindow(mDisplay, mXVisual->screen),
-                                          mXVisual->visual, AllocNone);
+    windowAttr.colormap = XCreateColormap(mDisplay, RootWindow(mDisplay, a_screenNumber), mXVisual, AllocNone);
     attrMask = CWBorderPixel | CWEventMask | CWColormap;
 
-    mWindow = XCreateWindow(mDisplay, RootWindow(mDisplay, mXVisual->screen), 10, 10, 200,
-                            100, 0, mXVisual->depth, InputOutput, mXVisual->visual, attrMask, &windowAttr);
+    mWindow = XCreateWindow(mDisplay, RootWindow(mDisplay, a_screenNumber), 10, 10, 200,
+                            100, 0, a_defDepth, InputOutput, mXVisual, attrMask, &windowAttr);
     Atom wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(mDisplay, mWindow, &wdw, 1);
     title.value    = (unsigned char*)"XWin Window";
@@ -364,10 +367,10 @@ XWin::XWin(int default_dnd)
     defGCvalues.background = 0;
     defGCmask = GCForeground | GCBackground;
     defGC = XCreateGC(mDisplay, mWindow, defGCmask, &defGCvalues);
-    XMapWindow(mDisplay, mWindow);
-    Resize(200, 100);
-    MoveTo(10, 10);
-    XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
+ //   XMapWindow(mDisplay, mWindow);
+ //   Resize(200, 100);
+ //   MoveTo(10, 10);
+ //   XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
 
     if (!mWindow)
         throw mWindow;
@@ -445,7 +448,11 @@ void                    XWin::SetVisible(bool visible)
 #warning    < this will make the window _really_ invisable, so no taskbar entry and such, \
             dunno if this is intended for this memberfunction >
 #endif
+    XEvent xevent;
+
     visible?XMapWindow(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
+    if (visible)
+	XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
     visible ^= 1;
     return;
 }
