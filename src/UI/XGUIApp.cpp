@@ -130,25 +130,12 @@ puke:
 #if LIN
 int main(int argc, char* argv[])
 {
-    Display* display = NULL;
-    XVisualInfo* xvisual = NULL;
-    GLXFBConfig* fbConfig = NULL;
-    GLXFBConfig currFbConfig;
+    Display* display = 0;
+    Visual*  a_defVisual = 0;
+    int a_defDepth = 0;
+    int a_screenNumber = 0;
+    int haveVisual = 1;
     XEvent xevent;
-    Atom wmp;
-    Atom wdw;
-    int haveVisual = 0;
-    int nfbConfig = 0;
-    int fbAttr[] = {GLX_DRAWABLE_TYPE,
-                    GLX_WINDOW_BIT,
-                    GLX_RENDER_TYPE,
-                    GLX_RGBA_BIT,
-                    GLX_DOUBLEBUFFER,
-                    True,
-                    GLX_STENCIL_SIZE, 8,
-                    GLX_DEPTH_SIZE, 16,
-                    None
-                   };
 
     display = XOpenDisplay(NULL);
     if (!display)
@@ -156,30 +143,15 @@ int main(int argc, char* argv[])
         fprintf(stderr, "failed to open the default display (:0).\n");
         return 1;
     }
-    fbConfig = glXChooseFBConfig(display, DefaultScreen(display), fbAttr, &nfbConfig);
-    if (fbConfig == NULL)
+    a_screenNumber = DefaultScreen(display);
+    a_defVisual = DefaultVisual(display, a_screenNumber);
+    if (!a_defVisual)
     {
-        XCloseDisplay(display);
-        fprintf(stderr, "display doesn't support current configuration. glxext not loaded?\n");
+        fprintf(stderr, "invalid visual.\n");
         return 1;
     }
-    for (int i = 0; i < nfbConfig; i++)
-    {
-        xvisual = glXGetVisualFromFBConfig(display, fbConfig[i]);
-        if (!xvisual) continue;
-        currFbConfig = fbConfig[i];
-        haveVisual = 1;
-        break;
-    }
-    if (!haveVisual)
-    {
-        XCloseDisplay(display);
-        fprintf(stderr, "wasn't able to find an applicable visual\n");
-        return 1;
-    }
-    wmp = XInternAtom(display, "WM_PROTOCOLS", False);
-    wdw = XInternAtom(display, "WM_DELETE_WINDOW", False);
-    XWin::RegisterClass(display, xvisual);
+    a_defDepth  = DefaultDepth(display, a_screenNumber);
+    XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
     XGrindInit();
     while (haveVisual)
     {

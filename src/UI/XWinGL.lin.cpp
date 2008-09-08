@@ -20,6 +20,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare) : XWin(default_dnd)
     glXMakeCurrent(_mDisplay, mWindow, mContext);
     SetTitle("XWinGL Window");
 	XFree(FbConfig);
+    SetVisible(true);
 }
 
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) : XWin(default_dnd)
@@ -45,7 +46,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
     SetTitle(inTitle);
     MoveTo(inX, inY);
     Resize(inWidth, inHeight);
-	XFree(FbConfig);   
+	XFree(FbConfig);
+    SetVisible(true);
 }
 
 XWinGL::~XWinGL()

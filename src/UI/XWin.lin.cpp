@@ -374,7 +374,7 @@ XWin::XWin(int default_dnd)
 
     if (!mWindow)
         throw mWindow;
-    visible ^= 1;
+    visible = 0;
     sWindows[mWindow] = this;
     memset(mDragging,0,sizeof(mDragging));
 	mMouse.x = 0;

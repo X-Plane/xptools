@@ -200,7 +200,7 @@ public:
         static int windowShowed(Display* display, XEvent* event, XPointer arg);
 public:
         static void WinEventHandler(XAnyEvent* xevent, int* visualstate);
-        static void RegisterClass(Display* display, XVisualInfo* xvisual);
+        static void RegisterClass(Display* display, int screen, int depth, Visual* visual);
         virtual	void ReceiveFilesFromDrag(const vector<string>& inFiles);
 #endif
 
