@@ -95,8 +95,17 @@ using namespace std;
 //	#endif
 	
 	#if APL || LIN
+// TODO: replace this hack with standard conform <unordered_map>, <hash_map> will disappear in the near future
+	#define GCC_VERSION (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
+	#if GCC_VERSION >= 40300
+		#include <backward/hash_fun.h>
+		#include <backward/hash_map>
+	#else
 		#include <ext/hash_map>
 		#include <ext/hash_fun.h>
+	#endif
 
 		namespace __gnu_cxx {
 			template<>

@@ -29,10 +29,11 @@ INCLUDES=\
 	-Ilibsrc/CGAL-3.0/include/CGAL/config/powerpc_Darwin-8.8_g++-4.0.1 \
 	-Ilibsrc/CGAL-3.0/include \
 	-Ilibsrc/squish-1.10 \
-	-I/usr/include/freetype2
+	-I/usr/include/freetype2 \
+	-ISDK/PVR \
 
-CFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h
-CPPFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h
+CFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h -include limits.h
+CPPFLAGS=$(DEFINES) $(INCLUDES) -include src/Obj/XDefs.h -include limits.h
 
 SRC_squish=\
 libsrc/squish-1.10/alpha.o \
@@ -72,10 +73,15 @@ src/Obj/ObjPointPool.o \
 src/Obj/XObjBuilder.o \
 src/Obj/XObjDefs.o \
 src/Obj/XObjReadWrite.o \
+src/Obj/XObjWriteEmbedded.o \
 src/Utils/ObjUtils.o \
+src/Utils/AssertUtils.o \
+src/Utils/MatrixUtils.o \
 src/XPTools/ConvertObj3DS.o \
 src/XPTools/ConvertObj.o \
-src/XPTools/ConvertObjDXF.o
+src/XPTools/ConvertObjDXF.o \
+SDK/PVR/PVRTTriStrip.o \
+SDK/PVR/PVRTGeometry.o
 
 SRC_ObjView=\
 src/Obj/ObjPointPool.o \
@@ -126,6 +132,8 @@ SRC_DDSTool+=$(SRC_squish)
 SRC_MeshTool=\
 src/MeshTool/MeshTool.o
 
+all:	objview dsftool ddstool objconverter
+
 %.o: %.cp
 	$(CPP) $(CFLAGS) -c $< -o $@
 
@@ -154,5 +162,13 @@ wed: $(SRC_WED)
 	$(LINK) -o WED $(SRC_WED)
 
 clean:
-	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool)
+	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED)
+
+distclean:	clean
+	-rm -f ObjView
+	-rm -f DDSTool
+	-rm -f DSFTool
+	-rm -f MeshTool
+	-rm -f WED
+	-rm -f ObjConverter
 
