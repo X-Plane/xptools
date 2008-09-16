@@ -125,6 +125,9 @@ src/WEDCore/WED_TexMgr.o \
 src/WEDCore/WED_UndoLayer.o \
 src/WEDCore/WED_UndoMgr.o
 
+SRC_FONTTOOL=\
+src/fonttool/fonttool.o
+
 
 SRC_ObjView+=$(SRC_squish)
 SRC_DDSTool+=$(SRC_squish)
@@ -161,8 +164,11 @@ meshtool: $(SRC_MeshTool)
 wed: $(SRC_WED)
 	$(LINK) -o WED $(SRC_WED)
 
+fonttool: $(SRC_FONTTOOL)
+	$(LINK) -o fonttool -lfreetype -lz -lpng -s $(SRC_FONTTOOL)
+
 clean:
-	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED)
+	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED) $(SRC_FONTTOOL)
 
 distclean:	clean
 	-rm -f ObjView
@@ -171,4 +177,5 @@ distclean:	clean
 	-rm -f MeshTool
 	-rm -f WED
 	-rm -f ObjConverter
+	-rm -f fonttool
 
