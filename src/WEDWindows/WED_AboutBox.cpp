@@ -48,7 +48,14 @@ bool	WED_AboutBox::Closed(void)
 {
 	Hide();
 	Stop();
-	return false;
+#if SOTHIS_REMARK
+    #warning <ben, is it really intended to return false here?>
+#endif
+#if LIN
+	return true;
+#else
+    return false;
+#endif
 }
 	
 void		WED_AboutBox::Draw(GUI_GraphState * state)

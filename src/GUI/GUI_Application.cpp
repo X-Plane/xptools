@@ -287,12 +287,13 @@ void			GUI_Application::Run(void)
 #endif
 #if LIN
     XEvent xevent;
+    int haveVisual = 1;
 
-    while (!mDone)
+    while (haveVisual && !mDone)
     {
         XNextEvent(display, &xevent);
-        XWin::WinEventHandler((XAnyEvent*)&xevent, (int*)&mDone);
-        if (mDone) break;
+        XWin::WinEventHandler((XAnyEvent*)&xevent, &haveVisual);
+        if (!haveVisual) break;
     }
     XCloseDisplay(display);
 #endif

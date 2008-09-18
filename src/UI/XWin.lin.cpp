@@ -109,8 +109,12 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
             if (!obj->Closed()) break;
             sWindows.erase(xevent->window);
             if (sWindows.empty())
+            {
                 *visualstate = 0;
-            delete obj;
+            }
+            XUnmapWindow(mDisplay, xevent->window);
+            XDestroyWindow(mDisplay, xevent->window);
+            return;
         }
         if (e.xclient.message_type == obj->dnd.XdndEnter)
         {}
@@ -396,8 +400,6 @@ XWin::~XWin()
     xevent.xclient.format           = 32;
     xevent.xclient.serial           = 0;
     XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-    XUnmapWindow(mDisplay, mWindow);
-    XDestroyWindow(mDisplay, mWindow);
     return;
 }
 
@@ -433,12 +435,13 @@ void                    XWin::ForceRefresh(void)
     xevent.xclient.format           = 32;
     xevent.xclient.serial           = 0;
     XSendEvent(mDisplay, mWindow, False, 0, &xevent);
+    XFlush(mDisplay);
     return;
 }
 
 void                    XWin::UpdateNow(void)
 {
-    ForceRefresh();
+    Update(0);
     return;
 }
 
@@ -452,9 +455,9 @@ void                    XWin::SetVisible(bool visible)
 
     visible?XMapWindow(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
     visible ^= 1;
-    if (visible)
-	XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
-
+//    if (visible)
+//	XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
+    XFlush(mDisplay);
     return;
 }
 

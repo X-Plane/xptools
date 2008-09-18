@@ -125,7 +125,6 @@ int main(int argc, const char * argv[])
 
 	start->Show();
 
-	
 	gFailure = CGAL::set_error_handler(cgal_failure);
 	
 	start->ShowMessage("Initializing...");
@@ -159,6 +158,7 @@ int main(int argc, const char * argv[])
 		sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
 		int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
 		sprintf(fname,"Loading earth_%d%d.jpg",x+1,y+1);
+      //  sleep(1);
 		start->ShowMessage(fname);
 	}
 	
@@ -167,8 +167,11 @@ int main(int argc, const char * argv[])
 	start->ShowMessage(string());
 
 	app.Run();
-	
-	delete about;
+    // we're out of eventloop here, deleting windows on linux implies sending messages to them,
+    // so this would fail.
+	#if !LIN
+	    delete about;
+    #endif
 	GUI_MemoryHog::RemoveNewHandler();
 
 	string xsys;

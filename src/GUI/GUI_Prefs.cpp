@@ -32,6 +32,9 @@
 #if IBM
 	#include <shlobj.h>
 #endif
+#if LIN
+    #include <pwd.h>
+#endif
 
 typedef map<string,string>				GUI_PrefSection_t;
 typedef map<string,GUI_PrefSection_t>	GUI_Prefs_t;
@@ -87,8 +90,14 @@ bool			GUI_GetPrefsDir(string& path)
 		return true;
 	#endif 
 	#if LIN
-		#warning implement linux preferences
-		path="~";
+        passwd *pw = getpwuid(getuid());
+        if (pw)
+        {
+            path = pw->pw_dir;
+            return true;
+        }
+        else path = ".";
+        return false;
 	#endif
 }
 
@@ -103,7 +112,12 @@ void			GUI_Prefs_Read(const char *app_name)
 	string pref_dir;
 	if (!GUI_GetPrefsDir(pref_dir)) return;
 	pref_dir += DIR_STR;
+    #if LIN
+    pref_dir += ".";
+    pref_dir +=  app_name;
+    #else
 	pref_dir += app_name;
+    #endif
 	pref_dir += ".prefs";
 	MFMemFile* f = MemFile_Open(pref_dir.c_str());
 	GUI_PrefSection_t * cur=NULL;
@@ -178,9 +192,14 @@ void			GUI_Prefs_Write(const char * app_name)
 	string pref_dir;
 	if (!GUI_GetPrefsDir(pref_dir)) { DoUserAlert("Warning: preferences file could not be written - preferences directory not found."); return; }
 	pref_dir += DIR_STR;
+    #if LIN
+    pref_dir += ".";
+    pref_dir +=  app_name;
+    #else
 	pref_dir += app_name;
+    #endif
 	pref_dir += ".prefs";
-	
+
 	FILE * fi = fopen(pref_dir.c_str(), "w");
 	if (fi == NULL) { DoUserAlert("Warning: preferences file could not be written - could not write file."); return; }
 	for(GUI_Prefs_t::iterator s = sPrefs.begin(); s != sPrefs.end(); ++s)

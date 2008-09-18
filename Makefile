@@ -36,7 +36,8 @@ INCLUDES=\
     -Isrc/Network \
     -Isrc/Installer
 
-CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CFLAGS=$(DEFINES) $(INCLUDES) -O2 -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
 CPPFLAGS=$(CFLAGS)
 
 SRC_squish=\

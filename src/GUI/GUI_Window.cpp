@@ -45,10 +45,11 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 
 #if LIN
 #warning implement window geometry functions for linux
-inline int Client2OGL_X(int x, Window w) { return x; }
-inline int Client2OGL_Y(int y, Window w) { return 0; }
-inline int OGL2Client_X(int x, Window w) { return x; }
-inline int OGL2Client_Y(int y, Window w) { return 0; }
+// this is still rubbish
+int GUI_Window::Client2OGL_X(int x, Window w) { return x; }
+int GUI_Window::Client2OGL_Y(int y, Window w) { Window t; int ry; int rx; XTranslateCoordinates(_mDisplay, w, RootWindow(_mDisplay, DefaultScreen(_mDisplay)), 0, y, &rx, &ry, &t); return ry-y; }
+int GUI_Window::OGL2Client_X(int x, Window w) { return x; }
+int GUI_Window::OGL2Client_Y(int y, Window w) { Window t; int ry; int rx; XTranslateCoordinates(_mDisplay, w, RootWindow(_mDisplay, DefaultScreen(_mDisplay)), 0, y, &rx, &ry, &t); return -y; }
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -122,7 +123,7 @@ STDMETHODIMP_(ULONG) GUI_Window_DND::AddRef(void)
 }
 
 STDMETHODIMP_(ULONG) GUI_Window_DND::Release(void)
-{
+{GUI_Window
 	if (--mRefCount == 0)
 	{
 		delete this;

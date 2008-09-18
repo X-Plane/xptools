@@ -136,7 +136,12 @@ private:
 #if IBM
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
-	
+	#if LIN
+    int Client2OGL_X(int x, Window w);
+    int Client2OGL_Y(int y, Window w);
+    int OGL2Client_X(int x, Window w);
+    int OGL2Client_Y(int y, Window w);
+    #endif
 };
 
 

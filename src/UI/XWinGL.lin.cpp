@@ -47,7 +47,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
     MoveTo(inX, inY);
     Resize(inWidth, inHeight);
 	XFree(FbConfig);
-    SetVisible(true);
+    if (inAttributes & xwin_style_visible)
+        SetVisible(true);
 }
 
 XWinGL::~XWinGL()
