@@ -47,8 +47,8 @@ public:
 	virtual	void	Draw(GUI_GraphState * state);
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam);
+							long					inMsg,
+							long					inParam);
 
 	virtual	int				KeyPress(char inKey, int inVK, GUI_KeyFlags inFlags)	 	;
 	virtual	int				HandleCommand(int command) 									;

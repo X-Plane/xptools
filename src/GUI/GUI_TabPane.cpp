@@ -98,8 +98,8 @@ void			GUI_TabPane::AddPane(GUI_Pane * who, const char * title)
 
 void	GUI_TabPane::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
+							long					inMsg,
+							long					inParam)
 {
 	if (inMsg == GUI_CONTROL_VALUE_CHANGED)
 	{

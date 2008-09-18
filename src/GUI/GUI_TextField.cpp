@@ -32,7 +32,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :

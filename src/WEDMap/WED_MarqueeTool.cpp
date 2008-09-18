@@ -104,7 +104,7 @@ int		WED_MarqueeTool::CountEntities(void) const
 										return 1;
 }
 
-int		WED_MarqueeTool::GetNthEntityID(int n) const
+long		WED_MarqueeTool::GetNthEntityID(int n) const
 {
 	return 0;
 }

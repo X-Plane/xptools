@@ -43,6 +43,14 @@ inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom - y; }
 #endif
 
+#if LIN
+#warning implement window geometry functions for linux
+inline int Client2OGL_X(int x, Window w) { return x; }
+inline int Client2OGL_Y(int y, Window w) { return 0; }
+inline int OGL2Client_X(int x, Window w) { return x; }
+inline int OGL2Client_Y(int y, Window w) { return 0; }
+#endif
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 // WINDOWS DND
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -790,6 +798,9 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 	long shiftKey, controlKey, optionKey, keyDown, keyUp, charCodeMask,	keyCodeMask;
 	long ExtKeyMask, ShiftControlMask, scrollLockKey, capsLockKey, numLockKey;
 	int ExtendedKey;
+#elif LIN
+	unsigned char	charCode = 0;
+	unsigned char	virtualCode = 0;
 #endif
 
 #if APL
@@ -880,7 +891,8 @@ int			GUI_Window::KeyPressed(char inKey, long inMsg, long inParam1, long inParam
 		charCode = 0;
 				
 #else
-	#error "Must port XPLM to a new OS...key bindings come in in an OS native form."
+	//#error "Must port XPLM to a new OS...key bindings come in in an OS native form."
+    #warning implement linux key bindings
 #endif
 
 	virtualCode = gui_Key_Map[virtualCode];
@@ -1008,7 +1020,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 		return ret;
 			
 	#else
-		#error NOT IMLEMENTED
+		#warning implement linux mouse drag handler
 	#endif
 }
 
@@ -1104,7 +1116,7 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
 		return result;
 	#else
-		#error not implemented
+		#warning implement linux drag and drop handler
 	#endif
 }
 

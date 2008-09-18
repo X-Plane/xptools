@@ -168,7 +168,7 @@ void	RegisterProcessingCommands(void)
 
 static	void	WED_HandleProcMenuCmd(void *, void * i)
 {
-	int cmd = (int) i;
+	long cmd = (long) i;
 	
 	try {
 		switch(cmd) {

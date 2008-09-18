@@ -75,7 +75,7 @@ public:
 
 			void	ResetRead(void);				// Resets reading to the beginning.
 			void *	AllocContiguous(int len);		// Allocates a chunk of memory that is not split across buffers.
-			void	GetWritePos(int& a, int& b);	// Get and set arbitrary positions as two ints.
+			void	GetWritePos(long& a, long& b);	// Get and set arbitrary positions as two ints.
 			void	SetReadPos(int a, int b);			
 
 private:

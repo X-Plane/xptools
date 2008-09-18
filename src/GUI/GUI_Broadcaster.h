@@ -32,7 +32,7 @@ public:
 			 GUI_Broadcaster();
 	virtual	~GUI_Broadcaster();
 	
-	void	BroadcastMessage(int inMsg, int inParam);
+	void	BroadcastMessage(long inMsg, long inParam);
 	
 	void	AddListener(GUI_Listener * inListener);
 	void	RemoveListener(GUI_Listener * inListener);

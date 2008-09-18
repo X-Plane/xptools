@@ -24,7 +24,7 @@
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
 #include "IODefs.h"
-#include "SQLutils.h"
+#include "SQLUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_Errors.h"
 #include "AptDefs.h"

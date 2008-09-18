@@ -30,7 +30,7 @@
 
 */
 
-#include "OGLE.h"
+#include "ogle.h"
 #include "GUI_Pane.h"
 #include "GUI_ScrollerPane.h"
 #include "GUI_Commander.h"

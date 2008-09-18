@@ -83,7 +83,7 @@ public:
 
 	// Entities - many entities perhaps?
 	virtual		int		CountEntities(void) const=0;
-	virtual		int		GetNthEntityID(int n) const=0;
+	virtual		long	GetNthEntityID(int n) const=0;
 
 	// Control handles - by number - they can be moved around.
 	virtual		int				CountControlHandles(int id										) const=0;

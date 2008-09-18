@@ -189,9 +189,13 @@ void *	WED_Buffer::AllocContiguous(int len)
 	return buf->data;
 }
 
-void WED_Buffer::GetWritePos(int& a, int& b)
+#if SOTHIS_REMARK
+    f
+#endif
+
+void WED_Buffer::GetWritePos(long& a, long& b)
 {
-	a = (int) mWriteIterator;
+	a = (long) mWriteIterator;
 	// Careful: if we still have spare space left, the next write will go into THIS last buffer,
 	// otherwise a new one gets chopped.  This is correct for normal writes but NOT for contigous alloc.
 	// That's okay.

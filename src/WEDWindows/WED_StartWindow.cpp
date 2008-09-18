@@ -246,8 +246,8 @@ bool	WED_StartWindow::Closed(void)
 
 void	WED_StartWindow::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
+							long					inMsg,
+							long					inParam)
 {
 	if (inSrc == mNew && inMsg == GUI_CONTROL_VALUE_CHANGED)	this->DispatchHandleCommand(wed_NewPackage);
 	if (inSrc == mOpen && inMsg == GUI_CONTROL_VALUE_CHANGED)	this->DispatchHandleCommand(wed_OpenPackage);

@@ -31,7 +31,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 GUI_ToolBar::GUI_ToolBar(int h, int v, const char * in_resource) :

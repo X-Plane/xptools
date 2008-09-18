@@ -27,7 +27,7 @@
 #if APL
 #include <OpenGL/gl.h>
 #else
-#include <gl/gl.h>
+#include <GL/gl.h>
 #endif
 #if APL && DEV && !defined(__MACH__)
 #include <agl.h>

@@ -30,7 +30,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 inline long long hash_xy(int x, int y) { return ((long long) x << 32) + (long long) y; }
@@ -127,7 +127,8 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 									coords[n][0] = GetZoomer()->LatToYPixel(coords[n][0]);
 									coords[n][1] = GetZoomer()->LonToXPixel(coords[n][1]);
 								}
-								i->Draw(coords, g);
+								// i->Draw(coords, g);
+                                i->Draw(coords);
 								++total_now;
 							}
 						}

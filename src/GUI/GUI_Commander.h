@@ -45,9 +45,8 @@
 	panes, commanders do not attempt any memory management!
 	
 */
-
 #if !DEV
-	#error address this for real
+	#warning refactor KeyPress symbol (conflicts with /SDK/ac3d/Tk/X11/X.h)
 #endif
 #undef KeyPress
 

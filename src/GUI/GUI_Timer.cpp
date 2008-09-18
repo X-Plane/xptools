@@ -116,3 +116,8 @@ void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD d
 	me->TimerFired();
 }
 #endif
+#if LIN
+void GUI_Timer::TimerCB()
+{
+}
+#endif

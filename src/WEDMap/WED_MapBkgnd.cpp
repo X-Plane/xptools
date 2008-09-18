@@ -29,7 +29,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 WED_MapBkgnd::WED_MapBkgnd(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * i) : WED_MapLayer(h, zoomer, i)

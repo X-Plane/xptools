@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include "Terraserver.h"
+#include "TerraServer.h"
 #include "HTTPClient.h"
 #include "AssertUtils.h"
 
@@ -32,7 +32,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 #include "BitmapUtils.h"
 #include "TexUtils.h"
@@ -42,7 +42,7 @@
 // Debug code to dump the actual JPEG files we fetch as a debugging measure.
 #define DUMP_RAW_JPEG 0
 
-extern	void decode( const char * startP, const char * endP, char * destP, char ** out);
+extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 
 #define SOAP_GETTHEMEINFO		\
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>"				\
@@ -233,7 +233,8 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 		FILE * fi = fopen("raw.jpg", "wb");
 		fwrite(inp, 1, len, fi);		
 		fclose(fi);
-#endif				
+#endif
+#if USE_JPEG				
 		if (CreateBitmapFromJPEGData(inp, len, &mini) == 0)
 		{
 			CopyBitmapSection(&mini, destBitmap,
@@ -248,7 +249,7 @@ int		FetchTile(const char * scale, const char * theme, int domain, int x, int y,
 			return 0;	// Success!!
 			
 		} // Else our tile result's contents didn't look much like a JPEG image!
-
+#endif
 	} // Else the XML response doesn't have the nodes we exepct
 
 	delete root;	
@@ -629,7 +630,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 		int len = outP - inp;
 
 		mImage = new ImageInfo;
-		
+#if USE_JPEG		
 		if (CreateBitmapFromJPEGData(inp, len, mImage) == 0)
 		{
 			delete root;
@@ -644,7 +645,7 @@ ImageInfo *		AsyncImage::GetImage(void)
 			LoadTextureFromImage(*mImage, mTexNum, tex_Linear, NULL, NULL, &mS, &mT);			
 			return mImage;
 		} // Else our tile result's contents didn't look much like a JPEG image!
-
+#endif
 	} // Else the XML response doesn't have the nodes we exepct
 
 	delete root;	

@@ -26,9 +26,9 @@
 #include "GUI_Messages.h"
 #include "GUI_DrawUtils.h"
 #if APL
-#include <OpenGL/gl.h>
+#include <OpenGL/GL.h>
 #else
-#include <gl/gl.h>
+#include <GL/gl.h>
 #endif
 const int	kSBSIZE = 16;
 
@@ -258,8 +258,8 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 
 void	GUI_ScrollerPane::ReceiveMessage(
 		GUI_Broadcaster *		inSrc,
-		int						inMsg,
-		int						inParam)
+		long					inMsg,
+		long					inParam)
 {
 	vector<GUI_ScrollerPane*>::iterator slave;
 	if (inSrc == mScrollH && inMsg == GUI_CONTROL_VALUE_CHANGED && mContent && !mCalibrating)

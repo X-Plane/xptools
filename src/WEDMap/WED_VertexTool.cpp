@@ -42,7 +42,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 #define	MIN_HANDLE_RECURSE_SIZE 20
@@ -132,10 +132,10 @@ int		WED_VertexTool::CountEntities(void) const
 	return mEntityCache.size();
 }
 
-int		WED_VertexTool::GetNthEntityID(int n) const
+long	WED_VertexTool::GetNthEntityID(int n) const
 {
 	GetEntityInternal();
-	return reinterpret_cast<int>(mEntityCache[n]);
+	return reinterpret_cast<long>(mEntityCache[n]);
 }
 
 int		WED_VertexTool::CountControlHandles(int id						  ) const

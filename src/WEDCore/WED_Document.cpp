@@ -116,7 +116,7 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 
 void	WED_Document::Save(void)
 {
-	BroadcastMessage(msg_DocWillSave, reinterpret_cast<int>(static_cast<IDocPrefs *>(this)));
+	BroadcastMessage(msg_DocWillSave, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
 	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
 	#if ERROR_CHECK
 	hello
@@ -173,7 +173,7 @@ void	WED_Document::Revert(void)
 			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
 	}
 	
-	BroadcastMessage(msg_DocLoaded, reinterpret_cast<int>(static_cast<IDocPrefs *>(this)));	
+	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));	
 }
 
 bool	WED_Document::IsDirty(void)

@@ -24,7 +24,7 @@
 #ifndef WED_GISPOINT_HEADINGWIDTHLENGTH_H
 #define WED_GISPOINT_HEADINGWIDTHLENGTH_H
 
-#include "WEd_GISPoint_Heading.h"
+#include "WED_GISPoint_Heading.h"
 
 class	WED_GISPoint_HeadingWidthLength : public WED_GISPoint_Heading, public virtual IGISPoint_WidthLength {
 

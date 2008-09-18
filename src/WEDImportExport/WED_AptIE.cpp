@@ -45,6 +45,8 @@
 #include "WED_UIDefs.h"
 #include "PlatformUtils.h"
 
+#include <stdarg.h>
+
 #if ERROR_CHECK
 error checking here and in apt-io
 #endif

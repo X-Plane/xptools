@@ -50,7 +50,7 @@ struct StProfileInit {
 #elif IBM
 	#include <time.h>
 #elif LIN
-	#error Linux not yet implemented.
+	#warning Linux not yet implemented.
 #else
 	#error PLATFORM NOT DEFINED
 #endif

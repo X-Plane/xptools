@@ -22,7 +22,7 @@
  */
 
 #include "WED_MapLayer.h"
-#include "mathutils.h"
+#include "MathUtils.h"
 #include "GUI_Resources.h"
 #include "WED_UIMeasurements.h"
 

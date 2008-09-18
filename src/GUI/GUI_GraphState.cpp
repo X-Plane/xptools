@@ -27,8 +27,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
 #else
-	#include <gl/gl.h>
-	#include <gl/glext.h>
+	#include <GL/gl.h>
+	#include <GL/glext.h>
 #endif
 
 #include "XWinGL.h"

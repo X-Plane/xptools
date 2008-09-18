@@ -26,7 +26,7 @@
 #include "MapDefs.h"
 #include "DEMDefs.h"
 #include "DEMAlgs.h"
-#include <ShapeFil.h>
+#include <shapefil.h>
 #include "MapAlgs.h"
 #include "GISUtils.h"
 #include "WED_Globals.h"

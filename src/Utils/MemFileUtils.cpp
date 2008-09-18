@@ -1229,7 +1229,7 @@ MF_GetDirectoryBulk(
 	return total;
 
 #else
-#error not implemented
+#warning implement finddir function for linux here (see stat())
 #endif
 }
 

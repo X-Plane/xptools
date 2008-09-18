@@ -10,7 +10,6 @@ static char encodingTable [64] = {
     'w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/'
 	};
  
- 
 void	decode (const char * startP, const char * endP, char * destP, char ** outP)
 { 
 	unsigned long ixtext;
@@ -20,8 +19,8 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
 	unsigned char ch;
 	unsigned char inbuf [4], outbuf [3];
 	short i, ixinbuf;
-	bool flignore;
-	bool flendtext = false;
+	int flignore;
+	int flendtext = 0;
     
 	ixtext = 0;
  
@@ -29,14 +28,14 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
  
 	ixinbuf = 0;
  
-	while (true) {
+	while (1) {
 	
 		if (ixtext >= lentext)
 			break;
 		
 		ch = startP[ixtext++];
 	
-		flignore = false;
+		flignore = 0;
 	
 		if ((ch >= 'A') && (ch <= 'Z'))
 			ch = ch - 'A';
@@ -51,18 +50,18 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
 			ch = 62;
 		
 		else if (ch == '=') /*no op -- can't ignore this one*/
-			flendtext = true;
+			flendtext = 1;
 		
 		else if (ch == '/')
 			ch = 63;
 	
 		else
-			flignore = true; 
+			flignore = 1; 
 	
 		if (!flignore) {
 	
 			short ctcharsinbuf = 3;
-			bool flbreak = false;
+			int flbreak = 0;
 			 
 			if (flendtext) {
 			
@@ -76,7 +75,7 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
 			
 				ixinbuf = 3;
 			
-				flbreak = true;
+				flbreak = 1;
 				}
 		
 			inbuf [ixinbuf++] = ch;
@@ -106,5 +105,4 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
  	if (outP) *outP = destP;
 
 } /*decodeHandle*/
- 
  

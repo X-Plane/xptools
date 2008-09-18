@@ -46,6 +46,6 @@ void	GUI_LaunchURL(const char * url)
 		ShellExecute(NULL,"open",url,NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
-		#error not impl
+		#warning implement LaunchUrl() for linux
 	#endif
 }

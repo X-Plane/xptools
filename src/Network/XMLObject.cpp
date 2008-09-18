@@ -21,7 +21,7 @@
  *
  */
 #include "XMLObject.h"
-#include "XMLParse.h"
+#include "xmlparse.h"
 				
 XMLObject::XMLObject(const std::string& inTag) : mTag(inTag)
 {

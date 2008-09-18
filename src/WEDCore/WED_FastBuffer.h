@@ -70,7 +70,7 @@ private:
 	
 					WED_FastBuffer(WED_Buffer * source);
 	
-			int						mP1, mP2;
+			long					mP1, mP2;
 			WED_Buffer *			mSource;
 
 					WED_FastBuffer();

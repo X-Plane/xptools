@@ -55,9 +55,8 @@ private:
 		static void CALLBACK	TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 		UINT_PTR	mID;
 	
-	#else
-		#error NOT IMPLEMENTED
-
+	#elif LIN
+        static void TimerCB(void);
 	#endif
 	
 };			

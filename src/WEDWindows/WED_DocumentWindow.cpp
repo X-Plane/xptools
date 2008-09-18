@@ -328,8 +328,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 void	WED_DocumentWindow::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
-				int						inMsg,
-				int						inParam)
+				long					inMsg,
+				long					inParam)
 {
 	if(inMsg == msg_DocumentDestroyed)
 		delete this;

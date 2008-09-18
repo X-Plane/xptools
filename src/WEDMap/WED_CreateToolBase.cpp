@@ -29,7 +29,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 const float kDoubleClickTime = 0.2;
@@ -109,7 +109,7 @@ int		WED_CreateToolBase::CountEntities(void) const
 	return mPts.empty() ? 0 : 1;
 }
 
-int		WED_CreateToolBase::GetNthEntityID(int n) const
+long	WED_CreateToolBase::GetNthEntityID(int n) const
 {
 	return 0;
 }

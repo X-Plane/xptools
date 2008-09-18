@@ -165,8 +165,12 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 			if (CreateBitmapFromDDS(buf,&inf) != 0)
 			if (CreateBitmapFromPNG(buf,&inf,false) != 0)
+#if USE_JPEG
 			if (CreateBitmapFromJPEG(buf,&inf) != 0)
+#endif
+#if USE_TIF
 			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
+#endif
 			if (CreateBitmapFromFile(buf,&inf) != 0)
 			{
 				#if ERROR_CHECK

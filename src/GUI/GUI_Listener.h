@@ -34,8 +34,8 @@ public:
 	
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)=0;
+							long    				inMsg,
+							long					inParam)=0;
 
 private:
 

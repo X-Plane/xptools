@@ -47,7 +47,7 @@ public:
 	virtual		void	EndEdit(void);
 
 	virtual		int		CountEntities(void) const;
-	virtual		int		GetNthEntityID(int n) const;
+	virtual		long	GetNthEntityID(int n) const;
 
 	virtual		int		CountControlHandles(int id						  ) const;
 	virtual		void	GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const;

@@ -32,7 +32,7 @@
 #include "WED_Airport.h"
 #include "WED_Thing.h"
 #include "ISelection.h"
-#include "mathutils.h"
+#include "MathUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_Messages.h"
 #include "IResolver.h"
@@ -44,7 +44,7 @@ int	gDMS = 0;
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 #define SHOW_FPS 0
@@ -387,8 +387,8 @@ int			WED_Map::ScrollWheel(int x, int y, int dist, int axis)
 
 void		WED_Map::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
+							long					inMsg,
+							long					inParam)
 {
 	if(inMsg == msg_ArchiveChanged)	Refresh();
 }

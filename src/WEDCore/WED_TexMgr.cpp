@@ -30,7 +30,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 WED_TexMgr::WED_TexMgr(const string& package) : mPackage(package)
@@ -100,8 +100,12 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 	if (CreateBitmapFromPNG(fpath.c_str(), &im, false) != 0)
 	if (CreateBitmapFromDDS(fpath.c_str(), &im) != 0)
 	if (CreateBitmapFromFile(fpath.c_str(), &im) != 0)
+#if USE_JPEG
 	if (CreateBitmapFromJPEG(fpath.c_str(), &im) != 0)
+#endif
+#if USE_TIF
 	if (CreateBitmapFromTIF(fpath.c_str(), &im) != 0)
+#endif
 	{
 		return NULL;
 	}

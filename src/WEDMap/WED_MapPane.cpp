@@ -296,8 +296,8 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 
 void	WED_MapPane::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							int						inMsg,
-							int						inParam)
+							long					inMsg,
+							long					inParam)
 {
 	int i = mToolbar->GetValue();
 	WED_MapToolNew * t = NULL;

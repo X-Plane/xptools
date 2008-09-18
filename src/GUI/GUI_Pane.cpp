@@ -36,7 +36,7 @@
 #if APL
 	#include <OpenGL/gl.h>
 #else
-	#include <gl/gl.h>
+	#include <GL/gl.h>
 #endif
 
 #include <time.h>
@@ -71,7 +71,7 @@ GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 		flags |= gui_OptionAltFlag;
 	return flags;
 #else
-	#error platform not implemented
+	#warning implement keymodifier getter for linux
 #endif
 }
 

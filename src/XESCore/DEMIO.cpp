@@ -347,6 +347,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 	const unsigned char * bp = (const unsigned char *) MemFile_GetBegin(fi);
 	const unsigned char * ep = (const unsigned char *) MemFile_GetEnd(fi);
 	if ((ep - bp) < 512) goto bail;
+{
 	// More info is available in said file:
 	// http://www.fao.org/giews/english/windisp/manuals/WD35EN25.htm
 	// 30-32	height					integer (2 bytes)
@@ -376,6 +377,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName)
 			inMap(x,y) = m * (double) v + b;
 	}
 	ok = true;
+}
 bail:	
 	MemFile_Close(fi);
 	return ok;
@@ -428,7 +430,9 @@ double	parse_field_float(const char ** s, const char * e)
 		++p;
 		++digits;
 	}
-	if (p >= e || (*p != 'D' && *p != 'd' && *p != 'e' && *p != 'E')) goto bail;	++p;
+	if (p >= e || (*p != 'D' && *p != 'd' && *p != 'e' && *p != 'E')) goto bail;
+{
+    ++p;
 	exponent = parse_field_int(&p, e);
 	*s = p;
 	int	rshift = digits - exponent;
@@ -436,6 +440,7 @@ double	parse_field_float(const char ** s, const char * e)
 		return sign * (mantissa / pow(10.0f, rshift));
 	else
 		return sign * (mantissa * pow(10.0f, rshift));
+}
 bail:	
 	*s = p;
 	return 0;
@@ -485,7 +490,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	printf("Bounds: %lf %lf -> %lf %lf\n", west, south, east, north);
 	
 	if (k != 1) { printf("ERROR: expect 1 count of profiles.\n");	goto bail; }
-
+{
 	inMap.mWest = west;
 	inMap.mEast = east;
 	inMap.mNorth = north;
@@ -540,6 +545,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	printf("Read %d records.\n", n);
 	MemFile_Close(fi);
 	return true;
+}
 bail:
 	MemFile_Close(fi);
 	return false;
@@ -648,6 +654,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	TIFFErrorHandler	errH = TIFFSetErrorHandler(IgnoreTiffErrs);
 	StTiffMemFile	tiffMem(inFileName);
 	if (tiffMem.file == NULL) goto bail;
+{
 	printf("Trying file: %s\n", inFileName);
 	TIFF * tif = XTIFFClientOpen(inFileName, "r", &tiffMem,
 	    MemTIFFReadWriteProc, MemTIFFReadWriteProc,
@@ -656,6 +663,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	    MemTIFFMapFileProc, MemTIFFUnmapFileProc);
 	printf("Opened TIF file.\n");
 //    TIFF* tif = TIFFOpen(inFileName, "r");
+
     if (tif == NULL) goto bail;
 
 	if (!FetchTIFFCornersWithTIFF(tif, corners))
@@ -742,6 +750,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName)
 	TIFFSetWarningHandler(warnH);
 	TIFFSetErrorHandler(errH);
     return result != -1;
+}
 bail:
 	TIFFSetWarningHandler(warnH);
 	TIFFSetErrorHandler(errH);
@@ -823,7 +832,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	
 	if (uhl->cookie[0] != 'U' || uhl->cookie[1] != 'H' || uhl->cookie[2] != 'L') goto bail;
 	if (uhl->version != '1') goto bail;
-	
+{	
 	inMap.mSouth = 
 		(uhl->latitude[0]-'0') * 1000000 +
 		(uhl->latitude[1]-'0') * 100000 +
@@ -887,6 +896,7 @@ bool	ExtractDTED(DEMGeo& inMap, const char * inFileName)
 	
 	MemFile_Close(fi);
 	return true;
+}
 bail:
 	if (fi) MemFile_Close(fi);
 	return false;

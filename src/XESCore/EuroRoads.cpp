@@ -24,7 +24,7 @@
 #include "EuroRoads.h"
 #include "MapDefs.h"
 #include "DEMDefs.h"
-#include "DemToVector.h"
+#include "DEMToVector.h"
 #include "DEMAlgs.h"
 #include "perlin.h"
 #include "ParamDefs.h"

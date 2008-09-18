@@ -170,8 +170,38 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 
 
 #elif LIN
+#warning implement linux resource handling here
 
-#error NOT implemented
+struct res_struct {
+	const char * start_p;
+	const char * end_p;
+};
+typedef map<string, res_struct>	res_map;
+static res_map sResMap;
+
+GUI_Resource	GUI_LoadResource(const char * in_resource)
+{
+	return 0;
+}
+
+void			GUI_UnloadResource(GUI_Resource res)
+{
+}
+
+const char *	GUI_GetResourceBegin(GUI_Resource res)
+{
+	return 0;
+}
+
+const char *	GUI_GetResourceEnd(GUI_Resource res)
+{
+		return 0;
+}
+
+bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
+{
+    return false;
+}
 
 #endif
 
@@ -187,7 +217,11 @@ int GUI_GetImageResource(
 	if (res == NULL) return -1;
 	int ret;
 	if (strstr(in_resource,".jpg"))
+    #if USE_JPG
 		ret = CreateBitmapFromJPEGData((void *) GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image);
+    #else
+        ret = 0;
+    #endif
 	else
 		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);
 	GUI_UnloadResource(res);

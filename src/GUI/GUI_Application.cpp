@@ -292,7 +292,7 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 		::SetMenu(hwnd, mbar);
 		return mbar;
 	#else
-		#error not impl
+		#warning add linux menubar initialization here
 	#endif
 }
 
@@ -303,7 +303,7 @@ GUI_Menu		GUI_Application::GetPopupContainer(void)
 	#elif IBM
 		return NULL;
 	#else
-		#error not iml
+		return 0;
 	#endif
 }
 
@@ -360,6 +360,10 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 			SetMenuItemInfo((HMENU) parent, parentItem, true, &mif);	
 		}		
 	}
+#endif
+#if LIN
+    #warning add menu creation code for linux here
+    void* new_menu = 0;
 #endif
 
 	RebuildMenu(new_menu, items);
@@ -453,7 +457,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		}		
 
 	#else
-		#error not impl
+		#warning add menurebuild code for linux here
 	#endif
 }
 

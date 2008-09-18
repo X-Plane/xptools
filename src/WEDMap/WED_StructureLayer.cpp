@@ -58,8 +58,8 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #else
-	#include <gl/gl.h>
-	#include <gl/glu.h>
+	#include <GL/gl.h>
+	#include <GL/glu.h>
 #endif
 
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :

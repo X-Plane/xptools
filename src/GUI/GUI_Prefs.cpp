@@ -87,7 +87,7 @@ bool			GUI_GetPrefsDir(string& path)
 		return true;
 	#endif 
 	#if LIN
-		NOT YET DONE
+		#warning implement linux preferences
 		path="~";
 	#endif
 }

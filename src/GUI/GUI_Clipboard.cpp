@@ -38,7 +38,8 @@
 #elif IBM
 	typedef	CLIPFORMAT	GUI_CIT;		// Clipboard Internal Type
 #else
-	#error not coded for linux
+    #warning linux fixme here
+	typedef	int	GUI_CIT;
 #endif
 
 enum {
@@ -77,7 +78,7 @@ void GUI_InitClipboard(void)
 	#elif IBM
 		sCITs.push_back(CF_TEXT);
 	#else
-		#error not  coded for linux
+		#warning implement clipboard init() for linux
 	#endif
 	sClipStrings.push_back("text");
 }
@@ -98,7 +99,7 @@ GUI_ClipType	GUI_RegisterPrivateClipType(const char * clip_type)
 	#elif IBM
 		sCITs.push_back(CF_PRIVATEFIRST + sCITs.size() - gui_First_Private);
 	#else
-		#error not coded on linux
+		#warning implement clipboard type for linux
 	#endif
 	return sCITs.size()-1;
 }
@@ -127,7 +128,7 @@ bool			GUI_Clipboard_HasClipType(GUI_ClipType inType)
 	#elif IBM
 		return (IsClipboardFormatAvailable(sCITs[inType]));
 	#else
-		#error not implemented
+		#warning implement clipboard typecheck for linux
 	#endif
 }
 
@@ -164,7 +165,7 @@ void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 				outTypes.push_back(ct);
 		}
 	#else
-		#error not implemented
+		#warning implement clipboard getTypes for linux
 	#endif
 }
 
@@ -220,7 +221,7 @@ int				GUI_Clipboard_GetSize(GUI_ClipType inType)
 		return sz;
 	
 	#else
-		#error not implemented
+		#warning implement clipboard GetSize for linux
 	#endif
 }
 
@@ -257,7 +258,7 @@ bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 		return true;
 	
 	#else
-		#error not implemented
+		#warning implement clipboard getData() for linux
 	#endif
 }
 bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[])
@@ -304,7 +305,7 @@ bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[]
 		return true;
 	
 	#else
-		#error NOT IMPLEMENTED
+		#warning implement clipboard setData() for linux
 	#endif
 }
 
@@ -325,7 +326,7 @@ bool			GUI_GetTextFromClipboard(string& outText)
 	#elif IBM
 		outText = string(buf.begin(),buf.begin()+sz-1);
 	#else
-		#error not coded
+		#warning implement clipboard getText() for linux
 	#endif
 	return true;
 }
@@ -338,7 +339,8 @@ bool			GUI_SetTextToClipboard(const string& inText)
 	#elif IBM
 		int sz = inText.size()+1;
 	#else
-		#error not coded
+		#warning implement clipboard setText() for linux
+        int sz = inText.size();
 	#endif
 	const void * ptr = inText.c_str();
 	return GUI_Clipboard_SetData(1, &text, &sz, &ptr);

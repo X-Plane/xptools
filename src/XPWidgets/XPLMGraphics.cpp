@@ -41,7 +41,7 @@ int	gInterface = 1;
 #define UI_FONT_SIZE 9
 static FontMgr * 		sMgr = NULL;
 static FontHandle		sFont = NULL;
-static void MyGenerateTextures(int n,			int* textures) { glGenTextures (n, (unsigned long *) textures); }
+static void MyGenerateTextures(int n,			int* textures) { glGenTextures (n, (unsigned int *) textures); }
 static void MyBindTexture		(int target,	int texture)   { XPLMBindTexture2d(texture,target); }
 static void InitFonts(void) {
 		sMgr = new FontMgr;
