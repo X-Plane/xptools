@@ -181,26 +181,31 @@ static res_map sResMap;
 
 GUI_Resource	GUI_LoadResource(const char * in_resource)
 {
-	return 0;
+    string path;
+	if (!GUI_GetTempResourcePath(in_resource, path)) return NULL;
+	return MemFile_Open(path.c_str());
 }
 
 void			GUI_UnloadResource(GUI_Resource res)
 {
+    MemFile_Close((MFMemFile *) res);
 }
 
 const char *	GUI_GetResourceBegin(GUI_Resource res)
 {
-	return 0;
+	return 	MemFile_GetBegin((MFMemFile *) res);
 }
 
 const char *	GUI_GetResourceEnd(GUI_Resource res)
 {
-		return 0;
+	return 	MemFile_GetEnd((MFMemFile *) res);
 }
 
 bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 {
-    return false;
+    string t(in_resource);
+    out_path = "/usr/share/WEDResources/" + t;
+    return true;
 }
 
 #endif
@@ -217,7 +222,7 @@ int GUI_GetImageResource(
 	if (res == NULL) return -1;
 	int ret;
 	if (strstr(in_resource,".jpg"))
-    #if USE_JPG
+    #if USE_JPEG
 		ret = CreateBitmapFromJPEGData((void *) GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image);
     #else
         ret = 0;

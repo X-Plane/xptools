@@ -238,9 +238,25 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 #endif
 	}
 	InitCommonControls(); 
-	
-
 #endif
+
+#if LIN
+    Visual*  a_defVisual = 0;
+    int a_defDepth = 0;
+    int a_screenNumber = 0;
+
+    display = XOpenDisplay(NULL);
+    if (!display)
+        throw "failed to open the default display (:0).";
+
+    a_screenNumber = DefaultScreen(display);
+    a_defVisual = DefaultVisual(display, a_screenNumber);
+    if (!a_defVisual)
+        throw "invalid visual.";
+    a_defDepth  = DefaultDepth(display, a_screenNumber);
+    XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
+#endif
+
 }
 
 GUI_Application::~GUI_Application()
@@ -268,6 +284,17 @@ void			GUI_Application::Run(void)
 			DispatchMessage(&msg);
 		}
 	}
+#endif
+#if LIN
+    XEvent xevent;
+
+    while (!mDone)
+    {
+        XNextEvent(display, &xevent);
+        XWin::WinEventHandler((XAnyEvent*)&xevent, (int*)&mDone);
+        if (mDone) break;
+    }
+    XCloseDisplay(display);
 #endif
 }
 

@@ -458,7 +458,8 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 #endif
 
 GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0],inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+//	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], 640, 480, sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM

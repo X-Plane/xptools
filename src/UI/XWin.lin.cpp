@@ -451,9 +451,10 @@ void                    XWin::SetVisible(bool visible)
     XEvent xevent;
 
     visible?XMapWindow(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
+    visible ^= 1;
     if (visible)
 	XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
-    visible ^= 1;
+
     return;
 }
 

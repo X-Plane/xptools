@@ -1,7 +1,7 @@
 CC=gcc
 CPP=g++
 LINK=g++
-DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0
+DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1
 INCLUDES=\
 	-Isrc/Env \
 	-Isrc/DSF \
@@ -36,8 +36,8 @@ INCLUDES=\
     -Isrc/Network \
     -Isrc/Installer
 
-CFLAGS=$(DEFINES) $(INCLUDES) -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
-CPPFLAGS=$(DEFINES) $(INCLUDES) -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+CPPFLAGS=$(CFLAGS)
 
 SRC_squish=\
 libsrc/squish-1.10/alpha.o \
@@ -337,13 +337,13 @@ all:	objview dsftool ddstool objconverter
 	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 objview: $(SRC_ObjView)
-	$(LINK) -o ObjView -lGL -lGLU -lpng $(SRC_ObjView)
+	$(LINK) -o ObjView -lGL -lGLU -lpng -ljpeg -ltiff $(SRC_ObjView)
 
 dsftool: $(SRC_DSFTool)
 	$(LINK) -o DSFTool $(SRC_DSFTool)
 
 ddstool: $(SRC_DDSTool)
-	$(LINK) -o DDSTool -lpng $(SRC_DDSTool)
+	$(LINK) -o DDSTool -lpng -ljpeg -ltiff $(SRC_DDSTool)
 
 objconverter: $(SRC_ObjConverter)
 	$(LINK) -o ObjConverter -l3ds -ldime $(SRC_ObjConverter)
@@ -352,9 +352,7 @@ meshtool: $(SRC_MeshTool)
 	$(LINK) -o MeshTool $(SRC_MeshTool)
 
 wed: $(SRC_WED)
-	$(LINK) -o WED -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp $(SRC_WED)
-
-wed2: $(SRC_WED)
+	$(LINK) -o WED -lXi -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED)
 
 fonttool: $(SRC_FONTTOOL)
 	$(LINK) -o fonttool -lfreetype -lz -lpng -s $(SRC_FONTTOOL)

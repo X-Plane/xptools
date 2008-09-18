@@ -29,6 +29,10 @@
 #include <Carbon/Carbon.h>
 #endif
 
+#if LIN
+#include <X11/Xlib.h>
+#endif
+
 #include "GUI_Commander.h"
 
 /*
@@ -90,6 +94,9 @@ private:
 	set<GUI_Menu>		mMenus;
 	bool				mDone;
 
+#if LIN
+    Display* display;
+#endif
 };
 
 extern	GUI_Application *	gApplication;
