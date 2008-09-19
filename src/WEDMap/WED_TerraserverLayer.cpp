@@ -127,8 +127,11 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 									coords[n][0] = GetZoomer()->LatToYPixel(coords[n][0]);
 									coords[n][1] = GetZoomer()->LonToXPixel(coords[n][1]);
 								}
-								// i->Draw(coords, g);
+                                #if LIN
                                 i->Draw(coords);
+                                #else
+                                i->Draw(coords, g);
+                                #endif
 								++total_now;
 							}
 						}

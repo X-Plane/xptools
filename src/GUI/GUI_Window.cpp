@@ -123,7 +123,7 @@ STDMETHODIMP_(ULONG) GUI_Window_DND::AddRef(void)
 }
 
 STDMETHODIMP_(ULONG) GUI_Window_DND::Release(void)
-{GUI_Window
+{
 	if (--mRefCount == 0)
 	{
 		delete this;
