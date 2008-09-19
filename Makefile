@@ -3,6 +3,7 @@ CPP=g++
 LINK=g++
 DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1
 INCLUDES=\
+    -Ilibsrc/mesa-7.1/include \
 	-Isrc/Env \
 	-Isrc/DSF \
 	-Isrc/GUI \
