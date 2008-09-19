@@ -17,8 +17,8 @@ do
  # format sorce code to ansi style. ben doesn't like ansi style :-(
   #astyle --style=ansi -V -n "$sourcefile"
 
- # removing trailing whitespaces
-  sed -i -e 's/[[:space:]]*$//' "$sourcefile"
+ # removing trailing whitespaces - script is buggered
+ # sed -i -e 's/[[:space:]]*$//' "$sourcefile"
 
  # normalize line endings
   dos2unix -q "$sourcefile"
