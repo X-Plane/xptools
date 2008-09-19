@@ -53,13 +53,13 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 
 XWinGL::~XWinGL()
 {
-	glXMakeCurrent(_mDisplay,NULL,NULL);
+	glXMakeCurrent(_mDisplay,mWindow,mContext);
 	glXDestroyContext(_mDisplay,mContext);
 }
 
 void                    XWinGL::SetGLContext(void)
 {
-	glXMakeCurrent(_mDisplay,mWindow,mContext); 
+	glXMakeCurrent(_mDisplay,mWindow,mContext);
 }
 
 void                    XWinGL::SwapBuffer(void)

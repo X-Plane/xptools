@@ -6,6 +6,7 @@ INCLUDES=\
 	-Isrc/Env \
 	-Isrc/DSF \
 	-Isrc/GUI \
+    -Isrc/GUI/mmenu \
 	-Isrc/Interfaces \
 	-Isrc/Obj \
 	-Isrc/ObjEdit \
@@ -228,6 +229,8 @@ src/GUI/GUI_Pane.o \
 src/GUI/GUI_Help.o \
 src/GUI/GUI_Clipboard.o \
 src/GUI/GUI_Application.o \
+src/GUI/GUI_Laftfont.o \
+src/GUI/mmenu/mmenu.o \
 src/Utils/SQLUtils.o \
 src/Utils/AssertUtils.o \
 src/Utils/MemFileUtils.o \
@@ -309,8 +312,6 @@ src/XESCore/WTPM.o \
 src/XESCore/XESIO.o \
 src/XESCore/Zoning.o \
 src/XPWidgets/XPLMGraphics.o
-#src/XESTools/GISTool.o \
-#src/XESTools/GISTool_Globals.o
 
 
 SRC_FONTTOOL=\

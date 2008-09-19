@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -31,6 +31,17 @@
 GUI_Application *	gApplication = NULL;
 
 
+#if APL || LIN
+static void	NukeAmpersand(string& ioString)
+{
+	string::size_type loc;
+	while ((loc = ioString.find('&')) != ioString.npos)
+	{
+		ioString.erase(loc,1);
+	}
+}
+#endif
+
 #if IBM
 HACCEL			gAccel = NULL;
 vector<ACCEL>	gAccelTable;
@@ -44,20 +55,10 @@ vector<ACCEL>	gAccelTable;
 	#endif
 #include "XUtils.h"
 
-
-static void	NukeAmpersand(string& ioString)
-{
-	string::size_type loc;
-	while ((loc = ioString.find('&')) != ioString.npos)
-	{
-		ioString.erase(loc,1);
-	}
-}
-
 pascal OSErr GUI_Application::HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
 {
 	GUI_Application * me = reinterpret_cast<GUI_Application *>(handlerRefcon);
-	
+
 	string	fpath;
 	vector<string>	files;
 
@@ -65,7 +66,7 @@ pascal OSErr GUI_Application::HandleOpenDoc(const AppleEvent *theAppleEvent, App
 	AEDescList	inDocList = { 0 };
 	OSErr err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &inDocList);
 	if (err) return err;
-	
+
 	SInt32		numDocs;
 	err = ::AECountItems(&inDocList, &numDocs);
 	if (err) goto puke;
@@ -103,7 +104,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 	OSStatus	status;
 	MenuRef		amenu;
 
-	UInt32	clss = ::GetEventClass(inEvent);	
+	UInt32	clss = ::GetEventClass(inEvent);
 	UInt32	kind = ::GetEventKind(inEvent);
 	switch(clss) {
 	case kEventClassCommand:
@@ -116,7 +117,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 				switch(cmd.commandID) {
 				case kHICommandQuit:
 					if (me->DispatchHandleCommand(gui_Quit))			return noErr;
-					else												return eventNotHandledErr;					
+					else												return eventNotHandledErr;
 				case kHICommandAbout:
 					if (me->DispatchHandleCommand(gui_About))			return noErr;
 					else												return eventNotHandledErr;
@@ -137,12 +138,12 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 			{
 				status = GetEventParameter(inEvent, kEventParamDirectObject, typeMenuRef, NULL, sizeof(amenu), NULL, &amenu);
 				if (status != noErr) return status;
-					
-				if (me->mMenus.count(amenu) == 0) 
+
+				if (me->mMenus.count(amenu) == 0)
 					return eventNotHandledErr;
-			
+
 				int item_count = ::CountMenuItems(amenu);
-				
+
 				for (int n = 1; n <= item_count; ++n)
 				{
 					MenuCommand	id;
@@ -151,7 +152,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 					if (id == kHICommandQuit)			id = gui_Quit;
 					if (id == kHICommandAbout)			id = gui_About;
 					if (id == kHICommandPreferences)	id = gui_Prefs;
-					
+
 					if (id != 0)
 					{
 						string	ioName;
@@ -168,11 +169,11 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 							SetMenuItemTextWithCFString(amenu, n, cfstr);
 							CFRelease(cfstr);
 						}
-						
+
 						::CheckMenuItem(amenu, n, ioCheck > 0);
 					}
 				}
-								
+
 				return noErr;
 			}
 		default:
@@ -218,13 +219,13 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 	mHandleOpenDocUPP = NewAEEventHandlerUPP(HandleOpenDoc);
 
 	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, mHandleOpenDocUPP, reinterpret_cast<long>(this), FALSE);
-		
+
 	EventTypeSpec menu_events[] = {
 		kEventClassCommand,			kEventCommandProcess,
 		kEventClassMenu,			kEventMenuEnableItems };
-		
+
 	InstallEventHandler(GetApplicationEventTarget(), mMacEventHandlerUPP, GetEventTypeCount(menu_events), menu_events, reinterpret_cast<void *>(this), &mMacEventHandlerRef);
-	
+
 #endif
 #if IBM
 	// Note: GetModuleHandle(NULL) returns the process instance/module handle which
@@ -237,7 +238,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 		uh oh
 #endif
 	}
-	InitCommonControls(); 
+	InitCommonControls();
 #endif
 
 #if LIN
@@ -255,6 +256,12 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
         throw "invalid visual.";
     a_defDepth  = DefaultDepth(display, a_screenNumber);
     XWin::RegisterClass(display, a_screenNumber, a_defDepth, a_defVisual);
+    mMenubar = new mmenu();
+    if (!mMenubar)
+        throw "could not create menubar";
+    mMenubar->registerApp(this);
+    mMenubar->registerCB(MenuCommandHandler);
+
 #endif
 
 }
@@ -269,16 +276,16 @@ GUI_Application::~GUI_Application()
 void			GUI_Application::Run(void)
 {
 #if APL
-	RunApplicationEventLoop();		
+	RunApplicationEventLoop();
 #endif
 #if IBM
 
 	MSG msg;
 
 	BuildAccels();
-	while (!mDone && GetMessage(&msg, NULL, 0, 0)) 
+	while (!mDone && GetMessage(&msg, NULL, 0, 0))
 	{
-		if (!TranslateAccelerator(msg.hwnd, gAccel, &msg)) 
+		if (!TranslateAccelerator(msg.hwnd, gAccel, &msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -287,6 +294,7 @@ void			GUI_Application::Run(void)
 #endif
 #if LIN
     XEvent xevent;
+    Atom a_menuAtom = XInternAtom(display, "_MMENU_EVENT", False);
     int haveVisual = 1;
 
     while (haveVisual && !mDone)
@@ -298,6 +306,16 @@ void			GUI_Application::Run(void)
     XCloseDisplay(display);
 #endif
 }
+
+#if LIN
+// note that this handler runs in another thread
+void GUI_Application::MenuCommandHandler(int cmd, void* arg)
+{
+    GUI_Application* tmp = reinterpret_cast<GUI_Application*>(arg);
+    printf("got command: (id: 0x%.2X)\n", cmd);
+    //tmp->DispatchHandleCommand(cmd);
+}
+#endif
 
 void			GUI_Application::Quit(void)
 {
@@ -320,7 +338,7 @@ GUI_Menu			GUI_Application::GetMenuBar(void)
 		::SetMenu(hwnd, mbar);
 		return mbar;
 	#else
-		#warning add linux menubar initialization here
+		return mMenubar;
 	#endif
 }
 
@@ -344,19 +362,22 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #if IBM
 	static int		gIDs = 1000;
 #endif
+#if LIN
+	static int		gIDs = 1000;
+#endif
 
 #if APL
 	MenuRef	new_menu;
 	::CreateNewMenu(gIDs++, kMenuAttrAutoDisable, &new_menu);
 	if (parent != GetPopupContainer())
 		::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
-	
+
 	string	title(inTitle);
 	NukeAmpersand(title);
 	CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, title.c_str(), kCFStringEncodingMacRoman);
 	::SetMenuTitleWithCFString(new_menu, cfstr);
 	CFRelease(cfstr);
-	
+
 	if (new_menu && parent != GetPopupContainer())
 	{
 		::SetMenuItemHierarchicalID((MenuRef) parent, parentItem + 1, ::GetMenuID(new_menu));
@@ -371,7 +392,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 
 	if (parent == GetPopupContainer())	new_menu = CreatePopupMenu();
 	else								new_menu = ::CreateMenu();
-	
+
 	if (parent)
 	{
 		MENUITEMINFO	mif = { 0 };
@@ -385,25 +406,35 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		{
 			InsertMenuItem((HMENU) parent, -1, true, &mif);
 		} else {
-			SetMenuItemInfo((HMENU) parent, parentItem, true, &mif);	
-		}		
+			SetMenuItemInfo((HMENU) parent, parentItem, true, &mif);
+		}
 	}
 #endif
 #if LIN
-    #warning add menu creation code for linux here
-    void* new_menu = 0;
+    mmenu* new_menu = 0;
+    std::string itemname(inTitle);
+    NukeAmpersand(itemname);
+    mMenubar->addItem(gIDs++, itemname);
+    int n = 0;
+    while (items[n].name)
+	{
+	    string	i(items[n].name);
+	    NukeAmpersand(i);
+	    mMenubar->addItem(items[n].cmd, i, itemname);
+	    ++n;
+	}
+    new_menu = mMenubar;
 #endif
 
 	RebuildMenu(new_menu, items);
-
 	mMenus.insert(new_menu);
 
 #if IBM
 	if (parent)
 		DrawMenuBar(GUI_Window::AnyHWND());
 #endif
-	return new_menu;	
-}                                    	
+	return new_menu;
+}
 
 void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[])
 {
@@ -419,7 +450,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
 			::AppendMenuItemTextWithCFString((MenuRef) new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
 			CFRelease(cfstr);
-			
+
 			switch(items[n].key) {
 			case GUI_KEY_UP:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuUpArrowGlyph);		break;
 			case GUI_KEY_DOWN:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDownArrowGlyph);	break;
@@ -433,12 +464,12 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			::SetMenuItemModifiers((MenuRef) new_menu, n+1,
 					((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
 					((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
-					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));		
+					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));
 
 			::CheckMenuItem((MenuRef) new_menu,n+1,items[n].checked);
-					
+
 			++n;
-		}		
+		}
 	#elif IBM
 		while (GetMenuItemCount((HMENU) new_menu) > 0)
 			if (RemoveMenu((HMENU) new_menu, 0, MF_BYPOSITION) == 0) break;
@@ -452,7 +483,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			{
 				ACCEL accel = { 0 };
 				accel.fVirt = FVIRTKEY;
-				accel.cmd = items[n].cmd;				
+				accel.cmd = items[n].cmd;
 				itemname += "\t";
 				if (items[n].flags & gui_ControlFlag)	{itemname += "Ctrl+";	accel.fVirt |= FCONTROL;	}
 				if (items[n].flags & gui_ShiftFlag)		{itemname += "Shift+";	accel.fVirt |= FSHIFT;		}
@@ -482,10 +513,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			int err = InsertMenuItem((HMENU) new_menu, -1, true, &mif);
 
 			++n;
-		}		
-
-	#else
-		#warning add menurebuild code for linux here
+		}
 	#endif
 }
 

@@ -1,26 +1,26 @@
-/* 
+/*
  * Copyright (c) 2004, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
- 
+
  #define __DEBUGGING__
 
 // Stuff we need to init
@@ -48,7 +48,6 @@
 #include "XPWidgetDialogs.h"
 
 #include "WED_Menus.h"
-
 
 #include "GUI_ScrollerPane.h"
 #include "GUI_TextField.h"
@@ -112,10 +111,10 @@ int main(int argc, const char * argv[])
 	GUI_InitClipboard();
 	WED_Application	app;
 	WED_PackageMgr	pMgr(NULL);
-	
+
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold
 	// our textures, and WED cannot handle the textures being thrown away and needing a reload.  So logically we must have
-	// at least one shared context so that the textures are not purged.	
+	// at least one shared context so that the textures are not purged.
 	// This means one window must always be in existence.  That window is the about box...which stays hidden but allocated to
 	// sustain OpenGL.
 
@@ -126,26 +125,26 @@ int main(int argc, const char * argv[])
 	start->Show();
 
 	gFailure = CGAL::set_error_handler(cgal_failure);
-	
+
 	start->ShowMessage("Initializing...");
 	XESInit();
-	
+
 	start->ShowMessage("Reading Prefs...");
 	GUI_Prefs_Read("WED");
 	WED_Document::ReadGlobalPrefs();
-	
+
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
-	
+
 	start->ShowMessage("Loading DEM tables...");
 	LoadDEMTables();
 	start->ShowMessage("Loading OBJ tables...");
 	LoadObjTables();
-	
+
 	start->ShowMessage("Loading ENUM system...");
 	WED_AssertInit();
 	ENUM_Init();
-	
+
 	start->ShowMessage("Registering classes...");
 	#define _R(x)	x##_Register();
 	REGISTER_LIST
@@ -158,10 +157,9 @@ int main(int argc, const char * argv[])
 		sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
 		int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
 		sprintf(fname,"Loading earth_%d%d.jpg",x+1,y+1);
-      //  sleep(1);
 		start->ShowMessage(fname);
 	}
-	
+
 	app.SetAbout(about);
 
 	start->ShowMessage(string());
@@ -172,6 +170,7 @@ int main(int argc, const char * argv[])
 	#if !LIN
 	    delete about;
     #endif
+
 	GUI_MemoryHog::RemoveNewHandler();
 
 	string xsys;
@@ -180,6 +179,6 @@ int main(int argc, const char * argv[])
 
 	WED_Document::WriteGlobalPrefs();
 	GUI_Prefs_Write("WED");
-	
+
 	return 0;
 }
