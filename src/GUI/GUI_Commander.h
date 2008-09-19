@@ -46,7 +46,9 @@
 	
 */
 #if !DEV
+#if !IBM
 	#warning refactor KeyPress symbol (conflicts with /SDK/ac3d/Tk/X11/X.h)
+#endif
 #endif
 #undef KeyPress
 
