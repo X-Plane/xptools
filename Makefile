@@ -330,9 +330,6 @@ src/MeshTool/MeshTool.o
 
 all:	objview dsftool ddstool objconverter
 
-%.o: %.cp
-	$(CPP) $(CPPFLAGS) -c $< -o $@
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@	
 
