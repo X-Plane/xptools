@@ -145,8 +145,8 @@ void	GUI_SimpleScroller::AlignContents()
 
 void	GUI_SimpleScroller::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam)
+							intptr_t				inMsg,
+							intptr_t				inParam)
 {
 	if (inMsg == GUI_SCROLL_CONTENT_SIZE_CHANGED)
 		BroadcastMessage(inMsg, inParam);

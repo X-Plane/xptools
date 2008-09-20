@@ -168,8 +168,8 @@ public:
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam);
+							intptr_t				inMsg,
+							intptr_t				inParam);
 
 			int			GetScrollH(void);
 			int			GetScrollV(void);
@@ -227,8 +227,8 @@ public:
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam);
+							intptr_t				inMsg,
+							intptr_t				inParam);
 
 private:
 			int		MouseToCellX(int x);
@@ -263,8 +263,8 @@ public:
 
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam);
+							intptr_t				inMsg,
+							intptr_t				inParam);
 
 private:
 			int		MouseToCellY(int y);

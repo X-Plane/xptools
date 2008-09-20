@@ -258,8 +258,8 @@ int		GUI_ScrollerPane::ScrollWheel(int x, int y, int dist, int axis)
 
 void	GUI_ScrollerPane::ReceiveMessage(
 		GUI_Broadcaster *		inSrc,
-		long					inMsg,
-		long					inParam)
+		intptr_t				inMsg,
+		intptr_t				inParam)
 {
 	vector<GUI_ScrollerPane*>::iterator slave;
 	if (inSrc == mScrollH && inMsg == GUI_CONTROL_VALUE_CHANGED && mContent && !mCalibrating)

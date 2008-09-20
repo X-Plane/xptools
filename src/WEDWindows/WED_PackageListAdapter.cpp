@@ -307,8 +307,8 @@ void		WED_PackageListAdapter::SetCellHeight(int n, int h)
 
 void	WED_PackageListAdapter::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam)
+							intptr_t				inMsg,
+							intptr_t				inParam)
 {
 	if (inMsg == msg_SystemFolderChanged || inMsg == msg_SystemFolderUpdated)	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }

@@ -487,8 +487,8 @@ void		GUI_Table::AlignContents(void)
 
 void		GUI_Table::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
-				long					inMsg,
-				long					inParam)
+				intptr_t				inMsg,
+				intptr_t				inParam)
 {
 	switch(inMsg) {
 	case GUI_TABLE_SHAPE_RESIZED:
@@ -772,8 +772,8 @@ int		GUI_Header::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 
 void		GUI_Header::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
-				long					inMsg,
-				long					inParam)
+				intptr_t				inMsg,
+				intptr_t				inParam)
 {
 	switch(inMsg) {
 	case GUI_TABLE_SHAPE_RESIZED:
@@ -963,8 +963,8 @@ int		GUI_Side::GetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 
 void		GUI_Side::ReceiveMessage(
 				GUI_Broadcaster *		inSrc,
-				long					inMsg,
-				long					inParam)
+				intptr_t				inMsg,
+				intptr_t				inParam)
 {
 	switch(inMsg) {
 	case GUI_TABLE_SHAPE_RESIZED:

@@ -38,7 +38,7 @@ GUI_Broadcaster::~GUI_Broadcaster()
 	}
 }
 	
-void	GUI_Broadcaster::BroadcastMessage(long inMsg, long inParam)
+void	GUI_Broadcaster::BroadcastMessage(intptr_t inMsg, intptr_t inParam)
 {
 	// BEN SEZ: for now - just make sure that a suicidal listener doesn't
 	// @#$#@ us up by editing the list while we're on it!

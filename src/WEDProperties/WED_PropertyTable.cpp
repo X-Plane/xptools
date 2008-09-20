@@ -823,8 +823,8 @@ int			WED_PropertyTable::GetRowCount(void)
 
 void	WED_PropertyTable::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam)
+							intptr_t				inMsg,
+							intptr_t				inParam)
 {
 //	if (inMsg == msg_SelectionChanged)		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 	if (inMsg == msg_ArchiveChanged)

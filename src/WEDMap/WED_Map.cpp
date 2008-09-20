@@ -387,8 +387,8 @@ int			WED_Map::ScrollWheel(int x, int y, int dist, int axis)
 
 void		WED_Map::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam)
+							intptr_t				inMsg,
+							intptr_t				inParam)
 {
 	if(inMsg == msg_ArchiveChanged)	Refresh();
 }

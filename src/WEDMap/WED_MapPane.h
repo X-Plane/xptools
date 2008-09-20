@@ -74,8 +74,8 @@ public:
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
-							long					inMsg,
-							long					inParam);
+							intptr_t				inMsg,
+							intptr_t				inParam);
 			
 private:
 	
