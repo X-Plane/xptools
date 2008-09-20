@@ -1,3 +1,8 @@
+// Ben says: for compilers that think EVERYTHING is C++!
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  
 static char encodingTable [64] = {
  
@@ -106,3 +111,7 @@ void	decode (const char * startP, const char * endP, char * destP, char ** outP)
 
 } /*decodeHandle*/
  
+
+#ifdef __cplusplus
+}
+#endif
