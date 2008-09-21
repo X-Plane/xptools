@@ -44,12 +44,33 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 #endif
 
 #if LIN
-#warning implement window geometry functions for linux
-// this is still rubbish
-int GUI_Window::Client2OGL_X(int x, Window w) { return x; }
-int GUI_Window::Client2OGL_Y(int y, Window w) { Window t; int ry; int rx; XTranslateCoordinates(_mDisplay, w, RootWindow(_mDisplay, DefaultScreen(_mDisplay)), 0, y, &rx, &ry, &t); return ry-y; }
-int GUI_Window::OGL2Client_X(int x, Window w) { return x; }
-int GUI_Window::OGL2Client_Y(int y, Window w) { Window t; int ry; int rx; XTranslateCoordinates(_mDisplay, w, RootWindow(_mDisplay, DefaultScreen(_mDisplay)), 0, y, &rx, &ry, &t); return -y; }
+
+inline int GUI_Window::Client2OGL_X(int x, Window w)
+{
+	return x;
+}
+
+inline int GUI_Window::Client2OGL_Y(int y, Window w)
+{
+	int ry;
+	int rx;
+	XWinGL::GetBounds(&rx, &ry);
+	return ry-y;
+}
+
+inline int GUI_Window::OGL2Client_X(int x, Window w)
+{
+	return x;
+}
+
+inline int GUI_Window::OGL2Client_Y(int y, Window w)
+{
+	Window t;
+	int ry;
+	int rx;
+	XWinGL::GetBounds(&rx, &ry);
+	return ry-y;
+}
 #endif
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -460,7 +481,6 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 
 GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
-//	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], 640, 480, sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM
@@ -644,7 +664,7 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 	{
 		for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
 			(*c)->ParentResized(oldBounds, mBounds);
-		Refresh();
+			Refresh();
 	}	
 }
 

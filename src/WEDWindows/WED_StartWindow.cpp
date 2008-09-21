@@ -223,7 +223,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 		{
 			if (mScroller->IsVisible()) {
 				gPackageMgr->GetXPlaneFolder(m);
-				m = string("Scenery packags in: ") + m;
+				m = string("Scenery packages in: ") + m;
 				child[1] = me[3] - 15;
 				child[3] = me[3] - 15;
 			} else {
@@ -258,7 +258,8 @@ void	WED_StartWindow::ReceiveMessage(
 {
 	if (inSrc == mNew && inMsg == GUI_CONTROL_VALUE_CHANGED)	this->DispatchHandleCommand(wed_NewPackage);
 	if (inSrc == mOpen && inMsg == GUI_CONTROL_VALUE_CHANGED)	this->DispatchHandleCommand(wed_OpenPackage);
-	if (inSrc == mChange && inMsg == GUI_CONTROL_VALUE_CHANGED)	this->DispatchHandleCommand(wed_ChangeSystem);
+	if (inSrc == mChange && inMsg == GUI_CONTROL_VALUE_CHANGED) this->DispatchHandleCommand(wed_ChangeSystem);
+
 	if(inMsg == msg_SystemFolderChanged || inMsg == msg_SystemFolderUpdated)
 	{
 		if (gPackageMgr->HasSystemFolder())

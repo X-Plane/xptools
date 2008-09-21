@@ -170,7 +170,9 @@ void mmenu::enter_eventloop(void)
             if (xevent.type == ButtonPress && xevent.xbutton.button == Button1)
             {
                 if (a_currMenuItem && a_app)
+				{
                     handlemenucommand(a_currMenuItem->a_id, a_app);
+				}
             }
         }
 
@@ -193,7 +195,10 @@ void mmenu::enter_eventloop(void)
                 if (xevent.type == ButtonPress && xevent.xbutton.button == Button1)
                 {
                     if ((*it)->a_currMenuItem && a_app)
+					{
                         handlemenucommand((*it)->a_currMenuItem->a_id, a_app);
+						hide(); (*it)->hide();
+					}
                 }
                 if ((*it)->items.empty()) continue;
                 if (xevent.type == MotionNotify)

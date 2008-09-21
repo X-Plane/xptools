@@ -245,6 +245,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
     Visual*  a_defVisual = 0;
     int a_defDepth = 0;
     int a_screenNumber = 0;
+	mMenubar = 0;
 
     display = XOpenDisplay(NULL);
     if (!display)
@@ -309,11 +310,12 @@ void			GUI_Application::Run(void)
 
 #if LIN
 // note that this handler runs in another thread
+// TODO: call public mmenu eventloop from this thread
 void GUI_Application::MenuCommandHandler(int cmd, void* arg)
 {
     GUI_Application* tmp = reinterpret_cast<GUI_Application*>(arg);
-    printf("got command: (id: 0x%.2X)\n", cmd);
-    //tmp->DispatchHandleCommand(cmd);
+    // printf("got command: (id: 0x%.2X)\n", cmd);
+    tmp->DispatchHandleCommand(cmd);
 }
 #endif
 
@@ -412,6 +414,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 #if LIN
     mmenu* new_menu = 0;
+	if (!mMenubar) return 0;
     std::string itemname(inTitle);
     NukeAmpersand(itemname);
     mMenubar->addItem(gIDs++, itemname);

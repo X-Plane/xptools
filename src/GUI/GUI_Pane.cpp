@@ -470,7 +470,6 @@ GUI_Pane *	GUI_Pane::InternalMouseMove(int x, int y)
 				target = (*c)->InternalMouseMove(x, y);
 				if (target) return target;
 			}
-			
 			if (this->MouseMove(x, y))
 				return this;			
 		}

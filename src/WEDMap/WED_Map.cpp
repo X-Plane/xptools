@@ -267,7 +267,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		   Refresh();
 		   
 	#endif
-	
+
 }
 
 void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)

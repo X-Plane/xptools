@@ -10,6 +10,8 @@ static int             a_screenNumber = 0;
 static bool            sIniting = false;
 static std::map<Window, XWin*> sWindows;
 
+static int i = 0;
+
 static int ishexdig(char s) {
   return (((s >= '0') && (s <= '9'))
 	  || ((s >= 'a') && (s <= 'f'))
@@ -73,11 +75,6 @@ KeySym TkpGetKeySym(Display* dispPtr, XEvent * eventPtr)
 		index & ~1);
     }
     return sym;
-}
-
-int XWin::windowShowed(Display* display, XEvent* event, XPointer arg)
-{
-    return (event->type == MapNotify) && (event->xmap.window == (Window)arg);
 }
 
 void XWin::RegisterClass(Display* display, int screen, int depth, Visual* visual)
@@ -298,7 +295,11 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
     case ConfigureNotify:
     {
         if (obj && !sIniting)
+		{
             obj->Resized(e.xconfigure.width, e.xconfigure.height);
+			obj->width = e.xconfigure.width;
+			obj->height = e.xconfigure.height;
+		}
         break;
     }
     case UnmapNotify:
@@ -313,8 +314,11 @@ void XWin::WinEventHandler(XAnyEvent* xevent, int* visualstate)
     }
     case Expose: // client area destroyed due to overlapped window or something
     {
-        if (obj && !sIniting)
+        if (obj && !sIniting && !e.xexpose.count)
+		{
             obj->Update(xevent->window);
+			obj->refresh_requests = 0;
+		}
         break;
     }
     default:
@@ -371,10 +375,6 @@ XWin::XWin(int default_dnd)
     defGCvalues.background = 0;
     defGCmask = GCForeground | GCBackground;
     defGC = XCreateGC(mDisplay, mWindow, defGCmask, &defGCvalues);
- //   XMapWindow(mDisplay, mWindow);
- //   Resize(200, 100);
- //   MoveTo(10, 10);
- //   XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
 
     if (!mWindow)
         throw mWindow;
@@ -384,12 +384,13 @@ XWin::XWin(int default_dnd)
 	mMouse.x = 0;
 	mMouse.y = 0;
     sIniting = false;
+	refresh_requests = 0;
     return;
 }
 
 XWin::~XWin()
 {
-    XEvent xevent;
+/*    XEvent xevent;
     Atom _wmp = XInternAtom(mDisplay, "WM_PROTOCOLS", False);
     Atom _wdw = XInternAtom(mDisplay, "WM_DELETE_WINDOW", False);
     xevent.xclient.type                 = ClientMessage;
@@ -400,6 +401,8 @@ XWin::~XWin()
     xevent.xclient.format           = 32;
     xevent.xclient.serial           = 0;
     XSendEvent(mDisplay, mWindow, False, 0, &xevent);
+	XSync(mDisplay, False); */
+
     return;
 }
 
@@ -411,53 +414,58 @@ void                    XWin::SetTitle(const char * inTitle)
     title.format   = 8;
     title.nitems   = strlen((char*)title.value);
     XSetWMName(mDisplay, mWindow, &title);
+//	XFlush(mDisplay);
     return;
 }
 
 void                    XWin::MoveTo(int inX, int inY)
 {
     XMoveWindow(mDisplay, mWindow, inX, inY);
+//	XFlush(mDisplay);
     return;
 }
 
 void                    XWin::Resize(int inWidth, int inHeight)
 {
     XResizeWindow(mDisplay, mWindow, inWidth, inHeight);
+//	XFlush(mDisplay);
+	width = inWidth;
+	height = inHeight;
     return;
 }
 
 void                    XWin::ForceRefresh(void)
 {
     XEvent xevent;
-    xevent.xclient.type             = Expose;
-    xevent.xclient.send_event       = True;
-    xevent.xclient.window           = mWindow;
-    xevent.xclient.format           = 32;
-    xevent.xclient.serial           = 0;
-    XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-    XFlush(mDisplay);
+    xevent.xexpose.type             = Expose;
+    xevent.xexpose.send_event       = True;
+    xevent.xexpose.window           = mWindow;
+    xevent.xexpose.serial           = 0;
+	xevent.xexpose.count			= 0;
+	if (!refresh_requests)
+    	XSendEvent(mDisplay, mWindow, False, 0, &xevent);
+//	XFlush(mDisplay);
+//	XSync(mDisplay, False);
+	refresh_requests++;
+    return;
+}
+
+void                    XWin::Update(XContext ctx)
+{
     return;
 }
 
 void                    XWin::UpdateNow(void)
 {
-    Update(0);
+	Update(0);
     return;
 }
 
 void                    XWin::SetVisible(bool visible)
 {
-#if SOTHIS_REMARK
-#warning    < this will make the window _really_ invisable, so no taskbar entry and such, \
-            dunno if this is intended for this memberfunction >
-#endif
-    XEvent xevent;
-
     visible?XMapWindow(mDisplay, mWindow):XUnmapWindow(mDisplay, mWindow);
     visible ^= 1;
-//    if (visible)
-//	XIfEvent(mDisplay, &xevent, windowShowed, (XPointer)mWindow);
-    XFlush(mDisplay);
+//    XFlush(mDisplay);
     return;
 }
 
@@ -479,10 +487,16 @@ void XWin::SetTimerInterval(double seconds)
 
 void XWin::GetBounds(int * outX, int * outY)
 {
-    XWindowAttributes wa;
-    XGetWindowAttributes(mDisplay, mWindow, &wa);
-    if (outX) *outX = wa.width;
-    if (outY) *outY = wa.height;
+	Window rw;
+	int x_return, y_return;
+	unsigned int width_return, height_return, border_width_return, depth_return;
+
+	XGetGeometry(mDisplay, mWindow, &rw, &x_return, &y_return, &width_return,
+				&height_return, &border_width_return, &depth_return);
+
+    if (outX) *outX = width;
+    if (outY) *outY = height;
+
     return;
 }
 

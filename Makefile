@@ -38,9 +38,19 @@ INCLUDES=\
     -Isrc/Network \
     -Isrc/Installer
 
+# debug
 #CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CPPFLAGS=$(CFLAGS)
+
+# release profiling
+#CFLAGS=$(DEFINES) $(INCLUDES) -O2 -pg -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
+#CPPFLAGS=$(CFLAGS)
+#LDFLAGS= -pg
+
+# release
 CFLAGS=$(DEFINES) $(INCLUDES) -O2 -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
 CPPFLAGS=$(CFLAGS)
+LDFLAGS= -s
 
 SRC_squish=\
 libsrc/squish-1.10/alpha.o \
@@ -337,25 +347,25 @@ all:	objview dsftool ddstool objconverter
 	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 objview: $(SRC_ObjView)
-	$(LINK) -o ObjView -lGL -lGLU -lpng -ljpeg -ltiff $(SRC_ObjView)
+	$(LINK) $(LDFLAGS) -o ObjView -lGL -lGLU -lpng -ljpeg -ltiff $(SRC_ObjView)
 
 dsftool: $(SRC_DSFTool)
-	$(LINK) -o DSFTool $(SRC_DSFTool)
+	$(LINK) $(LDFLAGS) -o DSFTool $(SRC_DSFTool)
 
 ddstool: $(SRC_DDSTool)
-	$(LINK) -o DDSTool -lpng -ljpeg -ltiff $(SRC_DDSTool)
+	$(LINK) $(LDFLAGS) -o DDSTool -lpng -ljpeg -ltiff $(SRC_DDSTool)
 
 objconverter: $(SRC_ObjConverter)
-	$(LINK) -o ObjConverter -l3ds -ldime $(SRC_ObjConverter)
+	$(LINK) $(LDFLAGS) -o ObjConverter -l3ds -ldime $(SRC_ObjConverter)
 
 meshtool: $(SRC_MeshTool)
-	$(LINK) -o MeshTool $(SRC_MeshTool)
+	$(LINK) $(LDFLAGS) -o MeshTool $(SRC_MeshTool)
 
 wed: $(SRC_WED)
-	$(LINK) -o WED -lXi -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED)
+	$(LINK) $(LDFLAGS) -o WED -lXi -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED)
 
 fonttool: $(SRC_FONTTOOL)
-	$(LINK) -o fonttool -lfreetype -lz -lpng -s $(SRC_FONTTOOL)
+	$(LINK) $(LDFLAGS) -o fonttool -lfreetype -lz -lpng $(SRC_FONTTOOL)
 
 clean:
 	rm -f $(SRC_DSFTool) $(SRC_DDSTool) $(SRC_ObjConverter) $(SRC_MeshTool) $(SRC_ObjView) $(SRC_WED) $(SRC_FONTTOOL)

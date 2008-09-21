@@ -47,7 +47,9 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize)
 {	
-	return 0;
+	if (inID != 6)	return 0;
+	sprintf(outFileName, "/home/laubej/xplane9");
+	return 1;
 }
 
 void	DoUserAlert(const char * inMsg)

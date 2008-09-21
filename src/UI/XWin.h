@@ -195,8 +195,10 @@ public:
         POINT			        mMouse;
         DndClass                dnd;
         int				        mDragging[BUTTON_DIM];
+		int						width;
+		int						height;
+		int						refresh_requests;
 
-        static int windowShowed(Display* display, XEvent* event, XPointer arg);
 public:
         static void WinEventHandler(XAnyEvent* xevent, int* visualstate);
         static void RegisterClass(Display* display, int screen, int depth, Visual* visual);
