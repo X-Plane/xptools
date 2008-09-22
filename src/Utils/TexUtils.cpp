@@ -247,10 +247,11 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		
 			 if(inFlags & tex_Wrap){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT		 );
 								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT		 );}
-#if !IBM								    
+// Janos says: why not on windows? without it the terraserver overlay looks ...well, not clamped :-)
+//#if !IBM								    
 		else if(tex_clamp_avail)   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);}
-#endif								    
+//#endif								    
 		else					   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP		 );
 								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP		 );}
 		

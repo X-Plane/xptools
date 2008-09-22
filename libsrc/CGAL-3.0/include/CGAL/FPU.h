@@ -121,6 +121,7 @@ inline double IA_force_to_double(double x)
 
 // std::sqrt(double) on VC++ and CygWin is buggy when not optimizing.
 #ifdef _MSC_VER
+#ifndef _M_X64
 inline double IA_bug_sqrt(double d)
 {
   _asm
@@ -131,6 +132,7 @@ inline double IA_bug_sqrt(double d)
   }
   return d;
 }
+#endif
 #  define CGAL_BUG_SQRT(d) CGAL::IA_bug_sqrt(d)
 #elif defined __CYGWIN__
 inline double IA_bug_sqrt(double d)
@@ -268,9 +270,14 @@ typedef unsigned long FPU_CW_t;
 #define CGAL_FE_DOWNWARD    FE_DOWNWARD 
 
 #elif defined _MSC_VER
+#ifndef _M_X64
 // Found in http://msdn.microsoft.com/library/sdkdoc/directx/imover_7410.htm :
 #define CGAL_IA_SETFPCW(CW) __asm fldcw (CW)
 #define CGAL_IA_GETFPCW(CW) __asm fstcw (CW)
+#else
+#define CGAL_IA_SETFPCW(CW) _control87(CW,~0)
+#define CGAL_IA_GETFPCW(CW) CW =  _control87(0,0)
+#endif
 typedef unsigned short FPU_CW_t;
 #define CGAL_FE_TONEAREST    (0x0   | 0x127f)
 #define CGAL_FE_TOWARDZERO   (0xC00 | 0x127f)
