@@ -121,8 +121,9 @@ bool LoadTextureFromFile(
 		if (im.pad != 0)
 			UnpadImage(&im);
 
-		return LoadTextureFromImage(im, inTexNum, flags, outWidth, outHeight, outS, outT);
-		DestroyBitmap(&im);		
+		int res = LoadTextureFromImage(im, inTexNum, flags, outWidth, outHeight, outS, outT);
+		DestroyBitmap(&im);
+		return res;
 	}
 	return false;
 }
