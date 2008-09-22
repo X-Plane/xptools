@@ -24,7 +24,7 @@ class mmenu;
 class mmenu
 {
 public:
-    mmenu();
+    mmenu(Display* display);
     virtual ~mmenu();
 
     int execute();
@@ -32,9 +32,11 @@ public:
     void addItem(unsigned int id, std::string& name, std::string& parent);
     void registerApp(GUI_Application* app);
     void registerCB(void (*dispatcher)(int, void*));
+    void                    enter_eventloop(XEvent* e);
+	void clear();
+	std::string	currItemName;
 private:
     static void*            threadmain(void* arg);
-    void                    enter_eventloop(void);
     static int menuShowed(Display* display, XEvent* event, XPointer arg);
     void init_gl();
     void destroy();

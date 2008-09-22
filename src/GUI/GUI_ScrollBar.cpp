@@ -293,9 +293,12 @@ void		GUI_ScrollBar::TimerFired(void)
 			if (vnow != this->GetValue()) this->SetValue(vnow);
 			break;
 		}	
-		
+		#if !LIN
+		// janos says, since we're implementing our timer (currently) with threads on linux this is bad, because it creates a thread within a thread.
+		// unfortunally the current design of the GUI_Timer class doesn't allow this :-(
 		if (mClickPart == sb_PartDownButton || mClickPart == sb_PartUpButton)		Start(0.05);
 		else																		Start(0.1 );
+		#endif
 	}
 }
 

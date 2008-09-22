@@ -401,7 +401,7 @@ XWin::~XWin()
     xevent.xclient.format           = 32;
     xevent.xclient.serial           = 0;
     XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-	XSync(mDisplay, False); */
+	XSync(mDisplay, False);*/
 
     return;
 }
@@ -443,9 +443,13 @@ void                    XWin::ForceRefresh(void)
     xevent.xexpose.serial           = 0;
 	xevent.xexpose.count			= 0;
 	if (!refresh_requests)
+	{
+		XLockDisplay(mDisplay);
     	XSendEvent(mDisplay, mWindow, False, 0, &xevent);
-//	XFlush(mDisplay);
-//	XSync(mDisplay, False);
+		//XFlush(mDisplay);
+		XSync(mDisplay, False);
+		XUnlockDisplay(mDisplay);
+	}
 	refresh_requests++;
     return;
 }

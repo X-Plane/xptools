@@ -43,9 +43,9 @@ public:
 			bool		IsVis(void) { return mVis; }
 
 	// These provide generalized drawing routines.  Use this to draw background images and other such stuff.
-	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
+	virtual	void		DrawVisualization		(intptr_t inCurrent, GUI_GraphState * g);
 
-	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel);
+	virtual	void		GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel);
 
 	virtual	void		TimerFired(void);
 	

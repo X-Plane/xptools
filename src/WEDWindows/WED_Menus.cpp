@@ -49,7 +49,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 #if 0
 {	"Export &DSFs",			0,		0,								0,	wed_ExportDSF		},
 #endif
-#if IBM
+#if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
 {	"-",					0,		0,								0,	0					},
@@ -92,7 +92,10 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
+// Janos says: no submenus yet :-(
+#if !LIN
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
+#endif
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
@@ -134,7 +137,7 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
 {	"-",							0,	0,										0,	0				},
 {	"&X-Plane Scenery Homepage",	0,	0,										0,	wed_HelpScenery },
-#if IBM
+#if IBM || LIN
 {	"-",							0,		0,									0,	0				},
 {	"&About WED",					0,		0,									0,	gui_About		},
 #endif
@@ -151,10 +154,10 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);		
-		
+	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
-		
+	
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 

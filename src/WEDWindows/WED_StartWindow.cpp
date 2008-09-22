@@ -241,14 +241,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 bool	WED_StartWindow::Closed(void)
 {
 	GetCommanderRoot()->DispatchHandleCommand(gui_Quit);
-#if SOTHIS_REMARK
-    #warning <ben, is it really intended to return false here?>
-#endif
-#if LIN
-	return true;
-#else
     return false;
-#endif
 }
 
 void	WED_StartWindow::ReceiveMessage(

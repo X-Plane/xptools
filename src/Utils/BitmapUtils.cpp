@@ -1051,6 +1051,7 @@ bail:
 	if (pngPtr && infoPtr)		png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
 	else if (pngPtr)			png_destroy_read_struct(&pngPtr,(png_infopp)NULL,(png_infopp)NULL);
 	if (outImageInfo->data)		free(outImageInfo->data);
+	outImageInfo->data = 0;
 	if (rows) 					free(rows);
 
 	return -1;	
@@ -1529,6 +1530,7 @@ int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInf
 bail:
 	if (fi) fclose(fi);
 	if (outImageInfo->data) free(outImageInfo->data);
+	outImageInfo->data = 0;
 	if(raw) free(raw);
 	return -1;
 }

@@ -21,6 +21,10 @@
  *
  */
 
+#if LIN
+//	#include <QApplication>
+#endif
+
  #define __DEBUGGING__
 
 // Stuff we need to init
@@ -103,6 +107,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 int main(int argc, const char * argv[])
 #endif
 {
+#if LIN
+	// for messageboxes and file chooser dialogs
+	//int i = 0;
+	//QApplication qapp(i, (char**)0);
+#endif
 #if IBM
 	gInstance = hInstance;
 	SetErrorMode(SEM_NOOPENFILEERRORBOX|SEM_FAILCRITICALERRORS);

@@ -40,7 +40,7 @@ WED_MapBkgnd::~WED_MapBkgnd()
 {
 }
 
-void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
+void		WED_MapBkgnd::DrawVisualization(intptr_t inCurrent, GUI_GraphState * g)
 {
 	double pl,pr,pb,pt;	// pixel boundary
 	double ll,lb,lr,lt;	// logical boundary
@@ -78,7 +78,7 @@ void		WED_MapBkgnd::DrawVisualization(int inCurrent, GUI_GraphState * g)
 		
 }
 
-void		WED_MapBkgnd::DrawStructure(int inCurrent, GUI_GraphState * g)
+void		WED_MapBkgnd::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 {
 //	double pl,pr,pb,pt;	// pixel boundary
 	double ll,lb,lr,lt;	// logical boundary
@@ -136,7 +136,7 @@ void		WED_MapBkgnd::DrawStructure(int inCurrent, GUI_GraphState * g)
 	
 }
 
-void		WED_MapBkgnd::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+void		WED_MapBkgnd::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
 }

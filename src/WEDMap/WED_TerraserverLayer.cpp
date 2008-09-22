@@ -68,7 +68,7 @@ WED_TerraserverLayer::~WED_TerraserverLayer()
 void		WED_TerraserverLayer::ToggleVis(void) { mVis = !mVis; GetHost()->Refresh(); if (mVis) Start(0.1); else Stop(); }
 
 
-void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * g)
+void		WED_TerraserverLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphState * g)
 {
 	if (!mVis) return;
 //	if (!inCurrent && !mHas) return;
@@ -127,11 +127,7 @@ void		WED_TerraserverLayer::DrawVisualization		(int inCurrent, GUI_GraphState * 
 									coords[n][0] = GetZoomer()->LatToYPixel(coords[n][0]);
 									coords[n][1] = GetZoomer()->LonToXPixel(coords[n][1]);
 								}
-                                #if LIN
-                                i->Draw(coords);
-                                #else
                                 i->Draw(coords, g);
-                                #endif
 								++total_now;
 							}
 						}
@@ -182,7 +178,7 @@ void	WED_TerraserverLayer::TimerFired(void)
 	GetHost()->Refresh();
 }
 
-void		WED_TerraserverLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+void		WED_TerraserverLayer::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
 }

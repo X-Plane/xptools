@@ -32,6 +32,33 @@ typedef map<UINT_PTR,GUI_Timer *>	TimerMap;
 static TimerMap						sTimerMap;
 #endif
 
+
+#if LIN
+
+void* GUI_Timer::teh_threadroutine(void* args)
+{
+	teh_args_t* arg = reinterpret_cast<teh_args_t*>(args);
+	struct timespec ts;
+	long us = arg->sec * 1000000;
+	ts.tv_sec = us/1000000;
+    ts.tv_nsec = (us % 1000000) * 1000;
+	arg->callme->is_running = true;
+	while (arg->callme->is_running)
+	{
+		arg->callme->TimerCB(arg->callme);
+		nanosleep(&ts, NULL);
+	}
+	pthread_exit(0);
+}
+
+void GUI_Timer::TimerCB(void *args)
+{
+	GUI_Timer * me = reinterpret_cast<GUI_Timer *>(args);
+	me->TimerFired();
+}
+
+#endif
+
 GUI_Timer::GUI_Timer(void)
 {
 	#if APL
@@ -39,6 +66,10 @@ GUI_Timer::GUI_Timer(void)
 	#endif
 	#if IBM	
 		mID = 0;
+	#endif
+	#if LIN
+		teh_thread = 0;
+		is_running = false;
 	#endif
 }
 
@@ -81,6 +112,19 @@ void GUI_Timer::Start(float seconds)
 			sTimerMap.insert(TimerMap::value_type(mID, this));
 		}	
 #endif	
+#if LIN
+	targ.sec = seconds;
+	targ.callme = this;
+	
+	if (teh_thread)
+	{
+		is_running = false;
+		pthread_join(*teh_thread, 0);
+	}
+	else
+		teh_thread = new pthread_t;
+	pthread_create(teh_thread, NULL, teh_threadroutine, &targ);
+#endif
 }
 
 void GUI_Timer::Stop(void)
@@ -100,6 +144,15 @@ void GUI_Timer::Stop(void)
 			mID = 0;
 		}
 	#endif
+	#if LIN
+	if (teh_thread)
+	{
+		is_running = false;
+		pthread_join(*teh_thread, 0);
+		delete teh_thread;
+		teh_thread = 0;
+	}
+	#endif
 }
 
 #if APL
@@ -116,8 +169,4 @@ void CALLBACK	GUI_Timer::TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD d
 	me->TimerFired();
 }
 #endif
-#if LIN
-void GUI_Timer::TimerCB()
-{
-}
-#endif
+

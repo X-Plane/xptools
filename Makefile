@@ -1,9 +1,12 @@
 CC=gcc
 CPP=g++
 LINK=g++
-DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1
+DEFINES=-DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0 -DDEV=0 -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
 INCLUDES=\
     -Ilibsrc/mesa-7.1/include \
+	-Ilibsrc/squish-1.10 \
+    -Ilibsrc/expat/xmlparse \
+    -Ilibsrc/expat/xmltok \
 	-Isrc/Env \
 	-Isrc/DSF \
 	-Isrc/GUI \
@@ -28,15 +31,15 @@ INCLUDES=\
 	-Isrc/Utils \
 	-Isrc/XESCore \
 	-Isrc/XESTools \
-	-Ilibsrc/squish-1.10 \
-    -Ilibsrc/expat/xmlparse \
-    -Ilibsrc/expat/xmltok \
+    -Isrc/Installer \
+    -Isrc/Network \
+	-ISDK/PVR \
 	-I/usr/include/freetype2 \
     -I/usr/include/libshp \
     -I/usr/include/libgeotiff \
-	-ISDK/PVR \
-    -Isrc/Network \
-    -Isrc/Installer
+	-I/usr/include/Qt \
+	-I/usr/include/QtCore \
+	-I/usr/include/QtGui
 
 # debug
 #CFLAGS=$(DEFINES) $(INCLUDES) -O0 -g -Wno-deprecated -include src/Obj/XDefs.h -include limits.h
@@ -362,7 +365,7 @@ meshtool: $(SRC_MeshTool)
 	$(LINK) $(LDFLAGS) -o MeshTool $(SRC_MeshTool)
 
 wed: $(SRC_WED)
-	$(LINK) $(LDFLAGS) -o WED -lXi -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED)
+	$(LINK) $(LDFLAGS) -o WED -lGL -lGLU -lfreetype -lz -lpng -lsqlite3 -lCGAL -lgeotiff -lproj -lshp -ljpeg -ltiff $(SRC_WED) # -lQtCore -lQtGui
 
 fonttool: $(SRC_FONTTOOL)
 	$(LINK) $(LDFLAGS) -o fonttool -lfreetype -lz -lpng $(SRC_FONTTOOL)

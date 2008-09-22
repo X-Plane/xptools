@@ -4,44 +4,14 @@
 // TODO: mmenu and mmenuitem are basicly the same, combine these two to a generic menuitem class
 // TODO: locking and such, threading code is very messy
 
-mmenu::mmenu() : a_isRunning(false), a_isVisible(false), a_height(18), a_currMenuItem(0), a_app(0)
+mmenu::mmenu(Display* display) :  a_defDisplay(display), a_isRunning(false), a_isVisible(false), a_height(18), a_currMenuItem(0), a_app(0)
 {
-    a_mutexHandle = new pthread_mutex_t;
-    if (!a_mutexHandle)
-        throw "could not initialize mutex";
-    pthread_mutex_init(a_mutexHandle, 0);
-    pthread_mutex_lock(a_mutexHandle);
-    execute();
-    return;
-}
-
-mmenu::~mmenu()
-{
-    if (!a_menubarWindow)
-        return;
-    a_isRunning = false;
-    pthread_join(*a_threadHandle, 0);
-    pthread_detach(*a_threadHandle);
-    return;
-}
-
-void* mmenu::threadmain(void* arg)
-{
-    mmenu* tmp = reinterpret_cast<mmenu*>(arg);
-    if (tmp) tmp->enter_eventloop();
-    pthread_exit(0);
-}
-
-void mmenu::enter_eventloop(void)
-{
-    XEvent xevent;
-    Window currWindow;
     XSetWindowAttributes    windowAttr;
     unsigned long           attrMask;
 
-    a_defDisplay = XOpenDisplay(NULL);
-    if (!a_defDisplay)
-        throw "could not open display (:0)";
+ //   a_defDisplay = XOpenDisplay(NULL);
+ //   if (!a_defDisplay)
+ //       throw "could not open display (:0)";
     a_screenNumber = DefaultScreen(a_defDisplay);
     a_defVisual = DefaultVisual(a_defDisplay, a_screenNumber);
     if (!a_defVisual)
@@ -58,7 +28,7 @@ void mmenu::enter_eventloop(void)
     windowAttr.override_redirect = True;
     windowAttr.event_mask = EnterWindowMask;
     attrMask = CWEventMask | CWOverrideRedirect;
-    a_inputWindow = XCreateWindow(a_defDisplay, a_rootWindow, 0, 0, a_displayWidth, 3, 0, 0, InputOnly, a_defVisual, attrMask, &windowAttr);
+    a_inputWindow = XCreateWindow(a_defDisplay, a_rootWindow, 0, 0, a_displayWidth, 1, 0, 0, InputOnly, a_defVisual, attrMask, &windowAttr);
     if (!a_inputWindow)
         throw "could not create input window of mainmenu";
     XMapWindow(a_defDisplay, a_inputWindow);
@@ -107,7 +77,9 @@ void mmenu::enter_eventloop(void)
     a_defVisual = xvisual->visual;
     a_defDepth = xvisual->depth;
     a_screenNumber = xvisual->screen;
+	XFree(xvisual);
     a_defGlxContext = glXCreateNewContext(a_defDisplay, a_currFbConfig, GLX_RGBA_TYPE, NULL, 1);
+
     if (!a_defGlxContext)
         throw "could not create glx context";
     init_gl();
@@ -119,11 +91,36 @@ void mmenu::enter_eventloop(void)
     a_menuAtom = XInternAtom(a_defDisplay, "_MMENU_EVENT", False);
 
     a_isRunning = true;
-    pthread_mutex_unlock(a_mutexHandle);
-    while (a_isRunning)
+
+    return;
+}
+
+mmenu::~mmenu()
+{
+    if (!a_menubarWindow)
+        return;
+    a_isRunning = false;
+    pthread_join(*a_threadHandle, 0);
+    pthread_detach(*a_threadHandle);
+    return;
+}
+
+void* mmenu::threadmain(void* arg)
+{
+//    mmenu* tmp = reinterpret_cast<mmenu*>(arg);
+//    if (tmp) tmp->enter_eventloop();
+    pthread_exit(0);
+}
+
+void mmenu::enter_eventloop(XEvent* e)
+{
+    XEvent xevent = *e;
+    Window currWindow;
+//    while (a_isRunning)
     {
-        XNextEvent(a_defDisplay, &xevent);
-        currWindow = ((XAnyEvent*)&xevent)->window;
+      //  XNextEvent(a_defDisplay, &xevent);
+     //   currWindow = ((XAnyEvent*)&xevent)->window;
+		currWindow = xevent.xany.window;
 
         if (currWindow == a_inputWindow)
         {
@@ -152,12 +149,12 @@ void mmenu::enter_eventloop(void)
                     if (a_currMenuItem) a_currMenuItem->hide();
                     a_currMenuItem = 0;
                     onExposure();
-                    continue;
+                    return;
                 }
                 for (std::list<mmenuitem*>::iterator it = items.begin(); it != items.end(); ++it)
                     if ((*it)->isItemAreaX(xevent.xmotion.x))
                     {
-                        if ((*it) == a_currMenuItem) continue;
+                        if ((*it) == a_currMenuItem) return;
                         else
                         {
                             if (a_currMenuItem) a_currMenuItem->hide();
@@ -171,7 +168,7 @@ void mmenu::enter_eventloop(void)
             {
                 if (a_currMenuItem && a_app)
 				{
-                    handlemenucommand(a_currMenuItem->a_id, a_app);
+                    // handlemenucommand(a_currMenuItem->a_id, a_app);
 				}
             }
         }
@@ -194,13 +191,22 @@ void mmenu::enter_eventloop(void)
                 }
                 if (xevent.type == ButtonPress && xevent.xbutton.button == Button1)
                 {
-                    if ((*it)->a_currMenuItem && a_app)
+                    if ((*it)->a_currMenuItem)
 					{
-                        handlemenucommand((*it)->a_currMenuItem->a_id, a_app);
+						mmenuitem* temp = (*it)->a_currMenuItem;
 						hide(); (*it)->hide();
+						XEvent e;
+    					e.xclient.type             = ClientMessage;
+    					e.xclient.send_event       = True;
+    					e.xclient.window           = a_inputWindow;
+    					e.xclient.message_type     = a_menuAtom;
+    					e.xclient.data.l[0]        = temp->a_id;
+    					e.xclient.format           = 32;
+    					e.xclient.serial           = 0;
+    					XSendEvent(a_defDisplay, a_inputWindow, False, 0, &e);
 					}
                 }
-                if ((*it)->items.empty()) continue;
+                if ((*it)->items.empty()) return;
                 if (xevent.type == MotionNotify)
                 {
                     if ((*it)->items.back()->a_ymax < xevent.xmotion.y)
@@ -214,7 +220,7 @@ void mmenu::enter_eventloop(void)
                     for (std::list<mmenuitem*>::iterator iter = (*it)->items.begin(); iter != (*it)->items.end(); ++iter)
                         if ((*iter)->isItemAreaY(xevent.xmotion.y))
                         {
-                            if ((*iter) == (*it)->a_currMenuItem) continue;
+                            if ((*iter) == (*it)->a_currMenuItem) return;
                             else
                             {
                                 if ((*it)->a_currMenuItem) (*it)->a_currMenuItem->hide();
@@ -241,9 +247,26 @@ void mmenu::registerCB(void (*dispatcher)(int, void*))
     handlemenucommand = dispatcher;
 }
 
+void mmenu::clear()
+{
+	std::list<mmenuitem*> todel;
+	for (std::list<mmenuitem*>::iterator it = todel.begin(); it != todel.end(); ++it)
+    {
+		if ((*it)->name() == currItemName)
+		{
+			todel.swap((*it)->items);
+			for (std::list<mmenuitem*>::iterator i = todel.begin(); i != todel.end(); ++i)
+    		{
+				delete *i;
+			}
+			(*it)->items.clear();
+		}
+	}
+}
+
 void mmenu::addItem(unsigned int id, std::string& name)
 {
-    pthread_mutex_lock(a_mutexHandle);
+//    pthread_mutex_lock(a_mutexHandle);
     mmenuitem* item = new mmenuitem(a_defDisplay, a_defVisual, a_defDepth, a_screenNumber, a_rootWindow, a_defGlxContext, a_defFont);
     item->a_id = id;
     if (items.empty())
@@ -252,13 +275,13 @@ void mmenu::addItem(unsigned int id, std::string& name)
         item->a_xmin = items.back()->a_xmax;
     item->setName(name);
     items.push_back(item);
-    pthread_mutex_unlock(a_mutexHandle);
+//    pthread_mutex_unlock(a_mutexHandle);
     return;
 }
 
 void mmenu::addItem(unsigned int id, std::string& name, std::string& parent)
 {
-    pthread_mutex_lock(a_mutexHandle);
+//    pthread_mutex_lock(a_mutexHandle);
     for (std::list<mmenuitem*>::iterator it = items.begin(); it != items.end(); ++it)
     {
         if ((*it)->name() == parent)
@@ -277,7 +300,7 @@ void mmenu::addItem(unsigned int id, std::string& name, std::string& parent)
             break;
         }
     }
-    pthread_mutex_unlock(a_mutexHandle);
+//    pthread_mutex_unlock(a_mutexHandle);
 }
 
 void mmenu::init_gl()
@@ -322,9 +345,8 @@ void mmenu::show()
 {
     if (items.empty())
         return;
-    XEvent xevent;
     XMapWindow(a_defDisplay, a_menubarWindow);
-    XIfEvent(a_defDisplay, &xevent, menuShowed, (XPointer)a_menubarWindow);
+ //   XSync(a_defDisplay, False);
     a_isVisible = true;
     return;
 }
@@ -332,6 +354,7 @@ void mmenu::show()
 void mmenu::hide()
 {
     XUnmapWindow(a_defDisplay, a_menubarWindow);
+//	XSync(a_defDisplay, False);
     a_isVisible = false;
     a_currMenuItem = 0;
     return;
@@ -345,7 +368,6 @@ int mmenu::execute()
     a_isRunning = true;
     if (pthread_create(a_threadHandle, NULL, threadmain, this))
         throw "could not create thread, __FILE__, __FUNCTION__, __LINE__";
-
 }
 
 void mmenu::onExposure()
@@ -426,7 +448,9 @@ mmenuitem::mmenuitem(Display* displ, Visual* vis, int depth, int screen, Window 
     a_defVisual = xvisual->visual;
     a_defDepth = xvisual->depth;
     a_screenNumber = xvisual->screen;
+	XFree(xvisual);
     a_defGlxContext = glXCreateNewContext(a_defDisplay, a_currFbConfig, GLX_RGBA_TYPE, ctx, 1);
+
     if (!a_defGlxContext)
         throw "could not create glx context";
     init_gl();
@@ -435,6 +459,10 @@ mmenuitem::mmenuitem(Display* displ, Visual* vis, int depth, int screen, Window 
 
 mmenuitem::~mmenuitem()
 {
+	glXMakeCurrent(a_defDisplay, a_itemchildWindow, a_defGlxContext);
+	glXDestroyContext(a_defDisplay,a_defGlxContext);
+	XUnmapWindow(a_defDisplay, a_itemchildWindow);
+	XDestroyWindow(a_defDisplay, a_itemchildWindow);
     return;
 }
 

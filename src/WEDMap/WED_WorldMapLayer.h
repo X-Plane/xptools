@@ -35,8 +35,8 @@ public:
 			bool		IsVisible(void) { return mVisible; }
 			void		ToggleVisible(void);
 
-	virtual	void		DrawVisualization		(int inCurrent, GUI_GraphState * g);
-	virtual	void		GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel);
+	virtual	void		DrawVisualization		(intptr_t inCurrent, GUI_GraphState * g);
+	virtual	void		GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel);
 	
 private:
 

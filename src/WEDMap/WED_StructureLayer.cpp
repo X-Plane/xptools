@@ -576,7 +576,7 @@ void kill_taxi_texture(void)
 	glDisable(GL_TEXTURE_GEN_T);
 }
 
-bool		WED_StructureLayer::DrawEntityStructure		(int inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
+bool		WED_StructureLayer::DrawEntityStructure		(intptr_t inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	g->SetState(false,0,false,   false,true,false,false);
 	
@@ -1040,14 +1040,14 @@ void		WED_StructureLayer::SetVerticesShowing(bool show)
 	GetHost()->Refresh();
 }
 
-void		WED_StructureLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+void		WED_StructureLayer::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
 {
 	draw_ent_v = 0;
 	draw_ent_s = 1;
 	cares_about_sel = 1;
 }
 
-void		WED_StructureLayer::DrawStructure(int inCurrent, GUI_GraphState * g)
+void		WED_StructureLayer::DrawStructure(intptr_t inCurrent, GUI_GraphState * g)
 {
 	// Drawing each icon during iteration is slow because:
 	// - We have a ton of OGL state thrash.

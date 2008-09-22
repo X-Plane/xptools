@@ -121,6 +121,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 	if (!LoadTextureFromImage(im, tn, 0, &inf->act_x, &inf->act_y, &s,&t))
 	{
 		delete inf;
+		if (im.data) free(im.data);
 		return NULL;
 	}
 	
@@ -128,7 +129,8 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path)
 	inf->vis_y = (float) inf->act_y * t;
 	
 	mTexes[path] = inf;
-
+	// janos says: im.data caused a _big_ memory leak :-)
+	if (im.data) free(im.data);
 	return inf;
 }
 

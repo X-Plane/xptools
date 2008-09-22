@@ -50,7 +50,7 @@ void		WED_WorldMapLayer::ToggleVisible(void)
 }
 
 
-void		WED_WorldMapLayer::DrawVisualization		(int inCurrent, GUI_GraphState * g)
+void		WED_WorldMapLayer::DrawVisualization		(intptr_t inCurrent, GUI_GraphState * g)
 {
 	if (mVisible)		
 	{
@@ -86,7 +86,7 @@ void		WED_WorldMapLayer::DrawVisualization		(int inCurrent, GUI_GraphState * g)
 
 }
 
-void		WED_WorldMapLayer::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+void		WED_WorldMapLayer::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
 }

@@ -42,6 +42,9 @@
  * UTILS
  *****************************************************************************************/
 
+// janos says: i just stumbled over this function while hunting a memory leak. ben you know
+// that i am a fan of microoptimizations, i couldn't resist :-)
+/*
 static int	NextPowerOf2(int v)
 {
 	GLint	maxDim = 1024;
@@ -51,6 +54,17 @@ static int	NextPowerOf2(int v)
 		pt *= 2;
 	return pt;
 }
+*/
+__inline int NextPowerOf2(int a)
+{
+	GLint	maxDim = 1024;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
+	int rval = 2;
+	while(rval < a && rval < maxDim)
+		rval <<= 1;
+	return rval;
+}
+
 
 void UnpadImage(ImageInfo * im)
 {	

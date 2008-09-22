@@ -31,6 +31,18 @@
 		#include <Carbon/Carbon.h>
 	#endif
 #endif
+#if LIN
+
+#include <pthread.h>
+
+class GUI_Timer;
+
+typedef struct teh_args_t
+{
+	float sec;
+	GUI_Timer* callme;
+} teh_args_t;
+#endif
 
 class	GUI_Timer {
 public:
@@ -56,7 +68,11 @@ private:
 		UINT_PTR	mID;
 	
 	#elif LIN
-        static void TimerCB(void);
+        static void TimerCB(void *args);
+		static void* teh_threadroutine(void* args);
+		pthread_t* teh_thread;
+		bool is_running;
+		teh_args_t targ;
 	#endif
 	
 };			

@@ -52,13 +52,13 @@
 // returns true for bezier, false for segment.
 static bool	ControlLinkToCurve(
 				IControlHandles *		h,
-				int						ei,
-				int						l,
+				intptr_t				ei,
+				intptr_t				l,
 				Bezier2&				b,
 				Segment2&				s,
 				WED_MapZoomerNew *		z)
 {
-	int sp,sc,tp,tc;
+	intptr_t sp,sc,tp,tc;
 	sp = h->GetNthLinkSource   (ei,l);
 	sc = h->GetNthLinkSourceCtl(ei,l);
 	tp = h->GetNthLinkTarget   (ei,l);
@@ -154,11 +154,11 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 
 	Point2	click_pt(inX, inY);	//GetZoomer()->XPixelToLon(inX),GetZoomer()->YPixelToLat(inY));
 	
-	int ei_count = mHandles ? mHandles->CountEntities() : 0;
-	int  c_count;
-	int  l_count;
-	int eid;
-	int ei, n;
+	intptr_t ei_count = mHandles ? mHandles->CountEntities() : 0;
+	intptr_t  c_count;
+	intptr_t  l_count;
+	intptr_t eid;
+	intptr_t ei, n;
 
 	mDragType = drag_None;
 	
@@ -175,7 +175,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		c_count = mHandles->CountControlHandles(eid);
 		for (n = 0; n < c_count; ++n)
 		{
-			int active;
+			intptr_t active;
 			Point2	cloc;
 			Point2	cloc_pixels;
 			HandleType_t ht;
@@ -210,7 +210,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		l_count = mHandles->GetLinks(eid);
 		for (n = 0; n < l_count; ++n)
 		{
-			int active;
+			intptr_t active;
 			mHandles->GetNthLinkInfo(eid,n,&active, NULL);
 			if (!active) continue;
 		
@@ -457,21 +457,21 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	case ent_Container:
 		if (com)
 		{
-			int count = com->GetNumEntities();
-			for (int n = 0; n < count; ++n)
+			intptr_t count = com->GetNumEntities();
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (seq) 
 		{
-			int count = seq->GetNumPoints();
-			for (int n = 0; n < count; ++n)
+			intptr_t count = seq->GetNumPoints();
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
 		else if(poly) 
 		{
-			int count = poly->GetNumHoles();
+			intptr_t count = poly->GetNumHoles();
 			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
-			for (int n = 0; n < count; ++n)
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
 		}
 		break;
@@ -479,21 +479,21 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		if (!pt_sel && entity->WithinBox(bounds)) result.insert(entity);	
 		else if (com)
 		{
-			int count = com->GetNumEntities();
-			for (int n = 0; n < count; ++n)
+			intptr_t count = com->GetNumEntities();
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (seq) 
 		{
-			int count = seq->GetNumPoints();
-			for (int n = 0; n < count; ++n)
+			intptr_t count = seq->GetNumPoints();
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
 		}
 		else if (poly) 
 		{
-			int count = poly->GetNumHoles();
+			intptr_t count = poly->GetNumHoles();
 			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
-			for (int n = 0; n < count; ++n)
+			for (intptr_t n = 0; n < count; ++n)
 				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
 		}	
 		if (pt_sel && entity->PtWithin(psel))				{ result.insert(entity); return 1; }
@@ -636,28 +636,28 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 	mDragType = drag_None;
 }
 
-void		WED_HandleToolBase::GetCaps(int& draw_ent_v, int& draw_ent_s, int& cares_about_sel)
+void		WED_HandleToolBase::GetCaps(intptr_t& draw_ent_v, intptr_t& draw_ent_s, intptr_t& cares_about_sel)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
 }
 
-void		WED_HandleToolBase::DrawStructure			(int inCurrent, GUI_GraphState * g)
+void		WED_HandleToolBase::DrawStructure			(intptr_t inCurrent, GUI_GraphState * g)
 {
 	if (!inCurrent) return;
 	if (mHandles != NULL)
 	{
-		int ei_count = mHandles->CountEntities();
-		for (int ei = 0; ei < ei_count; ++ei)
+		intptr_t ei_count = mHandles->CountEntities();
+		for (intptr_t ei = 0; ei < ei_count; ++ei)
 		{
-			int eid = mHandles->GetNthEntityID(ei);
+			intptr_t eid = mHandles->GetNthEntityID(ei);
 			
-			int ch_count = mHandles->CountControlHandles(eid);
-			int ch_links = mHandles->GetLinks(eid);
+			intptr_t ch_count = mHandles->CountControlHandles(eid);
+			intptr_t ch_links = mHandles->GetLinks(eid);
 			
 			g->SetState(false,false,false, false,true, false,false);
 			
 			glBegin(GL_LINES);
-			for (int l = 0; l < ch_links; ++l)
+			for (intptr_t l = 0; l < ch_links; ++l)
 			{
 				Segment2	s;
 				Bezier2		b;

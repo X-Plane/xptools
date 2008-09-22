@@ -104,25 +104,25 @@ void	WED_CreateToolBase::EndEdit(void)
 {
 }
 
-int		WED_CreateToolBase::CountEntities(void) const
+intptr_t		WED_CreateToolBase::CountEntities(void) const
 {
 	return mPts.empty() ? 0 : 1;
 }
 
-long	WED_CreateToolBase::GetNthEntityID(int n) const
+intptr_t	WED_CreateToolBase::GetNthEntityID(intptr_t n) const
 {
 	return 0;
 }
 
-int		WED_CreateToolBase::CountControlHandles(int id						  ) const
+intptr_t		WED_CreateToolBase::CountControlHandles(intptr_t id						  ) const
 {
 	return mPts.size() * 3;
 }
 
-void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
+void	WED_CreateToolBase::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-		int idx = n / 3;
-		int kind = n % 3;
+		intptr_t idx = n / 3;
+		intptr_t kind = n % 3;
 
 	if (active) *active = 0;
 	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -161,18 +161,18 @@ void	WED_CreateToolBase::GetNthControlHandle(int id, int n, int * active, Handle
 }
 
 		
-int		WED_CreateToolBase::GetLinks		    (int id) const
+intptr_t		WED_CreateToolBase::GetLinks		    (intptr_t id) const
 {
 	return mPts.size() * 3;
 }
 
-void	WED_CreateToolBase::GetNthLinkInfo(int id, int n, int * active, LinkType_t * ltype) const
+void	WED_CreateToolBase::GetNthLinkInfo(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const
 {
 	if (active) *active = 0;
 	if (!ltype) return;
 	
-	int idx = n / 3;
-	int kind = n % 3;
+	intptr_t idx = n / 3;
+	intptr_t kind = n % 3;
 	
 	int m = (idx+1)%mPts.size();
 	switch(kind) {
@@ -191,26 +191,26 @@ void	WED_CreateToolBase::GetNthLinkInfo(int id, int n, int * active, LinkType_t 
 }
 
 
-int		WED_CreateToolBase::GetNthLinkSource   (int id, int n) const
+intptr_t		WED_CreateToolBase::GetNthLinkSource   (intptr_t id, intptr_t n) const
 {
-	int idx = n / 3;
-	int kind = n % 3;
+	intptr_t idx = n / 3;
+	intptr_t kind = n % 3;
 	return idx*3;
 }
 
 
-int		WED_CreateToolBase::GetNthLinkSourceCtl(int id, int n) const
+intptr_t		WED_CreateToolBase::GetNthLinkSourceCtl(intptr_t id, intptr_t n) const
 {
-	int idx = n / 3;
-	int kind = n % 3;
+	intptr_t idx = n / 3;
+	intptr_t kind = n % 3;
 	if (kind != 0) return -1;
 	return idx*3+2;
 }
 
-int		WED_CreateToolBase::GetNthLinkTarget   (int id, int n) const
+intptr_t		WED_CreateToolBase::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 {
-	int idx = n / 3;
-	int kind = n % 3;
+	intptr_t idx = n / 3;
+	intptr_t kind = n % 3;
 	switch(kind) {
 	case 0:	return ((idx+1)%mPts.size()) * 3;
 	case 1: return idx*3+1;
@@ -219,23 +219,23 @@ int		WED_CreateToolBase::GetNthLinkTarget   (int id, int n) const
 	return 0;
 }
 
-int		WED_CreateToolBase::GetNthLinkTargetCtl(int id, int n) const
+intptr_t		WED_CreateToolBase::GetNthLinkTargetCtl(intptr_t id, intptr_t n) const
 {
-	int idx = n / 3;
-	int kind = n % 3;
+	intptr_t idx = n / 3;
+	intptr_t kind = n % 3;
 	if (kind != 0) return -1;
 	return ((idx+1)%mPts.size())*3+1;
 }
 
-bool	WED_CreateToolBase::PointOnStructure(int id, const Point2& p) const
+bool	WED_CreateToolBase::PointOnStructure(intptr_t id, const Point2& p) const
 {
 	return false;
 }
 
-void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt)
+void	WED_CreateToolBase::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt)
 {
-	int idx = c / 3;
-	int kind = c % 3;
+	intptr_t idx = c / 3;
+	intptr_t kind = c % 3;
 	if (!mEditStarted)
 	{
 		mEditStarted = 1;	
@@ -268,7 +268,7 @@ void	WED_CreateToolBase::ControlsHandlesBy(int id, int c, const Vector2& delta, 
 	io_pt += delta;
 }
 
-void	WED_CreateToolBase::ControlsLinksBy	 (int id, int c, const Vector2& delta)
+void	WED_CreateToolBase::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
 {
 	if (c != mPts.size()-1)
 	{
@@ -282,7 +282,7 @@ void	WED_CreateToolBase::ControlsLinksBy	 (int id, int c, const Vector2& delta)
 	mControlLo[c] += delta;
 }
 
-void	WED_CreateToolBase::ControlsMoveBy	 (int id,        const Vector2& delta, Point2& io_track)
+void	WED_CreateToolBase::ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_track)
 {
 }
 

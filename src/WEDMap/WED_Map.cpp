@@ -126,7 +126,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	Bbox2 bounds;
 	
-	int draw_ent_v, draw_ent_s, wants_sel;
+	intptr_t draw_ent_v, draw_ent_s, wants_sel;
 	
 	GetMapVisibleBounds(bounds.p1.x,bounds.p1.y,bounds.p2.x,bounds.p2.y);
 	ISelection * sel = GetSel();

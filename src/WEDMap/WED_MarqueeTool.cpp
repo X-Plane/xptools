@@ -95,7 +95,7 @@ void	WED_MarqueeTool::EndEdit(void)
 	mInEdit=0;
 }
 
-int		WED_MarqueeTool::CountEntities(void) const
+intptr_t		WED_MarqueeTool::CountEntities(void) const
 {
 	ISelection * sel = WED_GetSelect(GetResolver());
 	DebugAssert(sel != NULL);
@@ -104,19 +104,19 @@ int		WED_MarqueeTool::CountEntities(void) const
 										return 1;
 }
 
-long		WED_MarqueeTool::GetNthEntityID(int n) const
+intptr_t		WED_MarqueeTool::GetNthEntityID(intptr_t n) const
 {
 	return 0;
 }
 
-int		WED_MarqueeTool::CountControlHandles(int id						  ) const
+intptr_t		WED_MarqueeTool::CountControlHandles(intptr_t id						  ) const
 {
 	if (!GetTotalBounds())			return 0;
 ///	if (mCacheBounds.is_point())	return 1;
 									return 9;
 }
 
-void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
+void	WED_MarqueeTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
 	if (mIsRotate)
 	{
@@ -155,14 +155,14 @@ void	WED_MarqueeTool::GetNthControlHandle(int id, int n, int * active, HandleTyp
 }
 
 
-int		WED_MarqueeTool::GetLinks		    (int id) const
+intptr_t		WED_MarqueeTool::GetLinks		    (intptr_t id) const
 {
 	if (!GetTotalBounds())		return 0;
 	if (mCacheBounds.is_point())return 0;
 								return 8;
 }
 
-void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
+void	WED_MarqueeTool::GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const
 {
 	int could_rotate = !mInEdit && (GetHost()->GetModifiersNow() & gui_OptionAltFlag);
 	if (could_rotate)
@@ -177,32 +177,32 @@ void	WED_MarqueeTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t *
 	}
 }
 
-int		WED_MarqueeTool::GetNthLinkSource   (int id, int n) const
+intptr_t		WED_MarqueeTool::GetNthLinkSource   (intptr_t id, intptr_t n) const
 {
 	return n;
 }
 
-int		WED_MarqueeTool::GetNthLinkSourceCtl(int id, int n) const
+intptr_t		WED_MarqueeTool::GetNthLinkSourceCtl(intptr_t id, intptr_t n) const
 {
 	return -1;
 }
 
-int		WED_MarqueeTool::GetNthLinkTarget   (int id, int n) const
+intptr_t		WED_MarqueeTool::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 {
 	return (n+1)%8;
 }
 
-int		WED_MarqueeTool::GetNthLinkTargetCtl(int id, int n) const
+intptr_t		WED_MarqueeTool::GetNthLinkTargetCtl(intptr_t id, intptr_t n) const
 {
 	return -1;
 }
 
-bool	WED_MarqueeTool::PointOnStructure(int id, const Point2& p) const
+bool	WED_MarqueeTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
 	return false;
 }
 
-void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_pt)
+void	WED_MarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
@@ -212,7 +212,7 @@ void	WED_MarqueeTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_pt
 	ApplyRescale(mCacheBounds,new_b);	
 }
 
-void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt)
+void	WED_MarqueeTool::ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;
@@ -266,7 +266,7 @@ void	WED_MarqueeTool::ControlsHandlesBy(int id, int c, const Vector2& delta, Poi
 	}
 }
 
-void	WED_MarqueeTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
+void	WED_MarqueeTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
 {
 	Bbox2	new_b;
 	if (!GetTotalBounds()) return;

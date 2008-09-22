@@ -126,19 +126,19 @@ void	WED_VertexTool::EndEdit(void)
 	mIsTaxiSpin = 0;
 }
 
-int		WED_VertexTool::CountEntities(void) const
+intptr_t		WED_VertexTool::CountEntities(void) const
 {
 	GetEntityInternal();
 	return mEntityCache.size();
 }
 
-long	WED_VertexTool::GetNthEntityID(int n) const
+intptr_t	WED_VertexTool::GetNthEntityID(intptr_t n) const
 {
 	GetEntityInternal();
-	return reinterpret_cast<long>(mEntityCache[n]);
+	return reinterpret_cast<intptr_t>(mEntityCache[n]);
 }
 
-int		WED_VertexTool::CountControlHandles(int id						  ) const
+intptr_t		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISQuad * quad = (en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
@@ -168,7 +168,7 @@ int		WED_VertexTool::CountControlHandles(int id						  ) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
+void	WED_VertexTool::GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * dir, float * radius) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
@@ -324,7 +324,7 @@ void	WED_VertexTool::GetNthControlHandle(int id, int n, int * active, HandleType
 }
 
 
-int		WED_VertexTool::GetLinks		    (int id) const
+intptr_t		WED_VertexTool::GetLinks		    (intptr_t id) const
 {	
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
@@ -349,7 +349,7 @@ int		WED_VertexTool::GetLinks		    (int id) const
 	return 0;
 }
 
-void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const
+void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const
 {
 	if (active) *active=0;
 	if (ltype) *ltype = link_Solid;
@@ -367,7 +367,7 @@ void	WED_VertexTool::GetNthLinkInfo		(int id, int n, int * active, LinkType_t * 
 }
 
 
-int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
+intptr_t		WED_VertexTool::GetNthLinkSource   (intptr_t id, intptr_t n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
@@ -383,12 +383,12 @@ int		WED_VertexTool::GetNthLinkSource   (int id, int n) const
 	return 0;
 }
 
-int		WED_VertexTool::GetNthLinkSourceCtl(int id, int n) const
+intptr_t		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, intptr_t n) const
 {
 	return -1;
 }
 
-int		WED_VertexTool::GetNthLinkTarget   (int id, int n) const
+intptr_t		WED_VertexTool::GetNthLinkTarget   (intptr_t id, intptr_t n) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
@@ -403,12 +403,12 @@ int		WED_VertexTool::GetNthLinkTarget   (int id, int n) const
 	return 0;
 }
 
-int		WED_VertexTool::GetNthLinkTargetCtl(int id, int n) const
+intptr_t		WED_VertexTool::GetNthLinkTargetCtl(intptr_t id, intptr_t n) const
 {
 	return -1;
 }
 
-bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
+bool	WED_VertexTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
@@ -425,7 +425,7 @@ bool	WED_VertexTool::PointOnStructure(int id, const Point2& p) const
 	return false;
 }
 
-void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_handle)
+void	WED_VertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Taxiway * taxi = (en->GetGISSubtype() == WED_Taxiway::sClass) ? SAFE_CAST(WED_Taxiway, en) : NULL;
@@ -438,7 +438,7 @@ void	WED_VertexTool::ControlsMoveBy(int id, const Vector2& delta, Point2& io_han
 	}	
 }
 
-void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta, Point2& io_pt)
+void	WED_VertexTool::ControlsHandlesBy(intptr_t id, intptr_t n, const Vector2& delta, Point2& io_pt)
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
@@ -620,7 +620,7 @@ void	WED_VertexTool::ControlsHandlesBy(int id, int n, const Vector2& delta, Poin
 	return; 
 }
 
-void	WED_VertexTool::ControlsLinksBy	 (int id, int c, const Vector2& delta)
+void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta)
 {
 }
 
@@ -886,7 +886,7 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 }
 
 
-void		WED_VertexTool::DrawSelected			(int inCurrent, GUI_GraphState * g)
+void		WED_VertexTool::DrawSelected			(intptr_t inCurrent, GUI_GraphState * g)
 {
 	WED_HandleToolBase::DrawSelected(inCurrent, g);
 	if (mIsTaxiSpin)

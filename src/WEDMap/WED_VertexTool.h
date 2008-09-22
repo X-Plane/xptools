@@ -46,24 +46,24 @@ public:
 	virtual		void	BeginEdit(void);
 	virtual		void	EndEdit(void);
 
-	virtual		int		CountEntities(void) const;
-	virtual		long	GetNthEntityID(int n) const;
+	virtual		intptr_t		CountEntities(void) const;
+	virtual		intptr_t	GetNthEntityID(intptr_t n) const;
 
-	virtual		int		CountControlHandles(int id						  ) const;
-	virtual		void	GetNthControlHandle(int id, int n, int * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const;
+	virtual		intptr_t		CountControlHandles(intptr_t id						  ) const;
+	virtual		void	GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const;
 
-	virtual		int		GetLinks		    (int id) const;
-	virtual		void	GetNthLinkInfo		(int id, int n, int * active, LinkType_t * ltype) const;
-	virtual		int		GetNthLinkSource   (int id, int n) const;
-	virtual		int		GetNthLinkSourceCtl(int id, int n) const;	// -1 if no bezier ctl point!
-	virtual		int		GetNthLinkTarget   (int id, int n) const;
-	virtual		int		GetNthLinkTargetCtl(int id, int n) const;
+	virtual		intptr_t		GetLinks		    (intptr_t id) const;
+	virtual		void	GetNthLinkInfo		(intptr_t id, intptr_t n, intptr_t * active, LinkType_t * ltype) const;
+	virtual		intptr_t		GetNthLinkSource   (intptr_t id, intptr_t n) const;
+	virtual		intptr_t		GetNthLinkSourceCtl(intptr_t id, intptr_t n) const;	// -1 if no bezier ctl point!
+	virtual		intptr_t		GetNthLinkTarget   (intptr_t id, intptr_t n) const;
+	virtual		intptr_t		GetNthLinkTargetCtl(intptr_t id, intptr_t n) const;
 	
-	virtual		bool	PointOnStructure(int id, const Point2& p) const;
+	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const;
 	
-	virtual		void	ControlsMoveBy(int id, const Vector2& delta, Point2& io_handle);			
-	virtual		void	ControlsHandlesBy(int id, int c, const Vector2& delta, Point2& io_pt);
-	virtual		void	ControlsLinksBy	 (int id, int c, const Vector2& delta);
+	virtual		void	ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_handle);			
+	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt);
+	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta);
 
 //	virtual	int			FindProperty(const char * in_prop) { return -1; }
 //	virtual int			CountProperties(void) { return 0; }
@@ -76,7 +76,7 @@ public:
 
 	virtual	const char *		GetStatusText(void) { return NULL; }
 	
-	virtual	void		DrawSelected			(int inCurrent, GUI_GraphState * g);
+	virtual	void		DrawSelected			(intptr_t inCurrent, GUI_GraphState * g);
 
 
 //	virtual void *		QueryInterface(const char * class_id);
