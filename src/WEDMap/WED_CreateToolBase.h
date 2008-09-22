@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2007, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -40,7 +40,7 @@ public:
 						 WED_CreateToolBase(
 									const char *		tool_name,
 									GUI_Pane *			host,
-									WED_MapZoomerNew *	zoomer, 
+									WED_MapZoomerNew *	zoomer,
 									IResolver *			resolver,
 									WED_Archive *		archive,
 									int					min_num_pts,
@@ -56,12 +56,12 @@ public:
 //	virtual	void		HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 //	virtual	void		KillOperation(void);
 
-//	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g); 
+//	virtual	void		DrawStructure			(int inCurrent, GUI_GraphState * g);
 
 	virtual		void	BeginEdit(void);
 	virtual		void	EndEdit(void);
 	virtual		intptr_t		CountEntities(void) const;
-	virtual		long	GetNthEntityID(intptr_t n) const;
+	virtual		intptr_t	GetNthEntityID(intptr_t n) const;
 	virtual		intptr_t		CountControlHandles(intptr_t id						  ) const;
 	virtual		void	GetNthControlHandle(intptr_t id, intptr_t n, intptr_t * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const;
 	virtual		intptr_t		GetLinks		    (intptr_t id) const;
@@ -71,9 +71,9 @@ public:
 	virtual		intptr_t		GetNthLinkTarget   (intptr_t id, intptr_t n) const;
 	virtual		intptr_t		GetNthLinkTargetCtl(intptr_t id, intptr_t n) const;
 	virtual		bool	PointOnStructure(intptr_t id, const Point2& p) const;
-	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt);			
-	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta);			
-	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_pt);			
+	virtual		void	ControlsHandlesBy(intptr_t id, intptr_t c, const Vector2& delta, Point2& io_pt);
+	virtual		void	ControlsLinksBy	 (intptr_t id, intptr_t c, const Vector2& delta);
+	virtual		void	ControlsMoveBy	 (intptr_t id,        const Vector2& delta, Point2& io_pt);
 
 	virtual	int					CreationDown(const Point2& start_pt);
 	virtual	void				CreationDrag(const Point2& start_pt, const Point2& now_pt);
@@ -82,7 +82,7 @@ public:
 	virtual void		KillOperation(bool mouse_is_down);
 	virtual	int			HandleKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  );
 
-	
+
 protected:
 
 
@@ -119,7 +119,7 @@ private:
 	vector<Point2>		mControlHi;
 	vector<int>			mHasDirs;
 	vector<int>			mIsSplit;
-	
+
 //	int		mStartX;
 //	int		mStartY;
 //	int		mNowX;
@@ -127,18 +127,18 @@ private:
 
 	float	mLastTime;
 	Point2	mLastPt;
-	
+
 
 //	int		mDirOpen;
 	int		mCreating;
-	
+
 	int		mMinPts;
 	int		mMaxPts;
 	int		mCanClose;
 	int		mMustClose;
 	int		mCanCurve;
 	int		mMustCurve;
-	
+
 };
 
 
