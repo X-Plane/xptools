@@ -264,7 +264,7 @@ void GUI_Laftfont::printgl(int x, int y, int z, const char *fmt, ...)
 	if ((!listsFont) || (!fmt)) return;
 
 	va_start(ap, fmt);
-	snprintf(text, 2048, fmt, ap);
+	vsnprintf(text, 2048, fmt, ap);
 	va_end(ap);
 	str_len = strlen(text);
 
